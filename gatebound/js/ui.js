@@ -2,7 +2,7 @@
 // GATEBOUND — UI screens & game flow orchestration
 // ============================================================
 
-import { RANKS, RANK_STYLE, HEROES, SKILLS, STATUSES, ITEMS, BIOMES, GATE_MODIFIERS, xpToNext, heroStatsAt, gearScore, shopStock, GATE_GP } from './data.js';
+import { RANKS, RANK_STYLE, HEROES, SKILLS, STATUSES, ITEMS, BIOMES, GATE_MODIFIERS, AFFIXES, xpToNext, heroStatsAt, gearScore, shopStock, GATE_GP } from './data.js';
 import * as ST from './state.js';
 import { Combat } from './combat.js';
 import { Stage, makePortrait } from './scene3d.js';
@@ -68,6 +68,18 @@ function heartsFor(girl) {
   let out = '';
   for (let i = 0; i < 5; i++) out += `<span class="heart ${i < Math.round(b / 2) ? 'full' : ''}">♥</span>`;
   return `<span class="hearts" title="Bond ${b}/10">${out}</span>`;
+}
+function affixChip(g) {
+  const a = g && g.affix ? AFFIXES[g.affix] : null;
+  return a ? `<span class="affix" title="${esc(a.desc)}">◆ ${esc(a.desc)}</span>` : '';
+}
+// Yuki's portrait switches to the reclassified render once his arc completes.
+async function ensureYukiPortrait() {
+  if (S && S.flags && S.flags.yuki_femme && PORTRAITS.__yukiFem !== true) {
+    PORTRAITS.__yukiFem = true;
+    PORTRAITS.yuki = await makePortrait('yuki', 'fem');
+    document.querySelectorAll('img[data-portrait="yuki"]').forEach(img => { img.src = PORTRAITS.yuki; });
+  }
 }
 
 // ------------------------------------------------------------------
@@ -253,6 +265,8 @@ function namePrompt(hasSave) {
 // ------------------------------------------------------------------
 
 function yukiTicker() {
+  if (S.flags.yuki_femme) return 'Yuki — long hair, green gown, second-watch partner, the harem\'s fifth heart — is exactly where she spent four years trying to reach: the middle of the fire.';
+  if (S.flags.yuki_member) return 'Yuki runs every gate with you now, softening by the day into someone who finally fits. The guild has stopped being surprised by the fifth chair.';
   if (S.flags.betrothal_ended) return 'Yuki Beaumont, B-rank, runs gates with a party of his own now. His letters arrive on time, every week, to all four of you.';
   if (S.flags.yuki_refused) return 'Word from the east: Yuki cleared another D-gate solo. "Earning the door," his letter says.';
   if (S.flags.yuki_guest_done) return 'Yuki went home with three cracked ribs and the biggest smile the guild physician has ever treated.';
@@ -263,8 +277,10 @@ function yukiTicker() {
 
 async function guild() {
   AU.music('guild');
+  ST.ensureYuki(S);
+  ensureYukiPortrait();
   stage.battleCamera();
-  stage.showcase(['erin', 'sakura', 'shiro']);
+  stage.showcase(S.flags.yuki_member ? ['erin', 'sakura', 'shiro', 'yuki'] : ['erin', 'sakura', 'shiro']);
   stage.camBase.set(0, 2.0, 6.2);
 
   // queued auto events (promotions etc.)
@@ -309,7 +325,7 @@ async function guild() {
         <div class="yuki-ticker"><b>Letters & rumors:</b> ${yukiTicker()}</div>
       </div>
       <div class="panel party-strip">
-        ${['player', 'erin', 'sakura', 'shiro'].map(id => `
+        ${ST.roster(S).map(id => `
           <div class="pcard">
             ${portraitImg(id)}
             <div class="pinfo">
@@ -572,12 +588,13 @@ async function battle(node) {
 
   disp.clear();
   for (const u of c.units) {
-    disp.set(u.uid, { hp: u.hp, maxHp: u.maxHp, shield: 0, statuses: new Set(u.statuses.map(s => s.id)) });
+    const sh = u.statuses.find(s => s.id === 'shield');
+    disp.set(u.uid, { hp: u.hp, maxHp: u.maxHp, shield: sh ? sh.power : 0, statuses: new Set(u.statuses.map(s => s.id)) });
   }
 
   stage.battleCamera();
   await stage.layoutBattle(
-    c.units.filter(u => u.side === 'party').map(u => ({ uid: u.uid, model: u.model, variant: null })),
+    c.units.filter(u => u.side === 'party').map(u => ({ uid: u.uid, model: u.model, variant: u.uid === 'yuki' && S.flags.yuki_femme ? 'fem' : null })),
     c.units.filter(u => u.side === 'enemy').map(u => ({ uid: u.uid, model: u.model, variant: u.variant, boss: u.boss })),
   );
   AU.music('battle');
@@ -707,7 +724,7 @@ function promptCommand(u, c) {
 async function results(result) {
   AU.music('guild');
   stage.battleCamera();
-  stage.showcase(['erin', 'player', 'sakura', 'shiro']);
+  stage.showcase(S.flags.yuki_member ? ['erin', 'player', 'sakura', 'shiro', 'yuki'] : ['erin', 'player', 'sakura', 'shiro']);
   stage.camBase.set(0, 2.1, 6.8);
 
   const titles = { clear: 'GATE CLEARED', retreat: 'WITHDREW FROM THE GATE', wipe: 'THE GATE SPAT YOU OUT' };
@@ -773,7 +790,9 @@ async function results(result) {
 // ------------------------------------------------------------------
 
 function party(sel = 'player') {
-  const ids = ['player', 'erin', 'sakura', 'shiro'];
+  ST.ensureYuki(S);
+  ensureYukiPortrait();
+  const ids = ST.roster(S);
   const h = S.heroes[sel];
   const def = HEROES[sel];
   const st = ST.heroStats(S, sel);
@@ -791,7 +810,7 @@ function party(sel = 'player') {
     const g = h.gear[slot];
     return `<button class="gear-slot" data-slot="${slot}">
       <small>${slot}</small>
-      ${g ? `<b class="t${g.tier}">${esc(g.name)}</b><span class="muted">${Object.entries(g.stats).map(([k, v]) => `${k}+${v}`).join(' ')}</span>` : '<span class="muted">— empty —</span>'}
+      ${g ? `<b class="t${g.tier}">${esc(g.name)}</b><span class="muted">${Object.entries(g.stats).map(([k, v]) => `${k}+${v}`).join(' ')}</span>${affixChip(g)}` : '<span class="muted">— empty —</span>'}
     </button>`;
   }).join('');
 
@@ -832,7 +851,7 @@ function gearPicker(heroId, slot) {
     <div class="gear-list">
       ${cur ? `<button class="btn gear-opt" data-id="__unequip">Unequip ${esc(cur.name)}</button>` : ''}
       ${options.length ? options.map(g => `<button class="btn gear-opt" data-id="${g.id}">
-        <b class="t${g.tier}">${esc(g.name)}</b> <small>${Object.entries(g.stats).map(([k, v]) => `${k}+${v}`).join(' ')}</small>
+        <b class="t${g.tier}">${esc(g.name)}</b> <small>${Object.entries(g.stats).map(([k, v]) => `${k}+${v}`).join(' ')}</small>${affixChip(g)}
       </button>`).join('') : '<p class="muted">No spare gear for this slot. Gates drop more.</p>'}
     </div>
     <button class="btn ghost" id="gp-close">Close</button>
@@ -875,7 +894,7 @@ function shop() {
   }).join('');
   const sellRows = S.gearBag.length ? S.gearBag.map(g => {
     const val = Math.max(5, Math.round(gearScore(g) * 4));
-    return `<div class="shop-row"><div><b class="t${g.tier}">${esc(g.name)}</b> <small class="muted">${Object.entries(g.stats).map(([k, v]) => `${k}+${v}`).join(' ')}</small></div>
+    return `<div class="shop-row"><div><b class="t${g.tier}">${esc(g.name)}</b> <small class="muted">${Object.entries(g.stats).map(([k, v]) => `${k}+${v}`).join(' ')}</small>${affixChip(g)}</div>
       <button class="btn sell" data-id="${g.id}" data-val="${val}">sell ◈ ${val}g</button></div>`;
   }).join('') : '<p class="muted">No spare gear to sell.</p>';
 

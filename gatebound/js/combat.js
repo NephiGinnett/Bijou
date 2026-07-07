@@ -9,9 +9,14 @@
 // ============================================================
 
 import { SKILLS, STATUSES, HEROES, ITEMS } from './data.js';
-import { heroStats, heroSkills } from './state.js';
+import { heroStats, heroSkills, heroLoadout } from './state.js';
 
 const CRIT_MULT = 1.6;
+const zeroLoad = () => ({
+  onHit: [], lifesteal: 0, crit: 0, critDmg: 0, skillDmg: { phys: 0, mag: 0 },
+  execBonus: 0, thorns: 0, startShield: 0, regen: 0, dr: 0, mpRegen: 0,
+  healPower: 0, stunImmune: false, startHaste: false,
+});
 
 export class Combat {
   constructor(S, enemyGroup, opts = {}) {
@@ -36,8 +41,9 @@ export class Combat {
         maxHp: st.hp, maxMp: st.mp,
         skills: heroSkills(S, id),
         statuses: [], cds: {}, guarding: false,
-        auto: id === 'yuki',
+        auto: id === 'yuki' && !S.flags.yuki_member, // guest Yuki is AI; a member you command
         coveredThisRound: false,
+        load: heroLoadout(S, id),
       });
     }
     for (const e of enemyGroup) {
@@ -47,8 +53,14 @@ export class Combat {
         base: e.stats,
         hp: e.stats.hp, mp: 999, maxHp: e.stats.hp, maxMp: 999,
         skills: e.skills, statuses: [], cds: {}, guarding: false,
-        xp: e.xp, gold: e.gold,
+        xp: e.xp, gold: e.gold, load: zeroLoad(),
       });
+    }
+    // Gear affixes: start-of-battle wards & haste (Warding / Vigorous).
+    for (const u of this.units) {
+      if (u.side !== 'party') continue;
+      if (u.load.startShield > 0) u.statuses.push({ id: 'shield', turns: 3, power: Math.round(u.maxHp * u.load.startShield) });
+      if (u.load.startHaste) u.statuses.push({ id: 'haste', turns: 2, power: 0 });
     }
     // Sakura resonance buff from dungeon event
     if (S.run.tempBuff === 'mag') {
@@ -73,6 +85,7 @@ export class Combat {
   debuffCount(u) { return u.statuses.filter(s => STATUSES[s.id] && STATUSES[s.id].kind === 'debuff').length; }
 
   addStatus(u, id, turns, ev, power = 0) {
+    if (id === 'stun' && u.load && u.load.stunImmune) return; // Stalwart affix
     const existing = u.statuses.find(s => s.id === id);
     if (existing) { existing.turns = Math.max(existing.turns, turns); if (power) existing.power = Math.max(existing.power || 0, power); }
     else u.statuses.push({ id, turns, power });
@@ -186,6 +199,15 @@ export class Combat {
       st.turns--;
       if (st.turns <= 0) this.removeStatus(u, st.id, ev);
     }
+    // gear affixes: passive regen (Living) and mana trickle (Swift)
+    if (u.load) {
+      if (u.load.regen > 0 && u.hp > 0) {
+        const amt = Math.max(1, Math.round(u.maxHp * u.load.regen));
+        u.hp = Math.min(u.maxHp, u.hp + amt);
+        ev.push({ t: 'heal', uid: u.uid, amount: amt, hpAfter: u.hp });
+      }
+      if (u.load.mpRegen > 0) u.mp = Math.min(u.maxMp, u.mp + u.load.mpRegen);
+    }
   }
 
   // ---- AI ----
@@ -200,19 +222,23 @@ export class Combat {
       return true;
     });
 
+    // boss: unleash fury once badly wounded
+    if (u.boss && u.hp / u.maxHp < 0.4 && !this.hasStatus(u, 'enrage') && usable.includes('e_enrage')) {
+      return { kind: 'skill', id: 'e_enrage', target: null };
+    }
     // healer logic
     const healId = usable.find(id => SKILLS[id].type === 'heal');
     if (healId) {
       const hurt = allies.filter(a => a.hp / a.maxHp < 0.55).sort((a, b) => a.hp / a.maxHp - b.hp / b.maxHp)[0];
-      if (hurt && Math.random() < 0.75) return { kind: 'skill', id: healId, target: hurt.uid };
+      if (hurt && Math.random() < (u.boss ? 0.85 : 0.75)) return { kind: 'skill', id: healId, target: hurt.uid };
     }
     // yuki guest: encourage sometimes
     if (u.uid === 'yuki' && usable.includes('encourage') && Math.random() < 0.4) {
       return { kind: 'skill', id: 'encourage', target: null };
     }
-    // prefer cooldown/special skills
+    // prefer cooldown/special skills — bosses lean on them harder
     const specials = usable.filter(id => SKILLS[id].cooldown || SKILLS[id].target === 'all_enemies' || SKILLS[id].apply);
-    const pool = (specials.length && Math.random() < 0.55) ? specials : usable.filter(id => SKILLS[id].type !== 'heal' && SKILLS[id].type !== 'support');
+    const pool = (specials.length && Math.random() < (u.boss ? 0.8 : 0.55)) ? specials : usable.filter(id => SKILLS[id].type !== 'heal' && SKILLS[id].type !== 'support');
     const pick = (pool.length ? pool : ['strike'])[Math.floor(Math.random() * (pool.length || 1))] || 'strike';
     const sk = SKILLS[pick];
 
@@ -221,8 +247,8 @@ export class Combat {
       const taunter = foes.find(f => this.hasStatus(f, 'taunt'));
       if (taunter && u.side === 'enemy') target = taunter.uid;
       else {
-        // weight squishier targets slightly
-        const weights = foes.map(f => 1 + (1 - f.hp / f.maxHp) * 0.4 + (f.base.def < 30 ? 0.25 : 0));
+        // weight squishier targets; bosses hunt the casters
+        const weights = foes.map(f => 1 + (1 - f.hp / f.maxHp) * 0.4 + (f.base.def < 30 ? 0.25 : 0) + (u.boss && f.base.mag > f.base.atk ? 0.6 : 0));
         let r = Math.random() * weights.reduce((a, b) => a + b, 0);
         target = foes[0].uid;
         for (let i = 0; i < foes.length; i++) { r -= weights[i]; if (r <= 0) { target = foes[i].uid; break; } }
@@ -280,7 +306,10 @@ export class Combat {
           this.dealDamage(u, this.interceptTarget(u, tgt, ev), sk, ev);
         }
       } else if (sk.type === 'heal') {
-        const amt = Math.round(this.eff(u, 'mag') * sk.power * (0.95 + Math.random() * 0.1));
+        let amt = this.eff(u, 'mag') * sk.power * (0.95 + Math.random() * 0.1);
+        const hp = (u.load ? u.load.healPower : 0) + (tgt.load ? tgt.load.healPower : 0);
+        if (hp) amt *= 1 + hp;
+        amt = Math.round(amt);
         tgt.hp = Math.min(tgt.maxHp, tgt.hp + amt);
         ev.push({ t: 'heal', uid: tgt.uid, amount: amt, hpAfter: tgt.hp });
       }
@@ -334,12 +363,23 @@ export class Combat {
     const defStat = this.eff(tgt, isMag ? 'res' : 'def');
     const v = sk.variance || 0.1;
     const variance = 1 - v + Math.random() * v * 2;
-    const critChance = 0.05 + (u.base.luk || 5) * 0.004;
+    const critChance = 0.05 + (u.base.luk || 5) * 0.004 + (u.load ? u.load.crit : 0);
     const crit = Math.random() < critChance;
 
     let dmg = atk * power * (100 / (100 + defStat)) * variance;
-    if (crit) dmg *= CRIT_MULT;
-    if (this.hasStatus(tgt, 'mark')) dmg *= 1 + (STATUSES.mark.takenUp || 0.15);
+    if (crit) dmg *= CRIT_MULT + (u.load ? u.load.critDmg : 0);
+    // damage-taken debuffs stack (mark + vulnerable)
+    let takenUp = 0;
+    for (const st of tgt.statuses) { const d = STATUSES[st.id]; if (d && d.takenUp) takenUp += d.takenUp; }
+    if (takenUp) dmg *= 1 + takenUp;
+    // attacker weapon/charm affixes
+    if (u.load) {
+      const sb = isMag ? u.load.skillDmg.mag : u.load.skillDmg.phys;
+      if (sb) dmg *= 1 + sb;
+      if (u.load.execBonus && tgt.hp / tgt.maxHp < 0.4) dmg *= 1 + u.load.execBonus;
+    }
+    // target armor affix (Bulwark)
+    if (tgt.load && tgt.load.dr) dmg *= 1 - tgt.load.dr;
     if (tgt.guarding) dmg *= 0.5;
     dmg = Math.max(1, Math.round(dmg));
 
@@ -356,6 +396,27 @@ export class Combat {
 
     tgt.hp = Math.max(0, tgt.hp - dmg);
     ev.push({ t: 'hit', uid: tgt.uid, dmg, crit, kind: sk.type, hpAfter: tgt.hp, shieldAfter });
+
+    // affix: lifesteal for the attacker (Vampiric)
+    if (u.load && u.load.lifesteal > 0 && dmg > 0 && u.hp > 0) {
+      const ls = Math.round(dmg * u.load.lifesteal);
+      if (ls > 0) { u.hp = Math.min(u.maxHp, u.hp + ls); ev.push({ t: 'heal', uid: u.uid, amount: ls, hpAfter: u.hp }); }
+    }
+    // affix: thorns reflect when the wearer is struck in melee (Thorned)
+    if (tgt.load && tgt.load.thorns > 0 && sk.type === 'phys' && dmg > 0 && u.hp > 0) {
+      const refl = Math.max(1, Math.round(dmg * tgt.load.thorns));
+      u.hp = Math.max(0, u.hp - refl);
+      ev.push({ t: 'hit', uid: u.uid, dmg: refl, kind: 'phys', hpAfter: u.hp });
+      if (u.hp <= 0) { u.statuses = []; ev.push({ t: 'die', uid: u.uid }); ev.push({ t: 'log', text: `${u.name} falls!` }); }
+    }
+    // affix: on-hit status riders from the attacker's weapon (Flametongue etc.)
+    if (u.load && u.load.onHit.length && tgt.hp > 0) {
+      for (const oh of u.load.onHit) {
+        if (oh.chance && Math.random() > oh.chance) continue;
+        this.addStatus(tgt, oh.id, oh.turns, ev);
+      }
+    }
+
     if (tgt.hp <= 0) {
       tgt.statuses = [];
       ev.push({ t: 'die', uid: tgt.uid });
@@ -380,7 +441,9 @@ export class Combat {
     S.inventory[cmd.id]--;
     ev.push({ t: 'item', uid: u.uid, itemId: cmd.id, target: tgt.uid });
     if (it.heal) {
-      const amt = Math.round(tgt.maxHp * it.heal);
+      let amt = tgt.maxHp * it.heal;
+      if (tgt.load && tgt.load.healPower) amt *= 1 + tgt.load.healPower;
+      amt = Math.round(amt);
       tgt.hp = Math.min(tgt.maxHp, tgt.hp + amt);
       ev.push({ t: 'heal', uid: tgt.uid, amount: amt, hpAfter: tgt.hp });
     }

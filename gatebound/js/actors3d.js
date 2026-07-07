@@ -185,7 +185,15 @@ const HERO_BUILDERS = {
     const b = grimoire(); b.position.set(-0.4, 0.68, 0.12); b.rotation.y = 0.5; g.add(b);
     return g;
   },
-  yuki() {
+  yuki(v) {
+    if (v === 'fem') {
+      // reclassified: longer hair, a soft green gown, ribbon, and a light blade
+      const g = chibi({ skin: 0xf8e0cc, hair: 0xf2e2a8, hairstyle: 'long', outfit: 0xbfe6c6, outfitStyle: 'dress', frill: 0xd9b96a, eyeColor: 0x3a7a54 });
+      add(g, Tor(0.25, 0.03, 6, 14), mat(0xd9b96a, { metal: 0.5 }), 0, 0.5, 0, Math.PI / 2);
+      add(g, Box(0.14, 0.18, 0.02), mat(0xff9ec6), -0.25, 1.4, 0.04, 0, 0, 0.5); // hair ribbon
+      const w = sword(0xe8eef4, 0.44); w.position.set(0.42, 0.5, 0.05); w.rotation.z = -0.5; g.add(w);
+      return g;
+    }
     const g = chibi({ skin: 0xf6ddc0, hair: 0xf2e2a8, hairstyle: 'short', outfit: 0xa8d8b0, sleeve: 0xa8d8b0, legColor: 0x6a7a6a });
     add(g, Box(0.34, 0.08, 0.2), mat(0x8a6d3a), 0, 0.44, 0);
     const w = sword(0xd8dde2, 0.42); w.position.set(0.42, 0.5, 0.05); w.rotation.z = -0.55; g.add(w);
@@ -398,7 +406,7 @@ const MONSTER_BUILDERS = {
 // and swapped in-place if a GLB is configured for this id.
 export function buildActor(kind, variant = null, opts = {}) {
   const group = new THREE.Group();
-  const inner = HERO_BUILDERS[kind] ? HERO_BUILDERS[kind]() :
+  const inner = HERO_BUILDERS[kind] ? HERO_BUILDERS[kind](variant, opts) :
     MONSTER_BUILDERS[kind] ? MONSTER_BUILDERS[kind](variant) :
     chibi({});
   group.add(inner);

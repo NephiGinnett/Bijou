@@ -4,7 +4,7 @@
 
 import {
   RANKS, RANK_UP_GP, GATE_GP, XP_MULT, HEROES, heroStatsAt, heroSkillsAt,
-  xpToNext, BIOMES, GATE_ROOMS, GATE_MODIFIERS, MONARCH_GATE, ENEMIES, makeGear,
+  xpToNext, BIOMES, GATE_ROOMS, GATE_MODIFIERS, MONARCH_GATE, ENEMIES, makeGear, AFFIXES,
 } from './data.js';
 
 export const SAVE_KEY = 'gatebound_save_v1';
@@ -32,7 +32,7 @@ export function newGame(playerName) {
     seen: {},
     flags: {},
     queue: [],                       // pending auto story events
-    bond: { sakura: 0, erin: 0, shiro: 0 },
+    bond: { sakura: 0, erin: 0, shiro: 0, yuki: 0 },
     heroes: {},
     inventory: { potion: 3, ether: 1 },
     gearBag: [],
@@ -40,6 +40,7 @@ export function newGame(playerName) {
     run: null,                       // active dungeon run
     stats: { clears: 0, kills: 0, retreats: 0, wipes: 0 },
     cleared: false,
+    ngPlus: 0,                       // Recursion depth cleared post-Monarch
     settings: { volume: 0.6, music: true, textFast: false },
   };
   for (const id of ['player', 'erin', 'sakura', 'shiro']) {
@@ -58,12 +59,20 @@ export function newGame(playerName) {
 export function save(S) {
   try { localStorage.setItem(SAVE_KEY, JSON.stringify(S)); } catch (e) { /* private mode */ }
 }
+// Fill in fields added after a save was first written, so old saves keep working.
+function ensureShape(S) {
+  if (!S) return S;
+  if (S.bond && !('yuki' in S.bond)) S.bond.yuki = 0;
+  if (S.ngPlus == null) S.ngPlus = 0;
+  if (!S.flags) S.flags = {};
+  return S;
+}
 export function load() {
   try {
     const raw = localStorage.getItem(SAVE_KEY);
     if (!raw) return null;
     const S = JSON.parse(raw);
-    return S && S.v === 1 ? S : null;
+    return S && S.v === 1 ? ensureShape(S) : null;
   } catch (e) { return null; }
 }
 export function wipeSave() { try { localStorage.removeItem(SAVE_KEY); } catch (e) {} }
@@ -71,7 +80,7 @@ export function exportSave(S) { return btoa(unescape(encodeURIComponent(JSON.str
 export function importSave(str) {
   try {
     const S = JSON.parse(decodeURIComponent(escape(atob(str.trim()))));
-    return S && S.v === 1 ? S : null;
+    return S && S.v === 1 ? ensureShape(S) : null;
   } catch (e) { return null; }
 }
 
@@ -82,6 +91,10 @@ export function heroStats(S, id) {
   const def = HEROES[id];
   const level = h ? h.level : def.startLevel;
   const s = heroStatsAt(def, level);
+  // The System reclassifies Yuki once he formally joins — from carried to carrying.
+  if (id === 'yuki' && S.flags && S.flags.yuki_member) {
+    for (const k of ['hp', 'mp', 'atk', 'mag', 'def', 'res', 'agi']) s[k] = Math.round(s[k] * 1.4);
+  }
   if (h) {
     for (const g of Object.values(h.gear)) {
       if (!g) continue;
@@ -89,6 +102,38 @@ export function heroStats(S, id) {
     }
   }
   return s;
+}
+
+// Aggregate the combat-affecting affixes from a hero's equipped gear.
+export function heroLoadout(S, id) {
+  const load = {
+    onHit: [], lifesteal: 0, crit: 0, critDmg: 0,
+    skillDmg: { phys: 0, mag: 0 }, execBonus: 0, thorns: 0,
+    startShield: 0, regen: 0, dr: 0, mpRegen: 0, healPower: 0,
+    stunImmune: false, startHaste: false,
+  };
+  const h = S.heroes[id];
+  if (!h) return load;
+  for (const g of Object.values(h.gear)) {
+    if (!g || !g.affix) continue;
+    const a = AFFIXES[g.affix];
+    if (!a) continue;
+    if (a.onHit) load.onHit.push(a.onHit);
+    if (a.lifesteal) load.lifesteal += a.lifesteal;
+    if (a.crit) load.crit += a.crit;
+    if (a.critDmg) load.critDmg += a.critDmg;
+    if (a.skillDmg) { load.skillDmg.phys += a.skillDmg.phys || 0; load.skillDmg.mag += a.skillDmg.mag || 0; }
+    if (a.execBonus) load.execBonus += a.execBonus;
+    if (a.thorns) load.thorns += a.thorns;
+    if (a.startShield) load.startShield += a.startShield;
+    if (a.regen) load.regen += a.regen;
+    if (a.dr) load.dr += a.dr;
+    if (a.mpRegen) load.mpRegen += a.mpRegen;
+    if (a.healPower) load.healPower += a.healPower;
+    if (a.stunImmune) load.stunImmune = true;
+    if (a.startHaste) load.startHaste = true;
+  }
+  return load;
 }
 
 export function heroSkills(S, id) {
@@ -114,6 +159,20 @@ export function gainXp(S, id, amount) {
 export function addBond(S, girl, n) {
   if (!(girl in S.bond)) return;
   S.bond[girl] = Math.max(0, Math.min(10, S.bond[girl] + n));
+}
+
+// Ensure a recruited Yuki has a hero record (used by menus before his first run).
+export function ensureYuki(S) {
+  if (S.flags && S.flags.yuki_member && !S.heroes.yuki) {
+    const lvl = Math.max((S.heroes.player?.level || 1) - 2, 10 + S.rankIdx * 4);
+    S.heroes.yuki = { level: lvl, xp: 0, gear: { weapon: null, armor: null, charm: null } };
+  }
+}
+
+export function roster(S) {
+  return S.flags && S.flags.yuki_member
+    ? ['player', 'erin', 'sakura', 'shiro', 'yuki']
+    : ['player', 'erin', 'sakura', 'shiro'];
 }
 
 // --- guild rank ------------------------------------------------------------
@@ -177,7 +236,26 @@ export function rollGates(S) {
   if (S.rankIdx === RANKS.length - 1 && !S.cleared) {
     offers.unshift({ ...MONARCH_GATE, rankIdx: 5, seed: (rng() * 2 ** 31) | 0 });
   }
+  // Post-Monarch: an escalating Recursion gate is always on offer.
+  if (S.cleared) {
+    offers.unshift(makeRecursionGate(S, (S.ngPlus || 0) + 1, rng));
+  }
   S.gates = offers;
+}
+
+const ROMAN = ['', 'I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X'];
+function toRoman(n) { return n <= 10 ? ROMAN[n] : String(n); }
+
+function makeRecursionGate(S, depth, rng) {
+  return {
+    id: 'recursion_' + S.day,
+    rank: 'S', rankIdx: 5, biome: 'void',
+    name: `Recursion ${toRoman(depth)} — Echo of the Threshold`,
+    modifier: depth % 3 === 0 ? 'unstable' : 'rich',
+    rooms: Math.min(8, 5 + Math.floor(depth / 2)),
+    recursion: true, depth,
+    seed: (rng() * 2 ** 31) | 0,
+  };
 }
 
 // --- dungeon path & enemy scaling --------------------------------------------
@@ -226,7 +304,8 @@ function makeBossGroup(gate, biome, rng) {
 let enemySeq = 0;
 export function scaleEnemy(defId, gate, depth, isBoss, rng) {
   const def = ENEMIES[defId];
-  const tier = XP_MULT[gate.rank];
+  let tier = XP_MULT[gate.rank];
+  if (gate.recursion) tier *= 1 + (gate.depth || 0) * 0.4; // NG+ escalation
   const ramp = 1 + depth * 0.06;
   const bossMult = def.boss ? 2.3 : 1;
   const dmgMod = gate.modifier === 'unstable' ? 1.15 : 1;
@@ -256,7 +335,13 @@ export function scaleEnemy(defId, gate, depth, isBoss, rng) {
 export function startRun(S, gate) {
   const party = {};
   const ids = ['player', 'erin', 'sakura', 'shiro'];
-  if (S.flags.yuki_guest && !S.flags.yuki_guest_done) {
+  if (S.flags.yuki_member) {
+    if (!S.heroes.yuki) {
+      const lvl = Math.max((S.heroes.player?.level || 1) - 2, 10 + S.rankIdx * 4);
+      S.heroes.yuki = { level: lvl, xp: 0, gear: { weapon: null, armor: null, charm: null } };
+    }
+    ids.push('yuki');
+  } else if (S.flags.yuki_guest && !S.flags.yuki_guest_done) {
     S.heroes.yuki = S.heroes.yuki || { level: 6 + S.rankIdx * 3, xp: 0, gear: { weapon: null, armor: null, charm: null } };
     ids.push('yuki');
   }
@@ -299,7 +384,7 @@ export function endRun(S, outcome) {
 
   S.gold += result.gold;
   for (const id of run.partyIds) {
-    if (id === 'yuki') continue;
+    if (id === 'yuki' && !S.flags.yuki_member) continue; // guest Yuki earns no XP
     result.levelUps.push(...gainXp(S, id, result.xp));
   }
   for (const g of result.gear) S.gearBag.push(g);
@@ -308,11 +393,12 @@ export function endRun(S, outcome) {
   }
   if (result.gp) result.promos = addGp(S, result.gp);
 
-  if (S.flags.yuki_guest && !S.flags.yuki_guest_done) {
+  if (S.flags.yuki_guest && !S.flags.yuki_guest_done && !S.flags.yuki_member) {
     S.flags.yuki_guest_done = true;
     delete S.heroes.yuki;
   }
   if (gate.id === 'monarch' && outcome === 'clear') S.cleared = true;
+  if (gate.recursion && outcome === 'clear') S.ngPlus = (S.ngPlus || 0) + 1;
 
   S.run = null;
   S.day++;

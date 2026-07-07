@@ -190,6 +190,40 @@ E.yuki_confront = {
   ],
 };
 
+E.yuki_stay = {
+  id: 'yuki_stay', where: 'guild', once: true, priority: 61,
+  cond: S => S.rankIdx >= 4 && S.seen.yuki_confront && !S.flags.yuki_member,
+  steps: [
+    { s: 'narr', t: 'The betrothals are ash. Yuki should be gone — off to his own gates, his own party, the door he earned. Instead he\'s at the guild board the next morning, pack on his shoulder, wearing the specific terror of a man about to ask for something enormous.' },
+    { s: 'yuki', t: 'I disbanded my party. Told the strays they\'d outgrown me. Which is a lie — I outgrew being their ceiling. I want to be someone\'s floor again. I want in. Here. With you four. Permanently.' },
+    { s: 'shiro', t: 'We are four. Guild law is satisfied at four. A fifth is not a vacancy, Beaumont. It is a choice about shape.' },
+    { s: 'yuki', t: 'I know exactly what shape this party is. Three women who look at {name} like the last dry match in a storm — and {name}, who somehow keeps them all warm without dropping a single one.' },
+    { s: 'narr', t: 'He says it without a scrap of jealousy. That\'s the thing about Yuki now: four years of chasing burned the envy clean out of him and left only a terrible, clear-eyed honesty.' },
+    { s: 'yuki', t: 'I don\'t want to compete with that. I want to belong to it. And if belonging means I stop being the odd shape at the edge — if it means becoming something that fits between them instead of standing apart — then reclassify me. I\'ve never meant anything more in my life.' },
+    { s: 'sys', t: '[ NEW DIRECTIVE — subject "Yuki Beaumont" requests voluntary reclassification. The System does not usually take requests. The System is... intrigued. Awaiting your authorization, Player. ]' },
+    { s: 'narr', t: 'The blue light no one else can see turns, for the first time, to hang over someone who isn\'t you. Sakura gasps — she can almost see it now. Erin\'s hand finds her sword on reflex. Shiro just watches you, the way she watches a board tip.' },
+    { choice: [
+      { t: '"Authorized. Welcome home, Yuki. We\'ll make room — all of us."', flag: 'yuki_member', bond: { yuki: 2 },
+        r: [
+          { s: 'sys', t: '[ Authorization accepted. Subject enrolled. Reclassification will proceed gradually — the System is thorough, not cruel. Party size: 5. ]' },
+          { s: 'yuki', t: '(the breath goes out of him all at once, and what\'s left is the widest, most relieved smile you\'ve ever seen) Five. We\'re five. I earned the door AND they let me keep it—' },
+          { s: 'erin', t: '(already blinking too fast) Stars help me. FINE. But you take second watch with me and you learn to make Sakura\'s stew right. Those are the terms of initiation.' },
+          { s: 'sakura', t: '(quietly, to Yuki) ...Welcome to the soft place. It\'s less frightening than the edge. I promise.' },
+          { s: 'narr', t: '(Yuki has joined your party — permanently. The System\'s reclassification will unfold over the gates to come.)' },
+        ] },
+      { t: '"Are you sure? This changes you — all the way down. There\'s no ledger for undoing it."', bond: { yuki: 1 },
+        r: [
+          { s: 'yuki', t: 'You think I didn\'t read the fine print? I\'ve spent four years being a shape that fit nowhere. I\'m not afraid of becoming one that fits. I\'m afraid of dying the shape I started as.' },
+          { s: 'narr', t: 'He looks at the three of them — knight, mage, queen — and then at you, and there is no doubt anywhere in his face.' },
+          { s: 'yuki', t: 'Authorize it. Please. Let me fit.' },
+          { s: 'sys', t: '[ Consent reaffirmed. Reclassification queued. Party size: 5. ]' },
+          { flag: 'yuki_member' },
+          { s: 'narr', t: '(Yuki has joined your party — permanently.)' },
+        ] },
+    ] },
+  ],
+};
+
 // Promotion scenes — fired automatically when license rank increases.
 
 E.promo_D = {
@@ -644,6 +678,85 @@ E.yuki_letter_3 = {
   ],
 };
 
+// ------------------------------------------------------------
+// YUKI — reclassification arc (after joining permanently).
+// Consensual, System-driven; each step is offered, never forced.
+// Completing it flips yuki_femme (updates portrait / battle model).
+// ------------------------------------------------------------
+
+E.yuki_fem1 = {
+  id: 'yuki_fem1', where: 'camp', once: true, priority: 45,
+  cond: S => S.flags.yuki_member && !S.seen.yuki_fem1,
+  steps: [
+    { s: 'narr', t: 'First camp as a party of five. Yuki sits a little apart still — old habit — until Sakura wordlessly scoots the stew pot six inches closer to him, and the geometry of the fire quietly makes a place.' },
+    { s: 'sys', t: '[ Reclassification: phase one. Subject "Yuki" — beginning soft revision. Nothing is forced. Everything is offered. Decline any step and it halts. ]' },
+    { s: 'yuki', t: '(turning his hands over, watching the callouses soften a shade) It doesn\'t hurt. I thought it would hurt. It just feels like setting down a pack I forgot I was carrying. Is that strange?' },
+    { choice: [
+      { t: '"Not strange. You spent years being who you were supposed to be. This is just you, choosing."', bond: { yuki: 2 },
+        r: [
+          { s: 'yuki', t: 'Me, choosing. (he tries the words on like a coat that finally fits) ...Sakura, does it get easier? Being looked at and not flinching?' },
+          { s: 'sakura', t: '(gently) You keep the shyness. You just stop mistaking it for smallness. Here — a spare ribbon. For your hair, when it\'s long enough. No pressure. It\'ll wait.' },
+          { s: 'narr', t: 'Yuki holds the pink ribbon like it\'s a guild medal. In a way you can\'t quite explain, it is.' },
+        ] },
+      { t: '"Take it as slow as you need. We\'re not going anywhere — that\'s the whole point of five."', bond: { yuki: 1 },
+        r: [
+          { s: 'yuki', t: 'Slow. (a shaky laugh) Everyone always wanted me to hurry — catch up, catch up. You\'re the first people who ever said slow and meant it kindly.' },
+          { s: 'erin', t: '(from across the fire, gruff) Perimeter\'s clear. Nobody rushes anybody on my watch. Eat your stew, recruit.' },
+        ] },
+    ] },
+  ],
+};
+
+E.yuki_fem2 = {
+  id: 'yuki_fem2', where: 'camp', once: true, priority: 46,
+  cond: S => S.flags.yuki_member && S.seen.yuki_fem1,
+  steps: [
+    { s: 'narr', t: 'The change has found a rhythm now — softer jaw, longer lashes, a voice that\'s learned a gentler register. Yuki wears the green gown Sakura sewed and keeps startling herself with her own reflection in still water, then laughing, delighted.' },
+    { s: 'yuki', t: 'I keep waiting to grieve him. The old me. And it just doesn\'t come. He was a door I held shut with my whole body. Turns out on the other side there\'s only me. Breathing.' },
+    { s: 'shiro', t: '(not looking up from her ledger, but softer than her words) The subject reports no loss, only relief. Statistically the healthiest reclassification I have ever audited. I have written it down. Twice.' },
+    { choice: [
+      { t: '"She suits you. This whole party suits you. And you suit us."', bond: { yuki: 2 },
+        r: [
+          { s: 'yuki', t: 'She. (Yuki\'s eyes go bright.) You said it so easily. Like it was always true and you were only waiting for me to catch up to it.' },
+          { s: 'player', t: 'I was. We all were. Welcome the rest of the way in.' },
+          { s: 'narr', t: 'Erin, who has been pretending not to listen, abruptly needs to polish something. Sakura is openly crying into her hat. Shiro deals a fifth hand of cards without being asked.' },
+        ] },
+      { t: '"How do you want us to speak of you now? Say it, and it\'s law."', bond: { yuki: 2 },
+        r: [
+          { s: 'yuki', t: '(a long breath, then steady) She. Her. Yuki still — I like my name, I earned my name. Just the rest of it, the way you\'d speak of any of the girls. If that\'s allowed.' },
+          { s: 'shiro', t: 'It was allowed the moment you wanted it. That is the only permission that was ever required. Noted, ratified, and — Beaumont — correct.' },
+        ] },
+    ] },
+  ],
+};
+
+E.yuki_fem3 = {
+  id: 'yuki_fem3', where: 'camp', once: true, priority: 47,
+  cond: S => S.flags.yuki_member && S.seen.yuki_fem2 && S.bond.yuki >= 4,
+  steps: [
+    { s: 'narr', t: 'Camp on a high ridge, all five of you, and for once nobody sits apart. Yuki is in the middle of it — of THEM — hair long and ribboned, laughing at one of Erin\'s terrible jokes, a mug of Sakura\'s cocoa going cold because she\'s too busy being happy to drink it.' },
+    { s: 'sys', t: '[ Reclassification complete. Subject "Yuki Beaumont" — reclassified: MEMBER, in full. The System notes, for its records, that this is the first time it has made someone by helping them become who they already were. ]' },
+    { s: 'yuki', t: '{name}. Come here. I need to say this while I\'m brave enough. (she takes your hands) You didn\'t recruit a swordsman. You didn\'t even recruit a girl. You recruited a person drowning at the edge of every room, and you made a place in the middle, and you said fit. And I did. I DID.' },
+    { choice: [
+      { t: '"You were never at the edge to me, Yuki. You were just late to your own seat. Sit."', bond: { yuki: 2 },
+        r: [
+          { s: 'narr', t: 'She kisses you — soft, certain, unhurried, a girl who has finally stopped running because she has arrived. Around the fire, three A-ranks raise their mugs without a word.' },
+          { s: 'erin', t: 'To five!' },
+          { s: 'sakura', t: 'To fitting!' },
+          { s: 'shiro', t: 'To the only variable I ever enjoyed failing to predict. ...To Yuki.' },
+          { s: 'narr', t: '(Yuki is fully home. The party is five, and the harem, at last, is whole.)' },
+        ] },
+      { t: 'Pull her into the middle of all of them. "Then stop thanking me and start belonging. Order from your floor."', bond: { yuki: 2 },
+        r: [
+          { s: 'yuki', t: '(laughing, crying, wedged happily between Erin\'s shoulder and Sakura\'s hat) An order. Yes. Belonging. I\'m going to be SO good at that.' },
+          { s: 'shiro', t: 'She will, too. She does nothing by halves. It is, I have come to understand, the single most Yuki thing about her.' },
+          { s: 'narr', t: '(Yuki is fully home — reclassified, beloved, and unmistakably one of the girls now.)' },
+        ] },
+    ] },
+    { flag: 'yuki_femme' },
+  ],
+};
+
 // --- Generic camp banter (repeatable pool) ---
 
 export const CAMP_BANTER = [
@@ -870,6 +983,17 @@ E.ending_party = {
     { s: 'narr', t: '— GATEBOUND: cleared. Thank you for playing. (Free play continues — the gates never really close.) —' },
   ],
 };
+E.ending_yuki = {
+  id: 'ending_yuki', where: 'auto', once: true, priority: 100,
+  steps: [
+    { s: 'narr', t: 'The Threshold collapses behind you in a column of dying gold — and out of the light, laughing, ribbon streaming, comes the last person the guild ledgers ever expected on an S-rank clear: Yuki Beaumont, who was D-rank and drowning, and is now simply, radiantly, home.' },
+    { s: 'yuki', t: 'D-Class. That\'s what my license said the day everyone stopped waiting. (she laces her fingers through yours) Look where the door went, {name}. Look who held it open long enough for me to walk through as myself.' },
+    { s: 'narr', t: 'Behind her, three A-ranks are arguing cheerfully about whose turn it is to carry her on their shoulders for the guild procession. It is not really an argument. It\'s a family deciding.' },
+    { s: 'yuki', t: 'I spent my whole life trying to catch up to people who loved me. Turns out I just had to stop running and let them close the distance. All four of them. All four of you.' },
+    { s: 'sys', t: '[ FINAL QUEST COMPLETE. The System releases you. Final note, appended to the record of Yuki Beaumont: some subjects are not leveled. They are welcomed. ]' },
+    { s: 'narr', t: '— GATEBOUND: cleared. Thank you for playing. (Free play continues — the gates never really close.) —' },
+  ],
+};
 
 // ------------------------------------------------------------
 // Helpers
@@ -892,9 +1016,11 @@ export function pickCampEvent(S, rng) {
 
 export function endingFor(S) {
   const b = S.bond;
-  const top = Math.max(b.sakura, b.erin, b.shiro);
+  const cands = ['sakura', 'erin', 'shiro'];
+  if (S.flags && S.flags.yuki_member) cands.push('yuki');
+  const top = Math.max(...cands.map(k => b[k] || 0));
   if (top < 5) return EVENTS.ending_party;
-  const leaders = ['sakura', 'erin', 'shiro'].filter(k => b[k] === top);
+  const leaders = cands.filter(k => (b[k] || 0) === top);
   if (leaders.length > 1) return EVENTS.ending_party;
   return EVENTS['ending_' + leaders[0]];
 }

@@ -400,6 +400,8 @@ textarea { height: 74px; margin-top: 10px; font-size: 0.7rem; resize: none; }
 .gear-slot:hover { border-color: var(--gold); }
 .gear-slot small { color: var(--muted); text-transform: uppercase; letter-spacing: 0.14em; font-size: 0.64rem; }
 .gear-slot span { font-size: 0.78rem; }
+.affix { display: block; color: var(--sys); font-size: 0.72rem; margin-top: 2px; }
+.gear-opt .affix, .shop-row .affix { display: inline-block; margin-top: 0; margin-left: 4px; }
 
 /* ---------- shop ---------- */
 
