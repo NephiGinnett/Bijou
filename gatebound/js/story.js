@@ -757,6 +757,167 @@ E.yuki_fem3 = {
   ],
 };
 
+// ------------------------------------------------------------
+// INTIMACY & THE HAREM — the warm, closer scenes that unlock
+// once bonds are near-maxed. The per-girl "devotion" beats need
+// her bond-10 scene first; the harem thread forms when more than
+// one romance runs hot, and folds Yuki in once she's home.
+// (Sensual but fade-to-black.)
+// ------------------------------------------------------------
+
+E.sakura_devotion = {
+  id: 'sakura_devotion', where: 'camp', once: true, priority: 48,
+  cond: S => S.bond.sakura >= 10 && S.seen.sakura_starfall,
+  steps: [
+    { s: 'narr', t: 'The others have turned in; the fire\'s down to embers. Sakura has been rereading the same page of volume five for ten minutes. Finally she sets it down and looks at you the way she looks at a spell an instant before it lands — certain, precise, unafraid.' },
+    { s: 'sakura', t: 'I kept waiting to be too shy for this. To flinch. (she crosses to your bedroll, leaving the hat behind in the grass) It turns out the scabbard only ever covered one thing, and it wasn\'t fear. It was want. I want you, {name}. I have, since the tea.' },
+    { s: 'narr', t: 'She kisses you slow and deliberate, a girl who has read every romance twice and is finally done reading. Her hands find your collar; the warm ozone-smell of her magic is close, and her breath is not steady at all — and neither, you notice, is yours.' },
+    { choice: [
+      { t: 'Pull her down into the warmth of the bedroll. "Then stop wanting from across the fire."', bond: { sakura: 1 },
+        r: [
+          { s: 'sakura', t: '(a soft, delighted sound against your mouth) Villain timing. You always— mm. Closer. I\'ll not be shy about closer.' },
+          { s: 'narr', t: 'The embers gutter low and neither of you tends them. She stops narrating, stops rehearsing, stops being timid about a single thing — and the last clear thought you keep is that the most dangerous mage of her generation kisses the way she casts: all in, no apology, the sky answering.' },
+          { s: 'narr', t: 'Later, tangled warm and quiet, she traces that little pressed-flower initial onto your chest, over and over, like signing her name to something she means to keep.' },
+        ] },
+      { t: 'Cup her face. "Say it once more — plainly. Let the prodigy ask."', bond: { sakura: 1 },
+        r: [
+          { s: 'sakura', t: '(low, steady, drawn-blade certain) I want you. Tonight, and the nights after it. Keep looking — and stop only looking.' },
+          { s: 'narr', t: 'You don\'t only look. The fire burns to nothing untended, and in the morning Erin finds two watches unstood and, wisely, says not one word about it.' },
+        ] },
+    ] },
+  ],
+};
+
+E.erin_devotion = {
+  id: 'erin_devotion', where: 'camp', once: true, priority: 48,
+  cond: S => S.bond.erin >= 10 && S.seen.erin_chosen,
+  steps: [
+    { s: 'narr', t: 'Second watch — and for once she didn\'t stand when the moon did. She waited for you instead: breastplate off, scarf loose, the firelight doing generous things to a woman who spent her whole life being appraised and never once simply wanted.' },
+    { s: 'erin', t: 'My whole life I stood between people and harm. Nobody ever stood close enough to be the thing I was guarding. (she reaches for you, and her hand isn\'t steady, and she lets you see that it isn\'t) So come inside the wall, {name}. I\'m done keeping you at shield\'s length.' },
+    { s: 'narr', t: 'She kisses like she fights — total commitment, no self-preservation — but slower now, learning the shape of unhurried, laughing low against your jaw when your fingers find the buckle of her gambeson.' },
+    { choice: [
+      { t: 'Pull the scarf the rest of the way loose. "Off duty, knight. That\'s an order you like."', bond: { erin: 1 },
+        r: [
+          { s: 'erin', t: '(that big unarmored laugh, gone breathless) Stars, I DO like it. Order me around, then — somebody finally learned the trick of me—' },
+          { s: 'narr', t: 'And then there are no more orders, only the low fire and the astonishing discovery that the strongest woman in the party will come apart, utterly, for someone who simply asks what she wants and then gives it to her.' },
+          { s: 'narr', t: 'Near dawn she pulls you against her like a shield turned inward and murmurs, half-asleep, that it\'s the first watch she\'s ever wanted to last until morning.' },
+        ] },
+      { t: 'Slow her down. Kiss her once, gently, and just hold her. "No commitment for once. Just this."', bond: { erin: 1 },
+        r: [
+          { s: 'erin', t: '(going very still, then softening all at once) ...Just this. I don\'t know how to just-this. (a shaky breath) Teach me. We\'ve got till morning.' },
+          { s: 'narr', t: 'You teach her slow. She\'s a fast study at everything, it turns out — even at being cherished — and by the time the sky greys she has stopped bracing for the moment it gets taken away.' },
+        ] },
+    ] },
+  ],
+};
+
+E.shiro_devotion = {
+  id: 'shiro_devotion', where: 'camp', once: true, priority: 48,
+  cond: S => S.bond.shiro >= 10 && S.seen.shiro_endgame,
+  steps: [
+    { s: 'narr', t: 'The board is put away. Shiro has poured two cups of tea and drunk neither. When you sit, she does something you have never once seen her do — she runs out of words, lets the silence stand, and reaches for your hand instead of a piece.' },
+    { s: 'shiro', t: 'I have modeled this moment forty ways to keep from being surprised by it. (her thumb moves across your knuckles, unstrategic, undefended) Every model was wrong. I do not want to out-position you tonight. For the first time in my life I want to be read. Completely. By you.' },
+    { s: 'narr', t: 'She kisses you like conceding a game she is overjoyed to lose — careful, then not careful at all, the White Queen\'s composure coming apart one deliberate button at a time because she has decided, with her whole formidable will, to let it.' },
+    { choice: [
+      { t: 'Take her hand off the strategy entirely. "No models tonight. Tell me what you want, out loud."', bond: { shiro: 1 },
+        r: [
+          { s: 'shiro', t: '(barely a whisper, utterly certain) You. Unhidden. All of it. I have spent my life unbeaten and unread, and I am so tired of winning alone—' },
+          { s: 'narr', t: 'The candle burns down between you. She stops calculating. What is under the tactician, it turns out, is simply a woman who waited her entire disciplined life to be undone by exactly one person — and who means to make up the lost time with characteristic thoroughness.' },
+          { s: 'narr', t: 'In the small hours she falls asleep against you mid-sentence: the only time you have ever known Shiro Miyouki to leave a thought unfinished.' },
+        ] },
+      { t: 'Match her, slow and deliberate. "One move at a time. I\'m not going anywhere."', bond: { shiro: 1 },
+        r: [
+          { s: 'shiro', t: 'One move at a time. (the ghost of a smile) You have learned to speak my language. I intend to spend a very long time becoming fluent in yours.' },
+          { s: 'narr', t: 'She leaves the tea cold and the ledger closed. Some nights, she notes privately, are not for accounting. They are simply for keeping.' },
+        ] },
+    ] },
+  ],
+};
+
+// --- The harem forms (needs more than one romance running hot) ---
+
+E.harem_talk = {
+  id: 'harem_talk', where: 'camp', once: true, priority: 49,
+  cond: S => ['sakura', 'erin', 'shiro'].filter(k => S.bond[k] >= 8).length >= 2,
+  steps: [
+    { s: 'narr', t: 'You come back from the tree line to a fire gone strangely quiet — the specific quiet of a conversation that stopped the instant you got close. Three women, not looking at each other, each wearing the same guilty softness.' },
+    { s: 'erin', t: '(too brightly) Nothing! We were discussing — watch rotations!' },
+    { s: 'shiro', t: 'We were not. (setting down the pretense like a bad hand) We were comparing notes. On you. And discovering, to no one\'s statistical surprise but our own, a great deal of overlap.' },
+    { s: 'sakura', t: '(from under her hat, very small) ...I thought it was only me. For the longest time I thought it was only me.' },
+    { s: 'narr', t: 'The truth settles in the firelight between the four of you, enormous and delicate: each of them has fallen, all of them know it now, and nobody — this is the part that stops your breath — nobody looks angry.' },
+    { choice: [
+      { t: '"I won\'t lie to any of you. I couldn\'t choose between you if the gate depended on it."', bond: { sakura: 1, erin: 1, shiro: 1 },
+        r: [
+          { s: 'shiro', t: 'Good. A forced choice is a losing position for everyone at the table, and I did not spend three years escaping one arrangement I never chose to walk into another.' },
+          { s: 'erin', t: '(slowly, testing the shape of it) ...So we don\'t choose. So we all just... stay. And it isn\'t a competition, it\'s a—' },
+          { s: 'sakura', t: 'A party. (a wet, radiant laugh) It\'s a party. We\'re very good at those.' },
+          { s: 'narr', t: 'Nothing is decided tonight. But something eases in all three of them at once, and the fire feels warmer than the wood should allow.' },
+        ] },
+      { t: '"Then talk to each other — not around me. Whatever this becomes, you decide it together."', bond: { shiro: 1, erin: 1 },
+        r: [
+          { s: 'narr', t: 'So they talk. For the first time, honestly, over your head and to each other — three women who armored themselves against the whole world learning they never once had to be armored against each other.' },
+          { s: 'shiro', t: '(much later, to you, dry) You realize you have delegated the most important negotiation of your life to a knight, a shy prodigy, and me. God help you. We will be thorough.' },
+        ] },
+    ] },
+  ],
+};
+
+E.harem_pact = {
+  id: 'harem_pact', where: 'camp', once: true, priority: 50,
+  cond: S => S.seen.harem_talk && ['sakura', 'erin', 'shiro'].every(k => S.bond[k] >= 8),
+  steps: [
+    { s: 'narr', t: 'They ambush you after the clear — all three, arranged with suspicious deliberateness, Shiro plainly appointed to speak because Shiro is hardest to fluster, and even she is faintly pink.' },
+    { s: 'shiro', t: 'We have deliberated. At length. There were charts. Erin insisted on the charts.' },
+    { s: 'erin', t: 'The charts were GOOD—' },
+    { s: 'shiro', t: 'The finding is unanimous, which for the three of us is a small miracle of state. We are not interested in any version of our lives that requires us to give you up — or to give each other up. We would sooner keep all of it. All of us. Openly.' },
+    { s: 'sakura', t: '(stepping forward, braver than you have ever seen her, taking your hand) No hiding. No taking turns pretending it isn\'t what it is. We talked, and we chose, and we choose this. We choose you — and we choose being the kind of family that has room.' },
+    { s: 'narr', t: 'Three women who each spent a lifetime bartered, guarded, or calculated into corners — standing in front of you having freely, loudly, together decided exactly what they want. The weight of it is staggering. The trust in it, more so.' },
+    { choice: [
+      { t: '"Then it\'s decided — all of us, all in, nobody at the edge. Luckiest F-rank who ever lived."', bond: { sakura: 1, erin: 1, shiro: 1 }, flag: 'harem_formed',
+        r: [
+          { s: 'erin', t: '(tackling you into a hug that drags Sakura and, protesting, Shiro along with it) LUCKIEST! He said luckiest! Group verdict: correct!' },
+          { s: 'shiro', t: '(muffled, from somewhere in the pile, with enormous dignity) I would like it on the record that I calculated this outcome at eleven percent and have never been more delighted to be wrong.' },
+          { s: 'sakura', t: 'Eleven percent! (laughing) We beat the odds. We\'re a statistical anomaly. We\'re a FAMILY.' },
+          { s: 'narr', t: 'Whatever the guild ledgers call the four of you after tonight, you will call it what they do privately from now on: home.' },
+        ] },
+      { t: 'Kiss each of them, once, unhurried, in turn. Let the answer be wordless.', bond: { sakura: 2, erin: 2, shiro: 2 }, flag: 'harem_formed',
+        r: [
+          { s: 'narr', t: 'Sakura first — she rises onto her toes, fearless now. Erin next, who laughs into it and then very much doesn\'t. Shiro last, who holds your face in both hands and takes her time, because Shiro takes her time with the things that matter.' },
+          { s: 'shiro', t: '(softly, forehead to yours) Motion carries. Unanimously. Come to bed, {name} — all of us. We have a great deal of lost time to be inefficient about.' },
+          { s: 'narr', t: 'The fire burns low behind you, untended and unmissed. The harem the guild once joked about is, quietly and completely, real.' },
+        ] },
+    ] },
+  ],
+};
+
+E.harem_whole = {
+  id: 'harem_whole', where: 'camp', once: true, priority: 51,
+  cond: S => S.flags.harem_formed && S.flags.yuki_femme && S.bond.yuki >= 6,
+  steps: [
+    { s: 'narr', t: 'Five bedrolls now, drawn into the rough ring they always seem to end up in. Yuki still sits a little apart out of the oldest habit she has — and this time it is Shiro, of all people, who reaches out and tugs her bedroll into the circle by one corner.' },
+    { s: 'shiro', t: 'You are doing the edge thing again. We have a standing policy against the edge thing.' },
+    { s: 'yuki', t: '(startled, then melting) Sorry. Force of habit. Four years of habit. I keep thinking there\'s a version of this that doesn\'t have room for me.' },
+    { s: 'erin', t: 'Yeah, well, there isn\'t. We took a vote. It was unanimous and also I threatened everyone.' },
+    { s: 'sakura', t: '(shyly, but reaching for Yuki\'s hand) We didn\'t open the circle for {name} and then close it again, silly. It just keeps having room. That\'s the whole point of it. Come in.' },
+    { s: 'narr', t: 'Yuki looks at the four of you — knight, mage, queen, and the one who held every door open long enough — and understands, finally, that the harem was never a line she had to earn a place at the end of. It is a fire, and the fire simply makes more room.' },
+    { choice: [
+      { t: '"Five, then. No edges left. Come here, Yuki — you\'re home. All the way home."', bond: { yuki: 2 },
+        r: [
+          { s: 'narr', t: 'She comes in. Of course she does. And the last thing separating Yuki Beaumont from what she\'d wanted since she was too young to name it dissolves like a gate scar sealing — quietly, completely, for good.' },
+          { s: 'yuki', t: '(from the warm tangle of all of them, laughing, crying, home) Five. We\'re five. I\'m one of— I\'m one of US.' },
+          { s: 'shiro', t: 'You are one of us. Ratified. Now stop narrating your own happiness and be inefficient with the rest of us; it is very late, and the watch can mercifully keep itself tonight.' },
+          { s: 'narr', t: 'The fire burns to embers over five people who spent their whole lives being told love was a thing you competed for — and who found instead that the right fire only ever gets warmer the more you crowd around it.' },
+        ] },
+      { t: 'Say nothing. Open your arms — and let all four of them pull her in at once.', bond: { yuki: 2 },
+        r: [
+          { s: 'narr', t: 'It isn\'t a decision so much as a tide. Sakura first, then Erin\'s whole armored enthusiasm, then Shiro\'s deliberate warmth, and you at the center of it — and Yuki folded into the middle, where the edge-dweller never once believed she\'d be allowed to sit.' },
+          { s: 'yuki', t: '(muffled, overwhelmed, radiant) ...Oh. OH. So this is what the middle feels like.' },
+          { s: 'narr', t: 'The harem is whole. Five hearts, one fire, and not a single one of them ever at the edge again.' },
+        ] },
+    ] },
+  ],
+};
+
 // --- Generic camp banter (repeatable pool) ---
 
 export const CAMP_BANTER = [
@@ -994,6 +1155,22 @@ E.ending_yuki = {
     { s: 'narr', t: '— GATEBOUND: cleared. Thank you for playing. (Free play continues — the gates never really close.) —' },
   ],
 };
+E.ending_harem = {
+  id: 'ending_harem', where: 'auto', once: true, priority: 100,
+  steps: [
+    { s: 'narr', t: 'The Threshold collapses behind you in a column of dying gold — and you don\'t walk out of it alone, or beside one person, but wrapped in the whole loud impossible family you built one gate at a time.' },
+    { s: 'erin', t: 'Group verdict on the S-rank!' },
+    { s: 'sakura', t: 'Ten!' },
+    { s: 'shiro', t: 'Ten. I concede the point without a recount — which those of you keeping records will note is unprecedented.' },
+    { s: 'narr', t: 'They fall on you all at once, the way they do now: Erin\'s armored enthusiasm, Sakura\'s fearless softness, Shiro\'s deliberate warmth — everyone who was bartered and guarded and calculated into a corner, and who chose, freely and together, to stop choosing corners at all.' },
+    { s: 'sakura', t: 'The guild is going to talk, you know. About all of us. The Fourth and his—' },
+    { s: 'shiro', t: 'Let them. I have run the numbers on our happiness against our reputation, and the happiness wins by a margin I intend to keep widening for the rest of our lives.' },
+    { s: 'erin', t: 'Home, then? All of us?' },
+    { s: 'narr', t: 'All of you. The gates never really close — and neither, it turns out, does the space around a fire that has decided there will always, always be room.' },
+    { s: 'sys', t: '[ FINAL QUEST COMPLETE. The System releases you. Its final entry is not a number. For the first time in its existence, it simply writes: kept. All of them. Kept. ]' },
+    { s: 'narr', t: '— GATEBOUND: cleared. Thank you for playing. (Free play continues — the gates never really close.) —' },
+  ],
+};
 
 // ------------------------------------------------------------
 // Helpers
@@ -1016,6 +1193,8 @@ export function pickCampEvent(S, rng) {
 
 export function endingFor(S) {
   const b = S.bond;
+  // The harem route, once openly formed, is its own finale.
+  if (S.flags && S.flags.harem_formed) return EVENTS.ending_harem;
   const cands = ['sakura', 'erin', 'shiro'];
   if (S.flags && S.flags.yuki_member) cands.push('yuki');
   const top = Math.max(...cands.map(k => b[k] || 0));

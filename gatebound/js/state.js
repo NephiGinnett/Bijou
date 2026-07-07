@@ -203,14 +203,18 @@ export function rollGates(S) {
   const rng = mulberry32(S.seed ^ (S.day * 2654435761));
   const maxIdx = Math.min(S.rankIdx + 1, RANKS.length - 1);
   const offers = [];
-  const count = 3 + Math.floor(rng() * 2); // 3-4 regular offers
 
-  for (let i = 0; i < count; i++) {
-    // Weight: mostly at/near player rank, one easy one.
-    let rIdx;
-    if (i === 0) rIdx = Math.max(0, S.rankIdx - 1);
-    else if (i === 1) rIdx = S.rankIdx;
-    else rIdx = Math.min(maxIdx, Math.max(0, S.rankIdx + (rng() < 0.5 ? 0 : 1)));
+  // Always offer a spread — two lower "grind" gates, gates at rank, and a stretch —
+  // so higher-rank players can farm easy dungeons for gold/XP without heavy item use.
+  const targets = [
+    Math.max(0, S.rankIdx - 2),
+    Math.max(0, S.rankIdx - 1),
+    S.rankIdx,
+    S.rankIdx,
+    Math.min(maxIdx, S.rankIdx + 1),
+  ];
+
+  targets.forEach((rIdx, i) => {
     const rank = RANKS[rIdx];
 
     const biomes = Object.entries(BIOMES).filter(([, b]) => RANKS.indexOf(b.minRank) <= rIdx);
@@ -231,7 +235,7 @@ export function rollGates(S) {
       rooms: GATE_ROOMS[rank],
       seed: (rng() * 2 ** 31) | 0,
     });
-  }
+  });
 
   if (S.rankIdx === RANKS.length - 1 && !S.cleared) {
     offers.unshift({ ...MONARCH_GATE, rankIdx: 5, seed: (rng() * 2 ** 31) | 0 });
@@ -332,18 +336,21 @@ export function scaleEnemy(defId, gate, depth, isBoss, rng) {
 
 // --- run lifecycle -----------------------------------------------------------
 
-export function startRun(S, gate) {
+export function startRun(S, gate, selectedIds) {
+  ensureYuki(S);
   const party = {};
-  const ids = ['player', 'erin', 'sakura', 'shiro'];
-  if (S.flags.yuki_member) {
-    if (!S.heroes.yuki) {
-      const lvl = Math.max((S.heroes.player?.level || 1) - 2, 10 + S.rankIdx * 4);
-      S.heroes.yuki = { level: lvl, xp: 0, gear: { weapon: null, armor: null, charm: null } };
+  let ids;
+  if (selectedIds && selectedIds.length) {
+    // player-chosen party (for grinding / focused leveling)
+    ids = selectedIds.filter(id => S.heroes[id]);
+    if (!ids.length) ids = ['player'];
+  } else {
+    ids = ['player', 'erin', 'sakura', 'shiro'];
+    if (S.flags.yuki_member) ids.push('yuki');
+    else if (S.flags.yuki_guest && !S.flags.yuki_guest_done) {
+      S.heroes.yuki = S.heroes.yuki || { level: 6 + S.rankIdx * 3, xp: 0, gear: { weapon: null, armor: null, charm: null } };
+      ids.push('yuki');
     }
-    ids.push('yuki');
-  } else if (S.flags.yuki_guest && !S.flags.yuki_guest_done) {
-    S.heroes.yuki = S.heroes.yuki || { level: 6 + S.rankIdx * 3, xp: 0, gear: { weapon: null, armor: null, charm: null } };
-    ids.push('yuki');
   }
   for (const id of ids) {
     const st = heroStats(S, id);
@@ -366,7 +373,11 @@ export function endRun(S, outcome) {
   const goldMod = gate.modifier === 'gilded' ? 1.6 : 1;
 
   result.gold = Math.round(run.loot.gold * goldMod);
-  result.xp = Math.round(run.loot.xp * xpMod);
+  // Smaller parties concentrate XP onto each member — grind specific heroes.
+  const xpEarners = run.partyIds.filter(id => id !== 'yuki' || S.flags.yuki_member).length;
+  const smallPartyBonus = 1 + Math.max(0, 4 - xpEarners) * 0.35;
+  result.xp = Math.round(run.loot.xp * xpMod * smallPartyBonus);
+  result.partySize = xpEarners;
 
   if (outcome === 'clear') {
     result.gp = Math.round(GATE_GP[gate.rank] * (gate.modifier === 'unstable' ? 1.5 : 1)) + (run.loot.gpBonus || 0);

@@ -374,20 +374,81 @@ function map() {
         <h2>⌖ Active Gates — Day ${S.day}</h2>
         <button class="btn ghost" id="m-back">← Guild</button>
       </div>
-      <p class="muted">Gates shift daily. The guild permits your party gates up to one rank above your license (${RANKS[S.rankIdx]}).</p>
+      <p class="muted">Gates shift daily — lower-rank gates are always on offer to farm for gold and XP. The guild permits gates up to one rank above your license (${RANKS[S.rankIdx]}).</p>
       <div class="gate-grid">${cards}</div>
     </div>
   `);
   $('#m-back').onclick = () => guild();
   document.querySelectorAll('.enter-gate').forEach(b => b.onclick = () => {
     const gate = S.gates[Number(b.dataset.i)];
-    AU.sfx('gate');
-    ST.startRun(S, gate);
-    ST.save(S);
-    stage.setBiome(gate.biome);
-    AU.music('dungeon');
-    dungeonScreen();
+    AU.sfx('ui');
+    // A pending guest run (Yuki's "one gate together") auto-fills the party.
+    const guestPending = S.flags.yuki_guest && !S.flags.yuki_guest_done && !S.flags.yuki_member;
+    if (guestPending) beginRun(gate);
+    else partySelect(gate);
   });
+}
+
+function beginRun(gate, selectedIds) {
+  AU.sfx('gate');
+  ST.startRun(S, gate, selectedIds);
+  ST.save(S);
+  stage.setBiome(gate.biome);
+  AU.music('dungeon');
+  dungeonScreen();
+}
+
+function partySelect(gate) {
+  ST.ensureYuki(S);
+  ensureYukiPortrait();
+  const all = ST.roster(S);
+  const chosen = new Set(all);
+  const modal = el(`<div class="modal-layer"><div class="panel modal party-pick">
+    <h3>Assemble your party — ${rankBadge(gate.rank)} ${esc(gate.name)}</h3>
+    <p class="muted sm-text">Tap to include or bench a member. A smaller party earns <b>bonus XP each</b> — send a focused team to grind specific heroes.</p>
+    <div class="pick-grid">
+      ${all.map(id => `
+        <button class="pick-card on" data-id="${id}">
+          ${portraitImg(id)}
+          <b style="color:${SPEAKERS[id].color}">${id === 'player' ? esc(S.name) : HEROES[id].name}</b>
+          <span class="muted">Lv ${S.heroes[id].level}</span>
+        </button>`).join('')}
+    </div>
+    <div class="pick-foot">
+      <span id="pick-info" class="muted"></span>
+      <div class="row gap">
+        <button class="btn primary" id="pick-go">Enter Gate</button>
+        <button class="btn ghost" id="pick-cancel">Cancel</button>
+      </div>
+    </div>
+  </div></div>`);
+  document.body.appendChild(modal);
+
+  const info = modal.querySelector('#pick-info');
+  const go = modal.querySelector('#pick-go');
+  const refresh = () => {
+    const n = chosen.size;
+    const bonus = Math.round(Math.max(0, 4 - n) * 35);
+    info.innerHTML = !n ? 'Select at least one member.'
+      : bonus ? `${n} in party · <b class="gold">+${bonus}% XP each</b>`
+      : `${n} in party · standard XP`;
+    go.classList.toggle('disabled', n === 0);
+  };
+  refresh();
+
+  modal.querySelectorAll('.pick-card').forEach(c => c.onclick = () => {
+    const id = c.dataset.id;
+    if (chosen.has(id)) chosen.delete(id); else chosen.add(id);
+    c.classList.toggle('on', chosen.has(id));
+    AU.sfx('ui');
+    refresh();
+  });
+  modal.querySelector('#pick-cancel').onclick = () => { AU.sfx('ui'); modal.remove(); };
+  go.onclick = () => {
+    if (!chosen.size) return;
+    modal.remove();
+    beginRun(gate, [...chosen]);
+  };
 }
 
 // ------------------------------------------------------------------
@@ -766,6 +827,7 @@ async function results(result) {
         <div><small>Gold</small><b>+${result.gold}</b></div>
         <div><small>Guild points</small><b>+${result.gp}</b></div>
       </div>
+      ${result.partySize && result.partySize < 4 ? `<div class="muted sm-text">Focused party of ${result.partySize} — small-party XP bonus applied.</div>` : ''}
       ${gearHtml}${itemsHtml}
       <div class="ups">${upHtml}</div>
       <button class="btn primary" id="r-continue">Continue</button>
