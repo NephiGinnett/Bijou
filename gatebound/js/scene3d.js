@@ -265,13 +265,13 @@ export class Stage {
     await Promise.all([...this.actors.values()].map(a => a.ready));
   }
 
-  async showcase(ids) {
+  async showcase(ids, variantOf) {
     this.clearActors();
     this.setBiome(null);
     const n = ids.length;
     ids.forEach((id, i) => {
       const off = i - (n - 1) / 2;
-      this.addActor('sc_' + id, id, null, { x: off * 2.1, z: Math.abs(off) * 0.4, face: 0 });
+      this.addActor('sc_' + id, id, variantOf ? variantOf(id) : null, { x: off * 2.1, z: Math.abs(off) * 0.4, face: 0 });
     });
     this.camBase.set(0, 2.2, 6.4);
     this.camTarget.set(0, 1.0, 0);

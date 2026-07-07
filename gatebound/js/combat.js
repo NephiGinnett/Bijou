@@ -102,9 +102,17 @@ export class Combat {
     if (this.outcome) return { events: ev, needCommand: null, outcome: this.outcome };
 
     if (this.awaiting && command) {
-      this.resolveAction(this.awaiting, command, ev);
-      this.awaiting = null;
+      const actor = this.awaiting;
+      const sk = command.kind === 'skill' ? SKILLS[command.id] : null;
+      const isFree = !!(sk && sk.freeAction && !actor.freeUsed);
+      this.resolveAction(actor, command, ev);
       if (this.checkEnd(ev)) return { events: ev, needCommand: null, outcome: this.outcome };
+      if (isFree && actor.hp > 0) {
+        // free action (Limit Break): same unit acts again without ending its turn
+        actor.freeUsed = true;
+        return { events: ev, needCommand: actor, outcome: null };
+      }
+      this.awaiting = null;
     } else if (this.awaiting) {
       return { events: ev, needCommand: this.awaiting, outcome: null };
     }
@@ -175,6 +183,7 @@ export class Combat {
 
   turnUpkeep(u, ev) {
     u.guarding = false;
+    u.freeUsed = false; // reset per-turn free action (Limit Break)
     for (const k of Object.keys(u.cds)) if (u.cds[k] > 0) u.cds[k]--;
 
     // dots & hots
@@ -486,7 +495,7 @@ export class Combat {
   commandOptions(u) {
     const skills = u.skills.map(id => {
       const sk = SKILLS[id];
-      return { id, name: sk.name, mp: sk.mp || 0, desc: sk.desc || '', target: sk.target, usable: (sk.mp || 0) <= u.mp && !(sk.cooldown && u.cds[id] > 0), cd: sk.cooldown ? (u.cds[id] || 0) : 0, type: sk.type };
+      return { id, name: sk.name, mp: sk.mp || 0, desc: sk.desc || '', target: sk.target, usable: (sk.mp || 0) <= u.mp && !(sk.cooldown && u.cds[id] > 0) && !(sk.freeAction && u.freeUsed), cd: sk.cooldown ? (u.cds[id] || 0) : 0, type: sk.type, free: !!sk.freeAction };
     });
     const items = Object.entries(this.S.inventory)
       .filter(([, n]) => n > 0)

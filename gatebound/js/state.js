@@ -41,7 +41,7 @@ export function newGame(playerName) {
     stats: { clears: 0, kills: 0, retreats: 0, wipes: 0 },
     cleared: false,
     ngPlus: 0,                       // Recursion depth cleared post-Monarch
-    settings: { volume: 0.6, music: true, textFast: false },
+    settings: { volume: 0.6, music: true, textFast: false, spice: 'gentle', outfit: 'adventure' },
   };
   for (const id of ['player', 'erin', 'sakura', 'shiro']) {
     S.heroes[id] = {
@@ -65,6 +65,10 @@ function ensureShape(S) {
   if (S.bond && !('yuki' in S.bond)) S.bond.yuki = 0;
   if (S.ngPlus == null) S.ngPlus = 0;
   if (!S.flags) S.flags = {};
+  if (S.settings) {
+    if (!S.settings.spice) S.settings.spice = 'gentle';
+    if (!S.settings.outfit) S.settings.outfit = 'adventure';
+  }
   return S;
 }
 export function load() {

@@ -73,6 +73,14 @@ function affixChip(g) {
   const a = g && g.affix ? AFFIXES[g.affix] : null;
   return a ? `<span class="affix" title="${esc(a.desc)}">◆ ${esc(a.desc)}</span>` : '';
 }
+// Outfit variant token for a hero, from the attire setting (+ Yuki's reclassification).
+function heroVariant(id) {
+  const outfit = (S && S.settings && S.settings.outfit) || 'adventure';
+  const femme = id === 'yuki' && S && S.flags && S.flags.yuki_femme;
+  if (outfit === 'formal') return femme ? 'fem_formal' : 'formal';
+  return femme ? 'fem' : null;
+}
+
 // Yuki's portrait switches to the reclassified render once his arc completes.
 async function ensureYukiPortrait() {
   if (S && S.flags && S.flags.yuki_femme && PORTRAITS.__yukiFem !== true) {
@@ -113,6 +121,8 @@ export function playEvent(ev) {
     const showStep = async () => {
       while (idx < steps.length) {
         const st = steps[idx];
+        // intimacy variant lines: show only the tier matching the player's setting
+        if (st.spice && st.spice !== (S.settings.spice || 'gentle')) { idx++; continue; }
         if (st.flag) { S.flags[st.flag] = true; idx++; continue; }
         if (st.give) {
           if (st.give.gold) { S.gold += st.give.gold; toast(`+${st.give.gold} gold`, 'gold'); }
@@ -198,7 +208,7 @@ export function playEvent(ev) {
 async function title(hasSave) {
   AU.music('title');
   stage.battleCamera();
-  stage.showcase(['erin', 'player', 'sakura', 'shiro']);
+  stage.showcase(['erin', 'player', 'sakura', 'shiro'], heroVariant);
   stage.camBase.set(0, 2.1, 6.8);
 
   screen(`
@@ -280,7 +290,7 @@ async function guild() {
   ST.ensureYuki(S);
   ensureYukiPortrait();
   stage.battleCamera();
-  stage.showcase(S.flags.yuki_member ? ['erin', 'sakura', 'shiro', 'yuki'] : ['erin', 'sakura', 'shiro']);
+  stage.showcase(S.flags.yuki_member ? ['erin', 'sakura', 'shiro', 'yuki'] : ['erin', 'sakura', 'shiro'], heroVariant);
   stage.camBase.set(0, 2.0, 6.2);
 
   // queued auto events (promotions etc.)
@@ -291,6 +301,16 @@ async function guild() {
   if (S.cleared && !S.seen.__ending) {
     S.seen.__ending = true;
     await playEvent(endingFor(S));
+  }
+  // Wedding epilogue — once cleared and a romance is sealed (harem, or any maxed bond).
+  if (S.cleared && !S.seen.wedding) {
+    const married = S.flags.harem_formed || ['sakura', 'erin', 'shiro', 'yuki'].some(k => (S.bond[k] || 0) >= 10);
+    if (married) {
+      S.seen.wedding = true;
+      // dress the whole party up for the ceremony
+      stage.showcase(ST.roster(S), id => (id === 'yuki' && S.flags.yuki_femme) ? 'fem_formal' : 'formal');
+      await playEvent(EVENTS.wedding);
+    }
   }
   ST.save(S);
 
@@ -738,7 +758,7 @@ function promptCommand(u, c) {
     const mainMenu = () => {
       const skillBtns = opts.skills.map(sk =>
         `<button class="btn skill ${sk.usable ? '' : 'disabled'}" data-id="${sk.id}" title="${esc(sk.desc)}">
-          ${esc(sk.name)}${sk.mp ? `<small>${sk.mp} MP</small>` : '<small>—</small>'}${sk.cd ? `<small class="danger">CD ${sk.cd}</small>` : ''}
+          ${esc(sk.name)}${sk.mp ? `<small>${sk.mp} MP</small>` : '<small>—</small>'}${sk.cd ? `<small class="danger">CD ${sk.cd}</small>` : ''}${sk.free ? '<small class="free-tag">FREE</small>' : ''}
         </button>`).join('');
       area.innerHTML = `
         <div class="cmd-title" style="color:${SPEAKERS[u.uid]?.color || '#fff'}">${esc(u.name)}'s turn <small class="muted">MP ${u.mp}/${u.maxMp}</small></div>
@@ -785,7 +805,7 @@ function promptCommand(u, c) {
 async function results(result) {
   AU.music('guild');
   stage.battleCamera();
-  stage.showcase(S.flags.yuki_member ? ['erin', 'player', 'sakura', 'shiro', 'yuki'] : ['erin', 'player', 'sakura', 'shiro']);
+  stage.showcase(S.flags.yuki_member ? ['erin', 'player', 'sakura', 'shiro', 'yuki'] : ['erin', 'player', 'sakura', 'shiro'], heroVariant);
   stage.camBase.set(0, 2.1, 6.8);
 
   const titles = { clear: 'GATE CLEARED', retreat: 'WITHDREW FROM THE GATE', wipe: 'THE GATE SPAT YOU OUT' };
@@ -995,12 +1015,21 @@ function shop() {
 // ------------------------------------------------------------------
 
 function settingsModal(back) {
-  const s = S ? S.settings : { volume: 0.6, music: true, textFast: false };
+  const s = S ? S.settings : { volume: 0.6, music: true, textFast: false, spice: 'gentle', outfit: 'adventure' };
+  const startOutfit = s.outfit;
   const modal = el(`<div class="modal-layer"><div class="panel modal">
     <h3>⚙ Settings</h3>
     <label class="set-row">Volume <input type="range" id="set-vol" min="0" max="1" step="0.05" value="${s.volume}"></label>
     <label class="set-row">Music <input type="checkbox" id="set-music" ${s.music ? 'checked' : ''}></label>
     <label class="set-row">Instant text <input type="checkbox" id="set-fast" ${s.textFast ? 'checked' : ''}></label>
+    <label class="set-row">Intimacy <select id="set-spice">
+      <option value="gentle" ${s.spice === 'gentle' ? 'selected' : ''}>Gentle</option>
+      <option value="steamy" ${s.spice === 'steamy' ? 'selected' : ''}>Steamy</option>
+    </select></label>
+    <label class="set-row">Party attire <select id="set-outfit">
+      <option value="adventure" ${s.outfit === 'adventure' ? 'selected' : ''}>Adventuring</option>
+      <option value="formal" ${s.outfit === 'formal' ? 'selected' : ''}>Formal</option>
+    </select></label>
     ${S ? `
     <div class="row gap">
       <button class="btn sm" id="set-export">Export save</button>
@@ -1015,12 +1044,16 @@ function settingsModal(back) {
     s.volume = Number(modal.querySelector('#set-vol').value);
     s.music = modal.querySelector('#set-music').checked;
     s.textFast = modal.querySelector('#set-fast').checked;
+    s.spice = modal.querySelector('#set-spice').value;
+    s.outfit = modal.querySelector('#set-outfit').value;
     AU.applySettings(s);
     if (S) { S.settings = s; ST.save(S); }
   };
   modal.querySelector('#set-vol').oninput = apply;
   modal.querySelector('#set-music').onchange = apply;
   modal.querySelector('#set-fast').onchange = apply;
+  modal.querySelector('#set-spice').onchange = apply;
+  modal.querySelector('#set-outfit').onchange = apply;
   if (S) {
     modal.querySelector('#set-export').onclick = () => { modal.querySelector('#save-blob').value = ST.exportSave(S); toast('Save code generated — copy it somewhere safe.'); };
     modal.querySelector('#set-import').onclick = () => {
@@ -1033,5 +1066,10 @@ function settingsModal(back) {
       if (confirm('Delete the save? This cannot be undone.')) { ST.wipeSave(); S = null; modal.remove(); title(false); }
     };
   }
-  modal.querySelector('#set-close').onclick = () => { apply(); modal.remove(); if (back && !S) back(); };
+  modal.querySelector('#set-close').onclick = () => {
+    apply();
+    modal.remove();
+    // re-render so an attire change is reflected in the 3D showcase
+    if (back && (!S || s.outfit !== startOutfit)) back();
+  };
 }

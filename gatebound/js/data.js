@@ -155,7 +155,7 @@ export const SKILLS = {
   twin_fangs:    { name: 'Twin Fangs', type: 'phys', power: 0.7, hits: 2, mp: 6, target: 'enemy', anim: 'melee', desc: 'Two lightning-fast slashes.' },
   shadow_rush:   { name: 'Shadow Rush', type: 'phys', power: 1.35, mp: 10, target: 'enemy', anim: 'dash', apply: { to: 'target', id: 'agi_down', turns: 2, chance: 0.9 }, desc: 'Blur through a foe, cutting tendons. Slows the target.' },
   execute:       { name: 'Executioner', type: 'phys', power: 1.4, mp: 12, target: 'enemy', anim: 'melee', execBelow: 0.35, execPower: 2.6, desc: 'Finish the wounded. Massive damage below 35% HP.' },
-  limit_break:   { name: 'Limit Break', type: 'support', mp: 14, target: 'self', anim: 'buff', apply: { to: 'target', id: 'atk_up_big', turns: 3 }, desc: 'The System removes your limits. +50% ATK, +20% AGI for 3 turns.' },
+  limit_break:   { name: 'Limit Break', type: 'support', mp: 14, target: 'self', anim: 'buff', freeAction: true, apply: { to: 'target', id: 'atk_up_big', turns: 3 }, desc: 'The System removes your limits. +50% ATK, +20% AGI for 3 turns. Free action — doesn\'t use your turn (once per turn).' },
   monarchs_edge: { name: "Monarch's Edge", type: 'phys', power: 1.15, mp: 26, target: 'all_enemies', anim: 'dash', desc: 'A single step, a dozen cuts. Hits every enemy.' },
   phantom_step:  { name: 'Phantom Step', type: 'phys', power: 0.62, hits: 3, mp: 18, target: 'enemy', anim: 'dash', apply: { to: 'self', id: 'haste', turns: 2 }, desc: 'Three cuts between heartbeats. Grants Haste.' },
   system_purge:  { name: 'System Purge', type: 'phys', power: 2.2, mp: 24, target: 'enemy', anim: 'melee', apply: { to: 'target', id: 'vulnerable', turns: 2 }, desc: 'Flag a target for deletion — it takes +25% damage.' },
