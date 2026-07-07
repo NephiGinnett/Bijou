@@ -29,7 +29,8 @@ body {
   user-select: none;
 }
 
-#c3d { position: fixed; inset: 0; width: 100%; height: 100%; display: block; }
+#c3d { position: fixed; inset: 0; width: 100%; height: 100%; display: block; touch-action: none; cursor: grab; }
+#c3d:active { cursor: grabbing; }
 #fx-overlay { position: fixed; inset: 0; pointer-events: none; z-index: 30; overflow: hidden; }
 
 #ui {
@@ -308,6 +309,22 @@ textarea { height: 74px; margin-top: 10px; font-size: 0.7rem; resize: none; }
 .cmd-list .btn { display: flex; flex-direction: column; align-items: flex-start; padding: 7px 12px; font-size: 0.88rem; gap: 1px; }
 .cmd-list .btn small { color: var(--mp); font-size: 0.68rem; }
 
+/* ---------- camera controls (battle) ---------- */
+
+.cam-ctrl {
+  position: absolute; right: 10px; top: 46%; transform: translateY(-50%);
+  display: flex; flex-direction: column; gap: 6px; z-index: 12;
+}
+.cam-btn {
+  width: 40px; height: 40px; padding: 0; border-radius: 50%;
+  font-size: 1.05rem; line-height: 1; color: var(--text);
+  background: rgba(13, 21, 38, 0.72); border: 1px solid var(--border-dim);
+  cursor: pointer; display: flex; align-items: center; justify-content: center;
+  backdrop-filter: blur(4px); transition: all 0.15s;
+}
+.cam-btn:hover { border-color: var(--sys); color: #fff; box-shadow: 0 0 12px rgba(84, 216, 255, 0.35); }
+.cam-btn:active { transform: scale(0.92); }
+
 /* ---------- damage numbers ---------- */
 
 .dmg-num {
@@ -413,8 +430,18 @@ textarea { height: 74px; margin-top: 10px; font-size: 0.7rem; resize: none; }
 ::-webkit-scrollbar-track { background: transparent; }
 
 @media (max-width: 760px) {
-  .battle-bottom { flex-direction: column; align-items: stretch; }
+  .battle-bottom { flex-direction: column; align-items: stretch; gap: 6px; }
   .party-row, .foe-row { max-width: 100%; }
   .cmd-area { max-width: 100%; }
   .panel { padding: 14px; }
+
+  /* battle: shrink + see-through so the 3D fighters show behind the HUD */
+  #ui.battle { padding: 8px; }
+  #ui.battle .panel { background: rgba(10, 15, 26, 0.6); }
+  .battle .log { min-width: 0; }
+  .battle .party-row, .battle .foe-row { justify-content: center; gap: 6px; }
+  .battle .ucard { min-width: 94px; font-size: 0.74rem; padding: 5px 8px; }
+  .battle .cmd-area { min-height: 90px; padding: 10px 12px; }
+  .cam-ctrl { top: 82px; right: 8px; transform: none; }
+  .cam-btn { width: 36px; height: 36px; font-size: 0.98rem; }
 }

@@ -529,12 +529,26 @@ function renderBattleHud(c, gateName, roomLabel) {
       <div class="panel slim"><b>${esc(gateName)}</b> · ${roomLabel} · <span id="round-label">round ${c.round || 1}</span></div>
       <div class="panel slim log" id="b-log"></div>
     </div>
+    <div class="cam-ctrl" aria-label="camera controls">
+      <button class="cam-btn" id="cam-left" title="Rotate left">⟲</button>
+      <button class="cam-btn" id="cam-right" title="Rotate right">⟳</button>
+      <button class="cam-btn" id="cam-in" title="Zoom in">＋</button>
+      <button class="cam-btn" id="cam-out" title="Zoom out">－</button>
+      <button class="cam-btn" id="cam-reset" title="Reset view">⊙</button>
+    </div>
     <div class="battle-bottom">
       <div class="party-row" id="party-row">${party.map(u => unitCard(u, 'party')).join('')}</div>
       <div class="cmd-area panel" id="cmd-area"><div class="muted center-text">…</div></div>
       <div class="foe-row" id="foe-row">${foes.map(u => unitCard(u, 'enemy')).join('')}</div>
     </div>
   `, 'battle');
+
+  const camBind = (id, fn) => { const b = $('#' + id); if (b) b.onclick = () => { AU.sfx('ui'); fn(); }; };
+  camBind('cam-left', () => stage.nudgeYaw(-0.35));
+  camBind('cam-right', () => stage.nudgeYaw(0.35));
+  camBind('cam-in', () => stage.nudgeZoom(0.85));
+  camBind('cam-out', () => stage.nudgeZoom(1.18));
+  camBind('cam-reset', () => stage.resetView());
 }
 
 function refreshCards(c) {

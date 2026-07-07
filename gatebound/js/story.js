@@ -473,6 +473,177 @@ E.shiro_checkmate = {
   ],
 };
 
+// ------------------------------------------------------------
+// SECOND-TIER BONDS (8 / 10) — the late-game romance payoff.
+// Unlock as bonds climb through C→S rank; each continues the
+// arc set by the bond-6 scene and caps the route at 10.
+// ------------------------------------------------------------
+
+// --- Sakura ---
+
+E.sakura_volume5 = {
+  id: 'sakura_volume5', where: 'camp', once: true, priority: 43,
+  cond: S => S.bond.sakura >= 8 && S.seen.sakura_courage,
+  steps: [
+    { s: 'narr', t: 'She\'s been scribbling by firelight for three camps running, tongue between her teeth, shielding the page from Erin with her whole body. Tonight she slides the notebook to you instead.' },
+    { s: 'sakura', t: 'Volume five. The one about someone better than the Blackguard. I need a second opinion. From the source. Don\'t read the margins.' },
+    { s: 'narr', t: 'You read the margins. The hero refills tea. Reads clauses aloud to save fools from bad contracts. Stands, always, exactly where the danger is about to land.' },
+    { s: 'sakura', t: '...It\'s not subtle, is it. I tried to make it subtle. I have a prodigy\'s memory and a coward\'s pen.' },
+    { choice: [
+      { t: '"He\'s better than the Blackguard because someone dangerous chose to be gentle. Write that."', bond: { sakura: 2 },
+        r: [
+          { s: 'narr', t: 'Her pen stops. She looks at you the way she looks at a spell resolving perfectly — total, delighted comprehension.' },
+          { s: 'sakura', t: 'Someone dangerous, choosing to be gentle. (writing fast now) That\'s both of us, actually. That\'s the whole book.' },
+          { s: 'sakura', t: 'The duchess draws her own blade in chapter one this time. She was always going to. She just needed someone to keep looking while she did.' },
+        ] },
+      { t: '"Read me your favorite line. Out loud. Villain timing."', bond: { sakura: 1 },
+        r: [
+          { s: 'narr', t: 'She stands. Squares her shoulders. And for one breath the timid prodigy is gone, and the thing the monsters see is reading you her own words in a voice like drawn steel.' },
+          { s: 'sakura', t: '"You mistook my quiet for a locked door," she read. "It was only ever a held breath." (she sits down hard) ...I have to go stand in the river. Keep the notebook. Don\'t show Erin the margins.' },
+        ] },
+    ] },
+  ],
+};
+
+E.sakura_starfall = {
+  id: 'sakura_starfall', where: 'camp', once: true, priority: 44,
+  cond: S => S.bond.sakura >= 10 && S.seen.sakura_volume5 && S.rankIdx >= 3,
+  steps: [
+    { s: 'narr', t: 'The gate today went to the edge — a cornered horror, the ceiling gone, Erin down a knee. And Sakura walked forward into it, calm as a closing book, and unmade the thing with a single word.' },
+    { s: 'narr', t: 'Now, at the fire, the shaking has finally reached her hands. You sit close enough to still them.' },
+    { s: 'sakura', t: 'I used to rehearse being brave. Whole novels of it. Tonight I didn\'t rehearse. I just knew you\'d be behind me, and I stepped, and the fear never came.' },
+    { s: 'sakura', t: 'That\'s not a scabbard anymore, is it. That\'s just a girl who stopped being afraid, because one person kept looking.' },
+    { choice: [
+      { t: '"I\'m not behind you, Sakura. I\'m beside you. Draw the blade — I\'ll be in the light with you."', bond: { sakura: 2 },
+        r: [
+          { s: 'narr', t: 'She kisses you before the sentence is finished, hat knocked to the dirt, every ounce of the prodigy\'s precision abandoned for something far less careful.' },
+          { s: 'sakura', t: '(breathless, forehead to yours) Co-author. Life edition. The margins get to be the whole book now.' },
+          { s: 'narr', t: 'Across the fire Shiro turns a page she is not reading and says, dryly, "Finally. The arithmetic on that had grown embarrassing."' },
+        ] },
+      { t: 'Pick up her hat. Set it back on her head. "Then let\'s go be dangerous and gentle. Together."', bond: { sakura: 1 },
+        r: [
+          { s: 'sakura', t: '(from under the brim, glowing) ...You did the villain timing again. On purpose. You know what it does to me.' },
+          { s: 'narr', t: 'She doesn\'t go stand in the river tonight. She stays exactly where she is — which, for Sakura, is the loudest thing she has ever said.' },
+        ] },
+    ] },
+  ],
+};
+
+// --- Erin ---
+
+E.erin_unarmored = {
+  id: 'erin_unarmored', where: 'camp', once: true, priority: 43,
+  cond: S => S.bond.erin >= 8 && S.seen.erin_dance,
+  steps: [
+    { s: 'narr', t: 'You find her before dawn without the armor on — just the gambeson, sitting on the ridge, watching the dark where the next gate will open. She doesn\'t startle. She saved you a spot.' },
+    { s: 'erin', t: 'I signed the Beaumont betrothal for Sakura. Told you that. What I didn\'t tell you: I signed it in about four seconds. Didn\'t think. Somebody threatens my soft thing, I put my body there. It\'s the only prayer I know.' },
+    { s: 'erin', t: 'But four seconds isn\'t choosing, is it. That\'s just being a wall really fast. And I am so tired of being fast instead of sure.' },
+    { choice: [
+      { t: '"So be slow with me. Take the four seconds back and spend them on purpose."', bond: { erin: 2 },
+        r: [
+          { s: 'narr', t: 'She turns the words over like a coin she\'s never been allowed to keep.' },
+          { s: 'erin', t: 'Slow. On purpose. (a long breath) Okay. Watch me be sure about something for once in my armored life.' },
+          { s: 'erin', t: 'I don\'t stand between you and the world because I\'m fast. I stand there because it\'s the only place I\'ve ever wanted to be. That took me all night to say and I\'d say it again slower.' },
+        ] },
+      { t: 'Sit. Say nothing. Put your shoulder against hers and watch the dark with her.', bond: { erin: 1 },
+        r: [
+          { s: 'narr', t: 'The knight who takes every second watch lets someone share this one. She leans, a fraction, and the fraction is enormous.' },
+          { s: 'erin', t: '...You know the worst part of being a wall? Nobody ever sits on your side of it. (quietly) Thanks for finding the door.' },
+        ] },
+    ] },
+  ],
+};
+
+E.erin_chosen = {
+  id: 'erin_chosen', where: 'camp', once: true, priority: 44,
+  cond: S => S.bond.erin >= 10 && S.seen.erin_unarmored && S.rankIdx >= 3,
+  steps: [
+    { s: 'narr', t: 'A letter from her mother reached the guild today — same letter, different nouns, a new family buying. Erin read it once, at the assignment board, in front of the whole hall. Then she did something you\'ve never seen her do. She laughed.' },
+    { s: 'erin', t: 'Listen to this. "You are wasting your best years and your bloodline on a party of debtors and a nameless fourth." (grinning) She spelled it out for me. My best years. My bloodline. My party. My fourth.' },
+    { s: 'erin', t: 'She meant it as the bill. I\'m reading it as the inventory. And every single line, I want to keep.' },
+    { s: 'narr', t: 'She sets the letter on the board, unfolds it flat so anyone can read it, and turns to you in the middle of the crowded hall.' },
+    { choice: [
+      { t: '"Then keep it. Loudly. You said that was the only way you knew how."', bond: { erin: 2 },
+        r: [
+          { s: 'narr', t: 'She kisses you in front of the notice board, the guildmaster, and forty adventurers who will absolutely be talking about it for a week. Total commitment. Zero self-preservation. Exactly how she fights.' },
+          { s: 'erin', t: '(pulling back, radiant, far too loud) THAT\'S the answer to the letter! Somebody write my mother! Tell her the horse picked its own field!' },
+          { s: 'narr', t: 'Sakura is scarlet. Shiro is calmly collecting winnings. Somewhere a recruiter faints on general principle.' },
+        ] },
+      { t: 'Take the letter. Fold it into a paper boat. Hand it back. "Sail it. Don\'t carry it."', bond: { erin: 1 },
+        r: [
+          { s: 'narr', t: 'She stares at the little boat. Then at you. Then she laughs so hard she has to sit down on the floor of the guild hall.' },
+          { s: 'erin', t: 'A BOAT. Years of dread and you made it a — (wiping her eyes) I\'m keeping this forever. I\'m keeping YOU forever. Loudly. That\'s decided. Guild\'s my witness.' },
+        ] },
+    ] },
+  ],
+};
+
+// --- Shiro ---
+
+E.shiro_maskless = {
+  id: 'shiro_maskless', where: 'camp', once: true, priority: 43,
+  cond: S => S.bond.shiro >= 8 && S.seen.shiro_checkmate,
+  steps: [
+    { s: 'narr', t: 'She mends the party every gate and no one asks what it costs her. Tonight you catch the aftermath: Shiro alone behind the tents, hands trembling, her composure set down beside her like a heavy coat.' },
+    { s: 'shiro', t: '(not turning) Grand Design marks the weakest enemy. It also, if you are the one casting, marks the weakest ally — constantly — so you may keep them breathing. Do you understand what it is to see everyone\'s exact distance from death, all day, and never your own?' },
+    { s: 'shiro', t: 'I am unreadable because reading is exhausting and I never get to stop. You are the one variable I have permitted myself to leave uncalculated. Do not make me regret the exemption.' },
+    { choice: [
+      { t: 'Sit at her back, a wall between her and the camp. "Off duty. I\'ll watch the distances tonight. Sleep."', bond: { shiro: 2 },
+        r: [
+          { s: 'narr', t: 'For a long time she says nothing. Then, by degrees, the straightest spine in the party curves — just slightly — until her shoulder finds yours and stays.' },
+          { s: 'shiro', t: 'You cannot actually see the distances. You have no System readout for it.' },
+          { s: 'player', t: 'No. But I can see one. Yours. It sits closer than you let anyone stand.' },
+          { s: 'shiro', t: '(very quietly) ...Keep the watch, then. I appear to have gone off duty.' },
+        ] },
+      { t: '"Then stop calculating me and just tell me. What do you see when you don\'t?"', bond: { shiro: 1 },
+        r: [
+          { s: 'shiro', t: 'When I stop? (a rare, unguarded pause) I see the first position on the board I have never wanted to win. Only to hold. Indefinitely. It is a deeply inefficient desire and I have made my peace with it.' },
+          { s: 'narr', t: 'She retrieves the composure and puts it back on. But she leaves one button undone, so to speak — a deliberate flaw in the armor, shown to exactly one person.' },
+        ] },
+    ] },
+  ],
+};
+
+E.shiro_endgame = {
+  id: 'shiro_endgame', where: 'camp', once: true, priority: 44,
+  cond: S => S.bond.shiro >= 10 && S.seen.shiro_maskless && S.rankIdx >= 3,
+  steps: [
+    { s: 'narr', t: 'She sets the folding board down without asking. But the pieces aren\'t in starting position — they\'re arranged mid-game, a real one, clearly carried in her head for weeks.' },
+    { s: 'shiro', t: 'Status report, since you outlawed my hiding. Gate income has serviced two-thirds of the Miyouki debt. Article twelve — exactly as you read it back to me over a candle. At current clear rate, the house is solvent and unpledged before the Threshold.' },
+    { s: 'shiro', t: 'Which raises a question I have never once had the luxury of asking. What does a piece do, {name}, when it reaches the last rank and is no longer required to be anything?' },
+    { s: 'narr', t: 'She turns the White Queen over in her fingers. Waiting. She already knows the answer she wants; she is, for the first time, letting someone else move first.' },
+    { choice: [
+      { t: '"It becomes anything. You taught me that, move one. So become whatever you actually want — out loud."', bond: { shiro: 2 },
+        r: [
+          { s: 'shiro', t: 'Out loud. (she sets the queen down — not fallen; standing, beside the king) Plainly, then, and once: when the debt is gone and the board is mine, I intend to spend the freedom I bought on you. That is the position. I have modeled no other I prefer.' },
+          { s: 'narr', t: 'Her composure holds for exactly four seconds. On the fifth, the White Queen of the Miyouki house reaches across the board and takes your hand instead of a piece — a move with no strategic value whatsoever, made anyway.' },
+          { s: 'shiro', t: 'We will speak of my phrasing constantly. I find I no longer mind being read. By you. The exemption is now permanent.' },
+        ] },
+      { t: 'Move a single pawn to the last rank. "Your move, White Queen. Not the house\'s. Yours."', bond: { shiro: 1 },
+        r: [
+          { s: 'narr', t: 'She studies the pawn on the last rank for a long, long moment — the only rule of the game that ever mattered — and then does something no opponent has made her do in forty-two games. She resigns, smiling.' },
+          { s: 'shiro', t: 'I concede the board. I have wanted to lose exactly one game my entire life, and it appears this was it. Set them up again tomorrow. We will have a great many tomorrows to fill.' },
+        ] },
+    ] },
+  ],
+};
+
+// --- Yuki: B-rank letter, bridging the guest/refusal beat and the A-rank reckoning ---
+
+E.yuki_letter_3 = {
+  id: 'yuki_letter_3', where: 'guild', once: true, priority: 50,
+  cond: S => S.rankIdx >= 3 && S.seen.yuki_joins,
+  steps: [
+    { s: 'narr', t: 'The letter is on good paper for once, and the handwriting has stopped pressing so hard into the page.' },
+    { s: 'yuki', t: '"I made C-rank. Then B, eight days later — turns out once you stop trying to be carried, the door is a lot lighter. I run gates with a party of my own now. Strays, mostly. I\'m the one who reads the contracts for them."' },
+    { s: 'shiro', t: '(reading over Erin\'s shoulder) ...He learned clause nine. Someone taught the lamb to read clause nine.' },
+    { s: 'erin', t: 'WE taught him! By example! From a great distance! Badly!' },
+    { s: 'sakura', t: 'He sounds happy. Actually happy, not letter-happy. There\'s a difference, and I think this is the real one.' },
+    { s: 'narr', t: 'At the bottom, a postscript in a lighter hand: "Tell your fourth I finally understand why you kept him. Some people make the whole party better just by refusing to leave. — Y."' },
+    { s: 'shiro', t: '(folding the letter with unusual care) He\'s coming to find us at A. You understand that. This is the letter a man writes just before he sets something down for good.' },
+  ],
+};
+
 // --- Generic camp banter (repeatable pool) ---
 
 export const CAMP_BANTER = [
@@ -540,6 +711,38 @@ export const CAMP_BANTER = [
       ] },
     ],
   },
+  {
+    steps: [
+      { s: 'erin', t: 'New rule: whoever spots the boss weak point first gets Sakura\'s dessert ration.' },
+      { s: 'sakura', t: 'I did NOT agree to wager my dessert—' },
+      { s: 'shiro', t: 'Seconded. Motion carries. You were outvoted while objecting; democracy is cruel.' },
+      { choice: [
+        { t: '"Already spotted tomorrow\'s. It kneels left when it\'s hurt."', bond: { shiro: 1 }, r: [ { s: 'shiro', t: '(a slow, approving blink) ...You read the ash-goblin\'s sketch. And retained it. Sakura, forfeit the dessert; the man did the homework.' }, { s: 'sakura', t: '(mournfully surrendering a wrapped tart) ...worth it. Barely.' } ] },
+        { t: '"Give Sakura her tart back. Winner buys dessert instead."', bond: { sakura: 1, erin: 1 }, r: [ { s: 'erin', t: 'A party that buys MORE dessert? Motion carries UNANIMOUSLY. Shiro, you\'re outvoted while agreeing.' } ] },
+      ] },
+    ],
+  },
+  {
+    steps: [
+      { s: 'shiro', t: 'The recruit\'s growth curve remains statistically offensive. I have started a second ledger purely to be angry in.' },
+      { s: 'erin', t: 'She named it. It\'s called "HOW." I\'ve seen it. It\'s just the word HOW, forty times, getting angrier each line.' },
+      { choice: [
+        { t: '"Put it in the ledger, Shiro: I level faster when you\'re all watching."', bond: { shiro: 1 }, r: [ { s: 'shiro', t: '(pen pausing) ...Performance-linked growth. Witness-dependent. That is either a lie or the single most important sentence you have ever said, and I cannot yet tell which. Sit. This is now an interrogation.' } ] },
+        { t: '"Keep the second ledger. I like being someone\'s favorite problem."', bond: { shiro: 1 }, r: [ { s: 'erin', t: 'FAVORITE problem?! Shiro, is he your favorite problem? Her ears did a thing. Sakura, back me up, her ears did a THING—' }, { s: 'shiro', t: 'My ears did no thing. This meeting is adjourned.' } ] },
+      ] },
+    ],
+  },
+  {
+    steps: [
+      { s: 'sakura', t: '(holding up two nearly identical vials) Which glows nicer — the mana-touched dew, or the boss-blood iridescence? For the flower press. It\'s important.' },
+      { s: 'erin', t: 'Those are the same color.' },
+      { s: 'sakura', t: 'They are ABSOLUTELY not the same color and I will not have this argument again—' },
+      { choice: [
+        { t: '"The dew. It glows like your Starfall right before it lands."', bond: { sakura: 1 }, r: [ { s: 'sakura', t: '(pockets the dew instantly, decision made, ears pink) ...That\'s — yes. Correct. Objectively. For scientific reasons that are definitely scientific.' } ] },
+        { t: '"Make it a set. Press one of each with tonight\'s date."', bond: { sakura: 1 }, r: [ { s: 'narr', t: 'She presses both, and the date, and — when she thinks you aren\'t looking — a tiny fourth initial in the corner. Yours.' } ] },
+      ] },
+    ],
+  },
 ];
 
 // ------------------------------------------------------------
@@ -587,6 +790,26 @@ export const DUNGEON_EVENTS = [
     choices: [
       { t: 'Eat the skewer', effect: { hpPct: 0.25 }, log: 'Delicious. Concerning, but delicious. The old goblin nods the way all cooks nod when the verdict lands.' },
       { t: 'Trade it a potion for gate gossip', effect: { item: '-potion', xp: 0.6 }, log: 'It sketches the boss chamber in ash: numbers, entrances, a weak left knee. Shiro copies everything.' },
+    ] },
+  { t: 'A treasure chest sits in the exact center of an otherwise empty room, lid slightly ajar, breathing. It is definitely breathing.',
+    choices: [
+      { t: 'Strike first, loot second', effect: { gold: 1.1, xp: 0.4 }, log: 'It WAS a mimic. It is now a very surprised puddle and a pile of honest coin.' },
+      { t: 'Slide a potion across the floor as tribute', effect: { item: '-potion', gp: 12 }, log: 'The lid clicks shut, content. It coughs up a guild seal from some earlier, less generous adventurer. The office pays finder\'s credit.' },
+    ] },
+  { t: 'Words are scratched into the wall in a dozen different hands, each a different party: HOW FAR HAVE YOU COME. Beneath them, blank stone waits for yours.',
+    choices: [
+      { t: 'Carve your rank and the date', effect: { xp: 0.6, gp: 5 }, log: 'The System hums as you carve. Somewhere, it is keeping this record too. The next party will measure themselves against you.' },
+      { t: 'Carve the girls\' names instead of your own', effect: { hpPct: 0.15, xp: 0.3 }, log: 'Three names, no rank. The wall seems to approve. So, quietly, does the party walking behind you.' },
+    ] },
+  { t: 'A noble diver\'s corpse, weeks gone, clutches a jeweled charm pulsing with borrowed mana. Shiro identifies it at a glance: powerful, and very much still cursed.',
+    choices: [
+      { t: 'Take it — Shiro can cleanse it topside', effect: { gold: 1.4, hpPct: -0.1 }, log: 'The curse bites once on the way out, then sulks. Shiro pockets it for the workbench. "Mine to disarm. Do not touch the red rune."' },
+      { t: 'Leave it; let Sakura say a passing rite', effect: { mpPct: 0.25, gp: 8 }, log: 'Sakura says the words. The mana settles like a sigh. The party walks lighter, and the guild credits the recovery.' },
+    ] },
+  { t: 'A hot spring bubbles improbably in the gate\'s heart, steam curling with faint restorative mana. Erin is already unbuckling her boots.',
+    choices: [
+      { t: 'Ten minutes. Everyone actually rests.', effect: { hpPct: 0.3, mpPct: 0.2 }, log: 'Ten stolen minutes of warmth. Erin hums. Shiro pretends to keep watch and falls asleep sitting up. It is the safest you have all felt in weeks.' },
+      { t: 'Fill the canteens and push on', effect: { mpPct: 0.15, gp: 5 }, log: 'Mana-rich water for the road. The System notes your discipline; the party notes your cruelty, loudly, for the record.' },
     ] },
 ];
 

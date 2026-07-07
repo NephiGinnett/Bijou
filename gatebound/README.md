@@ -14,9 +14,14 @@ requests — three.js is vendored and every model/sound is generated in code.
 
 ## Run it
 
+**Windows:** double-click `start-game.bat` — it starts the server and opens
+your browser. To stop, close the black window.
+
+Or from a terminal:
+
 ```bash
 cd gatebound
-python3 -m http.server 8000
+python -m http.server 8000    # use "python" on Windows, "python3" on Mac/Linux
 # open http://localhost:8000
 ```
 

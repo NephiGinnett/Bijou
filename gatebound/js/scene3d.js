@@ -24,6 +24,18 @@ export class Stage {
     this.camera.position.copy(this.camBase);
     this.shake = 0;
 
+    // --- camera framing + player-controlled orbit ---
+    this.baseFov = 42;         // design vertical FOV (widened on narrow screens)
+    this.viewHalfW = 5.6;      // horizontal half-extent we always keep in frame
+    this.fitZoom = 1;          // auto pull-back so the sides fit on tall screens
+    this.aimBiasY = 0;         // vertical pan so actors clear the bottom HUD on mobile
+    this.userYaw = 0;          // drag / button orbit around the target
+    this.userPitch = 0;
+    this.userZoom = 1;         // pinch / wheel / button zoom
+    this.orbitEnabled = false;
+    this._scratch = new THREE.Vector3();
+    this._look = new THREE.Vector3();
+
     this.hemi = new THREE.HemisphereLight(0x8fa3c8, 0x1a1c26, 1.05);
     this.scene.add(this.hemi);
     this.key = new THREE.DirectionalLight(0xffe8c8, 1.4);
@@ -53,6 +65,7 @@ export class Stage {
 
     this.resize();
     addEventListener('resize', () => this.resize());
+    this._initOrbitInput();
   }
 
   resize() {
@@ -61,6 +74,55 @@ export class Stage {
     this.renderer.setSize(w, h, false);
     this.camera.aspect = w / h;
     this.camera.updateProjectionMatrix();
+  }
+
+  // ---------- camera orbit / zoom input ----------
+
+  _zoomMul(f) { this.userZoom = Math.max(0.55, Math.min(1.7, this.userZoom * f)); }
+  // public — called by the on-screen battle buttons
+  nudgeYaw(d) { this.orbitEnabled = true; this.userYaw += d; }
+  nudgeZoom(f) { this.orbitEnabled = true; this._zoomMul(f); }
+  resetView() { this.userYaw = 0; this.userPitch = 0; this.userZoom = 1; }
+
+  _initOrbitInput() {
+    const c = this.canvas;
+    if (!c) return;
+    c.style.touchAction = 'none';
+    const pts = new Map();
+    let lx = 0, ly = 0, pinch = 0;
+    const spread = () => { const v = [...pts.values()]; return Math.hypot(v[0].x - v[1].x, v[0].y - v[1].y); };
+    c.addEventListener('pointerdown', e => {
+      if (!this.orbitEnabled) return;
+      pts.set(e.pointerId, { x: e.clientX, y: e.clientY });
+      try { c.setPointerCapture(e.pointerId); } catch { /* ignore */ }
+      if (pts.size === 1) { lx = e.clientX; ly = e.clientY; }
+      else if (pts.size === 2) pinch = spread();
+    });
+    c.addEventListener('pointermove', e => {
+      if (!pts.has(e.pointerId)) return;
+      pts.set(e.pointerId, { x: e.clientX, y: e.clientY });
+      if (pts.size === 1) {
+        this.userYaw += (e.clientX - lx) * 0.006;
+        this.userPitch = Math.max(-0.5, Math.min(0.85, this.userPitch - (e.clientY - ly) * 0.005));
+        lx = e.clientX; ly = e.clientY;
+      } else if (pts.size >= 2) {
+        const d = spread();
+        if (pinch > 0 && d > 0) this._zoomMul(pinch / d);
+        pinch = d;
+      }
+    });
+    const release = e => {
+      pts.delete(e.pointerId);
+      if (pts.size < 2) pinch = 0;
+      if (pts.size === 1) { const p = [...pts.values()][0]; lx = p.x; ly = p.y; }
+    };
+    c.addEventListener('pointerup', release);
+    c.addEventListener('pointercancel', release);
+    c.addEventListener('wheel', e => {
+      if (!this.orbitEnabled) return;
+      e.preventDefault();
+      this._zoomMul(e.deltaY > 0 ? 1.1 : 0.9);
+    }, { passive: false });
   }
 
   start() {
@@ -213,12 +275,18 @@ export class Stage {
     });
     this.camBase.set(0, 2.2, 6.4);
     this.camTarget.set(0, 1.0, 0);
+    this.viewHalfW = 3.9;
+    this.resetView();
+    this.orbitEnabled = true;
     await Promise.all([...this.actors.values()].map(a => a.ready));
   }
 
   battleCamera() {
     this.camBase.set(0, 5.0, 10.4);
     this.camTarget.set(0, 1.0, 0);
+    this.viewHalfW = 5.6;
+    this.resetView();
+    this.orbitEnabled = true;
   }
 
   // ---------- per-frame ----------
@@ -256,15 +324,35 @@ export class Stage {
     if (scar) scar.material.opacity = 0.25 + Math.sin(this.t * 1.7) * 0.12;
     // flash decay
     this.flash.intensity = Math.max(0, this.flash.intensity - dt * 90);
-    // camera drift + shake
+    // camera: framing fit + player orbit + idle drift + shake
     this.shake = Math.max(0, this.shake - dt * 3.2);
-    const sx = (Math.random() - 0.5) * this.shake, sy = (Math.random() - 0.5) * this.shake;
+    const shx = (Math.random() - 0.5) * this.shake, shy = (Math.random() - 0.5) * this.shake;
+    const off = this._scratch.subVectors(this.camBase, this.camTarget);
+    const baseDist = off.length() || 1;
+    const aspect = this.camera.aspect || 1;
+    // widen the FOV so the party + enemies fit side-to-side on narrow screens
+    const needTanV = (this.viewHalfW / baseDist) / Math.max(0.2, aspect);
+    let fov = Math.max(this.baseFov, Math.min(80, 2 * Math.atan(needTanV) * 180 / Math.PI));
+    if (Math.abs(fov - this.camera.fov) > 0.05) { this.camera.fov = fov; this.camera.updateProjectionMatrix(); }
+    const tanV = Math.tan(fov * Math.PI / 360);
+    const coverHalfW = baseDist * tanV * aspect;
+    this.fitZoom = coverHalfW >= this.viewHalfW ? 1 : this.viewHalfW / coverHalfW;
+    const dist = baseDist * this.fitZoom * this.userZoom;
+    // orbit around the target: design angle + player input
+    const yaw = Math.atan2(off.x, off.z) + this.userYaw;
+    const pitch = Math.max(0.03, Math.min(1.15, Math.asin(Math.max(-1, Math.min(1, off.y / baseDist))) + this.userPitch));
+    // on tall screens, pan the whole view down so actors ride up above the HUD
+    const portrait = Math.max(0, Math.min(0.6, 1 - aspect));
+    this.aimBiasY = -portrait * 0.55 * dist * tanV;
+    const cx = this.camTarget.x, cy = this.camTarget.y + this.aimBiasY, cz = this.camTarget.z;
+    const cp = Math.cos(pitch), sp = Math.sin(pitch);
     this.camera.position.set(
-      this.camBase.x + Math.sin(this.t * 0.12) * 0.4 + sx,
-      this.camBase.y + Math.sin(this.t * 0.09) * 0.15 + sy,
-      this.camBase.z
+      cx + Math.sin(yaw) * cp * dist + Math.sin(this.t * 0.12) * 0.25 + shx,
+      cy + sp * dist + Math.sin(this.t * 0.09) * 0.12 + shy,
+      cz + Math.cos(yaw) * cp * dist
     );
-    this.camera.lookAt(this.camTarget);
+    this._look.set(cx, cy, cz);
+    this.camera.lookAt(this._look);
     // impact bursts
     for (let i = this.bursts.length - 1; i >= 0; i--) {
       const b = this.bursts[i];
