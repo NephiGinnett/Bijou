@@ -411,6 +411,11 @@ export class Combat {
       const ls = Math.round(dmg * u.load.lifesteal);
       if (ls > 0) { u.hp = Math.min(u.maxHp, u.hp + ls); ev.push({ t: 'heal', uid: u.uid, amount: ls, hpAfter: u.hp }); }
     }
+    // skill lifedrain (e.g. enemy Life Drain)
+    if (sk.drain && dmg > 0 && u.hp > 0) {
+      const h = Math.round(dmg * sk.drain);
+      if (h > 0) { u.hp = Math.min(u.maxHp, u.hp + h); ev.push({ t: 'heal', uid: u.uid, amount: h, hpAfter: u.hp }); }
+    }
     // affix: thorns reflect when the wearer is struck in melee (Thorned)
     if (tgt.load && tgt.load.thorns > 0 && sk.type === 'phys' && dmg > 0 && u.hp > 0) {
       const refl = Math.max(1, Math.round(dmg * tgt.load.thorns));
