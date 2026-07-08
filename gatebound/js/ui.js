@@ -6,7 +6,7 @@ import { RANKS, RANK_STYLE, HEROES, SKILLS, STATUSES, ITEMS, BIOMES, GATE_MODIFI
 import * as ST from './state.js';
 import { Combat } from './combat.js';
 import { Stage, makePortrait } from './scene3d.js';
-import { EVENTS, SPEAKERS, DUNGEON_EVENTS, pickGuildEvent, pickCampEvent, endingFor } from './story.js';
+import { EVENTS, SPEAKERS, DUNGEON_EVENTS, pickGuildEvent, pickCampEvent, endingFor, weddingFor } from './story.js';
 import * as AU from './audio.js';
 
 let S = null;
@@ -309,7 +309,7 @@ async function guild() {
       S.seen.wedding = true;
       // dress the whole party up for the ceremony
       stage.showcase(ST.roster(S), id => (id === 'yuki' && S.flags.yuki_femme) ? 'fem_formal' : 'formal');
-      await playEvent(EVENTS.wedding);
+      await playEvent(weddingFor(S));
     }
   }
   ST.save(S);

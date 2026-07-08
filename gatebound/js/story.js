@@ -1251,18 +1251,72 @@ E.ending_harem = {
 // (harem, or any single bond at max). Fires from the guild.
 // ------------------------------------------------------------
 
-E.wedding = {
-  id: 'wedding', where: 'auto', once: true, priority: 95,
+E.wedding_sakura = {
+  id: 'wedding_sakura', where: 'auto', once: true, priority: 95,
+  steps: [
+    { s: 'narr', t: 'The gates are closed, the Monarch is a story children will get wrong for centuries, and the Adventurers\' Guild — which has survived three continents\' worth of horrors — is this morning entirely undone by the fact that Sakura pressed every single flower in the hall herself.' },
+    { s: 'narr', t: 'She comes up the aisle without her hat, pink hair wild and crowned in blossoms, and she does not flinch and does not make herself small. Every eye in the packed hall is on her, and for the first time in her life the most dangerous mage of her generation simply lets them look.' },
+    { s: 'sakura', t: '(reaching you, steady, drawn-blade certain) I rehearsed being brave for this in about forty novels. Then I stopped rehearsing. (a breath) I wrote us a better ending than any of them, {name}. Volume five. It only ever needed a co-author who\'d keep looking.' },
+    { s: 'guild', t: '(Guildmaster Hale, misty, pretending not to be) Nine years stamping licenses and never once had cause to stamp one of these. Leave it to the Fourth.' },
+    { s: 'sys', t: '[ The System has no protocol for weddings. It observes the timid F-rank recruit who once could not meet its gaze now stand at the front of a crowded hall — unafraid, chosen, choosing. Outcome: unquantifiable. Acceptable. ]' },
+    { s: 'narr', t: 'Erin ugly-cries through the whole ceremony. Shiro reads the vows aloud in a voice that does not once waver, which is exactly how everyone knows what it costs her. And Sakura says hers from the back cover of "The Blackguard\'s Bride, Vol. IV," and it is perfect.' },
+    { s: 'narr', t: 'Then the kiss, soft as a held breath finally let go, and the roar of the guild, and a rain of iridescent petals she saved from a hundred boss chambers just for this. The door was never locked. She simply chose, at last, to walk through it toward you.', spice: 'gentle' },
+    { s: 'narr', t: 'Then the kiss — the drawn blade, all of it, deep enough that the front row cheers and the back row wolf-whistles and Sakura, scarlet and delighted, does not pull back one second sooner than she means to. There is a wedding night after, and the guild will speculate forever, and she will only ever smile about it from under a hat brim. The door was never locked. She kicked it open.', spice: 'steamy' },
+    { s: 'narr', t: '♥  GATEBOUND — and the prodigy and her fourth lived, gate after gate, happily.  ♥' },
+  ],
+};
+E.wedding_erin = {
+  id: 'wedding_erin', where: 'auto', once: true, priority: 95,
+  steps: [
+    { s: 'narr', t: 'The gates are closed, the Monarch is a story children will get wrong for centuries, and the Adventurers\' Guild is packed to the rafters because word got out that Erin Sterling is getting married in a GOWN, and half the continent refused to miss it.' },
+    { s: 'narr', t: 'She comes up the aisle with no armor anywhere on her — just the blue-and-gold dress she chose herself, no chaperone gritting teeth at the price of her — and she is laughing before she reaches you, that big unarmored laugh nobody in that childhood ballroom ever got to hear.' },
+    { s: 'erin', t: 'My whole life somebody else decided what I was for. (she takes your hands, fierce and bright) You just kept asking what I wanted. So here\'s me, loudest I have ever been, deciding in front of the guild and the gods and my mother\'s worst nightmare of a guest list: you. I pick you. On purpose. Forever.' },
+    { s: 'guild', t: '(Guildmaster Hale, gruff and wet-eyed) Somebody fetch the paperwork. And somebody fetch the paladin\'s mother a chair — she\'s gone the color of a retreat flare.' },
+    { s: 'sys', t: '[ The System has no protocol for weddings. It observes the wall that spent a life standing between people and harm finally step out from in front of the door — and choose, for once, to walk through it. Outcome: the strongest stat on record was never DEF. ]' },
+    { s: 'narr', t: 'Her vows dissolve into happy nonsense halfway through and nobody minds. Sakura cannot stop crying. Shiro, maid of honor under loud protest, produces exactly the right number of handkerchiefs — because Shiro plans for everything, including this.' },
+    { s: 'narr', t: 'Then the kiss, and the roar, and Erin sweeping you into a dance right there at the altar — no music, no chaperone, no armor anywhere in it. Total commitment, zero self-preservation, exactly how she loves.', spice: 'gentle' },
+    { s: 'narr', t: 'Then the kiss — the kind she throws her whole armored heart into, dipping you in front of forty cheering adventurers until the wolf-whistles drown the officiant out. There is a wedding night, and the walls of the guild inn are not thick, and Erin Sterling has never once in her life done anything quietly. The party is still going at dawn; so, reportedly, are the newlyweds.', spice: 'steamy' },
+    { s: 'narr', t: '♥  GATEBOUND — and the knight and her fourth lived, gate after gate, happily.  ♥' },
+  ],
+};
+E.wedding_shiro = {
+  id: 'wedding_shiro', where: 'auto', once: true, priority: 95,
+  steps: [
+    { s: 'narr', t: 'The gates are closed, the Monarch is a story children will get wrong for centuries, and in the Adventurers\' Guild — decorated with a precision that could only be Miyouki — Shiro stands at the altar in white and gold: unpledged, unpriced, and for the first time in her life spending her own time exactly as she chooses.' },
+    { s: 'shiro', t: 'Final tally. (her voice does not waver; only you are close enough to see her hands) One syndicate outmaneuvered. One house debt cleared, article twelve as designed. One betrothal dissolved without casualties. One S-rank gate closed. And one read — mine, day one, "convenient, disposable, F" — corrected, permanently, in front of witnesses, by marrying it.' },
+    { s: 'guild', t: '(Guildmaster Hale, misty, pretending not to be) I have costed a great many weddings. Never one where the bride audited my flower budget first — and then approved it out of her own pocket.' },
+    { s: 'sys', t: '[ The System has no protocol for weddings. It observes the mind that has never once been outplayed choose, deliberately and with full information, to be kept. It notes: she calculated this at eleven percent. It notes: she appears, at present, one hundred percent content. ]' },
+    { s: 'narr', t: 'Her vows are four precise sentences. They make the entire hall weep. She sets the folding board on the signing table beside the register — obsidian and bone, the white king still on its side from game forty-one — and she does not reset it, because some games you leave exactly where they mattered.' },
+    { s: 'narr', t: 'Then the kiss: unhurried, deliberate, the way she does everything that matters — a woman conceding the one game she is overjoyed, at last, to have lost.', spice: 'gentle' },
+    { s: 'narr', t: 'Then the kiss — and the White Queen of the Miyouki house, who has never surrendered a position in her life, gives up every one of them at once in front of the entire guild: thorough, unhurried, utterly undone, until even Erin has the grace to look away and cheer. There is a wedding night. She has, she informs you, modeled it extensively, and intends to discard every model. She does.', spice: 'steamy' },
+    { s: 'narr', t: '♥  GATEBOUND — and the queen and her fourth lived, gate after gate, happily.  ♥' },
+  ],
+};
+E.wedding_yuki = {
+  id: 'wedding_yuki', where: 'auto', once: true, priority: 95,
+  steps: [
+    { s: 'narr', t: 'The gates are closed, the Monarch is a story children will get wrong for centuries, and in the packed Adventurers\' Guild the last person the ledgers ever expected at the front of a wedding stands there in white and green, ribbon in her long hair — radiant, unhurried, home.' },
+    { s: 'yuki', t: '(taking your hands, steady, no flinch left anywhere in her) D-rank. That\'s what my license said the day everyone stopped waiting for me. I spent four years and forty gates learning how to hear a no. (her eyes shine) It took walking through your door to learn what a yes feels like. This is mine — the biggest one I have. Yes. Forever. Out loud, where everyone can hear it.' },
+    { s: 'guild', t: '(Guildmaster Hale, openly weeping now, past pretending) I stamped that D-Class license myself, kid. Never in my life been so glad to be so wrong about a ceiling.' },
+    { s: 'sys', t: '[ The System has no protocol for weddings, and less for this one. Final appended note to the record of Yuki Beaumont: some subjects are not leveled, and not carried, and not caught up to. Some are simply, at long last, welcomed all the way in. ]' },
+    { s: 'narr', t: 'Erin cries and denies it. Sakura pressed the flowers. Shiro, who audited a syndicate to free herself, quietly saw to it that the name on the register was written exactly the way Yuki wanted it written. And Yuki says only one word for her vow — "home" — and cannot manage another, and does not need to.' },
+    { s: 'narr', t: 'Then the kiss, soft and certain and years in the making, and the roar of a guild that watched a lamb become a woman become a wife, all under its own roof, all in the span of a single impossible season.', spice: 'gentle' },
+    { s: 'narr', t: 'Then the kiss — the fierce, delighted thoroughness she brings to everything about her new life, held long enough that the front row cheers and the back row wolf-whistles and she laughs into it without an ounce of the old flinch. There is a wedding night, and the edge-dweller spends it dead center, exactly where she always belonged. She does not, for once, narrate her own happiness. She is far too busy living in the middle of it.', spice: 'steamy' },
+    { s: 'narr', t: '♥  GATEBOUND — and the girl who walked through her own door, and her fourth, lived, gate after gate, happily.  ♥' },
+  ],
+};
+E.wedding_harem = {
+  id: 'wedding_harem', where: 'auto', once: true, priority: 95,
   steps: [
     { s: 'narr', t: 'The gates are closed. The Monarch is a story children will get wrong for centuries. And the Adventurers\' Guild — which has seen three continents\' worth of horrors walk through its doors — is, this morning, entirely undone by flowers.' },
-    { s: 'guild', t: '(misty, and pretending not to be) Never officiated a wedding in the hall before. Never had cause. Leave it to the Fourth to make me learn a new form of paperwork on my way out the door.' },
-    { s: 'narr', t: 'Erin has been crying since dawn and denying it since dawn. Sakura pressed every flower herself. Shiro costed the whole affair and then, scandalously, sent no one the bill. And you stand at the front of it in borrowed finery, waiting for the person — or, as it turned out, the people — who chose to keep pace beside you.' },
+    { s: 'guild', t: '(misty, and pretending not to be) Never officiated a wedding in the hall before. Never had cause. Leave it to the Fourth to make me learn a whole new form of paperwork on my way out the door.' },
+    { s: 'narr', t: 'Erin has been crying since dawn and denying it since dawn. Sakura pressed every flower herself. Shiro costed the whole affair and then, scandalously, sent no one the bill. And you stand at the front of it in borrowed finery, waiting for the people who each chose to keep pace beside you — and beside each other.' },
     { s: 'narr', t: 'However many rings the guild jeweller had to size — and she has Opinions about the number, every one of which she has voiced — they fit. Every last one of them fits.' },
-    { s: 'sys', t: '[ The System has no protocol for this. It observes anyway. It has decided, after long consideration, that this is the highest-value outcome it ever failed to predict. ]' },
-    { s: 'narr', t: 'Vows are exchanged. Some are eloquent. Erin\'s dissolves into happy nonsense halfway through and nobody minds. Shiro\'s is four precise sentences that make the entire hall weep. Sakura reads hers from the back of a battered novel, and it is perfect — and Yuki, if she is standing with you, simply says "home," once, and cannot manage another word, and does not need to.' },
-    { s: 'narr', t: 'Then the kiss — or the kisses — and the roar of the guild, and rice flung by adventurers who have flung far worse. The doors bang open on the first day of the rest of a life that nobody at that assessment table, a lifetime ago, would ever have dared to score.', spice: 'gentle' },
-    { s: 'narr', t: 'Then the kiss — or the kisses — held long enough to make the front row cheer and the back row wolf-whistle, and carrying in them the unmistakable promise of a wedding night the guild will gossip about for a decade and none of you will ever once confirm. Rice, and roaring, and the doors banging open on the first day of the rest of a life nobody, a lifetime ago, would have dared to score.', spice: 'steamy' },
-    { s: 'narr', t: 'And somewhere far off, a letter arrives: four bottles of Beaumont\'s finest and a card that reads only, "I always knew the door led somewhere good. Congratulations, all of you. — Y." (Unless, of course, Yuki is the one holding your hand at the altar — in which case she sent no card at all, because for the first time in her life the words had nowhere else they needed to go.)' },
+    { s: 'sys', t: '[ The System has no protocol for this. It observes anyway, and decides, after long consideration, that this is the highest-value outcome it ever failed to predict. ]' },
+    { s: 'narr', t: 'Vows are exchanged. Erin\'s dissolves into happy nonsense and nobody minds. Shiro\'s is four precise sentences that make the entire hall weep. Sakura reads hers from the back of a battered novel, and it is perfect — and Yuki, if she stands among you, simply says "home," once, and cannot manage another word, and does not need to.' },
+    { s: 'narr', t: 'Then the kisses, and the roar of the guild, and rice flung by adventurers who have flung far worse. The doors bang open on the first day of the rest of a life nobody at that assessment table, a lifetime ago, would ever have dared to score.', spice: 'gentle' },
+    { s: 'narr', t: 'Then the kisses — each held long enough to make the front row cheer and the back row wolf-whistle, and carrying the unmistakable promise of a wedding night the guild will gossip about for a decade and none of you will ever once confirm. Rice, and roaring, and the doors banging open on the rest of a gloriously crowded life.', spice: 'steamy' },
+    { s: 'narr', t: 'And somewhere far off, a letter arrives: bottles of Beaumont\'s finest and a card that reads only, "I always knew the door led somewhere good. Congratulations, all of you. — Y." (Unless Yuki is among those holding your hands at the altar — in which case she sent no card, because for the first time in her life the words had nowhere else they needed to go.)' },
     { s: 'narr', t: '♥  GATEBOUND — and they lived, gate after gate, happily.  ♥' },
   ],
 };
@@ -1297,4 +1351,15 @@ export function endingFor(S) {
   const leaders = cands.filter(k => (b[k] || 0) === top);
   if (leaders.length > 1) return EVENTS.ending_party;
   return EVENTS['ending_' + leaders[0]];
+}
+
+// Which wedding to play: the harem, or the single maxed romance.
+export function weddingFor(S) {
+  if (S.flags && S.flags.harem_formed) return EVENTS.wedding_harem;
+  const b = S.bond;
+  const cands = ['sakura', 'erin', 'shiro'];
+  if (S.flags && S.flags.yuki_member) cands.push('yuki');
+  const top = Math.max(...cands.map(k => b[k] || 0));
+  const leaders = cands.filter(k => (b[k] || 0) === top && top >= 10);
+  return leaders.length === 1 ? EVENTS['wedding_' + leaders[0]] : EVENTS.wedding_harem;
 }
