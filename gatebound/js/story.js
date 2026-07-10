@@ -21,6 +21,10 @@ export const SPEAKERS = {
   guild:  { name: 'Guildmaster Hale', color: '#d8a869' },
   crier:  { name: 'Guild Crier', color: '#b0a890' },
   scout:  { name: 'Rat-Faced Recruiter', color: '#9a8f7a' },
+  mira:   { name: 'Mira',  color: '#c86a4a' },
+  nessa:  { name: 'Nessa', color: '#8fce7a' },
+  vex:    { name: 'Vex',   color: '#b08cff' },
+  seris:  { name: 'Seris', color: '#8a6ad8' },
 };
 
 const E = {};
@@ -1318,6 +1322,271 @@ E.wedding_harem = {
     { s: 'narr', t: 'Then the kisses — each held long enough to make the front row cheer and the back row wolf-whistle, and carrying the unmistakable promise of a wedding night the guild will gossip about for a decade and none of you will ever once confirm. Rice, and roaring, and the doors banging open on the rest of a gloriously crowded life.', spice: 'steamy' },
     { s: 'narr', t: 'And somewhere far off, a letter arrives: bottles of Beaumont\'s finest and a card that reads only, "I always knew the door led somewhere good. Congratulations, all of you. — Y." (Unless Yuki is among those holding your hands at the altar — in which case she sent no card, because for the first time in her life the words had nowhere else they needed to go.)' },
     { s: 'narr', t: '♥  GATEBOUND — and they lived, gate after gate, happily.  ♥' },
+  ],
+};
+
+// ------------------------------------------------------------
+// RECRUITMENT — petitions to join, after the Threshold closed.
+// where:'offer' keeps these out of the guild/camp pickers; the
+// Newcomers screen plays them directly. The accept choice sets
+// recruit_<id>_accept, which the UI turns into a signed member.
+// ------------------------------------------------------------
+
+E.recruit_intro_mira = {
+  id: 'recruit_intro_mira', where: 'offer', once: false,
+  steps: [
+    { s: 'narr', t: 'She\'s at the bar when you come down: boots on the rail, sword too well-kept to be decorative, drinking the guild\'s cheapest tea like it\'s a test she\'s giving the establishment.' },
+    { s: 'mira', t: 'Mira Ashvale. Sellsword, twenty years under contract, references on request — the living ones, anyway.' },
+    { s: 'narr', t: 'She looks you over the way a smith looks over someone else\'s work: professionally, and without flattery.' },
+    { s: 'mira', t: 'I was two provinces east when the Threshold closed. You know what a Monarch-class clear does to the mercenary market? Nothing. No panic contracts, no evacuation escorts, no salvage runs. You put half my trade out of business in one afternoon.' },
+    { s: 'player', t: '...Sorry?' },
+    { s: 'mira', t: 'Don\'t be. It was the first good news I\'ve carried in a decade. So here\'s my pitch: I\'m done bleeding for coin I have to count twice. I want the other thing. The thing your lot has.' },
+    { s: 'erin', t: '(from the next table, not even pretending not to listen) She means family. I checked. She got embarrassed and threatened me.' },
+    { s: 'mira', t: 'I offered a professional escalation of terms. (a pause) ...She hugged me. Nobody warned me about that.' },
+    { choice: [
+      { t: 'Sign her. The wall could use another shield.', flag: 'recruit_mira_accept',
+        r: [
+          { s: 'mira', t: 'Then we have terms. Standard rates: I hold the door, you lot do the flashy nonsense, and nobody dies without written notice.' },
+          { s: 'narr', t: 'She signs the ledger in a mercenary\'s tidy, contract-proof hand. The pen pauses only once — over the line marked "guild family, in perpetuity."' },
+          { s: 'mira', t: '(quietly) Huh. In perpetuity. (she signs it) Paid in full.' },
+        ] },
+      { t: '"Not yet. Let me think on it."',
+        r: [
+          { s: 'mira', t: 'Smart. Never sign day-of. I\'ll be at the bar — the tea\'s terrible, but the company\'s improving.' },
+        ] },
+    ] },
+  ],
+};
+
+E.recruit_intro_nessa = {
+  id: 'recruit_intro_nessa', where: 'offer', once: false,
+  steps: [
+    { s: 'narr', t: 'There is a young woman at the petitions desk who has clearly rehearsed this. She has a basket of tinctures, a letter of introduction in handwriting that has been erased and rewritten, and a speech.' },
+    { s: 'nessa', t: 'Good morning! My name is Nessa Vale, I\'m a herbalist, licensed, mostly, and I— I would like to formally petition to—' },
+    { s: 'narr', t: 'She sees you. The speech dies. The basket nearly follows; she catches it with both arms like it\'s a patient.' },
+    { s: 'nessa', t: 'You\'re — oh no, you\'re *him*. The Fourth. Half the people I\'ve stitched up this season came out of gates saying your name. The other half came out saying the ladies\' names, which, honestly, fair.' },
+    { s: 'shiro', t: '(not looking up from her ledger) Her tincture work is competent. I priced it. She undercharges by forty percent.' },
+    { s: 'nessa', t: 'People can\'t heal if they can\'t *afford* to— wait, you priced my stall? When did— (she takes a breath, straightens) No. I practiced this. I want to join. Wounds don\'t wait topside for the survivors — someone should be *in there* with you.' },
+    { choice: [
+      { t: 'Welcome her in. Every party outlives its potions eventually.', flag: 'recruit_nessa_accept',
+        r: [
+          { s: 'nessa', t: 'Really?! I mean— (composing herself, failing) yes. Good. Thank you. I promise you will only regret this a normal amount.' },
+          { s: 'narr', t: 'She signs the ledger, apologizes to the pen, and immediately begins reorganizing the guild\'s first-aid cabinet without asking anyone.' },
+          { s: 'erin', t: '(watching, delighted) Oh, she\'s going to fix all of us whether we like it or not.' },
+        ] },
+      { t: '"Not yet — but keep the basket packed."',
+        r: [
+          { s: 'nessa', t: 'Oh! Yes. Of course. Sensible. I\'ll just — I\'ll be re-rolling bandages. For whenever. No pressure. (whispering) Please eventually.' },
+        ] },
+    ] },
+  ],
+};
+
+E.recruit_intro_vex = {
+  id: 'recruit_intro_vex', where: 'offer', once: false,
+  steps: [
+    { s: 'narr', t: 'The guild hall goes quiet in a moving line, like wind over wheat. Something person-shaped and midnight-colored is standing at the petitions desk with immaculate posture. It has filled out the membership form. In calligraphy.' },
+    { s: 'vex', t: 'Greeting. I am called Vex. I have been called other things, with screaming, but Vex is the version I have selected.' },
+    { s: 'narr', t: 'Its eyes are two patient violet lights. The form in front of it lists, under "previous experience": *dark (extensive)*.' },
+    { s: 'vex', t: 'I lived below. Under the gates, in the sealed places. When you unmade the Monarch, the ceiling of my world cracked open, and there was — all of this. (it gestures, carefully, at everything) Lamplight. Soup. The sound the tall golden one makes when amused.' },
+    { s: 'erin', t: 'My laugh. It means my laugh. It followed it here from two streets away.' },
+    { s: 'vex', t: 'I watched your guild for three days. You bring each other home. Even the damaged ones. Even the strange ones. I would like to learn how that is done. I am strong, I do not tire, and I have been informed by the small pink one that I am, quote, "actually very polite."' },
+    { s: 'sakura', t: '(from behind Erin, whisper) He held the door for me. With a tendril. It was very courteous...!' },
+    { choice: [
+      { t: 'Sign it in. The dark fought beside worse.', flag: 'recruit_vex_accept',
+        r: [
+          { s: 'vex', t: 'Accepted-into. (it tries the word again, slower) Accepted. Into.' },
+          { s: 'narr', t: 'It signs the ledger. The signature is beautiful. The pen is, briefly, part of its hand.' },
+          { s: 'vex', t: 'I will hold your dark places so that none of you must stand in them alone. This is a joke I have prepared: I am a natural fit for the position, as I am mostly holes. ...The laugh sound, please, when ready.' },
+        ] },
+      { t: '"Give the guild time to get used to you first."',
+        r: [
+          { s: 'vex', t: 'Sensible. Integration requires exposure. I will remain near the hearth, being observable. I have been practicing "lurking approachably."' },
+        ] },
+    ] },
+  ],
+};
+
+E.recruit_intro_seris = {
+  id: 'recruit_intro_seris', where: 'offer', once: false,
+  steps: [
+    { s: 'narr', t: 'She does not petition. She presents credentials: Seris Val, agent of the Arcane College, seconded to the guild by an arrangement Guildmaster Hale describes, through his teeth, as "not optional."' },
+    { s: 'seris', t: 'Let us be efficient. The College has forty-one reports on you. Growth curves that violate three laws of thaumic conservation. A Monarch-class clear by a party of four. And now the Threshold echoes — recursion events — and you keep walking into them and coming back stronger.' },
+    { s: 'narr', t: 'She sets a folder on the table. Your name is on it. It is very thick.' },
+    { s: 'seris', t: 'I was sent to observe the anomaly. Contain it, if warranted. Dismantle it, if necessary. (she looks at you for a long moment) I have read every page of this file, and I will tell you what I told the Archon: the numbers are impossible. So I am here to be wrong in person.' },
+    { s: 'shiro', t: 'She means she requested the assignment.' },
+    { s: 'seris', t: 'I— that is a gross simplification of a routine deployment preference.' },
+    { s: 'shiro', t: 'Ranked first of three preferences. Submitted twice.' },
+    { s: 'narr', t: 'Seris Val, the College\'s most trusted instrument, briefly closes her eyes like a woman recalculating her exit routes.' },
+    { choice: [
+      { t: 'Offer her the field position: observe from inside the party.', flag: 'recruit_seris_accept',
+        r: [
+          { s: 'seris', t: '...Embedded observation. Yes. That is methodologically sound. Closer data. Purely professional proximity to the anomaly.' },
+          { s: 'narr', t: 'She signs the ledger with a College seal and a personal signature. The personal one takes longer.' },
+          { s: 'seris', t: 'To be clear: I am watching you. Every gate. Every impossible level. Someone must keep honest records of what you are becoming. (quieter) ...It may as well be someone who hopes the records stay good.' },
+        ] },
+      { t: '"Observe from the bar like everyone else."',
+        r: [
+          { s: 'seris', t: 'Noted. Refused embedded placement, subject displays "caution or possibly taste" — I\'m writing it down exactly like that. I will be at the corner table. Do try to stay anomalous.' },
+        ] },
+    ] },
+  ],
+};
+
+// ------------------------------------------------------------
+// PAIR BONDS — the girls, with each other, once they trust you
+// enough to be fully themselves in front of you.
+// ------------------------------------------------------------
+
+E.pair_sakura_shiro = {
+  id: 'pair_sakura_shiro', where: 'camp', once: true, priority: 42,
+  cond: S => (S.bond.sakura || 0) >= 4 && (S.bond.shiro || 0) >= 4,
+  steps: [
+    { s: 'narr', t: 'Firelight. Sakura is reading a novel behind her hat brim. Shiro is reading Sakura\'s novel over her shoulder, one full second per page ahead of her.' },
+    { s: 'shiro', t: 'The knight is the traitor.' },
+    { s: 'sakura', t: 'SHIRO.' },
+    { s: 'shiro', t: 'You read the same arc in volume two of the last one. I am saving you time. Time is money.' },
+    { s: 'sakura', t: '(clutching the book) Being *surprised* is the money! That\'s what the money *is*!' },
+    { s: 'narr', t: 'A pause. Shiro considers this like a genuinely new market theory.' },
+    { s: 'shiro', t: '...Then I will only tell you the endings you would not have enjoyed. A curated loss-prevention service.' },
+    { s: 'sakura', t: 'That\'s— hm. That\'s almost sweet? In a horrible way?' },
+    { s: 'narr', t: 'Sakura leans back against Shiro\'s shoulder to keep reading. Shiro, who charges for everything, does not charge for this.' },
+    { s: 'shiro', t: '(to you, without turning) You saw nothing. The rate for having seen this is your silence.' },
+  ],
+};
+
+E.pair_erin_sakura = {
+  id: 'pair_erin_sakura', where: 'camp', once: true, priority: 42,
+  cond: S => (S.bond.erin || 0) >= 4 && (S.bond.sakura || 0) >= 4,
+  steps: [
+    { s: 'narr', t: 'Past midnight. You wake to soft, ferocious counting: Erin is teaching Sakura to throw a punch, both of them whispering so as not to wake you.' },
+    { s: 'erin', t: 'Again. Thumb outside the fist, unless you hate your thumb.' },
+    { s: 'sakura', t: '(whisper-shouting) Why would I ever punch anything?! I have a STAFF! I have the sky!' },
+    { s: 'erin', t: 'Because someday something will get past me. Just once. Just one thing, one time. And when it does, it\'s going to be *so confident* — and you\'re going to break its nose.' },
+    { s: 'narr', t: 'Sakura looks at her fist. Then at Erin, who has never once let anything get past her, planning anyway for the day she fails.' },
+    { s: 'sakura', t: '...Show me again. Slower.' },
+    { s: 'erin', t: 'Atta girl. Nose height. Mean it.' },
+    { s: 'narr', t: 'You keep your breathing even and your eyes mostly shut. Some lessons are between sisters.' },
+  ],
+};
+
+E.pair_erin_shiro = {
+  id: 'pair_erin_shiro', where: 'camp', once: true, priority: 42,
+  cond: S => (S.bond.erin || 0) >= 6 && (S.bond.shiro || 0) >= 6,
+  steps: [
+    { s: 'narr', t: 'Erin and Shiro are playing chess with a traveling set. Erin is losing with tremendous morale.' },
+    { s: 'erin', t: 'Knight takes... whatever that is. The pointy one.' },
+    { s: 'shiro', t: 'That is your own bishop.' },
+    { s: 'erin', t: 'He was in the way.' },
+    { s: 'narr', t: 'Shiro pinches the bridge of her nose. Then, methodically, she resets the board — not to punish the move, you realize, but because she has decided to actually teach.' },
+    { s: 'shiro', t: 'Again. And this time I will explain what the pointy ones are for. You protect eight squares at all times without thinking. There is no reason you should be bad at this. It offends me.' },
+    { s: 'erin', t: '(grinning, rolling up her sleeves) That\'s the nicest thing you\'ve ever said to me.' },
+    { s: 'shiro', t: 'It was a complaint.' },
+    { s: 'erin', t: 'It was NOT and you know it.' },
+    { s: 'narr', t: 'They play until the fire burns low. Shiro wins every game and, for some reason, looks like she hasn\'t lost an evening in weeks.' },
+  ],
+};
+
+// ------------------------------------------------------------
+// EPILOGUE SLICES — married life, in small domestic pieces.
+// ------------------------------------------------------------
+
+E.epilogue_kitchen = {
+  id: 'epilogue_kitchen', where: 'guild', once: true, priority: 40,
+  cond: S => !!S.seen.wedding,
+  steps: [
+    { s: 'narr', t: 'Morning, after. The guild found you a house — insisted, actually; Hale called it "strategic hero retention." It has a kitchen. The kitchen is currently a diplomatic incident.' },
+    { s: 'erin', t: 'All I\'m saying is that breakfast is a *shield* meal. It holds the line for the whole day. You don\'t skimp on the line.' },
+    { s: 'shiro', t: 'You have made eleven eggs.' },
+    { s: 'erin', t: 'And I stand by every one of them.' },
+    { s: 'sakura', t: '(arranging flowers in a jar that was, until recently, a potion bottle) I think it\'s nice. The table\'s never had this many plates on it.' },
+    { s: 'narr', t: 'You stand in the doorway of your own improbable life: steam, argument, flowers, eleven eggs. The System, which has measured everything you have ever done, offers no number for this. It pings once, softly, like it wishes it could.' },
+    { s: 'sys', t: '[ No quest active. Recommendation: remain exactly here. ]' },
+  ],
+};
+
+E.epilogue_market = {
+  id: 'epilogue_market', where: 'guild', once: true, priority: 40,
+  cond: S => !!S.seen.epilogue_kitchen,
+  steps: [
+    { s: 'narr', t: 'Market day. You — slayer of the Monarch, the Fourth Blade, terror of the recursion depths — are carrying the basket.' },
+    { s: 'narr', t: 'It is a very full basket. Vendors keep adding things to it "for the household, no charge," and Shiro keeps making them take payment, and the vendors keep rounding down, and Shiro keeps catching them.' },
+    { s: 'shiro', t: '(pained) This town\'s entire produce sector runs at a sentimental loss. Someone has to hold the line on arithmetic.' },
+    { s: 'narr', t: 'A little girl in a paper knight\'s helmet charges your leg, declares the gate cleared, and is carried off sideways by an apologetic parent.' },
+    { s: 'erin', t: '(misty) She had the stance and everything. Did you see the stance?' },
+    { s: 'narr', t: 'The gates still open. The board still fills. But this — the basket, the arithmetic, the stance — is what all of it was for.' },
+  ],
+};
+
+E.epilogue_anniversary = {
+  id: 'epilogue_anniversary', where: 'guild', once: true, priority: 40,
+  cond: S => !!S.seen.epilogue_market && (S.ngPlus || 0) >= 2,
+  steps: [
+    { s: 'narr', t: 'The guild marks the anniversary of the Threshold quietly: no speeches, one bell, and Hale buying a round with the expression of a man who has budgeted for it all year.' },
+    { s: 'guild', t: 'A toast. To the ones who walked in. (he raises his cup) And — leave it to the Fourth\'s table — to the ones who walked *back out*, every single time, and made my paperwork boring again.' },
+    { s: 'narr', t: 'Around your table: every chair full. Some of the names in this family didn\'t exist in your life a year ago. Some of them didn\'t exist at all.' },
+    { s: 'narr', t: 'Later, walking home under the gate-light, someone\'s hand finds yours — you don\'t even have to look to know whose. That\'s the strange arithmetic of it: the System counted everything, and the total came out to *this*.' },
+    { s: 'sys', t: '[ Anniversary logged. Growth rate: sustained. The System is... proud. That is the word. Proud. ]' },
+  ],
+};
+
+// ------------------------------------------------------------
+// YUKI RIVAL ARC — his party, out there, gaining on you.
+// Runs on the paths where he built his own life (not a member).
+// ------------------------------------------------------------
+
+E.rival_yuki_1 = {
+  id: 'rival_yuki_1', where: 'guild', once: true, priority: 44,
+  cond: S => S.flags.betrothal_ended && !S.flags.yuki_member && S.rankIdx >= 4,
+  steps: [
+    { s: 'crier', t: 'Board update! C-gate at the mill road — cleared overnight. Party of four out of the eastern hall. "Dawnbreak," they\'re calling themselves.' },
+    { s: 'narr', t: 'The clear time is posted. It\'s good. Not your good — but good in a way that has clearly been *drilled*, hour by stubborn hour.' },
+    { s: 'erin', t: 'Dawnbreak. That\'s Yuki\'s lot, isn\'t it? The name\'s exactly his flavor of earnest.' },
+    { s: 'shiro', t: 'Lead: Y. Beaumont, B-rank. Healer, two strikers, himself at the wall. (a pause) He built it in his own image. Slow, safe, and un-discourageable.' },
+    { s: 'sakura', t: 'He put himself at the *wall*? He used to flinch at training dummies...' },
+    { s: 'narr', t: 'Nobody says the obvious thing: that the boy who begged you all to wait for him has stopped waiting to be waited for.' },
+  ],
+};
+
+E.rival_yuki_2 = {
+  id: 'rival_yuki_2', where: 'guild', once: true, priority: 44,
+  cond: S => S.seen.rival_yuki_1 && !S.flags.yuki_member && S.cleared,
+  steps: [
+    { s: 'narr', t: 'There\'s a new sheet pinned beside the assignment board: DAWNBREAK vs THE FOURTH\'S — CLEAR TIMES, updated in Yuki\'s handwriting, which means he rode two days just to pin it.' },
+    { s: 'guild', t: 'He asked permission first. Filled out a form. There is no form for this — he *made* one.' },
+    { s: 'narr', t: 'Your times are faster. All of them. Under the last column he\'s written, small: "For now. — Y.B."' },
+    { s: 'erin', t: '(laughing, one fist on the board) Oh, it\'s ON. It is SO on.' },
+    { s: 'shiro', t: 'His B-gate average has improved eleven percent since spring. At current trajectory he reaches our old benchmarks in— (she stops; recalculates; frowns at the result like it has misbehaved) ...sooner than I said last time.' },
+    { s: 'sakura', t: '(softly, tracing the "for now") He\'s really out there. Being whole. We didn\'t break him after all.' },
+  ],
+};
+
+E.rival_yuki_3 = {
+  id: 'rival_yuki_3', where: 'guild', once: true, priority: 44,
+  cond: S => S.seen.rival_yuki_2 && !S.flags.yuki_member && (S.ngPlus || 0) >= 1,
+  steps: [
+    { s: 'narr', t: 'A recursion echo split twin-mouthed over the eastern ridge this morning — two gates, one mana signature. The guild\'s solution is already at your table, drinking Erin\'s tea: Dawnbreak, and at its head, Yuki Beaumont, A-rank as of Tuesday.' },
+    { s: 'yuki', t: 'East mouth\'s ours, west mouth\'s yours. First party to the core chamber buys the other one dinner. (he grins — steady, easy, a man wearing his own life like it finally fits) That\'s the whole negotiation. I\'ve gotten better at those.' },
+    { s: 'erin', t: 'Deal. Hope your party likes expensive food, Beaumont, because I am ordering the entire left side of the menu.' },
+    { s: 'yuki', t: 'You\'ll be ordering it as our guest. (to you, quieter, offering his hand) Whatever we are now — rivals, friends, family that took the long road — thank you for not waiting for me. It\'s the kindest thing any of you ever did.' },
+    { s: 'narr', t: 'You shake his hand: sword-calloused now, and certain. By nightfall both mouths of the echo stand closed, and the guild hall hosts two parties\' worth of noise — and Hale, quietly, pins the clear times side by side. Four seconds apart.' },
+    { give: { gold: 400 } },
+    { s: 'guild', t: 'Four seconds! FOUR! I\'m framing this sheet. Drinks are on the guild — the finder\'s bounty for a twin echo, split fair, comes to a tidy sum besides.' },
+  ],
+};
+
+// ------------------------------------------------------------
+// NEW-TABLE CAMP SCENE — once the recruits start stacking up.
+// ------------------------------------------------------------
+
+E.camp_new_table = {
+  id: 'camp_new_table', where: 'camp', once: true, priority: 41,
+  cond: S => (S.recruited || []).length >= 2 && S.recruited.includes('mira'),
+  steps: [
+    { s: 'narr', t: 'The camp is bigger now. More bedrolls, more voices, a cookfire that has to be argued over in shifts. The new members orbit the old rhythms, learning them.' },
+    { s: 'mira', t: '(if you\'d told me a year ago I\'d be taking night-watch orders from a kid with an invisible friend, I\'d have priced the job triple) ...Second watch is mine, then. Anyone snores, that\'s a contract violation.' },
+    { s: 'narr', t: 'It\'s a strange, patchwork thing you\'ve built — veterans and newcomers, people and almost-people, all of it stitched together by nothing more binding than the fact that everyone here would go back into the dark for everyone else.' },
+    { s: 'sakura', t: '(beside you, watching the fire, quiet and sure) The party got bigger. The family got bigger. I used to think those were different sizes... they\'re not, are they?' },
   ],
 };
 

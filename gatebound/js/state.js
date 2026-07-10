@@ -5,6 +5,7 @@
 import {
   RANKS, RANK_UP_GP, GATE_GP, XP_MULT, HEROES, heroStatsAt, heroSkillsAt,
   xpToNext, BIOMES, GATE_ROOMS, GATE_MODIFIERS, MONARCH_GATE, ENEMIES, makeGear, AFFIXES,
+  ELITES, ELITE_XP_MULT, ELITE_GOLD_MULT, eliteChance, ROLE_INFO, DISPATCH_BENCHMARK,
 } from './data.js';
 
 export const SAVE_KEY = 'gatebound_save_v1';
@@ -40,7 +41,12 @@ export function newGame(playerName) {
     run: null,                       // active dungeon run
     stats: { clears: 0, kills: 0, retreats: 0, wipes: 0 },
     cleared: false,
+    clearedDay: 0,                   // day the Monarch fell (recruit arrivals key off it)
     ngPlus: 0,                       // Recursion depth cleared post-Monarch
+    mastery: {},                     // heroId -> { skillId: use count }
+    recruited: [],                   // post-clear guild recruits (hero ids)
+    dispatch: [],                    // missions in the field
+    dispatchReports: [],             // resolved missions awaiting review
     settings: { volume: 0.6, music: true, textFast: false, spice: 'gentle', outfit: 'adventure' },
   };
   for (const id of ['player', 'erin', 'sakura', 'shiro']) {
@@ -65,6 +71,11 @@ function ensureShape(S) {
   if (S.bond && !('yuki' in S.bond)) S.bond.yuki = 0;
   if (S.ngPlus == null) S.ngPlus = 0;
   if (!S.flags) S.flags = {};
+  if (!S.mastery) S.mastery = {};
+  if (!S.recruited) S.recruited = [];
+  if (!S.dispatch) S.dispatch = [];
+  if (!S.dispatchReports) S.dispatchReports = [];
+  if (S.cleared && S.clearedDay == null) S.clearedDay = S.day;
   if (S.settings) {
     if (!S.settings.spice) S.settings.spice = 'gentle';
     if (!S.settings.outfit) S.settings.outfit = 'adventure';
@@ -174,9 +185,56 @@ export function ensureYuki(S) {
 }
 
 export function roster(S) {
-  return S.flags && S.flags.yuki_member
+  const base = S.flags && S.flags.yuki_member
     ? ['player', 'erin', 'sakura', 'shiro', 'yuki']
     : ['player', 'erin', 'sakura', 'shiro'];
+  return base.concat((S.recruited || []).filter(id => HEROES[id] && S.heroes[id]));
+}
+
+// Formally sign a recruit: hero record + roster entry.
+export function joinRecruit(S, id) {
+  const def = HEROES[id];
+  if (!def || !def.recruit || S.recruited.includes(id)) return;
+  const lvl = Math.max(def.startLevel, (S.heroes.player?.level || 1) - 2);
+  S.heroes[id] = { level: lvl, xp: 0, gear: { weapon: null, armor: null, charm: null } };
+  S.recruited.push(id);
+}
+
+// Ids currently away on a dispatch mission.
+export function dispatchedIds(S) {
+  const out = new Set();
+  for (const m of S.dispatch || []) for (const id of m.team) out.add(id);
+  return out;
+}
+
+// --- skill mastery -----------------------------------------------------------
+// Skills rank up with use: each rank adds power; rank 5 trims MP costs.
+
+export const MASTERY_THRESHOLDS = [0, 10, 25, 50, 90, 150];
+export const MASTERY_POWER = 0.05;   // +5% skill power per rank
+export const MASTERY_MP_DISCOUNT = 0.8; // at max rank
+
+export function masteryRank(S, heroId, skillId) {
+  const uses = S.mastery?.[heroId]?.[skillId] || 0;
+  let rank = 0;
+  for (let i = MASTERY_THRESHOLDS.length - 1; i >= 0; i--) {
+    if (uses >= MASTERY_THRESHOLDS[i]) { rank = i; break; }
+  }
+  return rank;
+}
+
+export function masteryUses(S, heroId, skillId) {
+  return S.mastery?.[heroId]?.[skillId] || 0;
+}
+
+// Returns the new rank if this use crossed a threshold, else 0.
+export function bumpMastery(S, heroId, skillId) {
+  if (!S.mastery) S.mastery = {};
+  const m = S.mastery[heroId] || (S.mastery[heroId] = {});
+  const before = masteryRank(S, heroId, skillId);
+  m[skillId] = (m[skillId] || 0) + 1;
+  const after = masteryRank(S, heroId, skillId);
+  return after > before ? after : 0;
 }
 
 // --- guild rank ------------------------------------------------------------
@@ -278,23 +336,56 @@ export function buildDungeon(gate) {
     nodes.push({ type: 'fight', group: makeGroup(gate, biome, i, rng, swarm) });
     if (i < gate.rooms - 1) {
       const r = rng();
-      if (r < 0.28) nodes.push({ type: 'treasure' });
-      else if (r < 0.55) nodes.push({ type: 'event', roll: rng() });
-      else if (r < 0.68) nodes.push({ type: 'rest' });
+      if (r < 0.24) nodes.push(makeBranch(gate, biome, i, rng, swarm));
+      else if (r < 0.42) nodes.push({ type: 'treasure' });
+      else if (r < 0.62) nodes.push({ type: 'event', roll: rng() });
+      else if (r < 0.74) nodes.push({ type: 'rest' });
     }
   }
   nodes.push({ type: 'boss', group: makeBossGroup(gate, biome, rng) });
   return nodes;
 }
 
+// The corridor forks: one door risks more for more, the other plays safe.
+// Both options are generated up front so runs stay serializable.
+function makeBranch(gate, biome, depth, rng, swarm) {
+  const risky = { type: 'fight', elite: true, group: makeEliteGroup(gate, biome, depth, rng) };
+  const r = rng();
+  const safe = r < 0.4 ? { type: 'treasure' }
+    : r < 0.75 ? { type: 'event', roll: rng() }
+    : { type: 'rest' };
+  return { type: 'branch', options: [risky, safe] };
+}
+
 function makeGroup(gate, biome, depth, rng, swarm) {
   const n = Math.min(4, 2 + Math.floor(rng() * 2) + swarm);
   const group = [];
+  let eliteRolled = false;
   for (let i = 0; i < n; i++) {
     const defId = biome.mobs[Math.floor(rng() * biome.mobs.length)];
-    group.push(scaleEnemy(defId, gate, depth, false, rng));
+    // one elite max per ordinary room
+    const elite = !eliteRolled && rng() < eliteChance(gate.rankIdx) ? pickElite(rng) : null;
+    if (elite) eliteRolled = true;
+    group.push(scaleEnemy(defId, gate, depth, false, rng, elite));
   }
   return group;
+}
+
+// Elite-door rooms: a guaranteed elite with an escort, and richer spoils baked in.
+function makeEliteGroup(gate, biome, depth, rng) {
+  const group = [];
+  const leadId = biome.mobs[Math.floor(rng() * biome.mobs.length)];
+  group.push(scaleEnemy(leadId, gate, depth + 1, false, rng, pickElite(rng)));
+  const adds = 1 + Math.floor(rng() * 2);
+  for (let i = 0; i < adds; i++) {
+    group.push(scaleEnemy(biome.mobs[Math.floor(rng() * biome.mobs.length)], gate, depth, false, rng));
+  }
+  return group;
+}
+
+function pickElite(rng) {
+  const keys = Object.keys(ELITES);
+  return keys[Math.floor(rng() * keys.length)];
 }
 
 function makeBossGroup(gate, biome, rng) {
@@ -310,31 +401,36 @@ function makeBossGroup(gate, biome, rng) {
 }
 
 let enemySeq = 0;
-export function scaleEnemy(defId, gate, depth, isBoss, rng) {
+export function scaleEnemy(defId, gate, depth, isBoss, rng, elite = null) {
   const def = ENEMIES[defId];
   let tier = XP_MULT[gate.rank];
   if (gate.recursion) tier *= 1 + (gate.depth || 0) * 0.4; // NG+ escalation
   const ramp = 1 + depth * 0.06;
   const bossMult = def.boss ? 2.3 : 1;
   const dmgMod = gate.modifier === 'unstable' ? 1.15 : 1;
+  const eliteDef = elite ? ELITES[elite] : null;
   const st = {};
   for (const [k, v] of Object.entries(def.base)) {
     let val = v * tier * ramp * (k === 'hp' ? bossMult : Math.sqrt(bossMult));
     if ((k === 'atk' || k === 'mag') && dmgMod !== 1) val *= dmgMod;
+    if (eliteDef && eliteDef.stats[k]) val *= eliteDef.stats[k];
     st[k] = Math.round(val);
   }
   st.luk = 5; st.mp = 999;
+  const skills = def.skills.slice();
+  if (eliteDef && !skills.includes(eliteDef.skill)) skills.push(eliteDef.skill);
   return {
     uid: 'e' + (++enemySeq) + '_' + Math.floor((rng ? rng() : Math.random()) * 1e6),
     defId,
-    name: def.name,
+    name: eliteDef ? `${eliteDef.name} ${def.name}` : def.name,
     model: def.model,
     variant: def.variant || null,
     boss: !!def.boss,
+    elite: elite || null,
     stats: st,
-    skills: def.skills.slice(),
-    xp: Math.round(def.xp * tier),
-    gold: Math.round(def.gold * tier * (0.85 + (rng ? rng() : Math.random()) * 0.3)),
+    skills,
+    xp: Math.round(def.xp * tier * (eliteDef ? ELITE_XP_MULT : 1)),
+    gold: Math.round(def.gold * tier * (0.85 + (rng ? rng() : Math.random()) * 0.3) * (eliteDef ? ELITE_GOLD_MULT : 1)),
   };
 }
 
@@ -343,10 +439,11 @@ export function scaleEnemy(defId, gate, depth, isBoss, rng) {
 export function startRun(S, gate, selectedIds) {
   ensureYuki(S);
   const party = {};
+  const away = dispatchedIds(S);
   let ids;
   if (selectedIds && selectedIds.length) {
     // player-chosen party (for grinding / focused leveling)
-    ids = selectedIds.filter(id => S.heroes[id]);
+    ids = selectedIds.filter(id => S.heroes[id] && !away.has(id));
     if (!ids.length) ids = ['player'];
   } else {
     ids = ['player', 'erin', 'sakura', 'shiro'];
@@ -355,6 +452,8 @@ export function startRun(S, gate, selectedIds) {
       S.heroes.yuki = S.heroes.yuki || { level: 6 + S.rankIdx * 3, xp: 0, gear: { weapon: null, armor: null, charm: null } };
       ids.push('yuki');
     }
+    ids = ids.filter(id => !away.has(id));
+    if (!ids.includes('player')) ids.unshift('player');
   }
   for (const id of ids) {
     const st = heroStats(S, id);
@@ -412,14 +511,73 @@ export function endRun(S, outcome) {
     S.flags.yuki_guest_done = true;
     delete S.heroes.yuki;
   }
-  if (gate.id === 'monarch' && outcome === 'clear') S.cleared = true;
+  if (gate.id === 'monarch' && outcome === 'clear') { S.cleared = true; S.clearedDay = S.day; }
   if (gate.recursion && outcome === 'clear') S.ngPlus = (S.ngPlus || 0) + 1;
 
   S.run = null;
-  S.day++;
-  rollGates(S);
+  advanceDay(S);
   save(S);
   return result;
+}
+
+// A day passes: dispatched teams come home, the gate board rerolls.
+export function advanceDay(S) {
+  S.day++;
+  resolveDispatches(S);
+  rollGates(S);
+}
+
+// --- dispatch: send benched members to clear a gate on their own --------------
+
+export function dispatchForecast(S, gate, ids) {
+  const bench = DISPATCH_BENCHMARK[gate.rank] || 10;
+  const avg = ids.length
+    ? ids.reduce((a, id) => a + (S.heroes[id]?.level || 1), 0) / ids.length : 0;
+  const roles = [...new Set(ids.map(id => HEROES[id]?.role).filter(Boolean))];
+  let comp = roles.reduce((a, r) => a + (ROLE_INFO[r]?.bonus || 0), 0);
+  if (ids.length >= 3) comp += 0.05;
+  let chance = 0.5 + (avg / bench - 1) * 1.1 + comp;
+  chance = Math.max(0.05, Math.min(0.95, chance));
+  return { chance, comp, roles, avg: Math.round(avg), bench };
+}
+
+export function sendDispatch(S, gate, ids) {
+  const { chance } = dispatchForecast(S, gate, ids);
+  S.dispatch.push({
+    id: 'm' + Date.now().toString(36) + Math.floor(Math.random() * 1e4),
+    gate: { rank: gate.rank, rankIdx: gate.rankIdx, name: gate.name, biome: gate.biome, modifier: gate.modifier },
+    team: ids.slice(),
+    day: S.day,
+    chance,
+  });
+  save(S);
+}
+
+function resolveDispatches(S) {
+  const due = (S.dispatch || []).filter(m => S.day > m.day);
+  if (!due.length) return;
+  S.dispatch = S.dispatch.filter(m => S.day <= m.day);
+  for (const m of due) {
+    const success = Math.random() < m.chance;
+    const tier = XP_MULT[m.gate.rank];
+    const report = { day: S.day, gate: m.gate, team: m.team, success, gp: 0, gold: 0, xp: 0, gear: null, levelUps: [], seen: false };
+    if (success) {
+      report.gp = Math.round(GATE_GP[m.gate.rank] * 0.6);
+      report.gold = Math.round(70 * tier * (0.8 + Math.random() * 0.4));
+      report.xp = Math.round(110 * tier);
+      if (Math.random() < 0.4) {
+        const slot = ['weapon', 'armor', 'charm'][Math.floor(Math.random() * 3)];
+        report.gear = makeGear(slot, Math.min(m.gate.rankIdx, 5), Math.random);
+        S.gearBag.push(report.gear);
+      }
+      S.gold += report.gold;
+      addGp(S, report.gp);
+    } else {
+      report.xp = Math.round(45 * tier); // hard lessons still teach
+    }
+    for (const id of m.team) report.levelUps.push(...gainXp(S, id, report.xp));
+    S.dispatchReports.push(report);
+  }
 }
 
 // Treasure node contents.

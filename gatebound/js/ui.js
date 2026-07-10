@@ -2,11 +2,12 @@
 // GATEBOUND — UI screens & game flow orchestration
 // ============================================================
 
-import { RANKS, RANK_STYLE, HEROES, SKILLS, STATUSES, ITEMS, BIOMES, GATE_MODIFIERS, AFFIXES, xpToNext, heroStatsAt, gearScore, shopStock, GATE_GP } from './data.js';
+import { RANKS, RANK_STYLE, HEROES, SKILLS, STATUSES, ITEMS, BIOMES, GATE_MODIFIERS, AFFIXES, xpToNext, heroStatsAt, gearScore, shopStock, GATE_GP, recruitOffers, reforgeCost, reforgeGear, ROLE_INFO } from './data.js';
 import * as ST from './state.js';
 import { Combat } from './combat.js';
 import { Stage, makePortrait } from './scene3d.js';
 import { EVENTS, SPEAKERS, DUNGEON_EVENTS, pickGuildEvent, pickCampEvent, endingFor, weddingFor } from './story.js';
+import { openSanctum } from './sanctum.js';
 import * as AU from './audio.js';
 
 let S = null;
@@ -35,7 +36,7 @@ export async function boot() {
   });
 
   // portraits (placeholder renders; swap in automatically if GLBs exist)
-  Promise.all(['player', 'erin', 'sakura', 'shiro', 'yuki'].map(async id => {
+  Promise.all(Object.keys(HEROES).map(async id => {
     PORTRAITS[id] = await makePortrait(id);
   })).then(() => { document.querySelectorAll('img[data-portrait]').forEach(img => { const k = img.dataset.portrait; if (PORTRAITS[k]) img.src = PORTRAITS[k]; }); });
 
@@ -318,6 +319,10 @@ async function guild() {
   const need = ST.gpNeeded(S);
   const talkEv = pickGuildEvent(S);
   const pl = S.heroes.player;
+  const away = ST.dispatchedIds(S);
+  const offers = recruitOffers(S);
+  const newReports = S.dispatchReports.filter(r => !r.seen).length;
+  const missionsOut = S.dispatch.length;
 
   screen(`
     <div class="hud-top">
@@ -338,20 +343,26 @@ async function guild() {
         <div class="menu-grid">
           <button class="btn big primary" id="g-map">⌖ World Map<small>enter a gate</small></button>
           <button class="btn big" id="g-party">✦ Party<small>stats, skills & gear</small></button>
-          <button class="btn big" id="g-shop">◈ Shop<small>potions & sundries</small></button>
+          <button class="btn big" id="g-shop">◈ Shop<small>potions, gear & reforging</small></button>
           <button class="btn big ${talkEv ? 'notify' : ''}" id="g-talk">❝ Talk${talkEv ? '<em>!</em>' : ''}<small>guild hall gossip</small></button>
+          <button class="btn big ${newReports ? 'notify' : ''}" id="g-dispatch">✈ Dispatch${newReports ? '<em>!</em>' : ''}<small>${missionsOut ? missionsOut + ' team' + (missionsOut > 1 ? 's' : '') + ' in the field' : 'send teams to clear gates'}</small></button>
+          <button class="btn big" id="g-sanctum">✉ Sanctum<small>speak with the guild</small></button>
+          ${offers.length ? `<button class="btn big notify" id="g-newcomers">➤ Newcomers<em>!</em><small>${offers.length} petition${offers.length > 1 ? 's' : ''} to join</small></button>` : ''}
           <button class="btn big ghost" id="g-settings">⚙ Settings<small>save, audio, text</small></button>
+        </div>
+        <div class="row gap" style="margin-top:8px">
+          <button class="btn sm ghost" id="g-rest" title="Advance to the next day: the gate board rerolls and dispatched teams return.">▸ Rest until tomorrow</button>
         </div>
         <div class="yuki-ticker"><b>Letters & rumors:</b> ${yukiTicker()}</div>
       </div>
       <div class="panel party-strip">
         ${ST.roster(S).map(id => `
-          <div class="pcard">
+          <div class="pcard ${away.has(id) ? 'away' : ''}">
             ${portraitImg(id)}
             <div class="pinfo">
               <b style="color:${SPEAKERS[id].color}">${id === 'player' ? esc(S.name) : HEROES[id].name}</b>
-              <span class="muted">Lv ${S.heroes[id].level} ${HEROES[id].cls}</span>
-              ${id !== 'player' ? heartsFor(id) : `<span class="sys-tag">THE SYSTEM · Lv ${pl.level}</span>`}
+              <span class="muted">Lv ${S.heroes[id].level} ${HEROES[id].cls}${away.has(id) ? ' · <b class="gold">away</b>' : ''}</span>
+              ${id in S.bond ? heartsFor(id) : id === 'player' ? `<span class="sys-tag">THE SYSTEM · Lv ${pl.level}</span>` : `<span class="muted sm-text">${HEROES[id].epithet}</span>`}
             </div>
           </div>`).join('')}
       </div>
@@ -367,7 +378,170 @@ async function guild() {
     if (ev) { await playEvent(ev); guild(); }
     else { toast('Nothing new — clear more gates.'); }
   };
+  $('#g-dispatch').onclick = () => { AU.sfx('ui'); dispatchBoard(); };
+  $('#g-sanctum').onclick = () => { AU.sfx('ui'); openSanctum({ S, screen, portraitImg, toast, esc, back: guild, save: () => ST.save(S) }); };
+  const nc = $('#g-newcomers');
+  if (nc) nc.onclick = () => { AU.sfx('ui'); newcomers(); };
+  $('#g-rest').onclick = () => {
+    AU.sfx('confirm');
+    ST.advanceDay(S);
+    ST.save(S);
+    toast(`Day ${S.day} — the gate board shifts.`);
+    guild();
+  };
   $('#g-settings').onclick = () => settingsModal(guild);
+}
+
+// ------------------------------------------------------------------
+// newcomers (post-clear recruitment)
+// ------------------------------------------------------------------
+
+async function newcomers() {
+  const offers = recruitOffers(S);
+  if (!offers.length) { guild(); return; }
+
+  screen(`
+    <div class="panel map-panel">
+      <div class="row spread">
+        <h2>➤ Newcomers — Petitions to Join</h2>
+        <button class="btn ghost" id="n-back">← Guild</button>
+      </div>
+      <p class="muted">Word of the Threshold clear travels. People keep arriving at the hall asking for the Fourth's table — hear them out, and sign the ones who fit.</p>
+      <div class="gate-grid">
+        ${offers.map(h => `
+          <div class="gate-card recruit-card">
+            <div class="recruit-head">${portraitImg(h.id)}<div><b style="color:${SPEAKERS[h.id]?.color || '#fff'}">${h.name}</b><br><small class="muted">${h.epithet} · ${h.cls}</small></div></div>
+            <p class="muted sm-text">${esc(h.desc)}</p>
+            <div class="gate-meta">${ROLE_INFO[h.role]?.icon || ''} ${ROLE_INFO[h.role]?.name || h.role} · joins near your level</div>
+            <button class="btn primary hear-out" data-id="${h.id}">Hear them out</button>
+          </div>`).join('')}
+      </div>
+    </div>
+  `);
+  $('#n-back').onclick = () => guild();
+  document.querySelectorAll('.hear-out').forEach(b => b.onclick = async () => {
+    const id = b.dataset.id;
+    AU.sfx('confirm');
+    screen('', '');
+    await playEvent(EVENTS['recruit_intro_' + id]);
+    if (S.flags['recruit_' + id + '_accept'] && !S.recruited.includes(id)) {
+      ST.joinRecruit(S, id);
+      AU.sfx('promo');
+      toast(`${HEROES[id].name} joins the guild!`, 'gold');
+    }
+    ST.save(S);
+    newcomers();
+  });
+}
+
+// ------------------------------------------------------------------
+// dispatch board
+// ------------------------------------------------------------------
+
+function dispatchBoard() {
+  const reports = S.dispatchReports.slice().reverse();
+  const gates = S.gates.filter(g => !g.story && !g.recursion && g.id !== 'monarch');
+
+  const missionRows = S.dispatch.length ? S.dispatch.map(m => `
+    <div class="shop-row">
+      <div><b>${rankBadge(m.gate.rank)} ${esc(m.gate.name)}</b>
+        <p class="muted sm-text">${m.team.map(id => HEROES[id].name).join(', ')} · returns after the next day</p></div>
+      <span class="muted">${Math.round(m.chance * 100)}%</span>
+    </div>`).join('') : '<p class="muted">No teams in the field.</p>';
+
+  const reportRows = reports.length ? reports.slice(0, 8).map(r => `
+    <div class="shop-row report ${r.success ? 'ok' : 'fail'}">
+      <div><b>${r.success ? '✔' : '✘'} ${rankBadge(r.gate.rank)} ${esc(r.gate.name)}</b>
+        <p class="muted sm-text">${r.team.map(id => HEROES[id].name).join(', ')} — ${r.success
+          ? `cleared it! +${r.gp} GP, +${r.gold}g, +${r.xp} XP each${r.gear ? `, found ${esc(r.gear.name)}` : ''}`
+          : `driven back. Hard lessons: +${r.xp} XP each`}${r.levelUps.length ? ` · <b class="gold">${[...new Set(r.levelUps.map(u => HEROES[u.id].name))].join(', ')} leveled up!</b>` : ''}</p></div>
+      <span class="muted sm-text">day ${r.day}</span>
+    </div>`).join('') : '<p class="muted">No reports yet.</p>';
+
+  screen(`
+    <div class="panel map-panel">
+      <div class="row spread">
+        <h2>✈ Dispatch Board</h2>
+        <button class="btn ghost" id="dp-back">← Guild</button>
+      </div>
+      <p class="muted">Send benched members to clear a gate on their own — they return after the next day (run a gate yourself, or rest). A balanced team travels safer: ${Object.values(ROLE_INFO).map(r => `${r.icon} ${r.name}`).join(' · ')}.</p>
+      <div class="shop-cols">
+        <div>
+          <h3>New dispatch</h3>
+          ${gates.length ? gates.map((g, i) => `
+            <div class="shop-row">
+              <div><b>${rankBadge(g.rank)} ${esc(g.name)}</b> <small class="muted">${BIOMES[g.biome].name}</small></div>
+              <button class="btn send-to" data-i="${S.gates.indexOf(g)}">assemble team</button>
+            </div>`).join('') : '<p class="muted">No dispatchable gates today.</p>'}
+          <h3>In the field</h3>${missionRows}
+        </div>
+        <div><h3>Reports</h3><div class="sell-list">${reportRows}</div></div>
+      </div>
+    </div>
+  `);
+  for (const r of S.dispatchReports) r.seen = true;
+  ST.save(S);
+
+  $('#dp-back').onclick = () => guild();
+  document.querySelectorAll('.send-to').forEach(b => b.onclick = () => {
+    AU.sfx('ui');
+    dispatchTeamPick(S.gates[Number(b.dataset.i)]);
+  });
+}
+
+function dispatchTeamPick(gate) {
+  const away = ST.dispatchedIds(S);
+  const pool = ST.roster(S).filter(id => id !== 'player' && !away.has(id));
+  if (!pool.length) { toast('Everyone is either with you or already in the field.'); return; }
+  const chosen = new Set();
+
+  const modal = el(`<div class="modal-layer"><div class="panel modal party-pick">
+    <h3>Dispatch team — ${rankBadge(gate.rank)} ${esc(gate.name)}</h3>
+    <p class="muted sm-text">You stay behind — the System doesn't share. Pick who goes; roles stack the odds.</p>
+    <div class="pick-grid">
+      ${pool.map(id => `
+        <button class="pick-card" data-id="${id}">
+          ${portraitImg(id)}
+          <b style="color:${SPEAKERS[id].color}">${HEROES[id].name}</b>
+          <span class="muted">Lv ${S.heroes[id].level} · ${ROLE_INFO[HEROES[id].role]?.icon || ''} ${ROLE_INFO[HEROES[id].role]?.name || ''}</span>
+        </button>`).join('')}
+    </div>
+    <div class="pick-foot">
+      <span id="dp-info" class="muted">Select a team.</span>
+      <div class="row gap">
+        <button class="btn primary disabled" id="dp-go">Dispatch</button>
+        <button class="btn ghost" id="dp-cancel">Cancel</button>
+      </div>
+    </div>
+  </div></div>`);
+  document.body.appendChild(modal);
+
+  const info = modal.querySelector('#dp-info');
+  const go = modal.querySelector('#dp-go');
+  const refresh = () => {
+    if (!chosen.size) { info.textContent = 'Select a team.'; go.classList.add('disabled'); return; }
+    const f = ST.dispatchForecast(S, gate, [...chosen]);
+    const roleStr = f.roles.map(r => ROLE_INFO[r]?.icon || '').join(' ');
+    info.innerHTML = `${chosen.size} member${chosen.size > 1 ? 's' : ''} ${roleStr} · avg Lv ${f.avg} vs ~${f.bench} · <b class="${f.chance >= 0.65 ? 'gold' : f.chance >= 0.4 ? '' : 'danger'}">${Math.round(f.chance * 100)}% success</b>${f.comp ? ` <small>(+${Math.round(f.comp * 100)}% composition)</small>` : ''}`;
+    go.classList.remove('disabled');
+  };
+
+  modal.querySelectorAll('.pick-card').forEach(c => c.onclick = () => {
+    const id = c.dataset.id;
+    if (chosen.has(id)) chosen.delete(id); else chosen.add(id);
+    c.classList.toggle('on', chosen.has(id));
+    AU.sfx('ui');
+    refresh();
+  });
+  modal.querySelector('#dp-cancel').onclick = () => { AU.sfx('ui'); modal.remove(); };
+  go.onclick = () => {
+    if (!chosen.size) return;
+    ST.sendDispatch(S, gate, [...chosen]);
+    AU.sfx('gate');
+    toast(`${[...chosen].map(id => HEROES[id].name).join(', ')} set out for ${gate.name}.`, 'gold');
+    modal.remove();
+    dispatchBoard();
+  };
 }
 
 // ------------------------------------------------------------------
@@ -418,17 +592,20 @@ function beginRun(gate, selectedIds) {
   dungeonScreen();
 }
 
+const MAX_PARTY = 5;
+
 function partySelect(gate) {
   ST.ensureYuki(S);
   ensureYukiPortrait();
-  const all = ST.roster(S);
-  const chosen = new Set(all);
+  const away = ST.dispatchedIds(S);
+  const all = ST.roster(S).filter(id => !away.has(id));
+  const chosen = new Set(all.slice(0, MAX_PARTY));
   const modal = el(`<div class="modal-layer"><div class="panel modal party-pick">
     <h3>Assemble your party — ${rankBadge(gate.rank)} ${esc(gate.name)}</h3>
-    <p class="muted sm-text">Tap to include or bench a member. A smaller party earns <b>bonus XP each</b> — send a focused team to grind specific heroes.</p>
+    <p class="muted sm-text">Tap to include or bench a member (up to ${MAX_PARTY}). A smaller party earns <b>bonus XP each</b> — send a focused team to grind specific heroes.</p>
     <div class="pick-grid">
       ${all.map(id => `
-        <button class="pick-card on" data-id="${id}">
+        <button class="pick-card ${chosen.has(id) ? 'on' : ''}" data-id="${id}">
           ${portraitImg(id)}
           <b style="color:${SPEAKERS[id].color}">${id === 'player' ? esc(S.name) : HEROES[id].name}</b>
           <span class="muted">Lv ${S.heroes[id].level}</span>
@@ -458,7 +635,9 @@ function partySelect(gate) {
 
   modal.querySelectorAll('.pick-card').forEach(c => c.onclick = () => {
     const id = c.dataset.id;
-    if (chosen.has(id)) chosen.delete(id); else chosen.add(id);
+    if (chosen.has(id)) chosen.delete(id);
+    else if (chosen.size >= MAX_PARTY) { toast(`A gate party is ${MAX_PARTY} at most — bench someone first.`); return; }
+    else chosen.add(id);
     c.classList.toggle('on', chosen.has(id));
     AU.sfx('ui');
     refresh();
@@ -475,7 +654,18 @@ function partySelect(gate) {
 // dungeon
 // ------------------------------------------------------------------
 
-const NODE_ICONS = { fight: '⚔', treasure: '✦', event: '?', rest: '▲', boss: '☠' };
+const NODE_ICONS = { fight: '⚔', treasure: '✦', event: '?', rest: '▲', boss: '☠', branch: '⑃' };
+
+const DOOR_LABELS = {
+  elite:    { name: 'The Heavy Door',  desc: 'Something big claimed this room. Richer spoils for whoever un-claims it.', icon: '◆' },
+  treasure: { name: 'The Quiet Door',  desc: 'A glint of gate-formed treasure, unguarded. Probably.', icon: '✦' },
+  event:    { name: 'The Strange Door', desc: 'Mana eddies oddly beyond. Something is waiting to be decided.', icon: '?' },
+  rest:     { name: 'The Still Door',  desc: 'Defensible ground and clean air. A place to catch your breath.', icon: '▲' },
+};
+
+function doorInfo(opt) {
+  return opt.elite ? DOOR_LABELS.elite : DOOR_LABELS[opt.type] || DOOR_LABELS.event;
+}
 
 function pathBar() {
   return `<div class="path-bar">${S.run.nodes.map((n, i) =>
@@ -489,10 +679,18 @@ function dungeonScreen() {
   const gate = run.gate;
   let body = '', actions = '';
 
-  if (node.type === 'fight' || node.type === 'boss') {
+  if (node.type === 'branch') {
+    body = '<p>The corridor forks. Both ways lead onward — but not through the same things.</p>';
+    actions = node.options.map((opt, i) => {
+      const d = doorInfo(opt);
+      return `<button class="btn ${opt.elite ? 'danger-door' : ''} d-door" data-i="${i}">${d.icon} ${d.name}<small>${d.desc}</small></button>`;
+    }).join('');
+  } else if (node.type === 'fight' || node.type === 'boss') {
     const names = {};
     node.group.forEach(e => names[e.name] = (names[e.name] || 0) + 1);
-    body = `<p>${node.type === 'boss' ? '<b class="danger">The boss chamber.</b> The air pressure doubles.' : 'Hostiles ahead:'}</p>
+    const hasElite = node.group.some(e => e.elite);
+    body = `<p>${node.type === 'boss' ? '<b class="danger">The boss chamber.</b> The air pressure doubles.'
+      : hasElite ? '<b class="gold">Something in there outranks its kin.</b> Hostiles ahead:' : 'Hostiles ahead:'}</p>
       <ul class="foes">${Object.entries(names).map(([n, c]) => `<li>${esc(n)}${c > 1 ? ` ×${c}` : ''}</li>`).join('')}</ul>`;
     actions = `<button class="btn primary" id="d-go">${node.type === 'boss' ? 'Challenge the Boss' : 'Engage'}</button>`;
   } else if (node.type === 'treasure') {
@@ -568,6 +766,15 @@ function dungeonScreen() {
     advance();
   });
 
+  // fork in the road: the chosen door becomes this node
+  document.querySelectorAll('.d-door').forEach(b => b.onclick = () => {
+    const opt = node.options[Number(b.dataset.i)];
+    S.run.nodes[S.run.nodeIdx] = opt;
+    AU.sfx('gate');
+    ST.save(S);
+    dungeonScreen();
+  });
+
   $('#d-retreat').onclick = () => {
     AU.sfx('ui');
     const result = ST.endRun(S, 'retreat');
@@ -609,8 +816,8 @@ const disp = new Map(); // uid -> {hp,maxHp,shield,statuses:Map}
 function unitCard(u, side) {
   const d = disp.get(u.uid);
   const stIcons = [...d.statuses].map(id => `<span class="st-ic ${STATUSES[id]?.kind}" title="${STATUSES[id]?.name}">${STATUSES[id]?.icon || '?'}</span>`).join('');
-  return `<div class="ucard ${side} ${d.hp <= 0 ? 'dead' : ''} ${u.boss ? 'boss' : ''}" data-uid="${u.uid}">
-    <div class="uname" style="${side === 'party' ? `color:${SPEAKERS[u.uid]?.color || '#fff'}` : ''}">${esc(u.name)}</div>
+  return `<div class="ucard ${side} ${d.hp <= 0 ? 'dead' : ''} ${u.boss ? 'boss' : ''} ${u.elite ? 'elite' : ''}" data-uid="${u.uid}">
+    <div class="uname" style="${side === 'party' ? `color:${SPEAKERS[u.uid]?.color || '#fff'}` : ''}">${u.elite ? '◆ ' : ''}${esc(u.name)}</div>
     <div class="bar-outer hp sm"><div class="bar-inner" style="width:${Math.max(0, d.hp / d.maxHp * 100)}%"></div>${d.shield > 0 ? '<div class="shield-chip">◈</div>' : ''}</div>
     ${side === 'party' ? `<div class="bar-outer mp sm"><div class="bar-inner" style="width:${u.maxMp ? u.mp / u.maxMp * 100 : 0}%"></div></div>` : ''}
     <div class="hp-num">${Math.max(0, d.hp)}/${d.maxHp}</div>
@@ -757,8 +964,8 @@ function promptCommand(u, c) {
 
     const mainMenu = () => {
       const skillBtns = opts.skills.map(sk =>
-        `<button class="btn skill ${sk.usable ? '' : 'disabled'}" data-id="${sk.id}" title="${esc(sk.desc)}">
-          ${esc(sk.name)}${sk.mp ? `<small>${sk.mp} MP</small>` : '<small>—</small>'}${sk.cd ? `<small class="danger">CD ${sk.cd}</small>` : ''}${sk.free ? '<small class="free-tag">FREE</small>' : ''}
+        `<button class="btn skill ${sk.usable ? '' : 'disabled'}" data-id="${sk.id}" title="${esc(sk.desc)}${sk.rank ? ` (mastery ${'★'.repeat(sk.rank)})` : ''}">
+          ${esc(sk.name)}${sk.rank ? `<small class="mastery">${'★'.repeat(sk.rank)}</small>` : ''}${sk.mp ? `<small>${sk.mp} MP</small>` : '<small>—</small>'}${sk.cd ? `<small class="danger">CD ${sk.cd}</small>` : ''}${sk.free ? '<small class="free-tag">FREE</small>' : ''}
         </button>`).join('');
       area.innerHTML = `
         <div class="cmd-title" style="color:${SPEAKERS[u.uid]?.color || '#fff'}">${esc(u.name)}'s turn <small class="muted">MP ${u.mp}/${u.maxMp}</small></div>
@@ -886,7 +1093,11 @@ function party(sel = 'player') {
     `<div class="stat-row"><span>${k.toUpperCase()}</span><b>${st[k]}</b></div>`).join('');
   const skillRows = skills.map(id => {
     const sk = SKILLS[id];
-    return `<div class="skill-row"><b>${sk.name}</b><small>${sk.mp ? sk.mp + ' MP' : '—'}</small><p>${sk.desc || ''}</p></div>`;
+    const rank = ST.masteryRank(S, sel, id);
+    const uses = ST.masteryUses(S, sel, id);
+    const nextAt = rank < 5 ? ST.MASTERY_THRESHOLDS[rank + 1] : null;
+    const mTip = rank >= 5 ? `${uses} uses · mastered (+25% power, −20% MP)` : `${uses} uses · next rank at ${nextAt}${rank ? ` · +${rank * 5}% power` : ''}`;
+    return `<div class="skill-row"><b>${sk.name}</b><small class="mastery" title="${mTip}">${rank ? '★'.repeat(rank) : '☆'}</small><small>${sk.mp ? sk.mp + ' MP' : '—'}</small><p>${sk.desc || ''}</p></div>`;
   }).join('');
   const gearRows = ['weapon', 'armor', 'charm'].map(slot => {
     const g = h.gear[slot];
@@ -911,7 +1122,7 @@ function party(sel = 'player') {
           <div class="lvl">Lv ${h.level}</div>
           <div class="bar-outer xp"><div class="bar-inner" style="width:${h.xp / next * 100}%"></div></div>
           <small class="muted">${h.xp}/${next} XP</small>
-          ${sel !== 'player' ? heartsFor(sel) : ''}
+          ${sel !== 'player' && sel in S.bond ? heartsFor(sel) : ''}
           <p class="bio">${def.desc}</p>
           <p class="passive"><b>${def.passive.name}:</b> ${def.passive.desc}</p>
         </div>
@@ -980,16 +1191,42 @@ function shop() {
       <button class="btn sell" data-id="${g.id}" data-val="${val}">sell ◈ ${val}g</button></div>`;
   }).join('') : '<p class="muted">No spare gear to sell.</p>';
 
+  // the smith: reroll (or add) an affix on bagged or equipped gear
+  const forgeTargets = [
+    ...S.gearBag.map(g => ({ g, loc: 'bag' })),
+    ...ST.roster(S).flatMap(id => ['weapon', 'armor', 'charm']
+      .map(slot => ({ g: S.heroes[id].gear[slot], loc: id }))
+      .filter(x => x.g)),
+  ];
+  const forgeRows = forgeTargets.length ? forgeTargets.map(({ g, loc }) => {
+    const cost = reforgeCost(g);
+    return `<div class="shop-row"><div><b class="t${g.tier}">${esc(g.name)}</b> <small class="muted">${loc === 'bag' ? 'in bag' : 'on ' + (loc === 'player' ? esc(S.name) : HEROES[loc].name)}</small>${affixChip(g)}</div>
+      <button class="btn forge ${S.gold >= cost ? '' : 'disabled'}" data-id="${g.id}" title="${g.affix ? 'Reroll this affix into a different one.' : 'Imbue a random affix.'}">${g.affix ? 'reroll' : 'imbue'} ◈ ${cost}g</button></div>`;
+  }).join('') : '<p class="muted">Nothing to work with — the smith shrugs.</p>';
+
   screen(`
     <div class="panel shop-panel">
       <div class="row spread"><h2>◈ Guild Shop</h2><div><span class="gold">◈ ${S.gold}g</span> <button class="btn ghost" id="s-back">← Guild</button></div></div>
       <div class="shop-cols">
-        <div><h3>Buy</h3>${rows}</div>
+        <div><h3>Buy</h3>${rows}
+          <h3>Smith — reforge affixes</h3><div class="sell-list">${forgeRows}</div></div>
         <div><h3>Sell gear</h3><div class="sell-list">${sellRows}</div></div>
       </div>
     </div>
   `);
   $('#s-back').onclick = () => guild();
+  document.querySelectorAll('.forge:not(.disabled)').forEach(b => b.onclick = () => {
+    const t = forgeTargets.find(x => x.g.id === b.dataset.id);
+    if (!t) return;
+    const cost = reforgeCost(t.g);
+    if (S.gold < cost) return;
+    S.gold -= cost;
+    reforgeGear(t.g);
+    AU.sfx('promo');
+    toast(`The smith hands it back: ${t.g.name}`, 'gold');
+    ST.save(S);
+    shop();
+  });
   document.querySelectorAll('.shop-row button[data-id]:not(.sell)').forEach(b => b.onclick = () => {
     const it = ITEMS[b.dataset.id];
     if (S.gold < it.price) return;

@@ -46,6 +46,7 @@ export const HEROES = {
     growth: { hp: 15,  mp: 4,  atk: 3.3, mag: 2.2, def: 2.5, res: 2.2, agi: 1.9, luk: 1.2 },
     skills: { 1: 'twin_fangs', 4: 'shadow_rush', 7: 'execute', 10: 'limit_break', 16: 'monarchs_edge', 22: 'phantom_step', 30: 'system_purge', 42: 'sovereign' },
     passive: { id: 'system', name: 'The System', desc: 'Levels grant outsized growth. Gains +10% XP.' },
+    role: 'striker',
   },
   erin: {
     id: 'erin',
@@ -58,6 +59,7 @@ export const HEROES = {
     growth: { hp: 11,  mp: 2,  atk: 2.0, mag: 0.8, def: 2.0, res: 1.5, agi: 1.0, luk: 0.8 },
     skills: { 1: 'shield_bash', 2: 'rallying_taunt', 5: 'aegis', 18: 'valkyrie_dance', 22: 'guardian_wall', 30: 'riposte' },
     passive: { id: 'cover', name: 'Shieldmaiden', desc: 'Once per round, intercepts a hit aimed at an ally below 30% HP.' },
+    role: 'tank',
   },
   sakura: {
     id: 'sakura',
@@ -70,6 +72,7 @@ export const HEROES = {
     growth: { hp: 7,  mp: 6,  atk: 0.6, mag: 2.7, def: 1.0, res: 1.9, agi: 1.1, luk: 1.0 },
     skills: { 1: 'firebloom', 2: 'prism_lance', 16: 'starfall', 22: 'nova_lance', 30: 'cinderfall' },
     passive: { id: 'timid_prodigy', name: 'Timid Prodigy', desc: '+20% MAG while Erin stands. −10% if Erin falls.' },
+    role: 'caster',
   },
   shiro: {
     id: 'shiro',
@@ -82,6 +85,7 @@ export const HEROES = {
     growth: { hp: 8,  mp: 5,  atk: 0.7, mag: 2.1, def: 1.2, res: 2.0, agi: 1.3, luk: 1.0 },
     skills: { 1: 'mend', 2: 'frost_sigil', 6: 'checkmate', 18: 'zugzwang', 20: 'sanctuary', 28: 'stasis' },
     passive: { id: 'grand_design', name: 'Grand Design', desc: 'At the start of each round, marks the weakest enemy: it takes +15% damage.' },
+    role: 'healer',
   },
   yuki: {
     id: 'yuki',
@@ -93,9 +97,77 @@ export const HEROES = {
     base:   { hp: 88, mp: 26, atk: 10, mag: 6, def: 9, res: 8, agi: 8, luk: 12 },
     growth: { hp: 8,  mp: 2,  atk: 1.4, mag: 0.8, def: 1.2, res: 1.0, agi: 0.9, luk: 1.5 },
     skills: { 1: 'desperate_swing', 2: 'encourage', 10: 'resolve_strike', 16: 'covering_vow', 26: 'radiant_poise' },
-    passive: { id: 'lucky_lamb', name: 'Lucky Lamb', desc: 'Somehow survives. +15% chance attacks against him miss.' },
+    passive: { id: 'lucky_lamb', name: 'Lucky Lamb', desc: 'Somehow survives. +15% chance attacks against him miss.', dodge: 0.15 },
+    role: 'support',
+  },
+
+  // ---- Post-Monarch recruits (adapted from the Warlock's Codex) ----
+  // recruit: true keeps them out of the roster until formally signed.
+  // arrive: { day: N days after the clear } or { ngPlus: N } gates the offer.
+
+  mira: {
+    id: 'mira', recruit: true, arrive: { day: 0 },
+    name: 'Mira', epithet: 'the Bold', cls: 'Mercenary',
+    desc: 'Mira Ashvale, twenty-nine, sellsword. Broad shoulders, honest scars, a contract rate she quotes without blinking. She walked in the day after the Threshold closed and asked who she talks to about steady work with people worth bleeding for.',
+    persona: 'A veteran mercenary: wry, professional, unimpressed by titles and very impressed by competence. Fights for coin, stays for people, and would die before admitting she has a soft spot for green recruits. Talks like someone who has already survived the worst job offer in the room.',
+    startLevel: 30,
+    base:   { hp: 145, mp: 24, atk: 15, mag: 4, def: 13, res: 9, agi: 10, luk: 8 },
+    growth: { hp: 11,  mp: 2,  atk: 2.2, mag: 0.7, def: 1.8, res: 1.4, agi: 1.1, luk: 0.9 },
+    skills: { 1: 'sunder_strike', 2: 'war_banner', 6: 'stand_fast', 14: 'crushing_blow', 24: 'rampart_cleave' },
+    passive: { id: 'paid_in_full', name: 'Paid in Full', desc: 'A professional\'s eye for spoils: +25% gold from battles she fights in.', goldMult: 0.25 },
+    role: 'tank',
+  },
+  nessa: {
+    id: 'nessa', recruit: true, arrive: { day: 2 },
+    name: 'Nessa', epithet: 'the Hedgewitch', cls: 'Herbalist',
+    desc: 'Nessa Vale kept a market stall and made house calls for families no guild physician would see. After the Threshold, the wounded she patched up kept saying one party\'s name. She arrived with a basket of tinctures and a petition to join, rehearsed forty times.',
+    persona: 'A shy, sweet herbalist who apologizes when other people bump into her — and goes absolutely steel-spined the moment a patient is in danger. Speaks softly, knows every plant that heals and every one that very much does not, and is trying to be brave about being around famous adventurers.',
+    startLevel: 30,
+    base:   { hp: 100, mp: 58, atk: 7, mag: 14, def: 8, res: 12, agi: 9, luk: 11 },
+    growth: { hp: 8,   mp: 5,  atk: 0.8, mag: 2.0, def: 1.2, res: 1.8, agi: 1.0, luk: 1.2 },
+    skills: { 1: 'salve', 2: 'nettle_flask', 6: 'soothing_word', 14: 'tonic_mist', 24: 'panacea' },
+    passive: { id: 'field_remedies', name: 'Field Remedies', desc: 'Each round she quietly tends the most wounded ally, restoring a little HP.', roundHeal: 0.04 },
+    role: 'healer',
+  },
+  vex: {
+    id: 'vex', recruit: true, arrive: { day: 4 },
+    name: 'Vex', epithet: 'the Hollow One', cls: 'Shade',
+    desc: 'A shadow-entity that lived in the sealed dark below the gates — until the Monarch\'s fall cracked its ceiling open. It surfaced, watched the guild for three days, and then filled out a membership form in perfect, unsettling calligraphy. The guild is still deciding how it feels.',
+    persona: 'A genderless shadow-creature learning personhood in real time: odd cadence, unfailing literal honesty, deep curiosity about warmth, food, and why people laugh. Ancient, lonely, and quietly delighted every time someone treats it as a “who” instead of a “what.”',
+    startLevel: 30,
+    base:   { hp: 95, mp: 40, atk: 17, mag: 10, def: 8, res: 10, agi: 16, luk: 10 },
+    growth: { hp: 8,  mp: 3,  atk: 2.4, mag: 1.3, def: 1.1, res: 1.4, agi: 1.8, luk: 1.1 },
+    skills: { 1: 'shadow_talon', 2: 'through_the_veil', 6: 'hollow_embrace', 14: 'null_shriek', 24: 'unmaking' },
+    passive: { id: 'hollow_step', name: 'Hollow Step', desc: 'Half here, half elsewhere: +15% chance attacks against it miss.', dodge: 0.15 },
+    role: 'striker',
+  },
+  seris: {
+    id: 'seris', recruit: true, arrive: { ngPlus: 1 },
+    name: 'Seris', epithet: 'the College\'s Instrument', cls: 'Shadow Warlock',
+    desc: 'Seris Val, the Arcane College\'s most trusted instrument, dispatched to observe, contain, and if necessary dismantle the anomaly calling itself the System. She has read every report on your growth rate. She does not believe them. She is here to be wrong in person.',
+    persona: 'A precise, dangerous College agent sent to investigate the player\'s impossible growth — rival first, ally slowly. Dry wit sharpened to a scalpel, allergic to being impressed, keeps meticulous notes she pretends are for her superiors. The word "anomaly" is doing a lot of emotional work for her.',
+    startLevel: 34,
+    base:   { hp: 90, mp: 60, atk: 6, mag: 18, def: 7, res: 14, agi: 11, luk: 9 },
+    growth: { hp: 7,  mp: 5,  atk: 0.7, mag: 2.5, def: 1.1, res: 1.9, agi: 1.2, luk: 1.0 },
+    skills: { 1: 'shadow_lash', 2: 'gloom_brand', 6: 'umbral_coil', 14: 'eclipse', 24: 'midnight_rite' },
+    passive: { id: 'hexweaver', name: 'Hexweaver', desc: 'Her hexes do not miss: status effects she applies always land.', sureHex: true },
+    role: 'caster',
   },
 };
+
+// Recruits available to court, given the current state.
+export function recruitOffers(S) {
+  if (!S.cleared) return [];
+  const sinceClear = S.day - (S.clearedDay || S.day);
+  return Object.values(HEROES).filter(h => {
+    if (!h.recruit) return false;
+    if ((S.recruited || []).includes(h.id)) return false;
+    const a = h.arrive || {};
+    if (a.ngPlus != null && (S.ngPlus || 0) < a.ngPlus) return false;
+    if (a.day != null && sinceClear < a.day) return false;
+    return true;
+  });
+}
 
 export function heroStatsAt(heroDef, level) {
   const s = {};
@@ -192,6 +264,34 @@ export const SKILLS = {
   covering_vow:  { name: 'Covering Vow', type: 'support', mp: 12, target: 'ally', anim: 'buff', shieldPower: 1.6, desc: 'Steps in front of someone he loves. A shield scaled to his DEF.' },
   radiant_poise: { name: 'Radiant Poise', type: 'support', mp: 16, target: 'all_allies', anim: 'buff', apply: { to: 'target', id: 'haste', turns: 2 }, desc: 'The System reclassified more than his silhouette. The party moves like water.' },
 
+  // Mira
+  sunder_strike: { name: 'Sunder Strike', type: 'phys', power: 1.1, mp: 7, target: 'enemy', anim: 'melee', apply: { to: 'target', id: 'def_down', turns: 2, chance: 0.8 }, desc: 'A professional\'s opener: crack the armor first.' },
+  war_banner:    { name: 'War Banner', type: 'support', mp: 10, target: 'all_allies', anim: 'buff', apply: { to: 'target', id: 'atk_up', turns: 2 }, desc: 'She\'s survived worse than this. It\'s contagious. Party +25% ATK/MAG.' },
+  stand_fast:    { name: 'Stand Fast', type: 'support', mp: 9, target: 'self', anim: 'buff', shieldPower: 1.8, apply: { to: 'target', id: 'taunt', turns: 2 }, desc: 'Plants her feet and dares the room. Taunts; gains a shield scaled to DEF.' },
+  crushing_blow: { name: 'Crushing Blow', type: 'phys', power: 1.6, mp: 14, target: 'enemy', anim: 'melee', apply: { to: 'target', id: 'stun', turns: 1, chance: 0.4 }, desc: 'Both hands, no warning. May stun.' },
+  rampart_cleave:{ name: 'Rampart Cleave', type: 'phys', power: 0.95, mp: 22, target: 'all_enemies', anim: 'melee', apply: { to: 'self', id: 'def_up', turns: 2 }, desc: 'One horizon-wide arc, then back behind the shield. Hits all; braces after.' },
+
+  // Nessa
+  salve:         { name: 'Salve', type: 'heal', power: 2.4, mp: 9, target: 'ally', anim: 'cast', desc: 'Honest medicine, expertly applied.' },
+  nettle_flask:  { name: 'Nettle Flask', type: 'mag', power: 0.8, mp: 8, target: 'enemy', anim: 'cast', apply: { to: 'target', id: 'poison', turns: 3, chance: 0.85 }, desc: 'Every plant that heals has a cousin that doesn\'t.' },
+  soothing_word: { name: 'Soothing Word', type: 'heal', power: 1.2, mp: 10, target: 'ally', anim: 'buff', apply: { to: 'target', id: 'regen', turns: 3 }, desc: 'A small mend, and Mending that lingers.' },
+  tonic_mist:    { name: 'Tonic Mist', type: 'heal', power: 1.5, mp: 26, target: 'all_allies', anim: 'cast', desc: 'An atomized restorative. The whole party breathes easier.' },
+  panacea:       { name: 'Panacea', type: 'heal', power: 3.2, mp: 30, target: 'ally', anim: 'cast', apply: { to: 'target', id: 'blessed', turns: 2 }, desc: 'Her masterwork. A second chance in a stoppered bottle.' },
+
+  // Vex
+  shadow_talon:  { name: 'Shadow Talon', type: 'phys', power: 1.15, mp: 5, target: 'enemy', anim: 'melee', desc: 'A claw of solid dark.' },
+  through_the_veil:{ name: 'Through the Veil', type: 'phys', power: 0.68, hits: 3, mp: 14, target: 'enemy', anim: 'dash', desc: 'Three cuts from three directions. It only stepped once.' },
+  hollow_embrace:{ name: 'Hollow Embrace', type: 'phys', power: 1.3, mp: 12, target: 'enemy', anim: 'melee', drain: 0.5, desc: 'It holds the target very gently and keeps some of what spills.' },
+  null_shriek:   { name: 'Null Shriek', type: 'mag', power: 1.0, mp: 14, target: 'enemy', anim: 'cast', apply: { to: 'target', id: 'vulnerable', turns: 2, chance: 0.7 }, desc: 'The sound a hole makes. Leaves the target Exposed.' },
+  unmaking:      { name: 'Unmaking', type: 'phys', power: 1.5, mp: 30, target: 'all_enemies', anim: 'dash', apply: { to: 'target', id: 'res_down', turns: 2, chance: 0.7 }, desc: 'For one heartbeat, everything near it remembers being nothing.' },
+
+  // Seris
+  shadow_lash:   { name: 'Shadow Lash', type: 'mag', power: 1.15, mp: 6, target: 'enemy', anim: 'cast', desc: 'A whip of cold, disapproving dark.' },
+  gloom_brand:   { name: 'Gloom Brand', type: 'mag', power: 0.75, mp: 10, target: 'enemy', anim: 'cast', apply: { to: 'target', id: 'res_down', turns: 2 }, desc: 'Files the target under "vulnerable." −30% RES.' },
+  umbral_coil:   { name: 'Umbral Coil', type: 'mag', power: 1.7, mp: 16, target: 'enemy', anim: 'cast', apply: { to: 'target', id: 'vulnerable', turns: 2, chance: 0.7 }, desc: 'Shadow constricts, and keeps a grip. Leaves the target Exposed.' },
+  eclipse:       { name: 'Eclipse', type: 'mag', power: 1.1, mp: 26, target: 'all_enemies', anim: 'cast', apply: { to: 'target', id: 'atk_down', turns: 2, chance: 0.6 }, desc: 'She turns off the light. All enemies, Weakened.' },
+  midnight_rite: { name: 'Midnight Rite', type: 'mag', power: 1.45, mp: 36, target: 'all_enemies', anim: 'cast', apply: { to: 'target', id: 'res_down', turns: 2, chance: 0.8 }, desc: 'The College forbids this one. She footnoted her objection and learned it anyway.' },
+
   // Enemies
   e_bite:        { name: 'Bite', type: 'phys', power: 1.0, mp: 0, target: 'enemy', anim: 'melee' },
   e_smash:       { name: 'Crushing Smash', type: 'phys', power: 1.7, mp: 0, target: 'enemy', anim: 'melee', cooldown: 3 },
@@ -264,6 +364,25 @@ export const ENEMIES = {
   demon_general: { name: 'Demon General',   model: 'demon',    variant: 'general', boss: true, base: { hp: 158, atk: 22, mag: 15, def: 13, res: 12, agi: 12 }, skills: ['e_devastate', 'e_rend', 'e_ember', 'e_howl', 'e_enrage'], xp: 58, gold: 56 },
   void_seraph:   { name: 'Seraph of the Weave', model: 'herald', variant: 'seraph', boss: true, base: { hp: 190, atk: 23, mag: 22, def: 15, res: 15, agi: 14 }, skills: ['e_devastate', 'e_aoe_mag', 'e_hex', 'e_rend', 'e_enrage'], xp: 130, gold: 160 },
 };
+
+// ------------------------------------------------------------
+// Elite modifiers — a titled mob rolls one of these: stat
+// multipliers, a bonus skill, an opening status, richer rewards.
+// ------------------------------------------------------------
+
+export const ELITES = {
+  alpha:    { name: 'Alpha',    stats: { hp: 1.45, atk: 1.2, agi: 1.3 },  skill: 'e_howl',  start: 'haste' },
+  ancient:  { name: 'Ancient',  stats: { hp: 1.8, def: 1.35, res: 1.35 }, skill: 'e_heal',  start: 'def_up' },
+  cursed:   { name: 'Cursed',   stats: { hp: 1.4, mag: 1.35, res: 1.3 },  skill: 'e_hex',   start: 'focus_up' },
+  ravenous: { name: 'Ravenous', stats: { hp: 1.35, atk: 1.4 },            skill: 'e_rend',  start: 'enrage' },
+  warded:   { name: 'Warded',   stats: { hp: 1.5, res: 1.25 },            skill: 'e_drain', start: 'shield' },
+};
+
+export const ELITE_XP_MULT = 2.2;
+export const ELITE_GOLD_MULT = 2.0;
+
+// Chance that a spawned mob rolls elite (one max per normal room).
+export function eliteChance(rankIdx) { return 0.06 + rankIdx * 0.03; }
 
 // ------------------------------------------------------------
 // Biomes & gate generation
@@ -417,6 +536,43 @@ export function gearScore(g) {
   const stat = Object.entries(g.stats).reduce((a, [k, v]) => a + v / GEAR_STAT_SCALE[k], 0) | 0;
   return stat + (g.affix ? 8 + g.tier * 3 : 0);
 }
+
+// ------------------------------------------------------------
+// Reforging — the guild smith rerolls or adds affixes, for gold.
+// ------------------------------------------------------------
+
+export function reforgeCost(g) {
+  return g.affix ? 60 * (g.tier + 1) : 100 * (g.tier + 1);
+}
+
+// Reroll (or add) the affix on a piece of gear, in place.
+export function reforgeGear(g, rng = Math.random) {
+  const pool = Object.keys(AFFIXES).filter(id => AFFIXES[id].slot === g.slot && id !== g.affix);
+  if (!pool.length) return g;
+  // strip the old affix prefix off the display name
+  if (g.affix && AFFIXES[g.affix] && g.name.startsWith(AFFIXES[g.affix].name + ' ')) {
+    g.name = g.name.slice(AFFIXES[g.affix].name.length + 1);
+  }
+  const aid = pool[Math.floor(rng() * pool.length)];
+  g.affix = aid;
+  g.name = `${AFFIXES[aid].name} ${g.name}`;
+  return g;
+}
+
+// ------------------------------------------------------------
+// Dispatch — role composition bonuses for solo gate teams.
+// ------------------------------------------------------------
+
+export const ROLE_INFO = {
+  tank:    { name: 'Vanguard', icon: '🛡', bonus: 0.10, desc: 'someone to hold the line' },
+  healer:  { name: 'Mender',   icon: '✚', bonus: 0.12, desc: 'someone to patch the holes' },
+  caster:  { name: 'Arcanist', icon: '☄', bonus: 0.08, desc: 'someone to erase the problem rooms' },
+  striker: { name: 'Striker',  icon: '⚔', bonus: 0.08, desc: 'someone to finish fights fast' },
+  support: { name: 'Support',  icon: '❀', bonus: 0.06, desc: 'someone to keep spirits up' },
+};
+
+// Rough level a party member should be to face each rank evenly.
+export const DISPATCH_BENCHMARK = { F: 4, D: 10, C: 18, B: 28, A: 40, S: 54 };
 
 // Shop stock scales with guild rank.
 export function shopStock(rankIdx) {

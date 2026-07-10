@@ -227,6 +227,44 @@ const HERO_BUILDERS = {
     const w = sword(0xd8dde2, 0.42); w.position.set(0.42, 0.5, 0.05); w.rotation.z = -0.55; g.add(w);
     return g;
   },
+
+  // ---- post-Monarch recruits (Warlock's Codex imports) ----
+  mira() {
+    // sellsword: battered steel, sun-browned, a sword that has paid for itself
+    const g = chibi({ skin: 0xe2b990, hair: 0x6e3a2a, hairstyle: 'short', outfit: 0x8a8f96, outfitStyle: 'armor', sleeve: 0x5a4632, legColor: 0x3a3630, eyeColor: 0x4a3624 });
+    add(g, Box(0.36, 0.07, 0.22), mat(0x5a4632), 0, 0.46, 0);                       // heavy belt
+    add(g, Box(0.2, 0.06, 0.3), mat(0x9aa2ac, { metal: 0.5, rough: 0.5 }), -0.26, 1.06, 0, 0, 0, 0.28); // pauldron
+    add(g, Box(0.12, 0.02, 0.02), mat(0xc86a4a), 0.08, 1.24, 0.3);                  // the scar she won't explain
+    const w = sword(0xc8ccd2, 0.72); w.position.set(0.44, 0.5, 0.05); w.rotation.z = -0.42; g.add(w);
+    return g;
+  },
+  nessa() {
+    // hedgewitch: warm greens, a satchel of remedies, a flower she didn't notice
+    const g = chibi({ skin: 0xf6dcc0, hair: 0x8a5a34, hairstyle: 'curly', outfit: 0x7a9a58, outfitStyle: 'dress', frill: 0xe8e2c8, eyeColor: 0x6a4a2a });
+    add(g, Box(0.2, 0.16, 0.1), mat(0x8a6d3a), -0.3, 0.6, 0.14, 0, 0, 0.15);        // satchel
+    add(g, S(0.05, 8, 8), mat(0xffd0e0), 0.2, 1.43, 0.14);                           // flower tucked in her hair
+    add(g, S(0.04, 8, 8), mat(0xfff4f8), 0.27, 1.4, 0.1);
+    return g;
+  },
+  vex() {
+    // the Hollow One: person-shaped dark, violet eyes, edges that don't commit
+    const g = chibi({ skin: 0x1a1626, hair: null, outfit: 0x241f38, sleeve: 0x241f38, legColor: 0x16121f, eyeColor: 0xb08cff, eyeGlow: true });
+    const wm = mat(0x241f38, { opacity: 0.55 });
+    add(g, Cone(0.34, 0.5, 9, 1, true), wm, 0, 0.7, -0.05);                          // trailing shadow-hem
+    add(g, S(0.07, 8, 8), wm, -0.42, 1.3, -0.08);                                    // orbiting wisps
+    add(g, S(0.05, 8, 8), wm, 0.45, 0.95, -0.1);
+    add(g, S(0.045, 8, 8), wm, 0.1, 1.55, -0.12);
+    g.userData.float = true;
+    return g;
+  },
+  seris() {
+    // College instrument: severe robes, violet trim, notes on your growth rate
+    const g = chibi({ skin: 0xeed6c8, hair: 0x3a2a4a, hairstyle: 'straight', outfit: 0x2a2438, outfitStyle: 'robe', frill: 0x8a6ad8, eyeColor: 0xb08cff });
+    add(g, Tor(0.2, 0.025, 6, 14), mat(0x8a6ad8, { emissive: 0x8a6ad8, ei: 0.5 }), 0, 1.02, 0, Math.PI / 2.4); // College collar
+    const b = grimoire(); b.position.set(-0.4, 0.66, 0.12); b.rotation.y = 0.5; g.add(b);
+    const st = staff(0xb06cff); st.scale.setScalar(0.9); st.position.set(0.42, 0.15, 0.08); st.rotation.z = -0.12; g.add(st);
+    return g;
+  },
 };
 
 // ---------------------------------------------------------------
@@ -490,4 +528,5 @@ function autoScale(obj, targetHeight) {
 
 export const ACTOR_ACCENTS = {
   player: 0x54d8ff, erin: 0x5a8ae8, sakura: 0xff9ec6, shiro: 0xd8d8f2, yuki: 0xa8d8b0,
+  mira: 0xc86a4a, nessa: 0x8fce7a, vex: 0xb08cff, seris: 0x8a6ad8,
 };

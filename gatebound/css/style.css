@@ -464,3 +464,68 @@ textarea { height: 74px; margin-top: 10px; font-size: 0.7rem; resize: none; }
   .cam-ctrl { top: 82px; right: 8px; transform: none; }
   .cam-btn { width: 36px; height: 36px; font-size: 0.98rem; }
 }
+
+/* ============================================================
+   Warlock's Codex expansion — elites, doors, mastery, dispatch,
+   newcomers, and the Sanctum chat
+   ============================================================ */
+
+/* elite enemies */
+.ucard.elite { border-color: var(--gold); box-shadow: 0 0 14px rgba(217, 185, 106, 0.3); }
+.ucard.elite .uname { color: var(--gold); }
+
+/* branching doors */
+.d-door {
+  display: flex; flex-direction: column; align-items: flex-start; gap: 3px;
+  padding: 12px 16px; max-width: 300px; text-align: left;
+}
+.d-door small { color: var(--muted); font-size: 0.74rem; white-space: normal; line-height: 1.35; }
+.d-door.danger-door { border-color: var(--gold); box-shadow: 0 0 12px rgba(217, 185, 106, 0.25); }
+
+/* skill mastery stars */
+.mastery { color: var(--gold); letter-spacing: 0.08em; font-size: 0.72rem; }
+.skill-row .mastery { margin-left: 6px; }
+
+/* guild strip: members away on dispatch */
+.pcard.away { opacity: 0.55; }
+.pcard.away .portrait { filter: grayscale(0.7); }
+
+/* newcomer petitions */
+.recruit-card .recruit-head { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+.recruit-card .recruit-head .portrait { width: 56px; height: 56px; }
+.recruit-card p { flex: 1; }
+
+/* dispatch reports */
+.shop-row.report.ok b { color: var(--hp); }
+.shop-row.report.fail b { color: var(--danger); }
+
+/* the Sanctum */
+.sanctum-panel { display: flex; flex-direction: column; max-height: 92vh; }
+.sanctum-body { display: flex; gap: 16px; min-height: 0; flex: 1; }
+.sanctum-side { display: flex; flex-direction: column; align-items: center; gap: 6px; width: 150px; flex-shrink: 0; }
+.sanctum-side .portrait.big { width: 110px; height: 110px; }
+.sanctum-chat { display: flex; flex-direction: column; flex: 1; min-width: 0; min-height: 0; }
+.chat-log {
+  flex: 1; overflow-y: auto; min-height: 220px; max-height: 48vh;
+  border: 1px solid var(--border-dim); border-radius: 10px;
+  padding: 12px; background: rgba(8, 12, 20, 0.6);
+  display: flex; flex-direction: column; gap: 10px;
+}
+.chat-msg b { font-size: 0.8rem; letter-spacing: 0.05em; }
+.chat-msg p { font-size: 0.92rem; white-space: pre-wrap; user-select: text; }
+.chat-msg.user { align-self: flex-end; text-align: right; max-width: 85%; }
+.chat-msg.assistant { align-self: flex-start; max-width: 85%; }
+.chat-msg.thinking p { color: var(--muted); animation: pulse 1.2s infinite; }
+.chat-input-row { display: flex; gap: 8px; margin-top: 10px; align-items: flex-end; }
+.chat-input-row textarea {
+  flex: 1; resize: none; background: var(--panel-2); color: var(--text);
+  border: 1px solid var(--border); border-radius: 8px; padding: 8px 10px;
+  font-family: inherit; font-size: 0.92rem;
+}
+.chat-input-row textarea:focus { outline: none; border-color: var(--sys); }
+
+/* sanctum connection modal text inputs */
+.set-row input[type="text"], .set-row input[type="password"], .set-row input:not([type]) {
+  flex: 1; max-width: 260px; background: var(--panel-2); color: var(--text);
+  border: 1px solid var(--border); border-radius: 6px; padding: 6px 9px;
+}

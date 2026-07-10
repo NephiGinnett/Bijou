@@ -8,8 +8,8 @@
 //   r = c.step({kind:'skill', id, target});   // resolve & continue
 // ============================================================
 
-import { SKILLS, STATUSES, HEROES, ITEMS } from './data.js';
-import { heroStats, heroSkills, heroLoadout } from './state.js';
+import { SKILLS, STATUSES, HEROES, ITEMS, ELITES } from './data.js';
+import { heroStats, heroSkills, heroLoadout, masteryRank, bumpMastery, MASTERY_POWER, MASTERY_MP_DISCOUNT } from './state.js';
 
 const CRIT_MULT = 1.6;
 const zeroLoad = () => ({
@@ -49,7 +49,7 @@ export class Combat {
     for (const e of enemyGroup) {
       this.units.push({
         uid: e.uid, side: 'enemy', defId: e.defId,
-        name: e.name, model: e.model, variant: e.variant, boss: e.boss,
+        name: e.name, model: e.model, variant: e.variant, boss: e.boss, elite: e.elite || null,
         base: e.stats,
         hp: e.stats.hp, mp: 999, maxHp: e.stats.hp, maxMp: 999,
         skills: e.skills, statuses: [], cds: {}, guarding: false,
@@ -57,8 +57,16 @@ export class Combat {
       });
     }
     // Gear affixes: start-of-battle wards & haste (Warding / Vigorous).
+    // Elites open with their title's status already burning.
     for (const u of this.units) {
-      if (u.side !== 'party') continue;
+      if (u.side !== 'party') {
+        const ed = u.elite ? ELITES[u.elite] : null;
+        if (ed && ed.start) {
+          if (ed.start === 'shield') u.statuses.push({ id: 'shield', turns: 3, power: Math.round(u.maxHp * 0.25) });
+          else u.statuses.push({ id: ed.start, turns: 3, power: 0 });
+        }
+        continue;
+      }
       if (u.load.startShield > 0) u.statuses.push({ id: 'shield', turns: 3, power: Math.round(u.maxHp * u.load.startShield) });
       if (u.load.startHaste) u.statuses.push({ id: 'haste', turns: 2, power: 0 });
     }
@@ -179,6 +187,20 @@ export class Combat {
         ev.push({ t: 'log', text: `Shiro's Grand Design marks ${weakest.name}.` });
       }
     }
+    // Round-heal passives (Nessa's Field Remedies): tend the most wounded ally.
+    for (const u of this.units) {
+      if (u.side !== 'party' || u.hp <= 0) continue;
+      const p = HEROES[u.heroId] && HEROES[u.heroId].passive;
+      if (!p || !p.roundHeal) continue;
+      const hurt = this.alive('party').filter(a => a.hp < a.maxHp)
+        .sort((a, b) => a.hp / a.maxHp - b.hp / b.maxHp)[0];
+      if (hurt) {
+        const amt = Math.max(1, Math.round(hurt.maxHp * p.roundHeal));
+        hurt.hp = Math.min(hurt.maxHp, hurt.hp + amt);
+        ev.push({ t: 'heal', uid: hurt.uid, amount: amt, hpAfter: hurt.hp });
+        ev.push({ t: 'log', text: `${u.name} tends ${hurt.name}'s wounds.` });
+      }
+    }
   }
 
   turnUpkeep(u, ev) {
@@ -287,8 +309,19 @@ export class Combat {
       return;
     }
 
-    const sk = SKILLS[cmd.id];
+    let sk = SKILLS[cmd.id];
     if (!sk) return;
+    // Skill mastery: practiced skills hit harder; max rank trims MP costs.
+    if (u.side === 'party' && u.heroId) {
+      const rank = masteryRank(this.S, u.heroId, cmd.id);
+      if (rank > 0) {
+        sk = Object.assign({}, sk);
+        if (sk.power) sk.power = sk.power * (1 + MASTERY_POWER * rank);
+        if (rank >= 5 && sk.mp) sk.mp = Math.ceil(SKILLS[cmd.id].mp * MASTERY_MP_DISCOUNT);
+      }
+      const up = bumpMastery(this.S, u.heroId, cmd.id);
+      if (up) ev.push({ t: 'log', text: `${u.name}'s ${sk.name} reaches mastery ${'★'.repeat(up)}!` });
+    }
     if (sk.mp) u.mp = Math.max(0, u.mp - sk.mp);
     if (sk.cooldown) u.cds[cmd.id] = sk.cooldown;
 
@@ -329,8 +362,10 @@ export class Combat {
       }
       if (sk.apply && tgt.hp > 0) {
         const applies = Array.isArray(sk.apply) ? sk.apply : [sk.apply];
+        // Hexweaver (Seris): her status effects always land.
+        const sure = u.side === 'party' && HEROES[u.heroId] && HEROES[u.heroId].passive.sureHex;
         for (const ap of applies) {
-          if (ap.chance && Math.random() > ap.chance) continue;
+          if (ap.chance && !sure && Math.random() > ap.chance) continue;
           const dst = ap.to === 'self' ? u : tgt;
           this.addStatus(dst, ap.id, ap.turns, ev);
         }
@@ -351,8 +386,9 @@ export class Combat {
   }
 
   dealDamage(u, tgt, sk, ev) {
-    // dodge (Yuki passive)
-    if (tgt.uid === 'yuki' && Math.random() < 0.15) {
+    // dodge passives (Yuki's Lucky Lamb, Vex's Hollow Step)
+    const dodge = (tgt.side === 'party' && HEROES[tgt.heroId] && HEROES[tgt.heroId].passive.dodge) || 0;
+    if (dodge && Math.random() < dodge) {
       ev.push({ t: 'hit', uid: tgt.uid, dmg: 0, miss: true, kind: sk.type, hpAfter: tgt.hp });
       return;
     }
@@ -480,7 +516,11 @@ export class Combat {
         cur.mp = u.mp;
       }
       const xp = this.units.filter(x => x.side === 'enemy').reduce((a, b) => a + b.xp, 0);
-      const gold = this.units.filter(x => x.side === 'enemy').reduce((a, b) => a + b.gold, 0);
+      let gold = this.units.filter(x => x.side === 'enemy').reduce((a, b) => a + b.gold, 0);
+      // Paid in Full (Mira): +gold from battles she fights in.
+      const goldMult = this.units.filter(x => x.side === 'party')
+        .reduce((a, x) => a + ((HEROES[x.heroId] && HEROES[x.heroId].passive.goldMult) || 0), 0);
+      if (goldMult) gold = Math.round(gold * (1 + goldMult));
       this.S.run.loot.xp += xp;
       this.S.run.loot.gold += gold;
       this.S.stats.kills += this.units.filter(x => x.side === 'enemy').length;
@@ -500,7 +540,9 @@ export class Combat {
   commandOptions(u) {
     const skills = u.skills.map(id => {
       const sk = SKILLS[id];
-      return { id, name: sk.name, mp: sk.mp || 0, desc: sk.desc || '', target: sk.target, usable: (sk.mp || 0) <= u.mp && !(sk.cooldown && u.cds[id] > 0) && !(sk.freeAction && u.freeUsed), cd: sk.cooldown ? (u.cds[id] || 0) : 0, type: sk.type, free: !!sk.freeAction };
+      const rank = u.heroId ? masteryRank(this.S, u.heroId, id) : 0;
+      const mp = rank >= 5 && sk.mp ? Math.ceil(sk.mp * MASTERY_MP_DISCOUNT) : (sk.mp || 0);
+      return { id, name: sk.name, mp, rank, desc: sk.desc || '', target: sk.target, usable: mp <= u.mp && !(sk.cooldown && u.cds[id] > 0) && !(sk.freeAction && u.freeUsed), cd: sk.cooldown ? (u.cds[id] || 0) : 0, type: sk.type, free: !!sk.freeAction };
     });
     const items = Object.entries(this.S.inventory)
       .filter(([, n]) => n > 0)
