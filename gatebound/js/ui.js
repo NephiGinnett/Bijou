@@ -28,7 +28,7 @@ export async function boot() {
   stage = new Stage($('#c3d'), $('#fx-overlay'));
   stage.setBiome(null);
   stage.start();
-  window.GAME = { get S() { return S; }, stage, ST };
+  window.GAME = { get S() { return S; }, stage, ST, PORTRAITS };
 
   document.addEventListener('pointerdown', () => AU.unlock(), { once: true });
   document.addEventListener('keydown', (e) => {
@@ -395,7 +395,7 @@ async function guild() {
             <div class="pinfo">
               <b style="color:${SPEAKERS[id].color}">${id === 'player' ? esc(S.name) : HEROES[id].name}</b>
               <span class="muted">Lv ${S.heroes[id].level} ${heroDesc(S, id).cls}${away.has(id) ? ' · <b class="gold">away</b>' : ''}</span>
-              ${id in S.bond ? heartsFor(id) : id === 'player' ? `<span class="sys-tag">THE SYSTEM · Lv ${pl.level}</span>` : `<span class="muted sm-text">${heroDesc(S, id).epithet}</span>`}
+              ${id in S.bond ? heartsFor(id) : id === 'player' ? `<span class="sys-tag">THE SYSTEM · Lv ${pl.level} · +${Math.round((0.1 + (S.legacy?.xpBoost || 0)) * 100)}% XP</span>` : `<span class="muted sm-text">${heroDesc(S, id).epithet}</span>`}
             </div>
           </div>`).join('')}
       </div>
@@ -1216,7 +1216,9 @@ function party(sel = 'player') {
           <small class="muted">${h.xp}/${next} XP</small>
           ${sel !== 'player' && sel in S.bond ? heartsFor(sel) : ''}
           <p class="bio">${heroDesc(S, sel).desc}</p>
-          <p class="passive"><b>${def.passive.name}:</b> ${def.passive.desc}</p>
+          <p class="passive"><b>${def.passive.name}:</b> ${sel === 'player'
+            ? `Levels grant outsized growth. Gains +${Math.round((0.1 + (S.legacy?.xpBoost || 0)) * 100)}% XP${S.legacy?.xpBoost ? ` (10% System + ${Math.round(S.legacy.xpBoost * 100)}% cycle legacy · party carries +${Math.round(S.legacy.xpBoost / 2 * 100)}%)` : ''}.`
+            : def.passive.desc}</p>
         </div>
         <div class="sheet-mid"><h3>Stats</h3>${statRows}<h3>Gear</h3>${gearRows}</div>
         <div class="sheet-right"><h3>Skills</h3>
@@ -1442,6 +1444,9 @@ function settingsModal(back) {
       ST.save(S);
       AU.sfx('gate');
       screen('', '');
+      // the new cycle resets Yuki's reclassification (and any attire look):
+      // rebuild the cached portraits before the replayed intro shows them
+      await refreshPortraits();
       await playEvent(EVENTS.ngplus_wake);
       await playEvent(EVENTS.intro);
       await playEvent(EVENTS.recruit);
