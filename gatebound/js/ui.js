@@ -36,6 +36,7 @@ export async function boot() {
   });
 
   // portraits (placeholder renders; swap in automatically if GLBs exist)
+  PORTRAITS.__key = 'adventure|';
   Promise.all(Object.keys(HEROES).map(async id => {
     PORTRAITS[id] = await makePortrait(id);
   })).then(() => { document.querySelectorAll('img[data-portrait]').forEach(img => { const k = img.dataset.portrait; if (PORTRAITS[k]) img.src = PORTRAITS[k]; }); });
@@ -82,14 +83,22 @@ function heroVariant(id) {
   return femme ? 'fem' : null;
 }
 
-// Yuki's portrait switches to the reclassified render once his arc completes.
-async function ensureYukiPortrait() {
-  if (S && S.flags && S.flags.yuki_femme && PORTRAITS.__yukiFem !== true) {
-    PORTRAITS.__yukiFem = true;
-    PORTRAITS.yuki = await makePortrait('yuki', 'fem');
-    document.querySelectorAll('img[data-portrait="yuki"]').forEach(img => { img.src = PORTRAITS.yuki; });
-  }
+// Regenerate the 2D portraits whenever their look changes: the party
+// attire setting, or Yuki's reclassification. Cheap no-op otherwise.
+async function refreshPortraits() {
+  const key = ((S && S.settings && S.settings.outfit) || 'adventure') + '|' + (S && S.flags && S.flags.yuki_femme ? 'f' : '');
+  if (PORTRAITS.__key === key) return;
+  PORTRAITS.__key = key;
+  await Promise.all(Object.keys(HEROES).map(async id => {
+    PORTRAITS[id] = await makePortrait(id, heroVariant(id));
+  }));
+  document.querySelectorAll('img[data-portrait]').forEach(img => {
+    const k = img.dataset.portrait;
+    if (PORTRAITS[k]) img.src = PORTRAITS[k];
+  });
 }
+// Yuki's portrait switches to the reclassified render once his arc completes.
+async function ensureYukiPortrait() { return refreshPortraits(); }
 
 // ------------------------------------------------------------------
 // dialogue player
@@ -278,6 +287,16 @@ function namePrompt(hasSave) {
 let rumorCycle = 0; // cycles flavor rumors on repeat taps within a day
 
 function yukiTicker() {
+  const married = S.seen && S.seen.wedding && (S.flags.harem_formed || (S.bond.yuki || 0) >= 10);
+  // --- late game: after the Threshold ---
+  if (S.flags.yuki_femme && married) return 'Yuki\'s wedding ring is guild-forged steel — she asked for the same alloy as the assignment board, "so it outlasts everything else in the hall." It will. So, by all appearances, will she.';
+  if (S.flags.yuki_femme && S.cleared) return 'The broadsheets keep calling the Monarch-slayers "the four." Yuki cuts out every article, corrects the number in green ink, and files them. Nobody has told her the guild archivist keeps her corrections as the official record.';
+  if (S.flags.yuki_member && S.cleared) return 'Post-Threshold, the guild offered Yuki his own command. He declined by return post: "Already have the only chair I ever wanted. It\'s the fifth one."';
+  if (S.flags.betrothal_ended && S.seen.rival_yuki_3) return 'Dawnbreak\'s clear times sit four seconds off yours on the pinned sheet, and Yuki Beaumont — A-rank — writes weekly to renegotiate the dinner bet. The guild frames the correspondence. Both sides of it.';
+  if (S.flags.betrothal_ended && S.cleared) return 'Yuki\'s letters come with clippings now: Dawnbreak clearing B-gates in your old times. "Not catching up anymore," the latest says. "Pacing. There\'s a difference. See you at the top."';
+  if (S.flags.yuki_refused && S.cleared) return 'Word from the east: the solo diver who kept refusing escorts made B-rank the week the Threshold closed. His examiner\'s note reads, in full: "Earned the door."';
+  if ((S.ngPlus || 0) >= 2 && S.flags.yuki_femme) return 'Yuki has started teaching the second-watch shift to new recruits: how to sit with someone in the dark and make it feel like the middle of the fire. Enrollment is full through winter.';
+  // --- mid game: the original thread ---
   if (S.flags.yuki_femme) return 'Yuki — long hair, green gown, second-watch partner, the harem\'s fifth heart — is exactly where she spent four years trying to reach: the middle of the fire.';
   if (S.flags.yuki_member) return 'Yuki runs every gate with you now, softening by the day into someone who finally fits. The guild has stopped being surprised by the fifth chair.';
   if (S.flags.betrothal_ended) return 'Yuki Beaumont, B-rank, runs gates with a party of his own now. His letters arrive on time, every week, to all four of you.';
