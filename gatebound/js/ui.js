@@ -198,6 +198,8 @@ export function playEvent(ev) {
           AU.sfx('confirm');
           if (c.bond) for (const [g, n] of Object.entries(c.bond)) { ST.addBond(S, g, n); toast(`${HEROES[g].name} bond +${n} ♥`, 'bond'); }
           if (c.flag) S.flags[c.flag] = true;
+          if (c.tone) { S.stats.tone = S.stats.tone || {}; S.stats.tone[c.tone] = (S.stats.tone[c.tone] || 0) + 1; }
+          if (c.reopen && ev.id) delete S.seen[ev.id]; // "not tonight" — the scene can come back
           const responses = c.r || [];
           steps.splice(idx, 1, ...responses);
           if (!responses.length) idx++;
@@ -356,7 +358,7 @@ async function guild() {
   screen(`
     <div class="hud-top">
       <div class="panel bar">
-        <span class="day">Day ${S.day}</span>
+        <span class="day">Day ${S.day}${S.legacy && S.legacy.cycle ? ` · Cycle ${S.legacy.cycle + 1}` : ''}</span>
         <span class="lic">License ${rankBadge(rank)}</span>
         <div class="gp-wrap" title="Guild points toward promotion">
           <div class="bar-outer gp"><div class="bar-inner" style="width:${need ? Math.min(100, S.gp / need * 100) : 100}%"></div></div>
@@ -1390,6 +1392,12 @@ function settingsModal(back) {
       <option value="adventure" ${s.outfit === 'adventure' ? 'selected' : ''}>Adventuring</option>
       <option value="formal" ${s.outfit === 'formal' ? 'selected' : ''}>Formal</option>
     </select></label>
+    ${S && S.cleared ? `
+    <div class="ngplus-box">
+      <b>⟲ Begin Cycle ${(S.legacy?.cycle || 0) + 2} (NG+)</b>
+      <p class="muted sm-text">Restart the story. You keep <b>every piece of gear</b> (bag and equipped), all <b>skill mastery</b>, and your auto-skill picks. The System remembers: <b>+${Math.round(ST.legacyBoostFor(S) * 100)}% XP</b> for you, half that for the party — grown from this cycle's recursions, bonds, and levels.</p>
+      <button class="btn sm" id="set-ngplus">Begin the next cycle</button>
+    </div>` : ''}
     ${S ? `
     <div class="row gap">
       <button class="btn sm" id="set-export">Export save</button>
@@ -1424,6 +1432,20 @@ function settingsModal(back) {
     };
     modal.querySelector('#set-wipe').onclick = () => {
       if (confirm('Delete the save? This cannot be undone.')) { ST.wipeSave(); S = null; modal.remove(); title(false); }
+    };
+    const ng = modal.querySelector('#set-ngplus');
+    if (ng) ng.onclick = async () => {
+      const boost = Math.round(ST.legacyBoostFor(S) * 100);
+      if (!confirm(`Begin Cycle ${(S.legacy?.cycle || 0) + 2}? The story restarts from day one. You keep all gear and mastery, and the System's boost becomes +${boost}% XP. This replaces the current save.`)) return;
+      modal.remove();
+      S = ST.newGamePlus(S);
+      ST.save(S);
+      AU.sfx('gate');
+      screen('', '');
+      await playEvent(EVENTS.ngplus_wake);
+      await playEvent(EVENTS.intro);
+      await playEvent(EVENTS.recruit);
+      guild();
     };
   }
   modal.querySelector('#set-close').onclick = () => {

@@ -40,7 +40,8 @@ export function newGame(playerName) {
     gearBag: [],
     gates: [],
     run: null,                       // active dungeon run
-    stats: { clears: 0, kills: 0, retreats: 0, wipes: 0 },
+    stats: { clears: 0, kills: 0, retreats: 0, wipes: 0, tone: {} },
+    legacy: { cycle: 0, xpBoost: 0 },  // NG+ cycles: carried across restarts
     cleared: false,
     clearedDay: 0,                   // day the Monarch fell (recruit arrivals key off it)
     ngPlus: 0,                       // Recursion depth cleared post-Monarch
@@ -75,6 +76,8 @@ function ensureShape(S) {
   if (!S.flags) S.flags = {};
   if (!S.mastery) S.mastery = {};
   if (!S.autoSkill) S.autoSkill = {};
+  if (!S.legacy) S.legacy = { cycle: 0, xpBoost: 0 };
+  if (S.stats && !S.stats.tone) S.stats.tone = {};
   if (!S.recruited) S.recruited = [];
   if (!S.dispatch) S.dispatch = [];
   if (!S.dispatchReports) S.dispatchReports = [];
@@ -163,7 +166,11 @@ export function heroSkills(S, id) {
 export function gainXp(S, id, amount) {
   const h = S.heroes[id];
   if (!h) return [];
-  if (id === 'player') amount = Math.round(amount * 1.1); // System passive
+  // System passive (+10% for the player) plus the NG+ legacy boost:
+  // the player carries it in full, the rest of the party at half.
+  const legacy = (S.legacy && S.legacy.xpBoost) || 0;
+  if (id === 'player') amount = Math.round(amount * (1.1 + legacy));
+  else if (legacy) amount = Math.round(amount * (1 + legacy / 2));
   h.xp += amount;
   const ups = [];
   while (h.xp >= xpToNext(h.level) && h.level < 60) {
@@ -238,6 +245,40 @@ export function bumpMastery(S, heroId, skillId) {
   m[skillId] = (m[skillId] || 0) + 1;
   const after = masteryRank(S, heroId, skillId);
   return after > before ? after : 0;
+}
+
+// --- NG+ cycles ---------------------------------------------------------------
+// Restart the story keeping every piece of gear (bag + equipped), skill
+// mastery, and auto-skill picks. The System's boost grows with how much
+// the ending cycle actually accomplished: recursions, bonds, levels.
+
+export function legacyBoostFor(S) {
+  const bondTotal = Object.values(S.bond || {}).reduce((a, b) => a + b, 0);
+  const levelTotal = Object.values(S.heroes || {}).reduce((a, h) => a + (h.level || 0), 0);
+  const prevCycles = (S.legacy && S.legacy.cycle) || 0;
+  const boost = 0.25
+    + 0.15 * prevCycles
+    + 0.10 * (S.ngPlus || 0)
+    + 0.01 * bondTotal
+    + 0.002 * levelTotal;
+  return Math.min(2.5, Math.round(boost * 100) / 100);
+}
+
+export function newGamePlus(S) {
+  const boost = legacyBoostFor(S);
+  const carried = [...S.gearBag];
+  for (const h of Object.values(S.heroes)) {
+    for (const slot of ['weapon', 'armor', 'charm']) {
+      if (h.gear[slot]) carried.push(h.gear[slot]);
+    }
+  }
+  const N = newGame(S.name);
+  N.gearBag = carried;
+  N.mastery = S.mastery || {};
+  N.autoSkill = S.autoSkill || {};
+  N.settings = S.settings;
+  N.legacy = { cycle: ((S.legacy && S.legacy.cycle) || 0) + 1, xpBoost: boost };
+  return N;
 }
 
 // --- guild rank ------------------------------------------------------------

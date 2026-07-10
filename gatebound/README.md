@@ -82,6 +82,21 @@ sheet once a skill reaches ★★★ mastery. Toggle it mid-fight either way;
 auto never flees and never spends items. The **⚒ Smith** (reforging)
 lives on its own screen now, reachable from the Shop.
 
+**NG+ cycles**: once the Threshold is closed, Settings offers **Begin
+the next cycle** — the story restarts from day one, but you keep every
+piece of gear (bag and equipped), all skill mastery, and auto-skill
+picks, and the System's XP boost grows with what the ending cycle
+accomplished (recursions cleared, bonds earned, levels reached; party
+members get half your boost). Stack cycles for compounding growth.
+
+**Tone choices**: the pivotal relationship beats — Yuki's requests, each
+devotion night, the harem's formation — now offer **wholesome,
+domineering, and rejection** options. Characters react in character
+(Erin thrills to command; Sakura flusters and follows; Shiro audits it
+and approves; Yuki chooses her place with open eyes), rejections stay
+retryable rather than locking a route, and the game quietly tracks your
+prevailing tone for future content.
+
 ### The Sanctum (optional AI chat)
 
 **✉ Sanctum** in the guild hall opens a chat room with any party member

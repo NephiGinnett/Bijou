@@ -148,13 +148,20 @@ E.yuki_joins = {
     { s: 'sakura', t: 'Yuki...' },
     { s: 'shiro', t: '(to you, flat and quiet) Your call, baggage handler. You\'re the one who\'ll be covering him.' },
     { choice: [
-      { t: '"One gate. Stay behind Erin, swing when I say swing."', flag: 'yuki_guest', bond: { sakura: 1 },
+      { t: '"One gate. Stay behind Erin, swing when I say swing."', flag: 'yuki_guest', tone: 'kind', bond: { sakura: 1 },
         r: [
           { s: 'yuki', t: 'Yes! Yes — behind Erin, swing on command. I can do that!' },
           { s: 'erin', t: 'Stars help me, there\'s two of them now.' },
           { s: 'narr', t: '(Yuki will join your next gate as a fifth party member.)' },
         ] },
-      { t: '"Not yet. Get to C on your own — it\'ll mean more."', flag: 'yuki_refused',
+      { t: '"Carried, then. Be sure you want to see it, Beaumont — my party, running the gates you dreamed about."', flag: 'yuki_guest', tone: 'dom',
+        r: [
+          { s: 'narr', t: 'The hall goes quiet enough to hear the board creak. Yuki\'s jaw works once. But he doesn\'t look away — that\'s the surprise — and something in his eyes is less like hurt than like a man checking the depth of water before he steps in.' },
+          { s: 'yuki', t: '...I know exactly whose party it is. I\'ve known since the third letter went unanswered and the broadsheets learned your name instead of mine. (quietly, evenly) I still want to see it. Maybe *because* it\'s yours.' },
+          { s: 'shiro', t: '(to her tea, arithmetic-flat) Honest terms, honestly stated, on both sides. Fine. He carries the supplies.' },
+          { s: 'narr', t: '(Yuki will join your next gate as a fifth party member — clear-eyed about whose banner he walks under.)' },
+        ] },
+      { t: '"Not yet. Get to C on your own — it\'ll mean more."', flag: 'yuki_refused', tone: 'reject',
         r: [
           { s: 'narr', t: 'Something crosses his face — hurt, then, slowly, something sturdier.' },
           { s: 'yuki', t: '...Yeah. Yeah, you\'re right. When I walk into a gate with you all, I want it to be because I earned the door.' },
@@ -210,7 +217,7 @@ E.yuki_stay = {
     { s: 'sys', t: '[ NEW DIRECTIVE — subject "Yuki Beaumont" requests voluntary reclassification. The System does not usually take requests. The System is... intrigued. Awaiting your authorization, Player. ]' },
     { s: 'narr', t: 'The blue light no one else can see turns, for the first time, to hang over someone who isn\'t you. Sakura gasps — she can almost see it now. Erin\'s hand finds her sword on reflex. Shiro just watches you, the way she watches a board tip.' },
     { choice: [
-      { t: '"Authorized. Welcome home, Yuki. We\'ll make room — all of us."', flag: 'yuki_member', bond: { yuki: 2 },
+      { t: '"Authorized. Welcome home, Yuki. We\'ll make room — all of us."', flag: 'yuki_member', tone: 'kind', bond: { yuki: 2 },
         r: [
           { s: 'sys', t: '[ Authorization accepted. Subject enrolled. Reclassification will proceed gradually — the System is thorough, not cruel. Party size: 5. ]' },
           { s: 'yuki', t: '(the breath goes out of him all at once, and what\'s left is the widest, most relieved smile you\'ve ever seen) Five. We\'re five. I earned the door AND they let me keep it—' },
@@ -218,7 +225,7 @@ E.yuki_stay = {
           { s: 'sakura', t: '(quietly, to Yuki) ...Welcome to the soft place. It\'s less frightening than the edge. I promise.' },
           { s: 'narr', t: '(Yuki has joined your party — permanently. The System\'s reclassification will unfold over the gates to come.)' },
         ] },
-      { t: '"Are you sure? This changes you — all the way down. There\'s no ledger for undoing it."', bond: { yuki: 1 },
+      { t: '"Are you sure? This changes you — all the way down. There\'s no ledger for undoing it."', tone: 'kind', bond: { yuki: 1 },
         r: [
           { s: 'yuki', t: 'You think I didn\'t read the fine print? I\'ve spent four years being a shape that fit nowhere. I\'m not afraid of becoming one that fits. I\'m afraid of dying the shape I started as.' },
           { s: 'narr', t: 'He looks at the three of them — knight, mage, queen — and then at you, and there is no doubt anywhere in his face.' },
@@ -226,6 +233,21 @@ E.yuki_stay = {
           { s: 'sys', t: '[ Consent reaffirmed. Reclassification queued. Party size: 5. ]' },
           { flag: 'yuki_member' },
           { s: 'narr', t: '(Yuki has joined your party — permanently.)' },
+        ] },
+      { t: '"Authorized — on my terms. Understand what you\'re asking, Beaumont: I took everything you were promised. You\'re not joining as my equal."', flag: 'yuki_member', tone: 'dom', bond: { yuki: 1 },
+        r: [
+          { s: 'narr', t: 'Erin\'s breath catches. Sakura\'s hand flies halfway to her mouth. And Yuki — Yuki goes very still, and then very steady, like a man who rehearsed for exactly this door and is relieved somebody finally opened it.' },
+          { s: 'yuki', t: 'I know what I\'m asking. I watched you take everything I was promised — and fit it better than I ever would have. (his chin comes up; his voice doesn\'t waver) If the only seat left at your table is beneath you, I am still asking for the seat. I\'d rather belong under your banner than stand equal anywhere else.' },
+          { s: 'sys', t: '[ Terms witnessed. Subject accepts subordinate enrollment — voluntarily, and with elevated pulse the System declines to editorialize about. Reclassification queued. Party size: 5. ]' },
+          { s: 'shiro', t: '(quietly, watching you both with a chess player\'s interest) Hierarchy freely chosen is still a choice. Note that he\'s standing straighter than he has all year.' },
+          { s: 'narr', t: '(Yuki has joined your party — on your terms, and, by every visible sign, precisely where he asked to be.)' },
+        ] },
+      { t: '"No. The party is four. Keep the door you earned, Yuki — and build your own hall behind it."', tone: 'reject',
+        r: [
+          { s: 'narr', t: 'It lands like a blow — and then, slowly, like a commission. He nods once, twice, packing the hurt away somewhere it can be converted into fuel. He\'s gotten frighteningly good at that.' },
+          { s: 'yuki', t: '...My own hall. (a long breath) All right. All right. Watch the eastern boards, then. The next party that clears what you clear is going to be mine, and when we buy the guild a round, you\'ll drink it.' },
+          { s: 'sys', t: '[ Request declined. Subject\'s trajectory: recalculated, not terminated. The System will be watching that one with interest. ]' },
+          { s: 'narr', t: '(Yuki walks his own road. Word of a new party — "Dawnbreak" — will reach the guild before long.)' },
         ] },
     ] },
   ],
@@ -753,11 +775,19 @@ E.yuki_fem3 = {
           { s: 'shiro', t: 'To the only variable I ever enjoyed failing to predict. ...To Yuki.' },
           { s: 'narr', t: '(Yuki is fully home. The party is five, and the harem, at last, is whole.)' },
         ] },
-      { t: 'Pull her into the middle of all of them. "Then stop thanking me and start belonging. Order from your floor."', bond: { yuki: 2 },
+      { t: 'Pull her into the middle of all of them. "Then stop thanking me and start belonging. Order from your floor."', tone: 'kind', bond: { yuki: 2 },
         r: [
           { s: 'yuki', t: '(laughing, crying, wedged happily between Erin\'s shoulder and Sakura\'s hat) An order. Yes. Belonging. I\'m going to be SO good at that.' },
           { s: 'shiro', t: 'She will, too. She does nothing by halves. It is, I have come to understand, the single most Yuki thing about her.' },
           { s: 'narr', t: '(Yuki is fully home — reclassified, beloved, and unmistakably one of the girls now.)' },
+        ] },
+      { t: 'Keep her hands in yours and let her see exactly what you are. "Look at me, Yuki. I took your place, your betrotheds, your whole promised life — and made it mine. And you asked to come home to it anyway. Say whose you are."', tone: 'dom', bond: { yuki: 2 },
+        r: [
+          { s: 'narr', t: 'The fire pops. Nobody breathes. And Yuki — who spent four years at the edge of every room — steps INTO it, close enough that her answer lands on your mouth more than the air.' },
+          { s: 'yuki', t: 'Yours. (no flinch, no tremor; the brightest, steadiest thing she has ever said) You think I don\'t know what you took? I watched you take it — better than I ever carried it — and it was the first thing in my life that ever made sense to want. That\'s why it had to be YOU who authorized me. Not the guild. Not the System. You. (a breath, wicked and shy at once) So say it back, replacement. Say what you kept.' },
+          { s: 'narr', t: 'You say it back. Around the fire, three A-ranks exchange a look that is equal parts scandal and approval — and Erin, predictably, is the one who breaks first: "Oh, we are KEEPING this version of both of you."', spice: 'gentle' },
+          { s: 'narr', t: 'You say it back — with your hands in her loosened hair and her gown\'s ribbon undone between two heartbeats, claiming her mouth while the others watch with heat and zero surprise. She melts like she trained for it, four years of wanting surrendered all at once, murmuring *yours, yours, finally, properly yours* against your throat until the words stop being separate. The fire burns down over the sound of Yuki Beaumont learning, thoroughly and out loud, exactly what her place in this party is — and exactly how much she loves it there.', spice: 'steamy' },
+          { s: 'shiro', t: '(later, dry as dust, to the fire) For the ledger: the arrangement is unconventional, freely chosen, and — judging strictly by the data — the happiest she has ever been. Filed under: correct outcomes, improper methods.' },
         ] },
     ] },
     { flag: 'yuki_femme' },
@@ -780,17 +810,27 @@ E.sakura_devotion = {
     { s: 'sakura', t: 'I kept waiting to be too shy for this. To flinch. (she crosses to your bedroll, leaving the hat behind in the grass) It turns out the scabbard only ever covered one thing, and it wasn\'t fear. It was want. I want you, {name}. I have, since the tea.' },
     { s: 'narr', t: 'She kisses you slow and deliberate, a girl who has read every romance twice and is finally done reading. Her hands find your collar; the warm ozone-smell of her magic is close, and her breath is not steady at all — and neither, you notice, is yours.' },
     { choice: [
-      { t: 'Pull her down into the warmth of the bedroll. "Then stop wanting from across the fire."', bond: { sakura: 1 },
+      { t: 'Pull her down into the warmth of the bedroll. "Then stop wanting from across the fire."', tone: 'kind', bond: { sakura: 1 },
         r: [
           { s: 'sakura', t: '(a soft, delighted sound against your mouth) Villain timing. You always— mm. Closer. I\'ll not be shy about closer.' },
           { s: 'narr', t: 'The embers gutter low and neither of you tends them. She stops narrating, stops rehearsing, stops being timid about a single thing — and the last clear thought you keep is that the most dangerous mage of her generation kisses the way she casts: all in, no apology, the sky answering.', spice: 'gentle' },
           { s: 'narr', t: 'The embers gutter unseen. She draws your shirt off with the same fearless precision she aims a spell, and when your hands find the laces of her robe she gasps your name like the first word of an incantation — and then there are no more words, only heat and skin and the hush of her breath, the most dangerous mage of her generation taking exactly what she wants in the dark and giving back more. When you notice the stars again they have wheeled halfway across the sky.', spice: 'steamy' },
           { s: 'narr', t: 'Later, tangled warm and quiet, she traces that little pressed-flower initial onto your chest, over and over, like signing her name to something she means to keep.' },
         ] },
-      { t: 'Cup her face. "Say it once more — plainly. Let the prodigy ask."', bond: { sakura: 1 },
+      { t: 'Cup her face. "Say it once more — plainly. Let the prodigy ask."', tone: 'kind', bond: { sakura: 1 },
         r: [
           { s: 'sakura', t: '(low, steady, drawn-blade certain) I want you. Tonight, and the nights after it. Keep looking — and stop only looking.' },
           { s: 'narr', t: 'You don\'t only look. The fire burns to nothing untended, and in the morning Erin finds two watches unstood and, wisely, says not one word about it.' },
+        ] },
+      { t: 'Take the book from her hands and set it aside. "Done asking, then. Good. Come here — you\'re mine tonight, and you\'ll not be shy about that either."', tone: 'dom', bond: { sakura: 1 },
+        r: [
+          { s: 'sakura', t: '(a full-body shiver, ears going scarlet — and her eyes going darker, not wider) Oh. OH. That\'s— you can\'t just— (she is already moving) —okay. Yes. Yours. But I\'m keeping the bookmark, that scene was research—' },
+          { s: 'narr', t: 'She comes to you flustered and glowing and not one step slow, and it turns out the shy prodigy has a whole shelf of feelings about being claimed out loud — every one of them enthusiastic, every one of them read twice.', spice: 'gentle' },
+          { s: 'narr', t: 'She comes apart wonderfully under plain-spoken wanting: pink to the ears and pulling you down anyway, gasping agreement into your mouth while her fearless hands make their own demands, the most dangerous mage of her generation discovering — loudly, and then muffled, and then loudly again — exactly how much she likes being told instead of asked. Afterward she lies wrecked and beaming against you and mumbles that volume six was never THIS well-written.', spice: 'steamy' },
+        ] },
+      { t: '"Not tonight, Sakura. Soon — I promise you the whole sky. Just not tonight."', tone: 'reject', reopen: true,
+        r: [
+          { s: 'sakura', t: '(a breath; then a small, brave smile as she reclaims her book) The whole sky. I\'m writing that down, and I\'m holding you to it. (softly) Soon, then. I\'ve gotten very good at soon.' },
         ] },
     ] },
   ],
@@ -804,17 +844,28 @@ E.erin_devotion = {
     { s: 'erin', t: 'My whole life I stood between people and harm. Nobody ever stood close enough to be the thing I was guarding. (she reaches for you, and her hand isn\'t steady, and she lets you see that it isn\'t) So come inside the wall, {name}. I\'m done keeping you at shield\'s length.' },
     { s: 'narr', t: 'She kisses like she fights — total commitment, no self-preservation — but slower now, learning the shape of unhurried, laughing low against your jaw when your fingers find the buckle of her gambeson.' },
     { choice: [
-      { t: 'Pull the scarf the rest of the way loose. "Off duty, knight. That\'s an order you like."', bond: { erin: 1 },
+      { t: 'Pull the scarf the rest of the way loose. "Off duty, knight. That\'s an order you like."', tone: 'kind', bond: { erin: 1 },
         r: [
           { s: 'erin', t: '(that big unarmored laugh, gone breathless) Stars, I DO like it. Order me around, then — somebody finally learned the trick of me—' },
           { s: 'narr', t: 'And then there are no more orders, only the low fire and the astonishing discovery that the strongest woman in the party will come apart, utterly, for someone who simply asks what she wants and then gives it to her.', spice: 'gentle' },
           { s: 'narr', t: 'And then there are no more orders — only the gambeson gone, and the firelight on all that scarred strength, and the strongest woman in the party pulling you down over her with a groan that has nothing to do with battle. She gives the way she guards: everything, all at once, holding nothing back — and takes the same way, greedily, laughing into your throat, until the fire is embers and neither of you has the breath left to tend it.', spice: 'steamy' },
           { s: 'narr', t: 'Near dawn she pulls you against her like a shield turned inward and murmurs, half-asleep, that it\'s the first watch she\'s ever wanted to last until morning.' },
         ] },
-      { t: 'Slow her down. Kiss her once, gently, and just hold her. "No commitment for once. Just this."', bond: { erin: 1 },
+      { t: 'Slow her down. Kiss her once, gently, and just hold her. "No commitment for once. Just this."', tone: 'kind', bond: { erin: 1 },
         r: [
           { s: 'erin', t: '(going very still, then softening all at once) ...Just this. I don\'t know how to just-this. (a shaky breath) Teach me. We\'ve got till morning.' },
           { s: 'narr', t: 'You teach her slow. She\'s a fast study at everything, it turns out — even at being cherished — and by the time the sky greys she has stopped bracing for the moment it gets taken away.' },
+        ] },
+      { t: 'Stand, and let the firelight find your face. "On your knees, knight. You\'ve guarded everyone your whole life — tonight you\'ll kneel to your commander and be the one who\'s kept."', tone: 'dom', bond: { erin: 2 },
+        r: [
+          { s: 'narr', t: 'For one heartbeat the whole camp holds its breath. Then Erin Sterling — first through every door, never once ordered anywhere she didn\'t charge — sinks to her knees in the firelight with a shudder of pure, grateful relief, like armor coming off from the inside.' },
+          { s: 'erin', t: '(hoarse, grinning up at you, utterly without armor) There it is. THERE it is. Ten years holding the line and nobody — not one soul — ever had the nerve to hold ME. (her hands find your belt loops and pull you closer, entirely insubordinate about her obedience) Commander. Sir. Whatever you want — say it like THAT again and it\'s yours.' },
+          { s: 'narr', t: 'You say it like that again. The strongest woman in the guild spends the night proving that surrender, freely chosen, is just another thing she does with total commitment and zero self-preservation — and near dawn she pulls your arm over her like a shield and mutters that she outranks everyone in this camp except you, and stars help anyone who forgets either half of that.', spice: 'gentle' },
+          { s: 'narr', t: 'You say it like that again — slower — and she makes a sound the guild will never hear and obeys. What follows is the most committed night of your life: the wall of the party kneeling gladly, giving herself over order by order, strength offered up like a drawn sword and wielded exactly as you direct it — greedy, laughing, breathless, hers and yours at once. She takes command back precisely twice, both times magnificently, both times returning it after with a kiss like an oath of fealty. Near dawn, wrecked and radiant, she murmurs into your shoulder: "New standing order. That. Forever. Sir."', spice: 'steamy' },
+        ] },
+      { t: '"Stand your watch, Erin. Not tonight — but soon, and I\'ll say it plainly when it is."', tone: 'reject', reopen: true,
+        r: [
+          { s: 'erin', t: '(a beat; then she snaps a crisp, wry salute with her scarf half-loose) Understood. Watch stands. (softer, turning back to the fire) ...The offer does too, {name}. The wall\'s patient. Turns out I learned that from somebody.' },
         ] },
     ] },
   ],
@@ -828,17 +879,27 @@ E.shiro_devotion = {
     { s: 'shiro', t: 'I have modeled this moment forty ways to keep from being surprised by it. (her thumb moves across your knuckles, unstrategic, undefended) Every model was wrong. I do not want to out-position you tonight. For the first time in my life I want to be read. Completely. By you.' },
     { s: 'narr', t: 'She kisses you like conceding a game she is overjoyed to lose — careful, then not careful at all, the White Queen\'s composure coming apart one deliberate button at a time because she has decided, with her whole formidable will, to let it.' },
     { choice: [
-      { t: 'Take her hand off the strategy entirely. "No models tonight. Tell me what you want, out loud."', bond: { shiro: 1 },
+      { t: 'Take her hand off the strategy entirely. "No models tonight. Tell me what you want, out loud."', tone: 'kind', bond: { shiro: 1 },
         r: [
           { s: 'shiro', t: '(barely a whisper, utterly certain) You. Unhidden. All of it. I have spent my life unbeaten and unread, and I am so tired of winning alone—' },
           { s: 'narr', t: 'The candle burns down between you. She stops calculating. What is under the tactician, it turns out, is simply a woman who waited her entire disciplined life to be undone by exactly one person — and who means to make up the lost time with characteristic thoroughness.', spice: 'gentle' },
           { s: 'narr', t: 'The candle gutters and she lets it. The last of the composure comes undone under your hands — the White Queen who has never once in her life surrendered a position gives up every one of them at once, methodical even now, undoing you as precisely as she undoes herself, breath ragged against your mouth and her name for you the only word left in that formidable head. She makes up the lost time, as promised, with characteristic thoroughness, and the candle is long dead before she is done being read.', spice: 'steamy' },
           { s: 'narr', t: 'In the small hours she falls asleep against you mid-sentence: the only time you have ever known Shiro Miyouki to leave a thought unfinished.' },
         ] },
-      { t: 'Match her, slow and deliberate. "One move at a time. I\'m not going anywhere."', bond: { shiro: 1 },
+      { t: 'Match her, slow and deliberate. "One move at a time. I\'m not going anywhere."', tone: 'kind', bond: { shiro: 1 },
         r: [
           { s: 'shiro', t: 'One move at a time. (the ghost of a smile) You have learned to speak my language. I intend to spend a very long time becoming fluent in yours.' },
           { s: 'narr', t: 'She leaves the tea cold and the ledger closed. Some nights, she notes privately, are not for accounting. They are simply for keeping.' },
+        ] },
+      { t: 'Close the ledger yourself. "You\'ve been read since spring, Miyouki. Every tell, every glance, every line in that second ledger. Tonight I collect."', tone: 'dom', bond: { shiro: 1 },
+        r: [
+          { s: 'shiro', t: '(one eyebrow rises a precise half-millimeter; the pale eyes go warm underneath) Presumptuous. Unaudited. (she sets the ledger aside herself, deliberately, like a queen resigning a board) ...And substantially correct. Very well — collect. I will note for the record that I have never once objected to paying a debt fairly called.' },
+          { s: 'narr', t: 'You collect. She surrenders nothing carelessly and everything on purpose — position by position, with running commentary that grows steadily less coherent and more honest — and it is the only audit of her life she has ever failed with satisfaction.', spice: 'gentle' },
+          { s: 'narr', t: 'You collect — thoroughly, and she makes you work for every entry: the White Queen yielding one position at a time with a strategist\'s deliberation and a lover\'s escalating breathlessness, candle-gold and undone, meeting each demand with dry precision until precision deserts her entirely. She is called three years of tells, itemized, and pays every one with interest — and at the end, boneless against you, she reaches over, opens the ledger to a fresh page, and writes a single line in an unsteady hand: "Balance: settled. Interest: perpetual."', spice: 'steamy' },
+        ] },
+      { t: '"Pour the tea, Shiro. Tonight I just want the game and your company — the rest keeps."', tone: 'reject', reopen: true,
+        r: [
+          { s: 'shiro', t: '(a slow blink; then she pours, perfectly steady) The rest keeps. (setting up the board again) I have held positions for years, {name}. This one, I find, I do not mind holding. It appreciates.' },
         ] },
     ] },
   ],
@@ -925,14 +986,22 @@ E.harem_talk = {
     { s: 'sakura', t: '(from under her hat, very small) ...I thought it was only me. For the longest time I thought it was only me.' },
     { s: 'narr', t: 'The truth settles in the firelight between the four of you, enormous and delicate: each of them has fallen, all of them know it now, and nobody — this is the part that stops your breath — nobody looks angry.' },
     { choice: [
-      { t: '"I won\'t lie to any of you. I couldn\'t choose between you if the gate depended on it."', bond: { sakura: 1, erin: 1, shiro: 1 },
+      { t: '"I won\'t lie to any of you. I couldn\'t choose between you if the gate depended on it."', tone: 'kind', bond: { sakura: 1, erin: 1, shiro: 1 },
         r: [
           { s: 'shiro', t: 'Good. A forced choice is a losing position for everyone at the table, and I did not spend three years escaping one arrangement I never chose to walk into another.' },
           { s: 'erin', t: '(slowly, testing the shape of it) ...So we don\'t choose. So we all just... stay. And it isn\'t a competition, it\'s a—' },
           { s: 'sakura', t: 'A party. (a wet, radiant laugh) It\'s a party. We\'re very good at those.' },
           { s: 'narr', t: 'Nothing is decided tonight. But something eases in all three of them at once, and the fire feels warmer than the wood should allow.' },
         ] },
-      { t: '"Then talk to each other — not around me. Whatever this becomes, you decide it together."', bond: { shiro: 1, erin: 1 },
+      { t: '"There was never a choice to make. You\'ve all been mine for months — I was waiting for you to say it to each other."', tone: 'dom', bond: { erin: 2, sakura: 1, shiro: 1 },
+        r: [
+          { s: 'narr', t: 'Three heads turn at once. It\'s Erin who exhales first — a long, shaking breath, like a shield set down after a ten-year watch.' },
+          { s: 'erin', t: 'Stars. SAY it like that again. (she laughs, wrecked and relieved) All this time I thought we were sneaking around the obvious, and the obvious was just — waiting for us to catch up.' },
+          { s: 'sakura', t: '(scarlet, hat brim down to her nose, voice tiny and absolutely certain) ...He\'s right, though. I checked. Months.' },
+          { s: 'shiro', t: 'Presumptuous. Unilateral. (she closes the pretense of her ledger, and the look she gives you over it is warm as a bank vault swinging open) ...And the single most accurate valuation I have ever heard given for free. Very well, {name}. Yours — plural. Do try to be worth the audit.' },
+          { s: 'narr', t: 'Nothing more is decided out loud. Nothing more needs to be. The fire feels warmer than the wood should allow, and three women sit a little closer to you, and to each other, than they did an hour ago.' },
+        ] },
+      { t: '"Then talk to each other — not around me. Whatever this becomes, you decide it together."', tone: 'kind', bond: { shiro: 1, erin: 1 },
         r: [
           { s: 'narr', t: 'So they talk. For the first time, honestly, over your head and to each other — three women who armored themselves against the whole world learning they never once had to be armored against each other.' },
           { s: 'shiro', t: '(much later, to you, dry) You realize you have delegated the most important negotiation of your life to a knight, a shy prodigy, and me. God help you. We will be thorough.' },
@@ -1437,6 +1506,30 @@ E.wedding_harem = {
     { s: 'narr', t: 'Then the kisses — each held long enough to make the front row cheer and the back row wolf-whistle, and carrying the unmistakable promise of a wedding night the guild will gossip about for a decade and none of you will ever once confirm. Rice, and roaring, and the doors banging open on the rest of a gloriously crowded life.', spice: 'steamy' },
     { s: 'narr', t: 'And somewhere far off, a letter arrives: bottles of Beaumont\'s finest and a card that reads only, "I always knew the door led somewhere good. Congratulations, all of you. — Y." (Unless Yuki is among those holding your hands at the altar — in which case she sent no card, because for the first time in her life the words had nowhere else they needed to go.)' },
     { s: 'narr', t: '♥  GATEBOUND — and they lived, gate after gate, happily.  ♥' },
+  ],
+};
+
+// ------------------------------------------------------------
+// NG+ CYCLES — the System offers the echo, and remembers.
+// ------------------------------------------------------------
+
+E.ngplus_hint = {
+  id: 'ngplus_hint', where: 'guild', once: true, priority: 43,
+  cond: S => S.cleared && (S.ngPlus || 0) >= 1,
+  steps: [
+    { s: 'sys', t: '[ Observation. The Threshold echoes. The gates echo. The System has begun to suspect the whole story echoes — and that a Player who walked it once could walk it again, carrying everything the walk made of them. ]' },
+    { s: 'sys', t: '[ The offer stands in your Settings, whenever you wish it: begin the cycle again. Keep every blade, every lesson your hands learned. The System\'s regard compounds. It always intended to. ]' },
+    { s: 'shiro', t: '(watching you stare at the empty air) ...It\'s telling you something expensive, isn\'t it. You get a specific face.' },
+  ],
+};
+
+E.ngplus_wake = {
+  id: 'ngplus_wake', where: 'auto', once: false, priority: 100,
+  steps: [
+    { s: 'sys', t: '[ Cycle initialized. Day one. Rank F. The paperwork insists you are nobody. ]' },
+    { s: 'sys', t: '[ The paperwork has not seen your pack. Every blade, every ward, every practiced motion — carried through. The System remembers what you are, even when the world politely forgets. ]' },
+    { s: 'sys', t: '[ Growth boost recalibrated for the road already walked. Do not disappoint. You never have. ]' },
+    { s: 'narr', t: 'The guild\'s assessment chamber hums, familiar as a favorite song started over. Somewhere across the hall, three A-ranks you would cross any threshold for are about to receive their licenses — and meet you for the first time. Again.' },
   ],
 };
 
