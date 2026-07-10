@@ -45,10 +45,11 @@ export function newGame(playerName) {
     clearedDay: 0,                   // day the Monarch fell (recruit arrivals key off it)
     ngPlus: 0,                       // Recursion depth cleared post-Monarch
     mastery: {},                     // heroId -> { skillId: use count }
+    autoSkill: {},                   // heroId -> preferred skill for auto-battle
     recruited: [],                   // post-clear guild recruits (hero ids)
     dispatch: [],                    // missions in the field
     dispatchReports: [],             // resolved missions awaiting review
-    settings: { volume: 0.6, music: true, textFast: false, spice: 'gentle', outfit: 'adventure' },
+    settings: { volume: 0.6, music: true, textFast: false, spice: 'gentle', outfit: 'adventure', autoBattle: false },
   };
   for (const id of ['player', 'erin', 'sakura', 'shiro']) {
     S.heroes[id] = {
@@ -73,6 +74,7 @@ function ensureShape(S) {
   if (S.ngPlus == null) S.ngPlus = 0;
   if (!S.flags) S.flags = {};
   if (!S.mastery) S.mastery = {};
+  if (!S.autoSkill) S.autoSkill = {};
   if (!S.recruited) S.recruited = [];
   if (!S.dispatch) S.dispatch = [];
   if (!S.dispatchReports) S.dispatchReports = [];

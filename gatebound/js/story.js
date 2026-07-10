@@ -917,7 +917,7 @@ E.yuki_devotion = {
 
 E.harem_talk = {
   id: 'harem_talk', where: 'camp', once: true, priority: 49,
-  cond: S => ['sakura', 'erin', 'shiro'].filter(k => S.bond[k] >= 8).length >= 2,
+  cond: S => !S.flags.harem_formed && ['sakura', 'erin', 'shiro'].filter(k => S.bond[k] >= 8).length >= 2,
   steps: [
     { s: 'narr', t: 'You come back from the tree line to a fire gone strangely quiet — the specific quiet of a conversation that stopped the instant you got close. Three women, not looking at each other, each wearing the same guilty softness.' },
     { s: 'erin', t: '(too brightly) Nothing! We were discussing — watch rotations!' },
@@ -996,6 +996,118 @@ E.harem_whole = {
           { s: 'narr', t: 'The harem is whole. Five hearts, one fire, and not a single one of them ever at the edge again.' },
         ] },
     ] },
+  ],
+};
+
+// ------------------------------------------------------------
+// SHARED HEARTS — scenes for more than one romance at once:
+// character-building and, once everything is chosen and open,
+// full steamy-romance nights. Steamy lines show only on the
+// 'steamy' intimacy setting.
+// ------------------------------------------------------------
+
+// The in-between: everyone knows, nothing is settled yet.
+E.poly_overlap = {
+  id: 'poly_overlap', where: 'camp', once: true, priority: 48,
+  cond: S => S.seen.harem_talk && !S.flags.harem_formed,
+  steps: [
+    { s: 'narr', t: 'Since the night by the fire, the party has developed a new physics. Erin finds reasons to spar with you that end closer than they start. Sakura\'s goodnights have moved from across the camp to a handspan away. Shiro has begun, without comment, arranging the bedrolls in a shape that has no edges.' },
+    { s: 'erin', t: '(mid-spar, sword-locked, grinning down the crossed blades) You know the best part? A month ago I\'d have felt guilty about this. Wanting you where they could see it. Now Sakura keeps score for me.' },
+    { s: 'sakura', t: '(from the sidelines, not looking up from her book, ears scarlet) Seven to five. Erin. And your footwork gets worse when he smiles at you, it\'s in my notes.' },
+    { s: 'shiro', t: '(appearing at your elbow with tea and zero warning) Observation. The three of us have stopped competing and started... coordinating. Nobody planned it. I checked; I would remember planning it.' },
+    { choice: [
+      { t: '"Coordinating toward what, exactly?"', bond: { shiro: 1 },
+        r: [
+          { s: 'shiro', t: '(a long sip of tea; the pale eyes very steady over the rim) Toward the only outcome the numbers have supported for months. But numbers don\'t get to decide this one. People do. Slowly. Correctly. (quieter) ...Warmly.' },
+        ] },
+      { t: 'Catch Erin\'s blade, kiss her knuckles, and hold your hand out for Sakura\'s scorebook.', bond: { erin: 1, sakura: 1 },
+        r: [
+          { s: 'narr', t: 'Erin makes a sound she will deny to her grave. Sakura surrenders the book like it\'s state evidence. Under the tally she has written, in very small letters: "seven to five to three to — oh, who am I kidding. Everyone is winning."' },
+        ] },
+    ] },
+  ],
+};
+
+// Harem logistics: the funny, load-bearing conversation.
+E.poly_rota = {
+  id: 'poly_rota', where: 'camp', once: true, priority: 48,
+  cond: S => S.flags.harem_formed,
+  steps: [
+    { s: 'narr', t: 'Shiro has produced a document. It has columns. The heading reads, in her immaculate hand: DOMESTIC OPERATIONS — DRAFT ONE.' },
+    { s: 'shiro', t: 'Watch rotation, cooking rotation, and — (absolutely no change in tone) — a third rotation, which I am prepared to administer fairly, transparently, and with an appeals process.' },
+    { s: 'erin', t: '(upside down from the tree branch above) She\'s scheduling US, she means. Nights. She made a NIGHTS spreadsheet.' },
+    { s: 'sakura', t: 'I thought it was very considerate?! There\'s a — (deeply red, powering through) — there\'s a swap mechanism.' },
+    { s: 'shiro', t: 'There is a swap mechanism. There is also — (she taps the final column, and for one second the composure flickers into something younger) — a column for "everyone." I costed it. It costs nothing. It is the only line item in my career that has ever costed nothing.' },
+    { choice: [
+      { t: '"Approve the draft. One amendment: the everyone column gets priority."', bond: { sakura: 1, erin: 1, shiro: 1 },
+        r: [
+          { s: 'erin', t: '(dropping out of the tree) MOTION CARRIES. Shiro, minute it! Minute it before he gets shy!' },
+          { s: 'narr', t: 'Shiro minutes it. Sakura presses a flower next to the amendment. The most dangerous party in the guild\'s history now has founding documents, and every signature on them is a little unsteady, and nobody\'s is unsteady from doubt.' },
+        ] },
+      { t: '"No documents. We\'re not an arrangement — we\'re a family. We figure it out nightly, like everything else."',
+        bond: { erin: 2 },
+        r: [
+          { s: 'shiro', t: '(a pause; then she folds the document in half, and in half again, with the care of someone retiring a shield that served its purpose) ...Noted. For the record: I drafted it hoping someone would say that.' },
+          { s: 'sakura', t: '(softly, taking your hand and Erin\'s at once) Nightly. Like everything else. We\'re very good at everything else.' },
+        ] },
+    ] },
+  ],
+};
+
+// The first shared morning.
+E.poly_first_morning = {
+  id: 'poly_first_morning', where: 'camp', once: true, priority: 47,
+  cond: S => S.flags.harem_formed,
+  steps: [
+    { s: 'narr', t: 'You wake at grey dawn in the middle of everything: Sakura\'s hair across your chest like spilled ink, Erin\'s arm heavy and certain over both of you, and Shiro at your back, curled close and utterly unarmored — the ledger of everything abandoned somewhere beyond the blankets.', spice: 'gentle' },
+    { s: 'narr', t: 'You wake at grey dawn in the warm wreckage of the night — blankets everywhere but where they started, Sakura\'s bare shoulder under your hand and her hair across your chest like spilled ink, Erin\'s arm slung heavy and possessive over the both of you, skin to skin the whole way down, and Shiro fitted against your back with catlike precision, her breath slow at your neck and one hand splayed over your heart as if she\'d fallen asleep mid-audit of it. The night comes back to you in pieces: laughter turning low, three sets of hands unhurried and everywhere, someone\'s whispered *finally* against your mouth — you never did work out whose, and none of them would confess.', spice: 'steamy' },
+    { s: 'erin', t: '(eyes still shut, voice morning-rough) Nobody move. That\'s an order. First good sleep in ten years and I\'m finishing it.' },
+    { s: 'shiro', t: '(against your shoulder blade, precise even half-asleep) Seconded. The watch schedule is hereby amended. The watch can watch itself.' },
+    { s: 'sakura', t: '(a small, wondering laugh into your chest) ...It\'s real in the morning too. I checked. I\'m checking again tonight. And — every night after, probably. For science.' },
+    { s: 'narr', t: 'The sun takes another hour to find your camp. Nobody reports it missing.' },
+  ],
+};
+
+// A night that belongs to all of them.
+E.poly_ember_night = {
+  id: 'poly_ember_night', where: 'camp', once: true, priority: 47,
+  cond: S => S.flags.harem_formed && ['sakura', 'erin', 'shiro'].every(k => (S.bond[k] || 0) >= 8),
+  steps: [
+    { s: 'narr', t: 'A hot spring in the gate\'s heart again — the guild would call it a geological anomaly; Erin calls it "the good kind of loot." Steam, starlight through the fractured ceiling, and three women who have entirely stopped pretending they are here for the minerals.' },
+    { s: 'erin', t: '(sliding into the water beside you with zero ceremony) Rule one of the pool: no ranks. No System. No Monarch. Tonight you\'re just ours.' },
+    { s: 'sakura', t: '(hair down, all the way down, a sight maybe four people alive have seen) ...I used to practice being brave for moments like this. (she crosses the water to you, slow, eyes never leaving yours) I don\'t have to practice anymore.' },
+    { s: 'shiro', t: '(from your other side, close enough that the words land on your skin) For the record: I ran the numbers on wanting like this once. Concluded it was a liability. (her hand finds yours underwater, laces tight) I have never been so glad to be wrong in a professional capacity.' },
+    { s: 'narr', t: 'The steam closes over the four of you like a drawn curtain. There is laughter, first — there is always laughter with them — and then the laughter goes quiet by degrees, and the night belongs to no one\'s schedule at all.', spice: 'gentle' },
+    { s: 'narr', t: 'The steam closes over the four of you like a drawn curtain, and the curtain stays drawn a long, long time. It starts as it always starts — Erin\'s laughter against your ear as she pulls you back against her strength, water lapping the stone — and then Sakura is in your arms with her fearless hands mapping you like a favorite spell, and Shiro is murmuring an inventory of everything she intends to do about three years of disciplined wanting, and keeping her word, item by devastating item. They pass you between them and refuse to be hurried; they teach you, thoroughly, what it means to be loved by a shield, a storm, and a strategist all in one night. The stars wheel. The spring runs warm until dawn. Erin\'s rule holds the whole way down: no ranks, no System, no Monarch — just theirs, said three ways, proven past all argument.', spice: 'steamy' },
+    { s: 'narr', t: '(Much later, someone\'s voice — drowsy, satisfied, unmistakably smug) "...Motion carries unanimously."' },
+  ],
+};
+
+// Storm-bound: one tent, four hearts, nowhere to be.
+E.poly_storm = {
+  id: 'poly_storm', where: 'camp', once: true, priority: 46,
+  cond: S => S.flags.harem_formed && S.cleared,
+  steps: [
+    { s: 'narr', t: 'A mana-storm seals the gate mouth behind you — six hours, Shiro estimates, before the interference clears. One tent. A cheerful audit of the bedroll supply concludes: also one, functionally, if nobody insists on borders.' },
+    { s: 'erin', t: 'Tragedy. Catastrophe. However will we endure. (she is already unbuckling her pauldrons, grinning like a holiday arrived early) Storm rules: body heat is a survival requirement. I don\'t make the laws.' },
+    { s: 'shiro', t: 'You absolutely make the laws. You have been legislating toward this exact contingency since the equipment requisition in spring. (a beat; she begins unpinning her hair) ...It was sound legislation.' },
+    { s: 'sakura', t: '(the lantern in her hands going dim at her word, voice gone soft and certain) Six hours. No gates, no guild, no sky to hold up. Just — us, and the rain. (the light drops to an ember) Come here.' },
+    { s: 'narr', t: 'The storm spends its six hours battering a tent that pays it no attention whatsoever. Inside is warmth stacked on warmth, quiet conversation that keeps dissolving mid-sentence, and the particular peace of being held by every hand you\'d cross a Monarch for.', spice: 'gentle' },
+    { s: 'narr', t: 'The storm spends six hours on the canvas and the four of you spend them better. Sakura\'s ember-light paints everything gold and moving: Erin drawing you out of the last of your gear with soldier\'s efficiency and a lover\'s slowness, Shiro\'s cool fingers and murmured commentary charting every place the war has marked you, Sakura kissing each scar like a correction to the record. They take their time the way only people with six sealed hours can — trading you, teasing each other, Erin\'s low laugh and Sakura\'s caught breath and Shiro coming beautifully unraveled precisely on her own schedule — until the thunder is the quietest thing in the tent. When the storm finally breaks, none of you notice for another hour. The interference, Shiro notes afterward, hair wrecked, ledger untouched, cleared early. Nobody moved.', spice: 'steamy' },
+  ],
+};
+
+// Five hearts, one fire — once Yuki is fully one of them.
+E.poly_five = {
+  id: 'poly_five', where: 'camp', once: true, priority: 46,
+  cond: S => S.flags.harem_formed && S.flags.yuki_femme && (S.bond.yuki || 0) >= 8,
+  steps: [
+    { s: 'narr', t: 'Yuki has a spot now — the middle of the fire\'s warmth, the place the four of you quietly conspire to leave open. Tonight she claims it without being maneuvered, which everyone pretends not to celebrate.' },
+    { s: 'yuki', t: '(leaning back against you, watching the others across the flames) Four years I stood outside this exact firelight doing arithmetic about whether there\'d ever be room. (Erin drops down on her left; Sakura tucks in at her right; Shiro, unhurried, completes the circle) ...The arithmetic was so bad. There was always room. There was only ever room.' },
+    { s: 'erin', t: 'Room\'s the wrong word. (she reaches across Yuki to take your hand, making the knot of five official) A shape can\'t have a middle till it closes. You were load-bearing, Beaumont. We just none of us knew the word yet.' },
+    { s: 'narr', t: 'The fire burns low over five people arranged like a proof: no edges, no arithmetic, one warmth. When the blankets are shared out there are, once again, functionally one — and nobody insists on borders, and the night is long and unhurried and entirely theirs.', spice: 'gentle' },
+    { s: 'narr', t: 'The fire burns low, and the circle folds inward by degrees — Yuki turning in your arms to kiss you with four years of patience finally spent, and then laughing, breathless, as Erin steals her mid-kiss and Sakura steals *you*, and Shiro directs the gentle chaos with two words and a raised eyebrow like the strategist she never stops being. Five people, one sprawl of blankets, and the discovery — made slowly, warmly, more than once before morning — that the middle of the fire is not a place at all. It\'s a practice. Yuki falls asleep last, held from every side, still smiling, one hand fisted in your shirt out of old habit and no need whatsoever.', spice: 'steamy' },
+    { s: 'yuki', t: '(barely awake, to the tent at large, wondering) ...Best arithmetic I ever failed.' },
   ],
 };
 
@@ -1720,6 +1832,136 @@ E.camp_new_table = {
     { s: 'sakura', t: '(beside you, watching the fire, quiet and sure) The party got bigger. The family got bigger. I used to think those were different sizes... they\'re not, are they?' },
   ],
 };
+
+// ------------------------------------------------------------
+// LETTERS & RUMORS — the ticker is a live content source now.
+// where:'rumor' events play when tapped; between events, the
+// board serves rotating flavor from RUMOR_LINES.
+// ------------------------------------------------------------
+
+E.rumor_new_signatures = {
+  id: 'rumor_new_signatures', where: 'rumor', once: true, priority: 40,
+  cond: S => S.rankIdx >= 2,
+  steps: [
+    { s: 'crier', t: 'Guild bulletin, all licenses! Survey division reports irregular mana signatures on the eastern ridgeline — gates opening *pre-occupied*. Parties are finding camps, barricades, survivors. If a posting carries the rescue flag, assume live friendlies inside and bill the guild accordingly.' },
+    { s: 'shiro', t: 'Pre-occupied gates. Meaning somebody\'s party is always one bad room from being the reason a flag goes up. (she files the bulletin with unusual care) We watch the board.' },
+    { s: 'erin', t: 'We watch the board, and when a flag goes up — (she doesn\'t finish it; she doesn\'t need to; the whole table nods)' },
+  ],
+};
+
+E.rumor_skein_record = {
+  id: 'rumor_skein_record', where: 'rumor', once: true, priority: 40,
+  cond: S => S.cleared,
+  steps: [
+    { s: 'crier', t: 'From the capital wire: the Silver Skein — you know, the ones with the matching cloaks and the sponsorships — have announced they\'ll be attempting the Threshold echoes. Their guildmaster told the broadsheets, quote, "any record set by four people can be broken by twelve."' },
+    { s: 'shiro', t: 'Twelve. In a recursion gate. (she does not look up from her tea, but the tea takes the full force of her expression) The echo scales to what walks in. They are about to learn what confidence weighs.' },
+    { s: 'erin', t: 'Should we warn them?' },
+    { s: 'shiro', t: 'I costed it. A warning is free and will not be believed. A rescue posting pays 140 a head. (a pause) ...Warn them anyway.' },
+  ],
+};
+
+E.rumor_foreign_delegation = {
+  id: 'rumor_foreign_delegation', where: 'rumor', once: true, priority: 40,
+  cond: S => S.cleared && S.day >= (S.clearedDay || 0) + 3,
+  steps: [
+    { s: 'crier', t: 'Notice to the hall: a delegation from the Meridian Compact guilds arrives this week to observe, and I quote the paperwork, "the table that closed the Threshold." They have requested seats with sightlines to the Fourth.' },
+    { s: 'sakura', t: 'Sightlines?! We\'re not a — we\'re not an exhibit! (she pulls her hat down) Tell them the exhibit is shy!' },
+    { s: 'erin', t: 'Tell them the exhibit charges. (a beat) What? Shiro\'s rubbing off on me.' },
+    { s: 'shiro', t: '(already drafting a rate card) Observation seating, three tiers. Questions extra. Questions about the harem: prohibitively extra.' },
+  ],
+};
+
+E.rumor_rescued_letter = {
+  id: 'rumor_rescued_letter', where: 'rumor', once: true, priority: 41,
+  cond: S => Object.keys(S.flags || {}).some(f => f.startsWith('rescued_')),
+  steps: [
+    { s: 'narr', t: 'A letter waits at the table, the paper cheap and the handwriting careful — the kind written by someone who drafted it standing up in a guildhall that still smells like the infirmary.' },
+    { s: 'narr', t: '"To the Fourth\'s table. There aren\'t words that fit, so here are the ones that don\'t: we counted our people twice the night we got out, because we couldn\'t believe the number. Every year on that date we\'ll drink to your party first and our luck second. The tab, wherever you are, is ours. — the ones you came back for."' },
+    { s: 'erin', t: '(after a moment, gruffly, blinking hard) ...Frame it. Next to the clear times. That\'s the real ranking board and I said what I said.' },
+  ],
+};
+
+E.rumor_college_memo = {
+  id: 'rumor_college_memo', where: 'rumor', once: true, priority: 41,
+  cond: S => (S.recruited || []).includes('seris'),
+  steps: [
+    { s: 'narr', t: 'A College dispatch arrives for Seris, seal unbroken. She reads it at the table, expression flattening one degree per line.' },
+    { s: 'seris', t: 'The Archon "commends my thoroughness" and asks — third request this season — when I intend to conclude the embedded observation and return. (she sets the letter down with great precision) I have drafted a reply.' },
+    { s: 'shiro', t: 'Read it.' },
+    { s: 'seris', t: '"Findings incomplete. Anomaly compounding. Observer compromised, in the professional sense, and also—" (a pause; she folds the draft back up) The rest is footnotes.' },
+    { s: 'narr', t: 'The reply she actually posts is two words long: "Not yet." It is the closest thing to a love letter the College has ever archived.' },
+  ],
+};
+
+E.rumor_harem_gossip = {
+  id: 'rumor_harem_gossip', where: 'rumor', once: true, priority: 39,
+  cond: S => S.flags.harem_formed,
+  steps: [
+    { s: 'crier', t: '(sotto voce, leaning over the counter) Not a bulletin, strictly, but — the betting book behind the bar? The one about your table? Hale had to retire it. Every outcome paid out at once and the bookkeeping collapsed.' },
+    { s: 'guild', t: '(from his office, without looking up) The house does not comment on retired markets. The house notes only that it lost money in four directions simultaneously, and that it has never been happier to.' },
+    { s: 'erin', t: '(arm settling around you, loud enough for the whole bar) Let the record show nobody hedged. Everybody who bet, bet on love. This guild is SOFT and I treasure it.' },
+  ],
+};
+
+// --- love notes: romance beats served through the rumor board ---
+
+E.rumor_note_sakura = {
+  id: 'rumor_note_sakura', where: 'rumor', once: true, priority: 42,
+  cond: S => (S.bond.sakura || 0) >= 8,
+  steps: [
+    { s: 'narr', t: 'Among the letters: an envelope with no name on it, sealed with a pressed iridescent petal. Inside, in a hand you\'d know anywhere: "The roof over the map room, after the hall quiets. I have a new spell to show you. It only works at night, and only on you. — S."' },
+    { s: 'narr', t: 'The roof, later. The new spell is starlight called down soft as snowfall to hang around the two of you like a held breath. The caster watches your face instead of her work — brave all the way through now, and pink to the ear-tips anyway, and entirely worth climbing a roof for.', spice: 'gentle' },
+    { s: 'narr', t: 'The roof, later. The spell is starlight called down to hang around you like a held breath — and it is also, it turns out, a perimeter ward, because the most dangerous mage of her generation plans her privacy like she plans her battles. What follows under that borrowed sky is unhurried and fearless and entirely her idea: your jacket spread beneath her, her spell-light dimming and flaring with her breath, the guild none the wiser one floor down. "New rule," she murmurs afterward, starlight in her hair and your heart entirely in her keeping. "Every discovery gets field-tested twice."', spice: 'steamy' },
+  ],
+};
+
+E.rumor_note_erin = {
+  id: 'rumor_note_erin', where: 'rumor', once: true, priority: 42,
+  cond: S => (S.bond.erin || 0) >= 8,
+  steps: [
+    { s: 'narr', t: 'Pinned to the board, in handwriting that has never once whispered in its life: "Training yard. Sundown. Bring the practice swords and low expectations of getting to use them. — E. (This is a DATE. I\'m told they benefit from ambiguity but I don\'t fight fair.)"' },
+    { s: 'narr', t: 'Sundown. The bout lasts eleven seconds before she hooks your knee, follows you down, and declares the match a draw from approximately one inch away. The kissing outlasts the sunset by a comfortable margin. So does the laughing.', spice: 'gentle' },
+    { s: 'narr', t: 'Sundown. The bout lasts eleven seconds before she hooks your knee, follows you down to the packed sand, and informs you — armor already half unbuckled, grin already unfair — that the loser forfeits their gambeson. She fights exactly as advertised: nothing held in reserve, total commitment, zero self-preservation, her strength gone gentle only where it matters and nowhere else. The yard has walls, a gate, and a bar that bolts; she legislated for all three in advance. Stars are well up before either of you concedes the rematch. "Draw," she decides at last, wrecked and radiant against your shoulder. "Best of five. Ongoing. Forever, actually."', spice: 'steamy' },
+  ],
+};
+
+E.rumor_note_shiro = {
+  id: 'rumor_note_shiro', where: 'rumor', once: true, priority: 42,
+  cond: S => (S.bond.shiro || 0) >= 8,
+  steps: [
+    { s: 'narr', t: 'A single card in the day\'s post, no seal, no signature, the handwriting so precise it could notarize itself: "My room. The good candles. I have completed the quarter\'s books early and budgeted the difference. You are the difference. — you know precisely whom."' },
+    { s: 'narr', t: 'The good candles, it turns out, are the beeswax ones she saves for occasions she would never call occasions. The evening is chess with the board abandoned by move nine, tea gone cold and unmourned, and the White Queen narrating her own surrender in a murmur — thorough, unhurried, keeping her own counsel right up until she doesn\'t.', spice: 'gentle' },
+    { s: 'narr', t: 'The good candles burn all the way down. She has, of course, an agenda — she shows it to you, one handwritten line: "1. No agenda." — and then the woman who prices everything spends the whole night proving she meant it: unpinned hair and candle-gold skin, the famous composure dismantled clause by clause under your hands, her voice at your ear itemizing wants she has archived for three disciplined years and collecting them, with interest, one by one. The books stay balanced; she did them early for exactly this reason. "Efficiency," she murmurs toward dawn, unwilling to move, her cheek over your heart like a seal on a document. "I planned for everything except how much I\'d want to stay."', spice: 'steamy' },
+  ],
+};
+
+export function pickRumorEvent(S) {
+  return Object.values(EVENTS)
+    .filter(e => e.where === 'rumor' && !(e.once && S.seen[e.id]) && (!e.cond || e.cond(S)))
+    .sort((a, b) => b.priority - a.priority)[0] || null;
+}
+
+// One-line flavor for days with no full rumor scene.
+export function rumorLine(S, n) {
+  const rank = ['F', 'D', 'C', 'B', 'A', 'S'][S.rankIdx];
+  const pool = [
+    'A D-gate opened inside the Millbrook bakery. The goblins surrendered to the smell. The baker is demanding hazard pay and a guild license.',
+    'The Gilded Compass posted a nine-room clear time that would be impressive if the gate had had nine rooms. It had seven. Inquiry pending.',
+    'Ironvale Company is hiring again. Their posting specifies, in bold, "no heroics." Their last posting did not, and the stories explain the edit.',
+    'A hedge-witch out past the east road swears the gates hum in chords now. The survey division sent someone to listen. He has not stopped humming since.',
+    'Lantern & Ledger\'s retirement party reportedly ran three days. The ballad performed on night two is banned in two taverns and requested nightly in six.',
+    'Rumor from the capital: the Crown wants a census of S-licenses. The census would have one name on it. The Crown has been informed the paperwork is done.',
+    `The board-runners say ${rank}-gates are trending "weird" this season — more forks, more titled beasts, more treasure behind the doors nobody takes.`,
+    'The Silver Skein\'s recruiter was in the hall yesterday, cloak and all. He left a card. Erin folded it into a bird. The bird flew badly but with sponsorship.',
+    'Somebody is leaving pressed flowers on the memorial board, one for every party that ever went in and didn\'t come out. Nobody has caught her at it. Everyone knows.',
+    'Guildmaster Hale was seen smiling at the ledger. Speculation ranges from "surplus" to "someone finally alphabetized the bounty archive." Both, reportedly.',
+    'The old goblin cook from the deep warrens has opened a stall by the east gate. The skewers remain dubious. The line remains long.',
+    'A merchant crew swears they saw the sky over the old Threshold site "ripple, like something rolled over in its sleep." The survey division calls it refraction. They wrote it down anyway.',
+    'Dawnbreak\'s clear times keep climbing the eastern boards. Their leader reportedly trains at dawn because, quote, "someone I respect never waited for good conditions."',
+    'The guild physician has posted a notice: adventurers who get engaged mid-dungeon are to report it AFTER the boss, not during. It is very specifically worded. Nobody is making eye contact.',
+  ];
+  return pool[((S.day * 7) + n) % pool.length];
+}
 
 // ------------------------------------------------------------
 // Helpers

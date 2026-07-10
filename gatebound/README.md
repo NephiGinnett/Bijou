@@ -70,6 +70,18 @@ the stranded party includes a named survivor (Garrick, Liria, Tobbin)
 who can be invited into the guild on the spot, or signed later at the
 Newcomers desk.
 
+**Letters & rumors** is tappable now: letters from rescued parties,
+rival-guild news, College dispatches, love notes when a bond runs hot,
+and rotating guild-hall gossip between the big beats. Romance keeps
+deepening after the harem forms — shared mornings, storm-bound nights,
+and scenes that scale with the Intimacy setting.
+
+**Auto-battle** (▶ Auto in the battle HUD) lets the party act on its
+own — Strike by default, or set a per-hero **auto-skill** on the Party
+sheet once a skill reaches ★★★ mastery. Toggle it mid-fight either way;
+auto never flees and never spends items. The **⚒ Smith** (reforging)
+lives on its own screen now, reachable from the Shop.
+
 ### The Sanctum (optional AI chat)
 
 **✉ Sanctum** in the guild hall opens a chat room with any party member
