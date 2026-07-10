@@ -290,6 +290,47 @@ export class Combat {
     return { kind: 'skill', id: pick, target };
   }
 
+  // Auto-battle: strike by default, or the hero's chosen auto-skill when
+  // usable and not wasteful. Never flees, never spends items.
+  autoCommand(u, preferredId) {
+    const canUse = id => {
+      const sk = SKILLS[id];
+      return sk && u.skills.includes(id) && (sk.mp || 0) <= u.mp
+        && !(sk.cooldown && u.cds[id] > 0) && !(sk.freeAction && u.freeUsed);
+    };
+    const foes = this.alive('enemy');
+    const allies = this.alive('party');
+    const foeTarget = () => {
+      const marked = foes.find(f => this.hasStatus(f, 'mark'));
+      const t = marked || foes.slice().sort((a, b) => a.hp - b.hp)[0];
+      return t ? t.uid : null;
+    };
+
+    let pick = preferredId && canUse(preferredId) ? preferredId : 'strike';
+    let sk = SKILLS[pick];
+
+    // don't waste heals on a healthy party
+    if (sk.type === 'heal') {
+      const hurt = allies.filter(a => a.hp / a.maxHp < 0.75)
+        .sort((a, b) => a.hp / a.maxHp - b.hp / b.maxHp)[0];
+      if (!hurt) { pick = 'strike'; sk = SKILLS.strike; }
+      else return { kind: 'skill', id: pick, target: sk.target === 'ally' ? hurt.uid : null };
+    }
+    // don't re-stack a self/party buff that's already running
+    if (sk.type === 'support' && sk.apply) {
+      const ap = Array.isArray(sk.apply) ? sk.apply[0] : sk.apply;
+      const dst = ap.to === 'self' || sk.target === 'self' ? u : allies[0];
+      if (dst && this.hasStatus(dst, ap.id)) { pick = 'strike'; sk = SKILLS.strike; }
+    }
+
+    if (sk.target === 'ally') {
+      const t = allies.slice().sort((a, b) => a.hp / a.maxHp - b.hp / b.maxHp)[0];
+      return { kind: 'skill', id: pick, target: t ? t.uid : null };
+    }
+    if (sk.target === 'enemy') return { kind: 'skill', id: pick, target: foeTarget() };
+    return { kind: 'skill', id: pick, target: null };
+  }
+
   // ---- action resolution ----
   resolveAction(u, cmd, ev) {
     if (cmd.kind === 'guard') {

@@ -534,3 +534,20 @@ textarea { height: 74px; margin-top: 10px; font-size: 0.7rem; resize: none; }
 .gate-card.rescue { border-color: var(--gold); animation: monarch-pulse 2.6s infinite; }
 .gate-mod.rescue { color: var(--gold); font-weight: 600; }
 .path-node.stranded { color: var(--gold); }
+
+/* Letters & rumors — the ticker is tappable now */
+button.ticker-btn {
+  cursor: pointer; text-align: left; width: 100%;
+  background: transparent; border: none; border-top: 1px dashed var(--border-dim);
+  font: inherit; font-size: 0.88rem; font-style: italic; color: var(--muted);
+  border-radius: 0 0 8px 8px; padding: 12px 6px 8px;
+  transition: border-color .2s, background .2s;
+}
+button.ticker-btn:hover { border-top-color: var(--sys); background: rgba(84, 216, 255, 0.06); }
+button.ticker-btn.notify { border-color: var(--gold); }
+button.ticker-btn.notify em { font-style: normal; color: var(--gold); animation: pulse 1.2s infinite; }
+
+/* auto-battle */
+.skill-row .auto-set { float: right; margin-top: -2px; }
+.skill-row .auto-set.on { border-color: var(--gold); color: var(--gold); }
+.skill-row > small.muted { float: right; font-size: 0.68rem; }

@@ -6,7 +6,7 @@ import { RANKS, RANK_STYLE, HEROES, SKILLS, STATUSES, ITEMS, BIOMES, GATE_MODIFI
 import * as ST from './state.js';
 import { Combat } from './combat.js';
 import { Stage, makePortrait } from './scene3d.js';
-import { EVENTS, SPEAKERS, DUNGEON_EVENTS, pickGuildEvent, pickCampEvent, endingFor, weddingFor } from './story.js';
+import { EVENTS, SPEAKERS, DUNGEON_EVENTS, pickGuildEvent, pickCampEvent, endingFor, weddingFor, pickRumorEvent, rumorLine } from './story.js';
 import { openSanctum } from './sanctum.js';
 import * as AU from './audio.js';
 
@@ -36,6 +36,7 @@ export async function boot() {
   });
 
   // portraits (placeholder renders; swap in automatically if GLBs exist)
+  PORTRAITS.__key = 'adventure|';
   Promise.all(Object.keys(HEROES).map(async id => {
     PORTRAITS[id] = await makePortrait(id);
   })).then(() => { document.querySelectorAll('img[data-portrait]').forEach(img => { const k = img.dataset.portrait; if (PORTRAITS[k]) img.src = PORTRAITS[k]; }); });
@@ -82,14 +83,22 @@ function heroVariant(id) {
   return femme ? 'fem' : null;
 }
 
-// Yuki's portrait switches to the reclassified render once his arc completes.
-async function ensureYukiPortrait() {
-  if (S && S.flags && S.flags.yuki_femme && PORTRAITS.__yukiFem !== true) {
-    PORTRAITS.__yukiFem = true;
-    PORTRAITS.yuki = await makePortrait('yuki', 'fem');
-    document.querySelectorAll('img[data-portrait="yuki"]').forEach(img => { img.src = PORTRAITS.yuki; });
-  }
+// Regenerate the 2D portraits whenever their look changes: the party
+// attire setting, or Yuki's reclassification. Cheap no-op otherwise.
+async function refreshPortraits() {
+  const key = ((S && S.settings && S.settings.outfit) || 'adventure') + '|' + (S && S.flags && S.flags.yuki_femme ? 'f' : '');
+  if (PORTRAITS.__key === key) return;
+  PORTRAITS.__key = key;
+  await Promise.all(Object.keys(HEROES).map(async id => {
+    PORTRAITS[id] = await makePortrait(id, heroVariant(id));
+  }));
+  document.querySelectorAll('img[data-portrait]').forEach(img => {
+    const k = img.dataset.portrait;
+    if (PORTRAITS[k]) img.src = PORTRAITS[k];
+  });
 }
+// Yuki's portrait switches to the reclassified render once his arc completes.
+async function ensureYukiPortrait() { return refreshPortraits(); }
 
 // ------------------------------------------------------------------
 // dialogue player
@@ -189,6 +198,8 @@ export function playEvent(ev) {
           AU.sfx('confirm');
           if (c.bond) for (const [g, n] of Object.entries(c.bond)) { ST.addBond(S, g, n); toast(`${HEROES[g].name} bond +${n} ♥`, 'bond'); }
           if (c.flag) S.flags[c.flag] = true;
+          if (c.tone) { S.stats.tone = S.stats.tone || {}; S.stats.tone[c.tone] = (S.stats.tone[c.tone] || 0) + 1; }
+          if (c.reopen && ev.id) delete S.seen[ev.id]; // "not tonight" — the scene can come back
           const responses = c.r || [];
           steps.splice(idx, 1, ...responses);
           if (!responses.length) idx++;
@@ -275,7 +286,19 @@ function namePrompt(hasSave) {
 // guild hub
 // ------------------------------------------------------------------
 
+let rumorCycle = 0; // cycles flavor rumors on repeat taps within a day
+
 function yukiTicker() {
+  const married = S.seen && S.seen.wedding && (S.flags.harem_formed || (S.bond.yuki || 0) >= 10);
+  // --- late game: after the Threshold ---
+  if (S.flags.yuki_femme && married) return 'Yuki\'s wedding ring is guild-forged steel — she asked for the same alloy as the assignment board, "so it outlasts everything else in the hall." It will. So, by all appearances, will she.';
+  if (S.flags.yuki_femme && S.cleared) return 'The broadsheets keep calling the Monarch-slayers "the four." Yuki cuts out every article, corrects the number in green ink, and files them. Nobody has told her the guild archivist keeps her corrections as the official record.';
+  if (S.flags.yuki_member && S.cleared) return 'Post-Threshold, the guild offered Yuki his own command. He declined by return post: "Already have the only chair I ever wanted. It\'s the fifth one."';
+  if (S.flags.betrothal_ended && S.seen.rival_yuki_3) return 'Dawnbreak\'s clear times sit four seconds off yours on the pinned sheet, and Yuki Beaumont — A-rank — writes weekly to renegotiate the dinner bet. The guild frames the correspondence. Both sides of it.';
+  if (S.flags.betrothal_ended && S.cleared) return 'Yuki\'s letters come with clippings now: Dawnbreak clearing B-gates in your old times. "Not catching up anymore," the latest says. "Pacing. There\'s a difference. See you at the top."';
+  if (S.flags.yuki_refused && S.cleared) return 'Word from the east: the solo diver who kept refusing escorts made B-rank the week the Threshold closed. His examiner\'s note reads, in full: "Earned the door."';
+  if ((S.ngPlus || 0) >= 2 && S.flags.yuki_femme) return 'Yuki has started teaching the second-watch shift to new recruits: how to sit with someone in the dark and make it feel like the middle of the fire. Enrollment is full through winter.';
+  // --- mid game: the original thread ---
   if (S.flags.yuki_femme) return 'Yuki — long hair, green gown, second-watch partner, the harem\'s fifth heart — is exactly where she spent four years trying to reach: the middle of the fire.';
   if (S.flags.yuki_member) return 'Yuki runs every gate with you now, softening by the day into someone who finally fits. The guild has stopped being surprised by the fifth chair.';
   if (S.flags.betrothal_ended) return 'Yuki Beaumont, B-rank, runs gates with a party of his own now. His letters arrive on time, every week, to all four of you.';
@@ -335,7 +358,7 @@ async function guild() {
   screen(`
     <div class="hud-top">
       <div class="panel bar">
-        <span class="day">Day ${S.day}</span>
+        <span class="day">Day ${S.day}${S.legacy && S.legacy.cycle ? ` · Cycle ${S.legacy.cycle + 1}` : ''}</span>
         <span class="lic">License ${rankBadge(rank)}</span>
         <div class="gp-wrap" title="Guild points toward promotion">
           <div class="bar-outer gp"><div class="bar-inner" style="width:${need ? Math.min(100, S.gp / need * 100) : 100}%"></div></div>
@@ -361,7 +384,9 @@ async function guild() {
         <div class="row gap" style="margin-top:8px">
           <button class="btn sm ghost" id="g-rest" title="Advance to the next day: the gate board rerolls and dispatched teams return.">▸ Rest until tomorrow</button>
         </div>
-        <div class="yuki-ticker"><b>Letters & rumors:</b> ${yukiTicker()}</div>
+        <button class="yuki-ticker ticker-btn ${pickRumorEvent(S) ? 'notify' : ''}" id="g-rumors" title="Tap to hear the day's letters and whispers.">
+          <b>Letters & rumors${pickRumorEvent(S) ? ' <em>!</em>' : ''}:</b> ${yukiTicker()}
+        </button>
       </div>
       <div class="panel party-strip">
         ${ST.roster(S).map(id => `
@@ -387,6 +412,15 @@ async function guild() {
     else { toast('Nothing new — clear more gates.'); }
   };
   $('#g-dispatch').onclick = () => { AU.sfx('ui'); dispatchBoard(); };
+  $('#g-rumors').onclick = async () => {
+    AU.sfx('ui');
+    const ev = pickRumorEvent(S);
+    if (ev) { await playEvent(ev); guild(); }
+    else {
+      await playEvent({ id: 'rumor_flavor', steps: [{ s: 'crier', t: rumorLine(S, rumorCycle++) }] });
+      guild();
+    }
+  };
   $('#g-sanctum').onclick = () => { AU.sfx('ui'); openSanctum({ S, screen, portraitImg, toast, esc, back: guild, save: () => ST.save(S) }); };
   const nc = $('#g-newcomers');
   if (nc) nc.onclick = () => { AU.sfx('ui'); newcomers(); };
@@ -833,6 +867,7 @@ function applyDungeonEffect(eff, gate) {
 // ------------------------------------------------------------------
 
 const disp = new Map(); // uid -> {hp,maxHp,shield,statuses:Map}
+let autoInterrupt = null; // resolves an open command prompt when auto is toggled on
 
 function unitCard(u, side) {
   const d = disp.get(u.uid);
@@ -851,7 +886,9 @@ function renderBattleHud(c, gateName, roomLabel) {
   const foes = c.units.filter(u => u.side === 'enemy');
   screen(`
     <div class="battle-top">
-      <div class="panel slim"><b>${esc(gateName)}</b> · ${roomLabel} · <span id="round-label">round ${c.round || 1}</span></div>
+      <div class="panel slim"><b>${esc(gateName)}</b> · ${roomLabel} · <span id="round-label">round ${c.round || 1}</span>
+        <button class="btn sm ${S.settings.autoBattle ? 'primary' : 'ghost'}" id="b-auto" title="Auto-battle: party members act on their own — Strike, or each hero's chosen auto-skill (set on the Party sheet at ★★★ mastery).">${S.settings.autoBattle ? '■ AUTO' : '▶ Auto'}</button>
+      </div>
       <div class="panel slim log" id="b-log"></div>
     </div>
     <div class="cam-ctrl" aria-label="camera controls">
@@ -932,14 +969,42 @@ async function battle(node) {
     }
   };
 
+  // auto-battle toggle: flips the mode and, if a command prompt is open,
+  // resolves it immediately with the auto action.
+  const autoBtn = $('#b-auto');
+  if (autoBtn) autoBtn.onclick = () => {
+    S.settings.autoBattle = !S.settings.autoBattle;
+    ST.save(S);
+    autoBtn.textContent = S.settings.autoBattle ? '■ AUTO' : '▶ Auto';
+    autoBtn.classList.toggle('primary', S.settings.autoBattle);
+    autoBtn.classList.toggle('ghost', !S.settings.autoBattle);
+    AU.sfx('confirm');
+    if (S.settings.autoBattle && autoInterrupt) autoInterrupt();
+  };
+
   let res = c.step();
   for (let guard = 0; guard < 500; guard++) {
     await stage.playEvents(res.events, onApply);
     if (res.outcome) break;
     if (!res.needCommand) { res = c.step(); continue; }
-    const cmd = await promptCommand(res.needCommand, c);
+    const u = res.needCommand;
+    let cmd;
+    if (S.settings.autoBattle) {
+      const area = $('#cmd-area');
+      if (area) area.innerHTML = `<div class="muted center-text">AUTO — ${esc(u.name)} acts…</div>`;
+      await stage.wait(280);
+      cmd = S.settings.autoBattle
+        ? c.autoCommand(u, S.autoSkill[u.heroId])
+        : await promptCommand(u, c); // toggled off during the beat
+    } else {
+      // manual prompt, interruptible by flipping auto on mid-turn
+      const viaToggle = new Promise(r => { autoInterrupt = () => r(c.autoCommand(u, S.autoSkill[u.heroId])); });
+      cmd = await Promise.race([promptCommand(u, c), viaToggle]);
+      autoInterrupt = null;
+    }
     res = c.step(cmd);
   }
+  autoInterrupt = null;
 
   // outcome
   if (res.outcome === 'victory') {
@@ -1120,7 +1185,11 @@ function party(sel = 'player') {
     const uses = ST.masteryUses(S, sel, id);
     const nextAt = rank < 5 ? ST.MASTERY_THRESHOLDS[rank + 1] : null;
     const mTip = rank >= 5 ? `${uses} uses · mastered (+25% power, −20% MP)` : `${uses} uses · next rank at ${nextAt}${rank ? ` · +${rank * 5}% power` : ''}`;
-    return `<div class="skill-row"><b>${sk.name}</b><small class="mastery" title="${mTip}">${rank ? '★'.repeat(rank) : '☆'}</small><small>${sk.mp ? sk.mp + ' MP' : '—'}</small><p>${sk.desc || ''}</p></div>`;
+    const isAuto = S.autoSkill[sel] === id;
+    const autoBtn = isAuto ? `<button class="btn sm auto-set on" data-skill="${id}" title="This is ${sel === 'player' ? esc(S.name) : def.name}'s auto-battle skill. Tap to clear (auto falls back to Strike).">★ auto</button>`
+      : rank >= 3 ? `<button class="btn sm ghost auto-set" data-skill="${id}" title="Use this skill in auto-battle when possible.">set auto</button>`
+      : '<small class="muted" title="Reach ★★★ mastery to set as the auto-battle skill.">auto at ★★★</small>';
+    return `<div class="skill-row"><b>${sk.name}</b><small class="mastery" title="${mTip}">${rank ? '★'.repeat(rank) : '☆'}</small><small>${sk.mp ? sk.mp + ' MP' : '—'}</small>${autoBtn}<p>${sk.desc || ''}</p></div>`;
   }).join('');
   const gearRows = ['weapon', 'armor', 'charm'].map(slot => {
     const g = h.gear[slot];
@@ -1150,13 +1219,23 @@ function party(sel = 'player') {
           <p class="passive"><b>${def.passive.name}:</b> ${def.passive.desc}</p>
         </div>
         <div class="sheet-mid"><h3>Stats</h3>${statRows}<h3>Gear</h3>${gearRows}</div>
-        <div class="sheet-right"><h3>Skills</h3>${skillRows}</div>
+        <div class="sheet-right"><h3>Skills</h3>
+          <p class="muted sm-text">In auto-battle this hero uses <b>${S.autoSkill[sel] && SKILLS[S.autoSkill[sel]] ? SKILLS[S.autoSkill[sel]].name : 'Strike'}</b> when possible. Reach ★★★ mastery to set a different auto-skill.</p>
+          ${skillRows}</div>
       </div>
     </div>
   `);
   $('#p-back').onclick = () => guild();
   document.querySelectorAll('.tab').forEach(t => t.onclick = () => { AU.sfx('ui'); party(t.dataset.id); });
   document.querySelectorAll('.gear-slot').forEach(gs => gs.onclick = () => gearPicker(sel, gs.dataset.slot));
+  document.querySelectorAll('.auto-set').forEach(b => b.onclick = () => {
+    const id = b.dataset.skill;
+    if (S.autoSkill[sel] === id) delete S.autoSkill[sel];
+    else S.autoSkill[sel] = id;
+    AU.sfx('confirm');
+    ST.save(S);
+    party(sel);
+  });
 }
 
 function gearPicker(heroId, slot) {
@@ -1214,42 +1293,17 @@ function shop() {
       <button class="btn sell" data-id="${g.id}" data-val="${val}">sell ◈ ${val}g</button></div>`;
   }).join('') : '<p class="muted">No spare gear to sell.</p>';
 
-  // the smith: reroll (or add) an affix on bagged or equipped gear
-  const forgeTargets = [
-    ...S.gearBag.map(g => ({ g, loc: 'bag' })),
-    ...ST.roster(S).flatMap(id => ['weapon', 'armor', 'charm']
-      .map(slot => ({ g: S.heroes[id].gear[slot], loc: id }))
-      .filter(x => x.g)),
-  ];
-  const forgeRows = forgeTargets.length ? forgeTargets.map(({ g, loc }) => {
-    const cost = reforgeCost(g);
-    return `<div class="shop-row"><div><b class="t${g.tier}">${esc(g.name)}</b> <small class="muted">${loc === 'bag' ? 'in bag' : 'on ' + (loc === 'player' ? esc(S.name) : HEROES[loc].name)}</small>${affixChip(g)}</div>
-      <button class="btn forge ${S.gold >= cost ? '' : 'disabled'}" data-id="${g.id}" title="${g.affix ? 'Reroll this affix into a different one.' : 'Imbue a random affix.'}">${g.affix ? 'reroll' : 'imbue'} ◈ ${cost}g</button></div>`;
-  }).join('') : '<p class="muted">Nothing to work with — the smith shrugs.</p>';
-
   screen(`
     <div class="panel shop-panel">
-      <div class="row spread"><h2>◈ Guild Shop</h2><div><span class="gold">◈ ${S.gold}g</span> <button class="btn ghost" id="s-back">← Guild</button></div></div>
+      <div class="row spread"><h2>◈ Guild Shop</h2><div class="row gap"><span class="gold">◈ ${S.gold}g</span> <button class="btn" id="s-smith">⚒ Smith</button> <button class="btn ghost" id="s-back">← Guild</button></div></div>
       <div class="shop-cols">
-        <div><h3>Buy</h3>${rows}
-          <h3>Smith — reforge affixes</h3><div class="sell-list">${forgeRows}</div></div>
+        <div><h3>Buy</h3>${rows}</div>
         <div><h3>Sell gear</h3><div class="sell-list">${sellRows}</div></div>
       </div>
     </div>
   `);
   $('#s-back').onclick = () => guild();
-  document.querySelectorAll('.forge:not(.disabled)').forEach(b => b.onclick = () => {
-    const t = forgeTargets.find(x => x.g.id === b.dataset.id);
-    if (!t) return;
-    const cost = reforgeCost(t.g);
-    if (S.gold < cost) return;
-    S.gold -= cost;
-    reforgeGear(t.g);
-    AU.sfx('promo');
-    toast(`The smith hands it back: ${t.g.name}`, 'gold');
-    ST.save(S);
-    shop();
-  });
+  $('#s-smith').onclick = () => { AU.sfx('ui'); smith(); };
   document.querySelectorAll('.shop-row button[data-id]:not(.sell):not(.forge)').forEach(b => b.onclick = () => {
     const it = ITEMS[b.dataset.id];
     if (S.gold < it.price) return;
@@ -1267,6 +1321,54 @@ function shop() {
     AU.sfx('coin');
     ST.save(S);
     shop();
+  });
+}
+
+// ------------------------------------------------------------------
+// smith — reforging, on its own screen
+// ------------------------------------------------------------------
+
+function smith() {
+  const groups = [
+    { title: 'In your bag', targets: S.gearBag.map(g => ({ g, where: 'bag' })) },
+    ...ST.roster(S).map(id => ({
+      title: 'Equipped — ' + (id === 'player' ? S.name : HEROES[id].name),
+      targets: ['weapon', 'armor', 'charm']
+        .map(slot => ({ g: S.heroes[id].gear[slot], where: id }))
+        .filter(x => x.g),
+    })).filter(gr => gr.targets.length),
+  ];
+  const allTargets = groups.flatMap(gr => gr.targets);
+
+  const groupHtml = gr => `
+    <h3>${esc(gr.title)}</h3>
+    ${gr.targets.length ? gr.targets.map(({ g }) => {
+      const cost = reforgeCost(g);
+      return `<div class="shop-row"><div><b class="t${g.tier}">${esc(g.name)}</b> <small class="muted">${Object.entries(g.stats).map(([k, v]) => `${k}+${v}`).join(' ')}</small>${affixChip(g)}</div>
+        <button class="btn forge ${S.gold >= cost ? '' : 'disabled'}" data-id="${g.id}" title="${g.affix ? 'Reroll this affix into a different one.' : 'Imbue a random affix.'}">${g.affix ? 'reroll' : 'imbue'} ◈ ${cost}g</button></div>`;
+    }).join('') : '<p class="muted">Nothing here.</p>'}`;
+
+  screen(`
+    <div class="panel shop-panel">
+      <div class="row spread"><h2>⚒ Guild Smith</h2><div class="row gap"><span class="gold">◈ ${S.gold}g</span> <button class="btn" id="f-shop">◈ Shop</button> <button class="btn ghost" id="f-back">← Guild</button></div></div>
+      <p class="muted">Reroll an affix into a different one, or imbue plain gear with a random affix. Costs scale with gear tier.</p>
+      ${allTargets.length ? `<div class="shop-cols"><div>${groups.slice(0, Math.ceil(groups.length / 2)).map(groupHtml).join('')}</div><div>${groups.slice(Math.ceil(groups.length / 2)).map(groupHtml).join('')}</div></div>`
+        : '<p class="muted">Nothing to work with — the smith shrugs. Gates drop more.</p>'}
+    </div>
+  `);
+  $('#f-back').onclick = () => guild();
+  $('#f-shop').onclick = () => { AU.sfx('ui'); shop(); };
+  document.querySelectorAll('.forge:not(.disabled)').forEach(b => b.onclick = () => {
+    const t = allTargets.find(x => x.g.id === b.dataset.id);
+    if (!t) return;
+    const cost = reforgeCost(t.g);
+    if (S.gold < cost) return;
+    S.gold -= cost;
+    reforgeGear(t.g);
+    AU.sfx('promo');
+    toast(`The smith hands it back: ${t.g.name}`, 'gold');
+    ST.save(S);
+    smith();
   });
 }
 
@@ -1290,6 +1392,12 @@ function settingsModal(back) {
       <option value="adventure" ${s.outfit === 'adventure' ? 'selected' : ''}>Adventuring</option>
       <option value="formal" ${s.outfit === 'formal' ? 'selected' : ''}>Formal</option>
     </select></label>
+    ${S && S.cleared ? `
+    <div class="ngplus-box">
+      <b>⟲ Begin Cycle ${(S.legacy?.cycle || 0) + 2} (NG+)</b>
+      <p class="muted sm-text">Restart the story. You keep <b>every piece of gear</b> (bag and equipped), all <b>skill mastery</b>, and your auto-skill picks. The System remembers: <b>+${Math.round(ST.legacyBoostFor(S) * 100)}% XP</b> for you, half that for the party — grown from this cycle's recursions, bonds, and levels.</p>
+      <button class="btn sm" id="set-ngplus">Begin the next cycle</button>
+    </div>` : ''}
     ${S ? `
     <div class="row gap">
       <button class="btn sm" id="set-export">Export save</button>
@@ -1324,6 +1432,20 @@ function settingsModal(back) {
     };
     modal.querySelector('#set-wipe').onclick = () => {
       if (confirm('Delete the save? This cannot be undone.')) { ST.wipeSave(); S = null; modal.remove(); title(false); }
+    };
+    const ng = modal.querySelector('#set-ngplus');
+    if (ng) ng.onclick = async () => {
+      const boost = Math.round(ST.legacyBoostFor(S) * 100);
+      if (!confirm(`Begin Cycle ${(S.legacy?.cycle || 0) + 2}? The story restarts from day one. You keep all gear and mastery, and the System's boost becomes +${boost}% XP. This replaces the current save.`)) return;
+      modal.remove();
+      S = ST.newGamePlus(S);
+      ST.save(S);
+      AU.sfx('gate');
+      screen('', '');
+      await playEvent(EVENTS.ngplus_wake);
+      await playEvent(EVENTS.intro);
+      await playEvent(EVENTS.recruit);
+      guild();
     };
   }
   modal.querySelector('#set-close').onclick = () => {
