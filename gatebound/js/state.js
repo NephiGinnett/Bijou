@@ -48,6 +48,7 @@ export function newGame(playerName) {
     mastery: {},                     // heroId -> { skillId: use count }
     autoSkill: {},                   // heroId -> preferred skill for auto-battle
     recruited: [],                   // post-clear guild recruits (hero ids)
+    custom: {},                      // Character Forge hero definitions
     dispatch: [],                    // missions in the field
     dispatchReports: [],             // resolved missions awaiting review
     settings: { volume: 0.6, music: true, textFast: false, spice: 'gentle', outfit: 'adventure', autoBattle: false },
@@ -79,6 +80,7 @@ function ensureShape(S) {
   if (!S.legacy) S.legacy = { cycle: 0, xpBoost: 0 };
   if (S.stats && !S.stats.tone) S.stats.tone = {};
   if (!S.recruited) S.recruited = [];
+  if (!S.custom) S.custom = {};
   if (!S.dispatch) S.dispatch = [];
   if (!S.dispatchReports) S.dispatchReports = [];
   if (S.cleared && S.clearedDay == null) S.clearedDay = S.day;
@@ -277,6 +279,7 @@ export function newGamePlus(S) {
   N.mastery = S.mastery || {};
   N.autoSkill = S.autoSkill || {};
   N.settings = S.settings;
+  N.custom = S.custom || {};  // forged souls persist across cycles (re-summon at the Forge)
   N.legacy = { cycle: ((S.legacy && S.legacy.cycle) || 0) + 1, xpBoost: boost };
   return N;
 }

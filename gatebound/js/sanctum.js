@@ -68,10 +68,57 @@ export function buildSystemPrompt(S, id, isCandidate) {
     lines.push(`YOUR SITUATION: You are a member of the player's guild party. You run gates together, camp together, and trust each other with your lives.${bond != null ? ` Relationship: you are ${bondStage(bond)} (bond ${bond}/10).` : ''}`);
   }
   lines.push('');
-  lines.push(`THE PLAYER: ${S.name}, guild license rank ${rank}, level ${S.heroes.player.level}, known as "the Fourth." It is day ${S.day} of their story. You are talking with them in the guild hall between gate dives.`);
+  lines.push(`THE PLAYER: ${S.name}, guild license rank ${rank}, level ${S.heroes.player.level}, known as "the Fourth." It is day ${S.day} of their story${S.legacy && S.legacy.cycle ? ` — and, though almost no one can perceive it, the ${S.legacy.cycle + 1}th walking of that story: the System has begun the tale again, and the player carries every lesson of the previous cycles` : ''}. You are talking with them in the guild hall between gate dives.`);
+  lines.push('');
+  lines.push(guildContext(S, id));
   lines.push('');
   lines.push(`STYLE: Reply as ${def.name} only — never write the player's words or actions. Keep replies conversational, 1–3 short paragraphs. Match the game's tone: warm, witty fantasy adventure${S.settings.spice === 'steamy' ? ', romance allowed to simmer when the bond supports it' : ', romance kept gentle and sweet'}. No out-of-character commentary.`);
   return lines.join('\n');
+}
+
+// The living guild: who's here, what's happening, how the player leads.
+function guildContext(S, selfId) {
+  const out = [];
+  const members = roster(S).filter(x => x !== 'player' && x !== selfId);
+  if (members.length) {
+    out.push('THE GUILD ROSTER (besides you and the player): ' + members.map(m => {
+      const d = heroDesc(S, m);
+      return `${HEROES[m].name} (${d.cls}, ${d.epithet})`;
+    }).join('; ') + '.');
+  }
+  out.push('The guild is run by Guildmaster Hale — gruff, sentimental, endlessly stamping paperwork he pretends to resent.');
+
+  // relationships
+  const stages = [];
+  for (const g of ['sakura', 'erin', 'shiro', 'yuki']) {
+    if (g === selfId || !(g in S.bond) || !S.bond[g]) continue;
+    if (!roster(S).includes(g) && g === 'yuki') continue;
+    stages.push(`${HEROES[g].name}: bond ${S.bond[g]}/10`);
+  }
+  if (stages.length) out.push('BONDS: ' + stages.join(', ') + '.'
+    + (S.flags.harem_formed ? ' The player and the girls are an open, chosen polyamorous family — the whole guild knows and approves.' : '')
+    + (S.seen && S.seen.wedding ? ' There has been a wedding; the vows are guild legend.' : ''));
+
+  // how the player leads (prevailing tone)
+  const tone = (S.stats && S.stats.tone) || {};
+  const dom = tone.dom || 0, kind = tone.kind || 0;
+  if (dom + kind >= 2) {
+    out.push(dom > kind
+      ? 'THE PLAYER\'S MANNER: commanding and possessive — they lead this guild with a firm hand, and the people closest to them have chosen that gladly. Respond to that dynamic in character.'
+      : 'THE PLAYER\'S MANNER: warm and gentle — they lead by making room for people. Respond to that warmth in character.');
+  }
+
+  // current events
+  const events = [];
+  if (S.dispatch.length) events.push(`${S.dispatch.map(m => m.team.map(t => HEROES[t] ? HEROES[t].name : t).join(' & ')).join('; ')} ${S.dispatch.length > 1 ? 'are' : 'is'} away clearing a gate`);
+  const lastReport = S.dispatchReports[S.dispatchReports.length - 1];
+  if (lastReport) events.push(`the last dispatched team ${lastReport.success ? 'came home victorious' : 'was driven back'} from ${lastReport.gate.name}`);
+  if (S.gates.some(g => g.rescue)) { const g = S.gates.find(x => x.rescue); events.push(`a distress posting is on the board — ${g.rescue.party} is trapped in a gate`); }
+  if (S.ngPlus) events.push(`the party has cleared ${S.ngPlus} recursion echo${S.ngPlus > 1 ? 'es' : ''} of the fallen Monarch's Threshold`);
+  if (S.stats.wipes) events.push(`the party has been carried out of a gate ${S.stats.wipes} time${S.stats.wipes > 1 ? 's' : ''} — nobody jokes about it`);
+  if (events.length) out.push('CURRENT EVENTS: ' + events.join('; ') + '.');
+
+  return out.join('\n');
 }
 
 // ------------------------------------------------------------------

@@ -551,3 +551,14 @@ button.ticker-btn.notify em { font-style: normal; color: var(--gold); animation:
 .skill-row .auto-set { float: right; margin-top: -2px; }
 .skill-row .auto-set.on { border-color: var(--gold); color: var(--gold); }
 .skill-row > small.muted { float: right; font-size: 0.68rem; }
+
+/* the Character Forge */
+#f-input {
+  width: 100%; resize: vertical; background: var(--panel-2); color: var(--text);
+  border: 1px solid var(--border); border-radius: 8px; padding: 10px 12px;
+  font-family: 'Consolas', monospace; font-size: 0.82rem;
+}
+#f-input:focus { outline: none; border-color: var(--sys); }
+.forge-preview { display: flex; gap: 14px; margin-top: 14px; align-items: flex-start; border: 1px solid var(--border-dim); border-radius: 10px; padding: 12px; background: rgba(8, 12, 20, 0.5); }
+.forge-preview .portrait.big { width: 110px; height: 110px; flex-shrink: 0; }
+#f-scan-out { margin-top: 8px; }

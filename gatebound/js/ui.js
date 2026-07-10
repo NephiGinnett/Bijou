@@ -8,6 +8,8 @@ import { Combat } from './combat.js';
 import { Stage, makePortrait } from './scene3d.js';
 import { EVENTS, SPEAKERS, DUNGEON_EVENTS, pickGuildEvent, pickCampEvent, endingFor, weddingFor, pickRumorEvent, rumorLine } from './story.js';
 import { openSanctum } from './sanctum.js';
+import { parseCharacter, summonHero, releaseHero, restoreCustomHeroes, registerCustomHero, setVisualHook } from './forge.js';
+import { registerCustomActor, ACTOR_ACCENTS } from './actors3d.js';
 import * as AU from './audio.js';
 
 let S = null;
@@ -25,6 +27,11 @@ let advanceHandler = null;
 
 export async function boot() {
   window.__FAST = new URLSearchParams(location.search).has('fast');
+  // forge.js is pure data; the UI supplies the 3D registration
+  setVisualHook(def => {
+    registerCustomActor(def.id, def.spec);
+    ACTOR_ACCENTS[def.id] = def.spec.accent ?? 0x8fa3bf;
+  });
   stage = new Stage($('#c3d'), $('#fx-overlay'));
   stage.setBiome(null);
   stage.start();
@@ -86,7 +93,8 @@ function heroVariant(id) {
 // Regenerate the 2D portraits whenever their look changes: the party
 // attire setting, or Yuki's reclassification. Cheap no-op otherwise.
 async function refreshPortraits() {
-  const key = ((S && S.settings && S.settings.outfit) || 'adventure') + '|' + (S && S.flags && S.flags.yuki_femme ? 'f' : '');
+  const key = ((S && S.settings && S.settings.outfit) || 'adventure') + '|' + (S && S.flags && S.flags.yuki_femme ? 'f' : '')
+    + '|' + (S ? Object.keys(S.custom || {}).length : 0);
   if (PORTRAITS.__key === key) return;
   PORTRAITS.__key = key;
   await Promise.all(Object.keys(HEROES).map(async id => {
@@ -242,6 +250,7 @@ async function title(hasSave) {
   if (hasSave) $('#bt-continue').onclick = () => {
     AU.sfx('confirm');
     S = ST.load();
+    restoreCustomHeroes(S);
     AU.applySettings(S.settings);
     if (S.run) { stage.setBiome(S.run.gate.biome); dungeonScreen(); }
     else guild();
@@ -378,6 +387,7 @@ async function guild() {
           <button class="btn big ${talkEv ? 'notify' : ''}" id="g-talk">❝ Talk${talkEv ? '<em>!</em>' : ''}<small>guild hall gossip</small></button>
           <button class="btn big ${newReports ? 'notify' : ''}" id="g-dispatch">✈ Dispatch${newReports ? '<em>!</em>' : ''}<small>${missionsOut ? missionsOut + ' team' + (missionsOut > 1 ? 's' : '') + ' in the field' : 'send teams to clear gates'}</small></button>
           <button class="btn big" id="g-sanctum">✉ Sanctum<small>speak with the guild</small></button>
+          <button class="btn big" id="g-forge">⚗ Forge<small>summon souls from descriptions</small></button>
           ${offers.length ? `<button class="btn big notify" id="g-newcomers">➤ Newcomers<em>!</em><small>${offers.length} petition${offers.length > 1 ? 's' : ''} to join</small></button>` : ''}
           <button class="btn big ghost" id="g-settings">⚙ Settings<small>save, audio, text</small></button>
         </div>
@@ -422,6 +432,7 @@ async function guild() {
     }
   };
   $('#g-sanctum').onclick = () => { AU.sfx('ui'); openSanctum({ S, screen, portraitImg, toast, esc, back: guild, save: () => ST.save(S) }); };
+  $('#g-forge').onclick = () => { AU.sfx('ui'); forgeScreen(); };
   const nc = $('#g-newcomers');
   if (nc) nc.onclick = () => { AU.sfx('ui'); newcomers(); };
   $('#g-rest').onclick = () => {
@@ -1327,6 +1338,163 @@ function shop() {
 }
 
 // ------------------------------------------------------------------
+// the Character Forge — descriptions in, guildmates out
+// ------------------------------------------------------------------
+
+let forgeSalt = 0;
+let forgeParsed = null;
+
+async function forgePreviewPortrait(spec) {
+  registerCustomActor('__preview', spec);
+  return makePortrait('__preview');
+}
+
+async function forgeScreen(keepInput) {
+  const away = ST.dispatchedIds(S);
+  const saved = Object.values(S.custom || {});
+  const savedRows = saved.length ? saved.map(d => {
+    const inRoster = S.recruited.includes(d.id);
+    const isAway = away.has(d.id);
+    return `<div class="shop-row">
+      <div>${portraitImg(d.id)}</div>
+      <div style="flex:1"><b style="color:${d.color}">${esc(d.name)}</b> <small class="muted">${esc(d.cls)} · ${ROLE_INFO[d.role]?.icon || ''} ${ROLE_INFO[d.role]?.name || d.role}</small>
+        <p class="muted sm-text">${inRoster ? (isAway ? 'in the field (dispatched)' : 'guild member') : 'awaiting summons (kept through cycles)'}</p></div>
+      ${inRoster
+        ? `<button class="btn sm danger f-release ${isAway ? 'disabled' : ''}" data-id="${d.id}" title="${isAway ? 'Cannot release while dispatched.' : 'Remove from the guild. Their gear returns to your bag; the forged soul stays saved here.'}">release</button>`
+        : `<button class="btn sm f-resummon" data-id="${d.id}">summon</button> <button class="btn sm ghost danger f-forget" data-id="${d.id}" title="Delete this forged soul permanently.">forget</button>`}
+    </div>`;
+  }).join('') : '<p class="muted">No forged souls yet.</p>';
+
+  // preview panel from the last parse
+  let previewHtml = '<p class="muted center-text" style="margin-top:24px">Paste a character below — a Warlock\'s Codex card, a tavern-card JSON, or plain prose — and the Forge will read it.</p>';
+  if (forgeParsed) {
+    const p = forgeParsed;
+    const src = await forgePreviewPortrait(p.spec);
+    const kitNames = Object.entries(p.kit).map(([lv, id]) => `${SKILLS[id].name} <small class="muted">(Lv ${lv})</small>`).join(' · ');
+    previewHtml = `
+      <div class="forge-preview">
+        <img class="portrait big" src="${src}" alt="">
+        <div>
+          <b style="font-size:1.05rem">${esc(p.card.name || 'Stranger')}</b> <small class="muted">${esc(p.cls)} · ${ROLE_INFO[p.role]?.icon || ''} ${ROLE_INFO[p.role]?.name}</small>
+          ${p.features.length ? `<p class="sm-text gold">◆ ${p.features.join(' · ')}</p>` : '<p class="sm-text muted">no unusual features read</p>'}
+          <p class="sm-text muted"><b>Kit:</b> ${kitNames}</p>
+          <p class="sm-text muted"><b>Passive:</b> ${esc(p.passive.name)} — ${esc(p.passive.desc)}</p>
+          <p class="sm-text muted"><b>Joins at:</b> Lv ${Math.max(20, (S.heroes.player?.level || 20) - 2)}</p>
+          <div class="row gap" style="margin-top:8px">
+            <button class="btn primary" id="f-summon">Summon to the guild</button>
+            <button class="btn sm" id="f-reroll" title="Keep the description; reshuffle the ambiguous parts of the look.">⟲ reshuffle look</button>
+          </div>
+        </div>
+      </div>`;
+  }
+
+  screen(`
+    <div class="panel map-panel">
+      <div class="row spread"><h2>⚗ The Character Forge</h2><button class="btn ghost" id="f-back">← Guild</button></div>
+      <p class="muted">Feed the Forge a description and it reads out a soul: look, class, kit. Codex cards work as-is; so does plain prose. Rabbit ears, horns, wings, masks, shades and spirits — the Forge renders what it reads.</p>
+      <div class="shop-cols">
+        <div>
+          <h3>Describe a soul</h3>
+          <textarea id="f-input" rows="7" placeholder='{"name":"...","description":"..."}  — or just describe them in words'></textarea>
+          <div class="row gap" style="margin-top:6px">
+            <button class="btn" id="f-read">🜂 Read the description</button>
+            <button class="btn sm ghost" id="f-scan" title="Scan this browser's Warlock's Codex storage (wc_chars / sanctum_chars) for characters.">scan Codex storage</button>
+          </div>
+          <div id="f-scan-out"></div>
+          <div id="f-preview">${previewHtml}</div>
+        </div>
+        <div><h3>Forged souls</h3><div class="sell-list">${savedRows}</div></div>
+      </div>
+    </div>
+  `);
+  const input = $('#f-input');
+  if (keepInput != null) input.value = keepInput;
+
+  $('#f-back').onclick = () => { forgeParsed = null; guild(); };
+  $('#f-read').onclick = () => {
+    const v = input.value.trim();
+    if (!v) { toast('The Forge needs words to read.'); return; }
+    forgeSalt = 0;
+    try { forgeParsed = parseCharacter(v, forgeSalt); } catch (e) { toast('The Forge could not read that: ' + e.message, 'danger'); return; }
+    if (!forgeParsed.card.name) toast('No name found — the Forge will call them "Stranger" unless the text names them.');
+    AU.sfx('magic');
+    forgeScreen(v);
+  };
+  const rr = $('#f-reroll');
+  if (rr) rr.onclick = () => {
+    forgeParsed = parseCharacter(input.value.trim(), ++forgeSalt);
+    AU.sfx('ui');
+    forgeScreen(input.value);
+  };
+  const sm = $('#f-summon');
+  if (sm) sm.onclick = async () => {
+    const def = summonHero(forgeParsed, S);
+    forgeParsed = null;
+    ST.save(S);
+    AU.sfx('promo');
+    await refreshPortraits();
+    screen('', '');
+    await playEvent({ steps: [
+      { s: 'narr', t: `The Forge's circle flares once, quietly, like a door being knocked on from the other side — and then ${def.name} is simply there, blinking in the guild-hall light, exactly as described.` },
+      { s: def.id, t: `...So this is the guild the descriptions speak of. ${def.name}. ${def.cls}. (a beat, taking in the hall, the board, the faces) I don't know what I expected. It's warmer than the words made it sound.` },
+      { s: 'guild', t: `(stamping a fresh license without so much as a raised eyebrow) ${def.name}, ${def.cls}, provisional membership. Leave it to the Fourth's table — I've stopped asking HOW people arrive. Welcome to the guild.` },
+    ] });
+    toast(`${def.name} joins the guild!`, 'gold');
+    forgeScreen();
+  };
+  $('#f-scan').onclick = () => {
+    const found = [];
+    for (const key of ['wc_chars', 'sanctum_chars']) {
+      try {
+        const arr = JSON.parse(localStorage.getItem(key));
+        if (Array.isArray(arr)) for (const c of arr) if (c && c.name) found.push(c);
+      } catch (e) { /* absent or malformed */ }
+    }
+    const out = $('#f-scan-out');
+    if (!found.length) { out.innerHTML = '<p class="muted sm-text">No Codex characters found in this browser\'s storage. (The Codex must be hosted on the same domain to share storage — otherwise paste a card.)</p>'; return; }
+    out.innerHTML = '<p class="muted sm-text">Found in Codex storage:</p><div class="row gap wrap">' +
+      found.slice(0, 20).map((c, i) => `<button class="btn sm f-card" data-i="${i}">${esc(c.name)}</button>`).join('') + '</div>';
+    out.querySelectorAll('.f-card').forEach(b => b.onclick = () => {
+      input.value = JSON.stringify(found[Number(b.dataset.i)], null, 1);
+      AU.sfx('ui');
+      toast('Card loaded — now Read the description.');
+    });
+  };
+  document.querySelectorAll('.f-release:not(.disabled)').forEach(b => b.onclick = () => {
+    const id = b.dataset.id;
+    const def = S.custom[id];
+    if (!confirm(`Release ${def.name} from the guild? Their gear returns to your bag; the forged soul stays saved at the Forge.`)) return;
+    // release from roster but keep the forged definition
+    const h = S.heroes[id];
+    if (h) for (const slot of ['weapon', 'armor', 'charm']) { if (h.gear[slot]) S.gearBag.push(h.gear[slot]); }
+    delete S.heroes[id];
+    S.recruited = S.recruited.filter(x => x !== id);
+    ST.save(S);
+    toast(`${def.name} departs — the Forge keeps their pattern.`);
+    forgeScreen();
+  });
+  document.querySelectorAll('.f-resummon').forEach(b => b.onclick = () => {
+    const def = S.custom[b.dataset.id];
+    def.startLevel = Math.max(20, (S.heroes.player?.level || 20) - 2);
+    registerCustomHero(def);
+    S.heroes[def.id] = { level: def.startLevel, xp: 0, gear: { weapon: null, armor: null, charm: null } };
+    if (!S.recruited.includes(def.id)) S.recruited.push(def.id);
+    ST.save(S);
+    AU.sfx('promo');
+    toast(`${def.name} rejoins the guild!`, 'gold');
+    forgeScreen();
+  });
+  document.querySelectorAll('.f-forget').forEach(b => b.onclick = () => {
+    const def = S.custom[b.dataset.id];
+    if (!confirm(`Forget ${def.name} entirely? The forged soul is deleted for good.`)) return;
+    releaseHero(S, def.id);
+    ST.save(S);
+    toast(`The Forge releases ${def.name}'s pattern to the wind.`);
+    forgeScreen();
+  });
+}
+
+// ------------------------------------------------------------------
 // smith — reforging, on its own screen
 // ------------------------------------------------------------------
 
@@ -1429,7 +1597,7 @@ function settingsModal(back) {
     modal.querySelector('#set-import').onclick = () => {
       const v = modal.querySelector('#save-blob').value;
       const loaded = ST.importSave(v);
-      if (loaded) { S = loaded; ST.save(S); toast('Save imported.'); modal.remove(); guild(); }
+      if (loaded) { S = loaded; restoreCustomHeroes(S); ST.save(S); toast('Save imported.'); modal.remove(); guild(); }
       else toast('Invalid save code.', 'danger');
     };
     modal.querySelector('#set-wipe').onclick = () => {

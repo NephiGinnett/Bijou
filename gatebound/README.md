@@ -97,6 +97,21 @@ and approves; Yuki chooses her place with open eyes), rejections stay
 retryable rather than locking a route, and the game quietly tracks your
 prevailing tone for future content.
 
+### The Character Forge
+
+**⚗ Forge** in the guild hall turns character descriptions into playable
+guildmates. Paste a Warlock's Codex card, a tavern-card JSON, or plain
+prose — the Forge reads hair/skin/eye colors, hairstyles, outfits, and
+non-human features (elf/rabbit/cat/fox/wolf ears, horns, tails, wings,
+halos, masks, spectral bodies, shadow-forms, unusual sizes), infers a
+class and role from the text, assembles a combat kit and passive, and
+renders a chibi preview. Summon them and every system picks them up:
+party, dispatch, mastery, the Smith, and the Sanctum (their card text
+becomes their chat persona). Forged souls persist across NG+ cycles and
+can be re-summoned, released, or forgotten at the Forge. If the Codex
+is hosted on the same domain, **scan Codex storage** imports its
+characters directly.
+
 ### The Sanctum (optional AI chat)
 
 **✉ Sanctum** in the guild hall opens a chat room with any party member
