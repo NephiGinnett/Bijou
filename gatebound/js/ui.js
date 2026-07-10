@@ -1250,7 +1250,7 @@ function shop() {
     ST.save(S);
     shop();
   });
-  document.querySelectorAll('.shop-row button[data-id]:not(.sell)').forEach(b => b.onclick = () => {
+  document.querySelectorAll('.shop-row button[data-id]:not(.sell):not(.forge)').forEach(b => b.onclick = () => {
     const it = ITEMS[b.dataset.id];
     if (S.gold < it.price) return;
     S.gold -= it.price;
