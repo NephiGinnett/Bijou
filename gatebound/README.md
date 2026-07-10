@@ -45,9 +45,40 @@ Add `?fast=1` to the URL for instant text and 3× animation speed.
    - *Timid Prodigy* (Sakura): +20% MAG while Erin stands
    - *Grand Design* (Shiro): auto-marks the weakest enemy each round
 4. **After the clear** — camp scenes and story: three bond arcs (each girl
-   has a chain), the Yuki drama thread from the source scenario, rank
-   promotion ceremonies, and four different endings chosen by your bonds
-   after the S-rank **Monarch's Threshold**.
+   has a chain), pair scenes between the girls, the Yuki drama thread from
+   the source scenario, rank promotion ceremonies, and four different
+   endings chosen by your bonds after the S-rank **Monarch's Threshold** —
+   plus wedding epilogues and married-life vignettes beyond it.
+5. **Post-Monarch** — the guild grows: newcomers adapted from *the
+   Warlock's Codex* (Mira, Nessa, Vex, Seris) petition to join after
+   hearing about your clear. Recruit them, gear them, and use the
+   **Dispatch board** to send benched members to clear gates on their own
+   — balanced team compositions (vanguard/mender/arcanist/striker) raise
+   the odds. **Rest until tomorrow** advances the day when you'd rather
+   not dive.
+
+Along the way: dungeon corridors now **fork** (risk an elite den for
+richer spoils, or take the quiet door), titled **elite** enemies roll
+extra traits and double rewards, **skill mastery** ranks up skills with
+use (+5% power per ★, cheaper at max), and the guild smith **reforges**
+gear affixes for gold.
+
+From C-rank on, watch the board for **⚑ RESCUE gates**: a rival party
+bit off more than it could clear and is barricaded inside. Clear the
+gate to bring them home and collect the posted bounty — and sometimes
+the stranded party includes a named survivor (Garrick, Liria, Tobbin)
+who can be invited into the guild on the spot, or signed later at the
+Newcomers desk.
+
+### The Sanctum (optional AI chat)
+
+**✉ Sanctum** in the guild hall opens a chat room with any party member
+or petitioning newcomer, backed by whatever AI endpoint you configure
+(⚙ Connection — KoboldCpp or any OpenAI-compatible server, local or
+remote). The game builds a system prompt from live state — your rank,
+bonds, story progress, and the character's persona — so they know who
+they're talking to. Entirely optional; the game never requires it.
+Chat histories live in localStorage, outside the save code.
 
 Progress saves automatically to localStorage (export/import codes in
 Settings).
