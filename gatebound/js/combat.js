@@ -408,7 +408,8 @@ export class Combat {
     const defStat = this.eff(tgt, isMag ? 'res' : 'def');
     const v = sk.variance || 0.1;
     const variance = 1 - v + Math.random() * v * 2;
-    const critChance = 0.05 + (u.base.luk || 5) * 0.004 + (u.load ? u.load.crit : 0);
+    const passiveCrit = (u.side === 'party' && HEROES[u.heroId] && HEROES[u.heroId].passive.crit) || 0;
+    const critChance = 0.05 + (u.base.luk || 5) * 0.004 + (u.load ? u.load.crit : 0) + passiveCrit;
     const crit = Math.random() < critChance;
 
     let dmg = atk * power * (100 / (100 + defStat)) * variance;
@@ -423,8 +424,10 @@ export class Combat {
       if (sb) dmg *= 1 + sb;
       if (u.load.execBonus && tgt.hp / tgt.maxHp < 0.4) dmg *= 1 + u.load.execBonus;
     }
-    // target armor affix (Bulwark)
-    if (tgt.load && tgt.load.dr) dmg *= 1 - tgt.load.dr;
+    // target armor affix (Bulwark) + damage-reduction passives (Garrick)
+    const passiveDr = (tgt.side === 'party' && HEROES[tgt.heroId] && HEROES[tgt.heroId].passive.dr) || 0;
+    const totalDr = (tgt.load ? tgt.load.dr : 0) + passiveDr;
+    if (totalDr) dmg *= 1 - Math.min(0.6, totalDr);
     if (tgt.guarding) dmg *= 0.5;
     dmg = Math.max(1, Math.round(dmg));
 

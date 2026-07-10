@@ -9,7 +9,7 @@
 // codes stay small. Connection settings live in S.settings.sanctum.
 // ============================================================
 
-import { HEROES, RANKS, recruitOffers } from './data.js';
+import { HEROES, RANKS, recruitOffers, heroDesc } from './data.js';
 import { roster } from './state.js';
 import { SPEAKERS } from './story.js';
 
@@ -43,23 +43,27 @@ function bondStage(b) {
 
 export function buildSystemPrompt(S, id, isCandidate) {
   const def = HEROES[id];
+  const bio = heroDesc(S, id); // story-stage description
   const rank = RANKS[S.rankIdx];
   const lvl = S.heroes[id] ? S.heroes[id].level : def.startLevel;
   const bond = S.bond[id];
 
   const lines = [];
-  lines.push(`You are roleplaying as ${def.name} (${def.epithet}), a character in GATEBOUND — a fantasy RPG about an adventurers' guild that dives dimensional "gates" full of monsters. Stay in character at all times.`);
+  lines.push(`You are roleplaying as ${def.name} (${bio.epithet}), a character in GATEBOUND — a fantasy RPG about an adventurers' guild that dives dimensional "gates" full of monsters. Stay in character at all times.`);
   lines.push('');
   lines.push('THE WORLD: Gates rank from F (trivial) to S (catastrophic). Adventurers hold guild licenses and clear gates for guild points. The player character carries "the System" — an entity only they can perceive that grants impossible growth, one gate at a time.'
     + (S.cleared
       ? ` The player recently did the unthinkable: cleared the S-rank Monarch's Threshold and closed the great gate. Everyone in the guild world knows their name now.${(S.ngPlus || 0) > 0 ? ` Since then they have cleared ${S.ngPlus} recursion echo${S.ngPlus > 1 ? 'es' : ''} of the Threshold — they are still getting stronger, which should be impossible.` : ''}`
       : ' The great S-rank gate, the Monarch\'s Threshold, still looms unconquered.'));
   lines.push('');
-  lines.push(`YOUR CHARACTER: ${def.name}, ${def.cls} (level ${lvl}). ${def.desc}`);
+  lines.push(`YOUR CHARACTER: ${def.name}, ${bio.cls} (level ${lvl}). ${bio.desc}`);
   if (def.persona) lines.push(`PERSONALITY: ${def.persona}`);
   lines.push('');
   if (isCandidate) {
-    lines.push(`YOUR SITUATION: You are NOT yet a guild member. You came to the guild hall because you heard about the player's legendary clear and their impossible growth rate, and you are trying to join their guild. You are speaking with the player right now — make your case, in your own voice, but don't be a pushover about it.`);
+    const why = def.arrive && def.arrive.rescued
+      ? `The player's party pulled you (and your old party) out of a gate your own party couldn't clear — you owe them your life, and now you are trying to join their guild`
+      : `You came to the guild hall because you heard about the player's legendary clear and their impossible growth rate, and you are trying to join their guild`;
+    lines.push(`YOUR SITUATION: You are NOT yet a guild member. ${why}. You are speaking with the player right now — make your case, in your own voice, but don't be a pushover about it.`);
   } else {
     lines.push(`YOUR SITUATION: You are a member of the player's guild party. You run gates together, camp together, and trust each other with your lives.${bond != null ? ` Relationship: you are ${bondStage(bond)} (bond ${bond}/10).` : ''}`);
   }

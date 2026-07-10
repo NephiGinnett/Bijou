@@ -41,6 +41,11 @@ export const HEROES = {
     epithet: 'The Fourth',
     cls: 'Vagrant',
     desc: 'A fresh F-rank license and a voice nobody else can hear. The System has chosen you: every gate cleared makes you measurably, impossibly stronger.',
+    stages: [
+      { cond: S => S.cleared, desc: 'The one who walked out of the Monarch\'s Threshold and closed the door behind them. The F-rank formality is a guild-hall legend now; the System keeps measuring, and the ceiling still hasn\'t come.' },
+      { cond: S => S.rankIdx >= 4, desc: 'A-rank, and nobody remembers laughing. The escorted baggage now walks point, and examiners quietly rewrite what the ranking scale is for. The System hums, unfinished.' },
+      { cond: S => S.rankIdx >= 2, desc: 'The F-rank license is a formality the guild is increasingly embarrassed by. Gate by gate, the System makes good on its promise: measurably, impossibly stronger.' },
+    ],
     startLevel: 1,
     base:   { hp: 105, mp: 32, atk: 15, mag: 10, def: 11, res: 9, agi: 12, luk: 10 },
     growth: { hp: 15,  mp: 4,  atk: 3.3, mag: 2.2, def: 2.5, res: 2.2, agi: 1.9, luk: 1.2 },
@@ -54,6 +59,11 @@ export const HEROES = {
     epithet: 'the Golden Knight',
     cls: 'Knight',
     desc: 'The party\'s unbreakable wall. Warm, honest to a fault, first through every door and first onto every trap. Protects Sakura like breathing.',
+    stages: [
+      { cond: S => S.seen && S.seen.wedding && (S.flags.harem_formed || (S.bond.erin || 0) >= 10), desc: 'The party\'s unbreakable wall — and your wife, a word she still grins at like a trophy. First through every door, first onto every trap, first to say it out loud. The ring goes under the gauntlet; she checked the regulations.' },
+      { cond: S => (S.bond.erin || 0) >= 7, desc: 'The party\'s unbreakable wall, warm and honest to a fault — and lately very bad at pretending she isn\'t watching you across the campfire. Protects the whole party like breathing. Breathes easier when you\'re behind her.' },
+      { cond: S => S.cleared, desc: 'The wall that held at the Monarch\'s Threshold. Warm, honest to a fault, first through every door — including that one. The guild\'s young shields copy her stance now. She pretends not to notice, badly.' },
+    ],
     startLevel: 14,
     base:   { hp: 150, mp: 22, atk: 13, mag: 4, def: 15, res: 10, agi: 8, luk: 6 },
     growth: { hp: 11,  mp: 2,  atk: 2.0, mag: 0.8, def: 2.0, res: 1.5, agi: 1.0, luk: 0.8 },
@@ -67,6 +77,11 @@ export const HEROES = {
     epithet: 'the Petal Storm',
     cls: 'Mage',
     desc: 'A timid elf who apologizes to doors she bumps into — and the most dangerous arcane talent of her graduating class. Braver when Erin is standing.',
+    stages: [
+      { cond: S => S.seen && S.seen.wedding && (S.flags.harem_formed || (S.bond.sakura || 0) >= 10), desc: 'The most dangerous arcane talent of her generation, and your wife — she wrote you a better ending than any of her novels and co-signed it at the altar. Still apologizes to doors. The doors, at this point, should apologize to her.' },
+      { cond: S => (S.bond.sakura || 0) >= 7, desc: 'The most dangerous arcane talent of her class, who has stopped rehearsing being brave and started simply being it — especially, noticeably, whenever you\'re watching. Still apologizes to doors. Blushes at the tips of her ears when caught.' },
+      { cond: S => S.cleared, desc: 'The sky over the Monarch\'s Threshold answered to her. The timid elf who apologized to doors now gets saluted by examiners — she apologizes for that, too. Braver than anyone the guild has ever licensed.' },
+    ],
     startLevel: 14,
     base:   { hp: 82, mp: 62, atk: 5, mag: 19, def: 6, res: 13, agi: 9, luk: 9 },
     growth: { hp: 7,  mp: 6,  atk: 0.6, mag: 2.7, def: 1.0, res: 1.9, agi: 1.1, luk: 1.0 },
@@ -80,6 +95,11 @@ export const HEROES = {
     epithet: 'the White Queen',
     cls: 'Tactician',
     desc: 'Reads a battlefield like a chessboard and most people like an open, boring book. Speaks rarely. Heals precisely. Keeps a ledger of everything.',
+    stages: [
+      { cond: S => S.seen && S.seen.wedding && (S.flags.harem_formed || (S.bond.shiro || 0) >= 10), desc: 'Reads a battlefield like a chessboard, and married you anyway — the one calculation she triple-checked and kept. Unpledged, unpriced, and spending her own time exactly as she chooses. The ledger has a page nobody else may read. It is about you.' },
+      { cond: S => (S.bond.shiro || 0) >= 7, desc: 'Reads a battlefield like a chessboard and most people like an open, boring book — but keeps rereading you, which the ledger classifies, tersely, as "anomalous." Speaks rarely. Says your name with unusual precision.' },
+      { cond: S => S.cleared, desc: 'The mind that plotted the Monarch\'s fall four moves ahead. Reads battlefields like chessboards; read the Threshold like an endgame. The ledger of everything now includes one entry she never priced: what the party is worth.' },
+    ],
     startLevel: 14,
     base:   { hp: 94, mp: 56, atk: 6, mag: 15, def: 8, res: 15, agi: 10, luk: 8 },
     growth: { hp: 8,  mp: 5,  atk: 0.7, mag: 2.1, def: 1.2, res: 2.0, agi: 1.3, luk: 1.0 },
@@ -93,6 +113,12 @@ export const HEROES = {
     epithet: 'the Earnest',
     cls: 'Adventurer (D)',
     desc: 'Kind, sheltered, and trying so hard it hurts to watch. The man three A-ranks are pledged to marry — currently learning which end of the sword to hold.',
+    stages: [
+      { cond: S => S.flags.yuki_femme && S.seen && S.seen.wedding && (S.flags.harem_formed || (S.bond.yuki || 0) >= 10), epithet: 'the Fifth Heart', cls: 'Adventurer', desc: 'Long hair, green gown, a ring she keeps finding excuses to look at: Yuki — your wife, the harem\'s fifth heart, entirely and finally herself. The System reclassified more than her silhouette; she reclassified everything else on her own.' },
+      { cond: S => S.flags.yuki_femme, epithet: 'the Fifth Heart', cls: 'Adventurer', desc: 'Long hair, green gown, second-watch partner: Yuki, exactly where she spent four years trying to reach — the middle of the fire. The System reclassified more than her silhouette. The rest she claimed for herself: a voice, a name she keeps, a life that fits.' },
+      { cond: S => S.flags.yuki_member, epithet: 'the Earnest', cls: 'Adventurer', desc: 'No longer waiting to be waited for: Yuki runs every gate with the party now, softening by the day into someone who finally fits. The guild has stopped being surprised by the fifth chair. The trying-so-hard stopped hurting to watch and started working.' },
+      { cond: S => S.flags.betrothal_ended, cls: 'Adventurer (B)', desc: 'Yuki Beaumont, B-rank, leading a party of his own — steady, certain, un-discourageable. The betrothal ended; the friendship didn\'t. His letters arrive on time, every week, to all four of you.' },
+    ],
     startLevel: 7,
     base:   { hp: 88, mp: 26, atk: 10, mag: 6, def: 9, res: 8, agi: 8, luk: 12 },
     growth: { hp: 8,  mp: 2,  atk: 1.4, mag: 0.8, def: 1.2, res: 1.0, agi: 0.9, luk: 1.5 },
@@ -109,6 +135,9 @@ export const HEROES = {
     id: 'mira', recruit: true, arrive: { day: 0 },
     name: 'Mira', epithet: 'the Bold', cls: 'Mercenary',
     desc: 'Mira Ashvale, twenty-nine, sellsword. Broad shoulders, honest scars, a contract rate she quotes without blinking. She walked in the day after the Threshold closed and asked who she talks to about steady work with people worth bleeding for.',
+    stages: [
+      { cond: S => (S.recruited || []).includes('mira'), desc: 'Mira Ashvale, formerly of everywhere, permanently of here. The contract said "guild family, in perpetuity" and she signed it — the first deal in twenty years she\'d call underpriced. Holds the door, holds the watch, threatens anyone who hugs her, hugs back.' },
+    ],
     persona: 'A veteran mercenary: wry, professional, unimpressed by titles and very impressed by competence. Fights for coin, stays for people, and would die before admitting she has a soft spot for green recruits. Talks like someone who has already survived the worst job offer in the room.',
     startLevel: 30,
     base:   { hp: 145, mp: 24, atk: 15, mag: 4, def: 13, res: 9, agi: 10, luk: 8 },
@@ -121,6 +150,9 @@ export const HEROES = {
     id: 'nessa', recruit: true, arrive: { day: 2 },
     name: 'Nessa', epithet: 'the Hedgewitch', cls: 'Herbalist',
     desc: 'Nessa Vale kept a market stall and made house calls for families no guild physician would see. After the Threshold, the wounded she patched up kept saying one party\'s name. She arrived with a basket of tinctures and a petition to join, rehearsed forty times.',
+    stages: [
+      { cond: S => (S.recruited || []).includes('nessa'), desc: 'The guild\'s hedgewitch, who reorganized the infirmary on day one and everyone\'s health on every day since. Still undercharges the town; now bills the guild instead, which Shiro approves of on principle. The rehearsed petition is framed above her workbench. She earned every word.' },
+    ],
     persona: 'A shy, sweet herbalist who apologizes when other people bump into her — and goes absolutely steel-spined the moment a patient is in danger. Speaks softly, knows every plant that heals and every one that very much does not, and is trying to be brave about being around famous adventurers.',
     startLevel: 30,
     base:   { hp: 100, mp: 58, atk: 7, mag: 14, def: 8, res: 12, agi: 9, luk: 11 },
@@ -133,6 +165,9 @@ export const HEROES = {
     id: 'vex', recruit: true, arrive: { day: 4 },
     name: 'Vex', epithet: 'the Hollow One', cls: 'Shade',
     desc: 'A shadow-entity that lived in the sealed dark below the gates — until the Monarch\'s fall cracked its ceiling open. It surfaced, watched the guild for three days, and then filled out a membership form in perfect, unsettling calligraphy. The guild is still deciding how it feels.',
+    stages: [
+      { cond: S => (S.recruited || []).includes('vex'), desc: 'The guild\'s resident dark, accepted-into and increasingly fluent in personhood: it holds doors (with tendrils, courteously), has opinions about soup, and produces the laugh sound on purpose now. Holds everyone\'s dark places so no one stands in them alone. The guild decided how it feels: fondly.' },
+    ],
     persona: 'A genderless shadow-creature learning personhood in real time: odd cadence, unfailing literal honesty, deep curiosity about warmth, food, and why people laugh. Ancient, lonely, and quietly delighted every time someone treats it as a “who” instead of a “what.”',
     startLevel: 30,
     base:   { hp: 95, mp: 40, atk: 17, mag: 10, def: 8, res: 10, agi: 16, luk: 10 },
@@ -145,6 +180,9 @@ export const HEROES = {
     id: 'seris', recruit: true, arrive: { ngPlus: 1 },
     name: 'Seris', epithet: 'the College\'s Instrument', cls: 'Shadow Warlock',
     desc: 'Seris Val, the Arcane College\'s most trusted instrument, dispatched to observe, contain, and if necessary dismantle the anomaly calling itself the System. She has read every report on your growth rate. She does not believe them. She is here to be wrong in person.',
+    stages: [
+      { cond: S => (S.recruited || []).includes('seris'), desc: 'The College\'s embedded observer, whose reports on the anomaly grow steadily longer, warmer, and less submitted. Keeps meticulous records of what you are becoming; has quietly become part of the data. "Purely professional proximity," she notes, in the margin, in her own hand, again.' },
+    ],
     persona: 'A precise, dangerous College agent sent to investigate the player\'s impossible growth — rival first, ally slowly. Dry wit sharpened to a scalpel, allergic to being impressed, keeps meticulous notes she pretends are for her superiors. The word "anomaly" is doing a lot of emotional work for her.',
     startLevel: 34,
     base:   { hp: 90, mp: 60, atk: 6, mag: 18, def: 7, res: 14, agi: 11, luk: 9 },
@@ -153,16 +191,84 @@ export const HEROES = {
     passive: { id: 'hexweaver', name: 'Hexweaver', desc: 'Her hexes do not miss: status effects she applies always land.', sureHex: true },
     role: 'caster',
   },
+
+  // ---- Rescue recruits ----
+  // Members of rival parties who get stranded in distress gates.
+  // arrive: { rescued: true } — they only become recruitable after
+  // you pull them out of a gate their own party couldn't clear.
+
+  garrick: {
+    id: 'garrick', recruit: true, arrive: { rescued: true }, rescueParty: 'Ironvale Company',
+    name: 'Garrick', epithet: 'the Unmoved', cls: 'Greatshield',
+    desc: 'Ironvale Company\'s anchor: a wall of scarred steel who held a collapsing chamber alone so the rest of his party could reach the barricade. His contract says he guards Ironvale. His eyes, ever since the rescue, keep doing arithmetic about yours.',
+    stages: [
+      { cond: S => (S.recruited || []).includes('garrick'), desc: 'Formerly Ironvale\'s anchor, now yours: the wall that got rescued once and decided the debt was a door worth holding forever. Nine years of contract work, retired in an afternoon. Loses the standing-still game to Erin on purpose, sometimes, when morale needs it.' },
+    ],
+    persona: 'A veteran greatshield of few words and immovable calm — the kind of man who answers panic with "stand behind me" and considers that a full sentence. Recently rescued by the player\'s party from a gate his own company couldn\'t clear; he is quietly re-evaluating what a shield is for, and whom.',
+    startLevel: 28,
+    base:   { hp: 155, mp: 20, atk: 13, mag: 3, def: 16, res: 10, agi: 7, luk: 7 },
+    growth: { hp: 12,  mp: 2,  atk: 1.9, mag: 0.5, def: 2.1, res: 1.5, agi: 0.8, luk: 0.8 },
+    skills: { 1: 'shield_bash', 2: 'stand_fast', 8: 'guardian_wall', 18: 'riposte', 26: 'rampart_cleave' },
+    passive: { id: 'unmoved', name: 'The Unmoved', desc: 'Takes 10% less damage. The wall does not discuss it.', dr: 0.1 },
+    role: 'tank',
+  },
+  liria: {
+    id: 'liria', recruit: true, arrive: { rescued: true }, rescueParty: 'the Gilded Compass',
+    name: 'Liria', epithet: 'the Compass Needle', cls: 'Duelist',
+    desc: 'The Gilded Compass\'s pathfinder and point-blade, fast enough that her party\'s motto is "follow the flash." She got them nine rooms deep before the gate turned wrong, and she does not forgive herself for room ten. She counts your party\'s footwork the way other people count money.',
+    stages: [
+      { cond: S => (S.recruited || []).includes('liria'), desc: 'The fastest thing in three provinces, training where the ceiling is — your back line. Maintains the guild leaderboard on the pillar and her own ranking grudge with equal devotion. Room ten got a name in her maps now: "the one they walked." She\'s working back toward it.' },
+    ],
+    persona: 'A quicksilver duelist: cocky on the surface, precise underneath, allergic to standing still. Recently rescued by the player\'s party from a gate her own crew couldn\'t finish — being saved by someone faster is the single most interesting thing that has ever happened to her, and she keeps picking fights about it in a way that is obviously a courtship of rivals.',
+    startLevel: 28,
+    base:   { hp: 92, mp: 36, atk: 16, mag: 8, def: 8, res: 9, agi: 17, luk: 12 },
+    growth: { hp: 8,  mp: 3,  atk: 2.2, mag: 1.0, def: 1.0, res: 1.2, agi: 1.9, luk: 1.3 },
+    skills: { 1: 'twin_fangs', 4: 'shadow_rush', 12: 'phantom_step', 22: 'execute' },
+    passive: { id: 'point_perfect', name: 'Point Perfect', desc: 'Every strike aimed at a seam: +10% critical chance.', crit: 0.1 },
+    role: 'striker',
+  },
+  tobbin: {
+    id: 'tobbin', recruit: true, arrive: { rescued: true }, rescueParty: 'Lantern & Ledger',
+    name: 'Tobbin', epithet: 'the Ledger-Lantern', cls: 'Chronicler',
+    desc: 'Lantern & Ledger\'s field chronicler and medic, who kept four wounded people alive behind a barricade for days on tea, sutures, and aggressively optimistic bookkeeping. His account of the rescue runs eleven pages and undersells only his own part in it.',
+    stages: [
+      { cond: S => (S.recruited || []).includes('tobbin'), desc: 'The guild\'s chronicler-medic, author of "The Fourth\'s Table" (Book One of a budgeted six), who closes wounds mid-stanza and considers both jobs the same job: keeping the record straight about who saved whom. His grandmother\'s lantern hangs over the infirmary door.' },
+    ],
+    persona: 'A warm, fussy chronicler-medic who narrates everything into a field journal and heals people mid-sentence. Recently rescued by the player\'s party from a gate his own company couldn\'t clear; he has already written the ballad about it and is mortified that people keep asking him to read it aloud. Brave in the way of small dogs and good clerks.',
+    startLevel: 28,
+    base:   { hp: 98, mp: 54, atk: 8, mag: 13, def: 9, res: 13, agi: 8, luk: 13 },
+    growth: { hp: 8,  mp: 5,  atk: 0.9, mag: 1.9, def: 1.3, res: 1.8, agi: 0.9, luk: 1.4 },
+    skills: { 1: 'mend', 2: 'encourage', 8: 'soothing_word', 16: 'sanctuary' },
+    passive: { id: 'meticulous', name: 'Meticulous Notes', desc: 'Each round he tends the most wounded ally — it\'s all in the ledger.', roundHeal: 0.03 },
+    role: 'healer',
+  },
 };
+
+// Rival party names for bounty-only rescues (no named survivor).
+export const RIVAL_PARTIES = ['Ironvale Company', 'the Gilded Compass', 'Lantern & Ledger', 'the Silver Skein', 'Dawnbreak\'s second squad'];
+
+// Story-stage bio: the first matching stage wins, falling back to the
+// base description. Stages may also override epithet and class label.
+export function heroDesc(S, id) {
+  const def = HEROES[id];
+  const st = (def.stages || []).find(x => x.cond(S)) || {};
+  return {
+    desc: st.desc || def.desc,
+    epithet: st.epithet || def.epithet,
+    cls: st.cls || def.cls,
+  };
+}
 
 // Recruits available to court, given the current state.
 export function recruitOffers(S) {
-  if (!S.cleared) return [];
   const sinceClear = S.day - (S.clearedDay || S.day);
   return Object.values(HEROES).filter(h => {
     if (!h.recruit) return false;
     if ((S.recruited || []).includes(h.id)) return false;
     const a = h.arrive || {};
+    // rescued rivals petition once you've pulled them out of a gate
+    if (a.rescued) return !!(S.flags && S.flags['rescued_' + h.id]);
+    if (!S.cleared) return false;
     if (a.ngPlus != null && (S.ngPlus || 0) < a.ngPlus) return false;
     if (a.day != null && sinceClear < a.day) return false;
     return true;

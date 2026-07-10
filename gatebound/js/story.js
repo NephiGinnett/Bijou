@@ -25,6 +25,9 @@ export const SPEAKERS = {
   nessa:  { name: 'Nessa', color: '#8fce7a' },
   vex:    { name: 'Vex',   color: '#b08cff' },
   seris:  { name: 'Seris', color: '#8a6ad8' },
+  garrick:{ name: 'Garrick', color: '#9aa2ac' },
+  liria:  { name: 'Liria', color: '#e8c04a' },
+  tobbin: { name: 'Tobbin', color: '#d8a04a' },
 };
 
 const E = {};
@@ -1429,6 +1432,134 @@ E.recruit_intro_seris = {
         r: [
           { s: 'seris', t: 'Noted. Refused embedded placement, subject displays "caution or possibly taste" — I\'m writing it down exactly like that. I will be at the corner table. Do try to stay anomalous.' },
         ] },
+    ] },
+  ],
+};
+
+// ------------------------------------------------------------
+// RESCUES — rival parties stranded in gates they couldn't clear.
+// Queued by endRun after a distress-gate clear. Named survivors
+// can be invited on the spot (or later via Newcomers).
+// ------------------------------------------------------------
+
+E.rescue_bounty = {
+  id: 'rescue_bounty', where: 'auto', once: false, priority: 60,
+  steps: [
+    { s: 'narr', t: 'Back at the guild, the rescued party files in behind you — gaunt, gate-shocked, and alive to a member. Their leader signs the bounty release with a hand that only shakes a little.' },
+    { s: 'guild', t: 'Bounty\'s yours, paid in full. And before you ask — no, this doesn\'t stop being remarkable. Most rescue postings get taken down for a different reason.' },
+    { s: 'narr', t: 'On the way out, every one of the rescued stops at your table. None of them manage the whole sentence. All of them get far enough.' },
+    { s: 'erin', t: '(watching them go, quietly) That\'s the real ranking board, you know. Not clear times. That.' },
+  ],
+};
+
+E.rescue_garrick = {
+  id: 'rescue_garrick', where: 'auto', once: true, priority: 60,
+  steps: [
+    { s: 'narr', t: 'The Ironvale Company survivors are checked, fed, and released to their guildhouse — all but one. Their greatshield stands at your table like a fixture that has been delivered to the wrong address.' },
+    { s: 'garrick', t: 'Garrick. Ironvale, nine years. (a pause the size of a drawbridge) You came through a collapsing chamber for people you\'d never met.' },
+    { s: 'player', t: 'That\'s the job.' },
+    { s: 'garrick', t: 'No. The job is what Ironvale pays me for. That was the other thing. The thing I signed up for nine years ago and stopped finding.' },
+    { s: 'narr', t: 'He sets his release papers on the table. Ironvale\'s seal is already broken: he settled his contract on the walk over.' },
+    { s: 'garrick', t: 'I hold doors. I\'d like to hold yours.' },
+    { choice: [
+      { t: 'Take his hand. The wall stands here now.', flag: 'recruit_garrick_accept',
+        r: [
+          { s: 'narr', t: 'His handshake is like closing a vault. Erin sizes him up, delighted — then drags him toward the sparring yard to "compare notes on standing still."' },
+          { s: 'garrick', t: '(over his shoulder, almost — almost — smiling) I don\'t lose that game.' },
+        ] },
+      { t: '"Heal up first. The door will still be here."',
+        r: [
+          { s: 'garrick', t: 'Sensible. (he collects his papers, nods once) I\'ll be at the petitions desk when you\'re ready. Walls are patient.' },
+        ] },
+    ] },
+  ],
+};
+
+E.rescue_liria = {
+  id: 'rescue_liria', where: 'auto', once: true, priority: 60,
+  steps: [
+    { s: 'narr', t: 'The Gilded Compass survivors are barely through the gate scar before their pathfinder rounds on you, three days of barricade grime and one very intact ego.' },
+    { s: 'liria', t: 'Okay. Point of order. Room ten was UNMAPPABLE — the geometry moved. Nobody walks room ten on the first read.' },
+    { s: 'shiro', t: 'They walked it on the first read.' },
+    { s: 'liria', t: 'I KNOW. I was BEHIND the barricade DOING THE MATH. (to you, jabbing a finger) Your back line pivots a half-beat before the room turns. Who taught you that? Nobody teaches that. I\'ve been the fastest thing in three provinces since I was nineteen and I have never once been *caught up to*, let alone—' },
+    { s: 'narr', t: 'She stops. Recalculates. Sticks out the finger-jabbing hand as a handshake instead.' },
+    { s: 'liria', t: 'Liria. The Compass will re-form without me — they\'re good, they\'ll be fine, I left them the maps. I want to train where the ceiling is. That\'s you. Obviously. Keep up.' },
+    { choice: [
+      { t: 'Shake on it. The party could use a second blade that fast.', flag: 'recruit_liria_accept',
+        r: [
+          { s: 'narr', t: 'Her grip is quick and certain, like everything else about her. By sundown she has already timed the whole party\'s footwork and started a leaderboard. She is fourth. It is eating her alive.' },
+          { s: 'liria', t: 'FOURTH. Temporarily. Enjoy it while it lasts, all of you.' },
+        ] },
+      { t: '"Rest first. Race later."',
+        r: [
+          { s: 'liria', t: 'That\'s not a no. (backing toward the door, pointing at you) That is SO far from a no. Petitions desk. First thing. I heal fast.' },
+        ] },
+    ] },
+  ],
+};
+
+E.rescue_tobbin = {
+  id: 'rescue_tobbin', where: 'auto', once: true, priority: 60,
+  steps: [
+    { s: 'narr', t: 'Lantern & Ledger\'s survivors are four wounded adventurers and one round, ink-stained chronicler who kept every one of them alive for three days behind a barricade — and who is now trying to give you a receipt.' },
+    { s: 'tobbin', t: 'For the rescue. Itemized. Four lives, one ledger, my lantern — which your knight carried out, thank you, it was my grandmother\'s — and a debt I have valued at, conservatively, everything.' },
+    { s: 'sakura', t: '(reading over his shoulder, softly) ...He\'s written the whole rescue down. It\'s — oh. Oh, it\'s *good*. There\'s a ballad.' },
+    { s: 'tobbin', t: 'There is NOT a— it\'s a structured account with a refrain. (he clears his throat, suddenly formal) Lantern & Ledger is retiring. The others are done with gates, and I respect it. I am not done. Someone has to keep the record of what your party is — and change its bandages mid-verse.' },
+    { choice: [
+      { t: 'Welcome him in. Every legend needs its chronicler.', flag: 'recruit_tobbin_accept',
+        r: [
+          { s: 'narr', t: 'He signs the ledger — his own ledger, force of habit, then the guild\'s. Within the hour he has interviewed everyone, alphabetized the infirmary, and titled the new volume: "The Fourth\'s Table, Book One."' },
+          { s: 'tobbin', t: 'Book One, mind. I\'m budgeting for at least six.' },
+        ] },
+      { t: '"Recover first. The story can wait a chapter."',
+        r: [
+          { s: 'tobbin', t: 'A chapter break! Yes. Structurally sound. (gathering his papers) I\'ll be at the petitions desk. The refrain needs work anyway.' },
+        ] },
+    ] },
+  ],
+};
+
+// Rescued survivors who weren't invited on the spot petition later
+// via the Newcomers screen — same scenes, shorter pitch.
+
+E.recruit_intro_garrick = {
+  id: 'recruit_intro_garrick', where: 'offer', once: false,
+  steps: [
+    { s: 'narr', t: 'Garrick is at the petitions desk at opening bell, release papers squared to the counter\'s edge, shield on his back like a second spine.' },
+    { s: 'garrick', t: 'You pulled my people out of the dark. I hold doors. I\'d like to hold yours. That\'s the whole speech.' },
+    { choice: [
+      { t: 'Sign him. The wall stands here now.', flag: 'recruit_garrick_accept',
+        r: [{ s: 'garrick', t: '(signing, unhurried) Good. Stand behind me.' }] },
+      { t: '"Not yet."',
+        r: [{ s: 'garrick', t: 'Walls are patient.' }] },
+    ] },
+  ],
+};
+
+E.recruit_intro_liria = {
+  id: 'recruit_intro_liria', where: 'offer', once: false,
+  steps: [
+    { s: 'narr', t: 'Liria has been at the petitions desk long enough to have raced the clerk\'s stamp twice and won once.' },
+    { s: 'liria', t: 'You. Me. Same party. I train where the ceiling is, and the ceiling is your back line\'s footwork and I have DRILLS designed already. Yes or faster.' },
+    { choice: [
+      { t: 'Shake on it.', flag: 'recruit_liria_accept',
+        r: [{ s: 'liria', t: 'FINALLY. Leaderboard\'s on the pillar. You\'re all on it. You\'re welcome.' }] },
+      { t: '"Not yet."',
+        r: [{ s: 'liria', t: 'Still not a no! I\'m counting these. That\'s two.' }] },
+    ] },
+  ],
+};
+
+E.recruit_intro_tobbin = {
+  id: 'recruit_intro_tobbin', where: 'offer', once: false,
+  steps: [
+    { s: 'narr', t: 'Tobbin waits at the petitions desk with a fresh journal whose spine reads, in careful gilt: "Volume I (Provisional, Pending Acceptance)."' },
+    { s: 'tobbin', t: 'The offer stands: a chronicler who can close wounds, or a medic who can close a stanza. Both keep excellent records of who saved whom.' },
+    { choice: [
+      { t: 'Welcome him in.', flag: 'recruit_tobbin_accept',
+        r: [{ s: 'tobbin', t: '(already writing) "Chapter One. The table had room."' }] },
+      { t: '"Not yet."',
+        r: [{ s: 'tobbin', t: 'I\'ll draft ahead. Optimistically.' }] },
     ] },
   ],
 };

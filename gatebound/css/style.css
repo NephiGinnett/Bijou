@@ -529,3 +529,8 @@ textarea { height: 74px; margin-top: 10px; font-size: 0.7rem; resize: none; }
   flex: 1; max-width: 260px; background: var(--panel-2); color: var(--text);
   border: 1px solid var(--border); border-radius: 6px; padding: 6px 9px;
 }
+
+/* rescue / distress gates */
+.gate-card.rescue { border-color: var(--gold); animation: monarch-pulse 2.6s infinite; }
+.gate-mod.rescue { color: var(--gold); font-weight: 600; }
+.path-node.stranded { color: var(--gold); }

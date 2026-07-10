@@ -265,6 +265,36 @@ const HERO_BUILDERS = {
     const st = staff(0xb06cff); st.scale.setScalar(0.9); st.position.set(0.42, 0.15, 0.08); st.rotation.z = -0.12; g.add(st);
     return g;
   },
+
+  // ---- rescue recruits (stranded rivals) ----
+  garrick() {
+    // Ironvale greatshield: gray steel, tower shield taller than his patience
+    const g = chibi({ skin: 0xd8b494, hair: 0x4a4640, hairstyle: 'short', outfit: 0x7a828c, outfitStyle: 'armor', sleeve: 0x4a5058, legColor: 0x33373d, eyeColor: 0x33373d });
+    add(g, Box(0.22, 0.07, 0.32), mat(0x9aa2ac, { metal: 0.5, rough: 0.5 }), -0.27, 1.07, 0, 0, 0, 0.25); // pauldron
+    add(g, Box(0.22, 0.07, 0.32), mat(0x9aa2ac, { metal: 0.5, rough: 0.5 }), 0.27, 1.07, 0, 0, 0, -0.25);
+    const sh = shield(0x8a929c); sh.scale.setScalar(1.5); sh.position.set(-0.46, 0.62, 0.08); g.add(sh);   // the door
+    return g;
+  },
+  liria() {
+    // Compass duelist: gold and travel-leather, a blade in each hand
+    const g = chibi({ skin: 0xecc49e, hair: 0xe8c04a, hairstyle: 'long', outfit: 0x6a5638, sleeve: 0x6a5638, legColor: 0x453a28, eyeColor: 0x8a6a2a });
+    add(g, Tor(0.19, 0.025, 6, 14), mat(0xe8c04a, { metal: 0.6, rough: 0.4 }), 0, 1.0, 0, Math.PI / 2.4);  // compass-gold sash ring
+    const w1 = sword(0xe4d8b0, 0.5); w1.position.set(0.42, 0.5, 0.05); w1.rotation.z = -0.5; g.add(w1);
+    const w2 = sword(0xe4d8b0, 0.42); w2.position.set(-0.42, 0.5, 0.05); w2.rotation.z = 0.5; g.add(w2);
+    return g;
+  },
+  tobbin() {
+    // Ledger-Lantern chronicler: warm robes, a book, grandmother's lantern
+    const g = chibi({ skin: 0xf0cfa8, hair: 0x8a5a34, hairstyle: 'curly', outfit: 0x8a6d3a, outfitStyle: 'robe', frill: 0xd8a04a, eyeColor: 0x5a4020 });
+    const b = grimoire(); b.position.set(-0.4, 0.66, 0.12); b.rotation.y = 0.5; g.add(b);
+    const lamp = new THREE.Group();                                                                       // the lantern
+    add(lamp, Box(0.1, 0.14, 0.1), mat(0xffd890, { emissive: 0xffb84a, ei: 1.4, opacity: 0.85 }), 0, 0, 0);
+    add(lamp, Box(0.12, 0.02, 0.12), mat(0x6a5638), 0, 0.09, 0);
+    add(lamp, Box(0.12, 0.02, 0.12), mat(0x6a5638), 0, -0.09, 0);
+    lamp.position.set(0.42, 0.55, 0.08);
+    g.add(lamp);
+    return g;
+  },
 };
 
 // ---------------------------------------------------------------
@@ -529,4 +559,5 @@ function autoScale(obj, targetHeight) {
 export const ACTOR_ACCENTS = {
   player: 0x54d8ff, erin: 0x5a8ae8, sakura: 0xff9ec6, shiro: 0xd8d8f2, yuki: 0xa8d8b0,
   mira: 0xc86a4a, nessa: 0x8fce7a, vex: 0xb08cff, seris: 0x8a6ad8,
+  garrick: 0x9aa2ac, liria: 0xe8c04a, tobbin: 0xd8a04a,
 };

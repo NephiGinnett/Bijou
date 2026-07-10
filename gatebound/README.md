@@ -63,6 +63,13 @@ extra traits and double rewards, **skill mastery** ranks up skills with
 use (+5% power per ★, cheaper at max), and the guild smith **reforges**
 gear affixes for gold.
 
+From C-rank on, watch the board for **⚑ RESCUE gates**: a rival party
+bit off more than it could clear and is barricaded inside. Clear the
+gate to bring them home and collect the posted bounty — and sometimes
+the stranded party includes a named survivor (Garrick, Liria, Tobbin)
+who can be invited into the guild on the spot, or signed later at the
+Newcomers desk.
+
 ### The Sanctum (optional AI chat)
 
 **✉ Sanctum** in the guild hall opens a chat room with any party member

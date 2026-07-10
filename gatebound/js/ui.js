@@ -2,7 +2,7 @@
 // GATEBOUND — UI screens & game flow orchestration
 // ============================================================
 
-import { RANKS, RANK_STYLE, HEROES, SKILLS, STATUSES, ITEMS, BIOMES, GATE_MODIFIERS, AFFIXES, xpToNext, heroStatsAt, gearScore, shopStock, GATE_GP, recruitOffers, reforgeCost, reforgeGear, ROLE_INFO } from './data.js';
+import { RANKS, RANK_STYLE, HEROES, SKILLS, STATUSES, ITEMS, BIOMES, GATE_MODIFIERS, AFFIXES, xpToNext, heroStatsAt, gearScore, shopStock, GATE_GP, recruitOffers, reforgeCost, reforgeGear, ROLE_INFO, heroDesc } from './data.js';
 import * as ST from './state.js';
 import { Combat } from './combat.js';
 import { Stage, makePortrait } from './scene3d.js';
@@ -294,10 +294,18 @@ async function guild() {
   stage.showcase(S.flags.yuki_member ? ['erin', 'sakura', 'shiro', 'yuki'] : ['erin', 'sakura', 'shiro'], heroVariant);
   stage.camBase.set(0, 2.0, 6.2);
 
-  // queued auto events (promotions etc.)
+  // queued auto events (promotions, rescues etc.)
   while (S.queue.length) {
     const id = S.queue.shift();
     if (EVENTS[id]) { AU.sfx('promo'); await playEvent(EVENTS[id]); }
+  }
+  // sign anyone who accepted an invitation mid-scene (rescues, petitions)
+  for (const id of Object.keys(HEROES)) {
+    if (HEROES[id].recruit && S.flags['recruit_' + id + '_accept'] && !S.recruited.includes(id)) {
+      ST.joinRecruit(S, id);
+      AU.sfx('promo');
+      toast(`${HEROES[id].name} joins the guild!`, 'gold');
+    }
   }
   if (S.cleared && !S.seen.__ending) {
     S.seen.__ending = true;
@@ -361,8 +369,8 @@ async function guild() {
             ${portraitImg(id)}
             <div class="pinfo">
               <b style="color:${SPEAKERS[id].color}">${id === 'player' ? esc(S.name) : HEROES[id].name}</b>
-              <span class="muted">Lv ${S.heroes[id].level} ${HEROES[id].cls}${away.has(id) ? ' · <b class="gold">away</b>' : ''}</span>
-              ${id in S.bond ? heartsFor(id) : id === 'player' ? `<span class="sys-tag">THE SYSTEM · Lv ${pl.level}</span>` : `<span class="muted sm-text">${HEROES[id].epithet}</span>`}
+              <span class="muted">Lv ${S.heroes[id].level} ${heroDesc(S, id).cls}${away.has(id) ? ' · <b class="gold">away</b>' : ''}</span>
+              ${id in S.bond ? heartsFor(id) : id === 'player' ? `<span class="sys-tag">THE SYSTEM · Lv ${pl.level}</span>` : `<span class="muted sm-text">${heroDesc(S, id).epithet}</span>`}
             </div>
           </div>`).join('')}
       </div>
@@ -406,7 +414,9 @@ async function newcomers() {
         <h2>➤ Newcomers — Petitions to Join</h2>
         <button class="btn ghost" id="n-back">← Guild</button>
       </div>
-      <p class="muted">Word of the Threshold clear travels. People keep arriving at the hall asking for the Fourth's table — hear them out, and sign the ones who fit.</p>
+      <p class="muted">${S.cleared
+        ? 'Word of the Threshold clear travels. People keep arriving at the hall asking for the Fourth\'s table — hear them out, and sign the ones who fit.'
+        : 'Word of the rescue travels. Adventurers you pulled out of the dark keep finding reasons to be near your table — hear them out, and sign the ones who fit.'}</p>
       <div class="gate-grid">
         ${offers.map(h => `
           <div class="gate-card recruit-card">
@@ -440,7 +450,7 @@ async function newcomers() {
 
 function dispatchBoard() {
   const reports = S.dispatchReports.slice().reverse();
-  const gates = S.gates.filter(g => !g.story && !g.recursion && g.id !== 'monarch');
+  const gates = S.gates.filter(g => !g.story && !g.recursion && !g.rescue && g.id !== 'monarch');
 
   const missionRows = S.dispatch.length ? S.dispatch.map(m => `
     <div class="shop-row">
@@ -552,13 +562,19 @@ function map() {
   const cards = S.gates.map((g, i) => {
     const b = BIOMES[g.biome];
     const mod = GATE_MODIFIERS.find(m => m.id === g.modifier);
+    const modLine = g.rescue
+      ? `<div class="gate-mod rescue" title="A rival party is trapped inside. Clear the gate to bring them home.">⚑ RESCUE — ${esc(g.rescue.party)} is trapped inside</div>`
+      : mod && mod.name ? `<div class="gate-mod" title="${mod.desc}">◆ ${mod.name}</div>` : '<div class="gate-mod none">standard mana signature</div>';
+    const gpLine = g.rescue
+      ? `<div class="gate-gp muted">bounty: ◈${g.rescue.bounty}g · +${Math.round(GATE_GP[g.rank]) + g.rescue.gp} GP</div>`
+      : `<div class="gate-gp muted">clear: +${Math.round(GATE_GP[g.rank] * (g.modifier === 'unstable' ? 1.5 : 1))} GP</div>`;
     return `
-      <div class="gate-card ${g.id === 'monarch' ? 'monarch' : ''}" style="--rc:${RANK_STYLE[g.rank].color};--rg:${RANK_STYLE[g.rank].glow}">
+      <div class="gate-card ${g.id === 'monarch' ? 'monarch' : ''} ${g.rescue ? 'rescue' : ''}" style="--rc:${RANK_STYLE[g.rank].color};--rg:${RANK_STYLE[g.rank].glow}">
         <div class="gate-head">${rankBadge(g.rank, 'lg')}<b>${esc(g.name)}</b></div>
         <div class="gate-meta">${b.name} · ${g.rooms} chambers + boss</div>
-        ${mod && mod.name ? `<div class="gate-mod" title="${mod.desc}">◆ ${mod.name}</div>` : '<div class="gate-mod none">standard mana signature</div>'}
-        <div class="gate-gp muted">clear: +${Math.round(GATE_GP[g.rank] * (g.modifier === 'unstable' ? 1.5 : 1))} GP</div>
-        <button class="btn primary enter-gate" data-i="${i}">Enter Gate</button>
+        ${modLine}
+        ${gpLine}
+        <button class="btn primary enter-gate" data-i="${i}">${g.rescue ? 'Answer the Call' : 'Enter Gate'}</button>
       </div>`;
   }).join('');
 
@@ -654,7 +670,7 @@ function partySelect(gate) {
 // dungeon
 // ------------------------------------------------------------------
 
-const NODE_ICONS = { fight: '⚔', treasure: '✦', event: '?', rest: '▲', boss: '☠', branch: '⑃' };
+const NODE_ICONS = { fight: '⚔', treasure: '✦', event: '?', rest: '▲', boss: '☠', branch: '⑃', stranded: '⚑' };
 
 const DOOR_LABELS = {
   elite:    { name: 'The Heavy Door',  desc: 'Something big claimed this room. Richer spoils for whoever un-claims it.', icon: '◆' },
@@ -699,6 +715,10 @@ function dungeonScreen() {
   } else if (node.type === 'rest') {
     body = '<p>A defensible alcove. Shiro marks the sightlines; Erin already has the kettle out.</p>';
     actions = '<button class="btn primary" id="d-go">Rest (party recovers 30%)</button>';
+  } else if (node.type === 'stranded') {
+    const who = gate.rescue && gate.rescue.member ? HEROES[gate.rescue.member].name + ' of ' + gate.rescue.party : (gate.rescue ? gate.rescue.party : 'the stranded party');
+    body = `<p><b class="gold">⚑ The barricade.</b> Behind stacked rubble and a half-spent ward: ${esc(who)} — gaunt, alive, and staring at your party like a sunrise. They point the way to the boss chamber. "It's between us and the way out. It's why we're still here."</p>`;
+    actions = '<button class="btn primary" id="d-go">Share supplies and press on (party recovers 20%)</button>';
   } else if (node.type === 'event') {
     const ev = DUNGEON_EVENTS[Math.floor(node.roll * DUNGEON_EVENTS.length)];
     body = `<p>${esc(ev.t)}</p>`;
@@ -745,14 +765,15 @@ function dungeonScreen() {
       else if (r.kind === 'gold') toast(`Found ${r.gold} gold`, 'gold');
       else toast(`Found: ${ITEMS[r.item].name}`, 'gold');
       advance();
-    } else if (node.type === 'rest') {
+    } else if (node.type === 'rest' || node.type === 'stranded') {
       AU.sfx('heal');
+      const pct = node.type === 'stranded' ? 0.2 : 0.3;
       for (const id of run.partyIds) {
         const st = ST.heroStats(S, id);
-        run.party[id].hp = Math.min(st.hp, Math.round(run.party[id].hp + st.hp * 0.3));
-        run.party[id].mp = Math.min(st.mp, Math.round(run.party[id].mp + st.mp * 0.3));
+        run.party[id].hp = Math.min(st.hp, Math.round(run.party[id].hp + st.hp * pct));
+        run.party[id].mp = Math.min(st.mp, Math.round(run.party[id].mp + st.mp * pct));
       }
-      toast('The party recovers.');
+      toast(node.type === 'stranded' ? 'The stranded share what little they saved. It helps more than it should.' : 'The party recovers.');
       advance();
     }
   };
@@ -1053,7 +1074,9 @@ async function results(result) {
         <div><small>XP each</small><b>+${result.xp}</b></div>
         <div><small>Gold</small><b>+${result.gold}</b></div>
         <div><small>Guild points</small><b>+${result.gp}</b></div>
+        ${result.bounty ? `<div><small>Rescue bounty</small><b class="gold">+${result.bounty}g</b></div>` : ''}
       </div>
+      ${result.bounty ? `<p class="gold sm-text">⚑ ${esc(result.rescueParty)} walks out behind you — every one of them.</p>` : ''}
       ${result.partySize && result.partySize < 4 ? `<div class="muted sm-text">Focused party of ${result.partySize} — small-party XP bonus applied.</div>` : ''}
       ${gearHtml}${itemsHtml}
       <div class="ups">${upHtml}</div>
@@ -1118,12 +1141,12 @@ function party(sel = 'player') {
         <div class="sheet-left">
           ${portraitImg(sel, 'big')}
           <b class="sheet-name" style="color:${SPEAKERS[sel].color}">${sel === 'player' ? esc(S.name) : def.name}</b>
-          <span class="muted">${def.epithet} · ${def.cls}</span>
+          <span class="muted">${heroDesc(S, sel).epithet} · ${heroDesc(S, sel).cls}</span>
           <div class="lvl">Lv ${h.level}</div>
           <div class="bar-outer xp"><div class="bar-inner" style="width:${h.xp / next * 100}%"></div></div>
           <small class="muted">${h.xp}/${next} XP</small>
           ${sel !== 'player' && sel in S.bond ? heartsFor(sel) : ''}
-          <p class="bio">${def.desc}</p>
+          <p class="bio">${heroDesc(S, sel).desc}</p>
           <p class="passive"><b>${def.passive.name}:</b> ${def.passive.desc}</p>
         </div>
         <div class="sheet-mid"><h3>Stats</h3>${statRows}<h3>Gear</h3>${gearRows}</div>

@@ -6,6 +6,7 @@ import {
   RANKS, RANK_UP_GP, GATE_GP, XP_MULT, HEROES, heroStatsAt, heroSkillsAt,
   xpToNext, BIOMES, GATE_ROOMS, GATE_MODIFIERS, MONARCH_GATE, ENEMIES, makeGear, AFFIXES,
   ELITES, ELITE_XP_MULT, ELITE_GOLD_MULT, eliteChance, ROLE_INFO, DISPATCH_BENCHMARK,
+  RIVAL_PARTIES,
 } from './data.js';
 
 export const SAVE_KEY = 'gatebound_save_v1';
@@ -299,6 +300,11 @@ export function rollGates(S) {
     });
   });
 
+  // A rival party in trouble: sometimes a distress gate hits the board.
+  if (S.rankIdx >= 2 && rng() < 0.25) {
+    offers.splice(1, 0, makeRescueGate(S, rng));
+  }
+
   if (S.rankIdx === RANKS.length - 1 && !S.cleared) {
     offers.unshift({ ...MONARCH_GATE, rankIdx: 5, seed: (rng() * 2 ** 31) | 0 });
   }
@@ -307,6 +313,37 @@ export function rollGates(S) {
     offers.unshift(makeRecursionGate(S, (S.ngPlus || 0) + 1, rng));
   }
   S.gates = offers;
+}
+
+// A gate a rival party bit off and couldn't chew: they're barricaded
+// inside, the guild posts their bounty. Sometimes a named member is
+// stranded with them — rescue her/him and they may petition to join.
+function makeRescueGate(S, rng) {
+  const rIdx = S.rankIdx;
+  const rank = RANKS[rIdx];
+  const biomes = Object.entries(BIOMES).filter(([, b]) => RANKS.indexOf(b.minRank) <= rIdx);
+  const [biomeId, biome] = biomes[Math.floor(rng() * biomes.length)];
+  const name = biome.names[Math.floor(rng() * biome.names.length)]
+    .replace('{adj}', biome.adj[Math.floor(rng() * biome.adj.length)])
+    .replace('{noun}', biome.noun[Math.floor(rng() * biome.noun.length)]);
+
+  const pool = ['garrick', 'liria', 'tobbin']
+    .filter(id => !(S.recruited || []).includes(id) && !(S.flags && S.flags['rescued_' + id]));
+  const member = pool.length && rng() < 0.65 ? pool[Math.floor(rng() * pool.length)] : null;
+  const party = member ? HEROES[member].rescueParty : RIVAL_PARTIES[Math.floor(rng() * RIVAL_PARTIES.length)];
+
+  return {
+    id: 'rescue_' + S.day,
+    rank, rankIdx: rIdx, biome: biomeId, name,
+    modifier: 'none',
+    rooms: GATE_ROOMS[rank],
+    seed: (rng() * 2 ** 31) | 0,
+    rescue: {
+      party, member,
+      bounty: Math.round(140 * XP_MULT[rank]),
+      gp: Math.round(GATE_GP[rank] * 0.4),
+    },
+  };
 }
 
 const ROMAN = ['', 'I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X'];
@@ -342,6 +379,8 @@ export function buildDungeon(gate) {
       else if (r < 0.74) nodes.push({ type: 'rest' });
     }
   }
+  // Distress gates: the stranded party's barricade sits before the boss.
+  if (gate.rescue) nodes.push({ type: 'stranded' });
   nodes.push({ type: 'boss', group: makeBossGroup(gate, biome, rng) });
   return nodes;
 }
@@ -485,6 +524,19 @@ export function endRun(S, outcome) {
   if (outcome === 'clear') {
     result.gp = Math.round(GATE_GP[gate.rank] * (gate.modifier === 'unstable' ? 1.5 : 1)) + (run.loot.gpBonus || 0);
     S.stats.clears++;
+    // Rescue bounty: the stranded party comes home, the guild pays out.
+    if (gate.rescue) {
+      result.bounty = gate.rescue.bounty;
+      result.rescueParty = gate.rescue.party;
+      S.gold += gate.rescue.bounty;
+      result.gp += gate.rescue.gp;
+      if (gate.rescue.member) {
+        S.flags['rescued_' + gate.rescue.member] = true;
+        S.queue.push('rescue_' + gate.rescue.member);
+      } else {
+        S.queue.push('rescue_bounty');
+      }
+    }
   } else if (outcome === 'retreat') {
     result.gp = 0;
     result.gold = Math.round(result.gold * 0.6);
