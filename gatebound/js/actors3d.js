@@ -513,6 +513,79 @@ const MONSTER_BUILDERS = {
 };
 
 // ---------------------------------------------------------------
+// custom actors — the Character Forge builds these from parsed
+// description specs: chibi base plus non-human features.
+// ---------------------------------------------------------------
+
+const CUSTOM_SPECS = {};
+export function registerCustomActor(id, spec) { CUSTOM_SPECS[id] = spec; }
+
+function customChibi(spec) {
+  const g = chibi({
+    skin: spec.skin, hair: spec.hair, hairstyle: spec.hairstyle,
+    outfit: spec.outfit, outfitStyle: spec.outfitStyle, frill: spec.frill,
+    sleeve: spec.sleeve ?? spec.outfit, legColor: spec.legColor,
+    eyeColor: spec.eyeColor, eyeGlow: spec.eyeGlow, elf: spec.elf,
+  });
+
+  // ears
+  if (spec.ears === 'rabbit') {
+    const em = mat(spec.hair ?? spec.skin, { rough: 0.75 });
+    const inner = mat(0xf2c8d0);
+    for (const sx of [-1, 1]) {
+      add(g, Cap(0.055, 0.4, 4, 8), em, sx * 0.13, 1.62, -0.02, 0, 0, sx * 0.14);
+      add(g, Cap(0.025, 0.26, 4, 6), inner, sx * 0.13, 1.6, 0.02, 0, 0, sx * 0.14);
+    }
+  } else if (spec.ears === 'cat' || spec.ears === 'wolf') {
+    const size = spec.ears === 'wolf' ? 0.15 : 0.11;
+    const em = mat(spec.hair ?? spec.skin, { rough: 0.8 });
+    add(g, Cone(size, size * 1.7, 4), em, -0.17, 1.5, 0, 0, 0, -0.25);
+    add(g, Cone(size, size * 1.7, 4), em, 0.17, 1.5, 0, 0, 0, 0.25);
+  } else if (spec.ears === 'fox') {
+    const em = mat(spec.hair ?? 0xd87c3a, { rough: 0.8 });
+    const inner = mat(0xf4efe6);
+    for (const sx of [-1, 1]) {
+      add(g, Cone(0.14, 0.28, 4), em, sx * 0.18, 1.52, 0, 0, 0, sx * 0.3);
+      add(g, Cone(0.07, 0.16, 4), inner, sx * 0.18, 1.5, 0.03, 0, 0, sx * 0.3);
+    }
+  }
+
+  if (spec.horns) horns(g, spec.hornColor ?? 0xe8dcc8, 1.42, 0.16, 0.28);
+  if (spec.wings) wings(g, spec.wingColor ?? 0xe8e4da, 1.0, 0.5);
+  if (spec.halo) add(g, Tor(0.16, 0.02, 6, 16), mat(0xffe28a, { emissive: 0xffd24a, ei: 1.4 }), 0, 1.62, -0.02, Math.PI / 2.2);
+
+  // tail
+  if (spec.tail === 'fox') {
+    const t = add(g, Cap(0.11, 0.34, 4, 8), mat(spec.hair ?? 0xd87c3a, { rough: 0.85 }), 0, 0.42, -0.3, 0.9);
+    add(g, S(0.09, 8, 8), mat(0xf4efe6), 0, 0.62, -0.44);
+  } else if (spec.tail) {
+    add(g, Cap(0.045, 0.36, 4, 6), mat(spec.tailColor ?? spec.skin, { rough: 0.85 }), 0, 0.4, -0.3, 1.1);
+  }
+
+  // mask: a smooth faceplate over the features
+  if (spec.mask) {
+    const mm = mat(spec.maskColor ?? 0xece6da, { rough: 0.35 });
+    add(g, S(0.315, 16, 14, 0, Math.PI * 2, 0, Math.PI / 1.9), mm, 0, 1.19, 0.02).rotation.x = Math.PI / 2.6;
+    eyes(g, spec.eyeColor ?? 0x1c1c24, 1.21, 0.11, 0.3, 0.03, true); // eyes glint through
+  }
+
+  // spectral bodies: translucent and drifting
+  if (spec.ghost) {
+    g.traverse(m => { if (m.material) { m.material.transparent = true; m.material.opacity = Math.min(m.material.opacity, 0.68); } });
+    g.userData.float = true;
+  }
+
+  // held gear by role
+  if (spec.weapon === 'sword') { const w = sword(0xd4dbe2, 0.55); w.position.set(0.42, 0.5, 0.05); w.rotation.z = -0.5; g.add(w); }
+  else if (spec.weapon === 'staff') { const st = staff(spec.accent ?? 0x8fce7a); st.scale.setScalar(0.9); st.position.set(0.42, 0.15, 0.08); st.rotation.z = -0.12; g.add(st); }
+  else if (spec.weapon === 'book') { const b = grimoire(); b.position.set(-0.4, 0.66, 0.12); b.rotation.y = 0.5; g.add(b); }
+  else if (spec.weapon === 'shield') { const sh = shield(0x9aa2ac); sh.scale.setScalar(1.3); sh.position.set(-0.45, 0.64, 0.08); g.add(sh); const w = sword(0xd4dbe2, 0.5); w.position.set(0.42, 0.5, 0.05); w.rotation.z = -0.5; g.add(w); }
+
+  if (spec.scale && spec.scale !== 1) g.scale.setScalar(spec.scale);
+  return g;
+}
+
+// ---------------------------------------------------------------
 // public API
 // ---------------------------------------------------------------
 
@@ -521,6 +594,7 @@ const MONSTER_BUILDERS = {
 export function buildActor(kind, variant = null, opts = {}) {
   const group = new THREE.Group();
   const inner = HERO_BUILDERS[kind] ? HERO_BUILDERS[kind](variant, opts) :
+    CUSTOM_SPECS[kind] ? customChibi(CUSTOM_SPECS[kind]) :
     MONSTER_BUILDERS[kind] ? MONSTER_BUILDERS[kind](variant) :
     chibi({});
   group.add(inner);

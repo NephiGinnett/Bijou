@@ -263,7 +263,7 @@ export function heroDesc(S, id) {
 export function recruitOffers(S) {
   const sinceClear = S.day - (S.clearedDay || S.day);
   return Object.values(HEROES).filter(h => {
-    if (!h.recruit) return false;
+    if (!h.recruit || h.custom) return false; // forged heroes join via the Forge
     if ((S.recruited || []).includes(h.id)) return false;
     const a = h.arrive || {};
     // rescued rivals petition once you've pulled them out of a gate
