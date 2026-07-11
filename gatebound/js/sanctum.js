@@ -88,10 +88,11 @@ function guildContext(S, selfId) {
   }
   out.push('The guild is run by Guildmaster Hale — gruff, sentimental, endlessly stamping paperwork he pretends to resent.');
 
-  // relationships
+  // relationships — the core girls plus any forged companions with hearts
   const stages = [];
-  for (const g of ['sakura', 'erin', 'shiro', 'yuki']) {
-    if (g === selfId || !(g in S.bond) || !S.bond[g]) continue;
+  const bondIds = [...new Set(['sakura', 'erin', 'shiro', 'yuki', ...roster(S)])];
+  for (const g of bondIds) {
+    if (g === selfId || g === 'player' || !(g in S.bond) || !S.bond[g] || !HEROES[g]) continue;
     if (!roster(S).includes(g) && g === 'yuki') continue;
     stages.push(`${HEROES[g].name}: bond ${S.bond[g]}/10`);
   }
