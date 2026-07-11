@@ -223,7 +223,69 @@ export function parseCharacter(input, salt = 0) {
 
   const arch = ARCHETYPES[role];
   const passive = pick(arch.passives, 5);
-  return { card, seed, role, cls, spec, features, kit: arch.kit, passive };
+  const gaps = forgeGaps(text, spec, role);
+  return { card, seed, role, cls, spec, features, kit: arch.kit, passive, gaps };
+}
+
+// ------------------------------------------------------------------
+// Gaps report — traits the Forge notices in the text but cannot yet
+// render or build, so the player knows what to tweak (or ask for).
+// ------------------------------------------------------------------
+
+// Body/appearance traits with no builder yet. label = what to show.
+const UNSUPPORTED_FEATURES = [
+  { re: /four[- ]?arm|six[- ]?arm|extra arms|multiple arms|many arms|multi-armed/, label: 'extra arms' },
+  { re: /\bscales\b|scaled skin|reptilian|lizard(?:folk|man)?/, label: 'scaled skin' },
+  { re: /slime|ooze|gelatinous|goo\b/, label: 'slime / ooze body' },
+  { re: /tentacle/, label: 'tentacles' },
+  { re: /third eye|extra eyes|many eyes|multiple eyes/, label: 'extra eyes' },
+  { re: /eyepatch|eye patch/, label: 'eyepatch' },
+  { re: /glasses|spectacles|monocle/, label: 'glasses / monocle' },
+  { re: /\bscar\b|scarred|scars\b/, label: 'facial scar' },
+  { re: /tattoo|inked|body art/, label: 'tattoos / markings' },
+  { re: /beard|mustache|moustache|stubble|goatee/, label: 'facial hair' },
+  { re: /cyber|mechanical|prosthetic|automaton|clockwork|robotic|android/, label: 'mechanical / prosthetic parts' },
+  { re: /hooves|hoofed|centaur|satyr|faun\b/, label: 'hooved / taur lower body' },
+  { re: /naga|lamia|serpent(?:ine)? (?:body|tail|lower)|snake body/, label: 'serpent lower body' },
+  { re: /gills|fins\b|mermaid|merfolk|siren\b/, label: 'aquatic features (fins / gills)' },
+  { re: /feathers|feathered|plumage/, label: 'feathers' },
+  { re: /fur-covered|covered in fur|full fur|furred body/, label: 'full fur coat' },
+  { re: /antennae|antenna\b/, label: 'antennae' },
+  { re: /glowing (?:tattoo|marking|rune|vein)|runic (?:skin|marking)/, label: 'glowing runic markings' },
+  { re: /crown\b|tiara|circlet|diadem/, label: 'crown / circlet' },
+  { re: /cape\b|cloak trailing|long cloak/, label: 'flowing cape' },
+  { re: /wheelchair|prosthetic leg|peg leg|missing (?:an? )?(?:arm|leg|hand)/, label: 'mobility aid / missing limb' },
+];
+
+// Thematic skill hints — the kit is a generic role set, so flag the
+// flavor the description implies for hand-tuning later.
+const SKILL_THEMES = [
+  { re: /\bfire\b|flame|burn|pyro|inferno|ember|ash\b/, label: 'fire / burn' },
+  { re: /\bice\b|frost|freeze|cryo|winter|glacial|rime/, label: 'ice / frost' },
+  { re: /lightning|thunder|storm|shock|electric|volt/, label: 'lightning / storm' },
+  { re: /poison|venom|toxic|plague|blight/, label: 'poison / venom' },
+  { re: /shadow|dark magic|void|umbral|eclipse|night magic/, label: 'shadow / void' },
+  { re: /holy|radiant|divine|sacred|blessed|celestial/, label: 'holy / radiant' },
+  { re: /summon|conjure|familiar|raise (?:the )?dead|necromanc/, label: 'summoning' },
+  { re: /\bbleed|sever|rend|lacerat|hemorrhag/, label: 'bleed' },
+  { re: /curse|hex|doom|jinx|malediction/, label: 'curse / debuff' },
+  { re: /shapeshi|transform|polymorph|were(?:wolf|creature)/, label: 'shapeshifting' },
+  { re: /earth|stone|rock|quake|seismic/, label: 'earth / stone' },
+  { re: /wind\b|gale|tempest|air magic/, label: 'wind' },
+  { re: /music|song|sing|melody|dance/, label: 'song / performance' },
+  { re: /trap|snare|bomb|explosive|alchemy/, label: 'traps / alchemy' },
+];
+
+export function forgeGaps(text, spec, role) {
+  const feats = [];
+  for (const f of UNSUPPORTED_FEATURES) if (f.re.test(text) && !feats.includes(f.label)) feats.push(f.label);
+
+  const themes = [];
+  for (const t of SKILL_THEMES) if (t.re.test(text) && !themes.includes(t.label)) themes.push(t.label);
+  // healing flavor is already covered when the role is a healer
+  const filtered = themes.filter(t => !(t === 'holy / radiant' && role === 'healer'));
+
+  return { features: feats.slice(0, 8), skills: filtered.slice(0, 6) };
 }
 
 // ------------------------------------------------------------------
@@ -249,8 +311,21 @@ export function forgeHero(parsed, S) {
     passive: { ...passive },
     role,
     spec,
+    gaps: parsed.gaps || { features: [], skills: [] },
     color: ROLE_COLORS[role],
   };
+}
+
+// Pull a list of named characters out of an uploaded/pasted JSON blob,
+// so a multi-character file can offer a picker. Returns [] on failure.
+export function listCards(text) {
+  let data;
+  try { data = JSON.parse(text); } catch (e) { return []; }
+  const arr = Array.isArray(data) ? data : [data];
+  return arr.map((c, i) => {
+    const n = normalizeCard(c);
+    return { index: i, name: n.name || `(unnamed #${i + 1})`, card: c };
+  }).filter(x => x.card && (x.card.name || x.card.data || x.card.description));
 }
 
 export function registerCustomHero(def) {

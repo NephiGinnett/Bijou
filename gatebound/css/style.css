@@ -570,3 +570,11 @@ button.ticker-btn.notify em { font-style: normal; color: var(--gold); animation:
 .forge-preview { display: flex; gap: 14px; margin-top: 14px; align-items: flex-start; border: 1px solid var(--border-dim); border-radius: 10px; padding: 12px; background: rgba(8, 12, 20, 0.5); }
 .forge-preview .portrait.big { width: 110px; height: 110px; flex-shrink: 0; }
 #f-scan-out { margin-top: 8px; }
+
+/* Forge — gaps report + upload */
+.forge-gaps { border: 1px solid #7a5a2a; background: rgba(120, 88, 40, 0.14); border-radius: 8px; padding: 7px 10px; margin: 8px 0; }
+.forge-gaps b { color: #e8b34a; }
+.forge-gaps p { margin-top: 3px; }
+.forge-gap-note { color: #e8b34a; opacity: 0.85; margin-top: 3px; }
+#f-upload-label { cursor: pointer; }
+#f-cards { margin-bottom: 6px; }
