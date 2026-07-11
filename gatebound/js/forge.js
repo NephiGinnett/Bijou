@@ -165,17 +165,58 @@ export function normalizeCard(input) {
   let name = (card.name || '').trim();
   const desc = [card.description, card.appearance, card.personality].filter(Boolean).join('\n');
   const tags = (card.tags || []).map(t => String(t));
+  // A physical-description scope: explicit look fields, plus any
+  // "Appearance:" / "Physical description:" section pulled from prose.
+  // Used so body traits are read from how the character LOOKS, not from
+  // creatures they fought in their backstory.
+  const apFields = [card.appearance, card.physical, card.physique, card.looks,
+    card.physical_description, card.body_description, card.appearance_description]
+    .filter(Boolean).join('\n');
+  const appearance = [apFields, sectionFromProse(card.description || '')].filter(Boolean).join('\n');
   // plain prose: try "Mielle is a...", "Renna, the...", "Sister Vesper was..."
   if (!name && desc) {
     const m = desc.match(/^\s*"?([A-Z][a-zA-Z'’-]+(?: [A-Z][a-zA-Z'’-]+)?)"?[,:]?\s+(?:is|was|—|–|the|a\b)/);
     if (m) name = m[1];
   }
-  return { name, description: desc || String(card.description || ''), persona: card.persona || card.personality || '', tags };
+  return { name, description: desc || String(card.description || ''), persona: card.persona || card.personality || '', tags, appearance };
+}
+
+// Pull the text under an "Appearance"/"Physical description" header out of
+// a prose card, up to the next header or blank line. Deliberately does NOT
+// match a bare "Description:" header — that usually carries the backstory.
+function sectionFromProse(body) {
+  if (!body) return '';
+  const m = body.match(/(?:^|\n)[ \t>*#_]*(?:appearance|physical description|physical appearance|physical features|looks like|visual description)[ \t]*[:\-–—]?[ \t]*\n?([\s\S]*?)(?=\n[ \t>*#_]*[A-Za-z][A-Za-z /]{2,24}[ \t]*[:\-–—]\s|\n\s*\n|$)/i);
+  return m ? m[1].trim() : '';
+}
+
+// Clauses that describe things the character encountered rather than IS —
+// stripped before body-feature detection so "slew a slime" never reads as a
+// slime body. The verb consumes its object up to the next clause boundary.
+const COMBAT_CLAUSE = /\b(?:fought|fighting|battled|battling|slew|slain|slaying|defeat(?:ed|ing)?|kill(?:ed|ing)?|hunt(?:ed|ing|s)?|vanquish(?:ed|ing)?|faced|facing|encounter(?:ed|ing|s)?|escap(?:ed|ing)|fled|fleeing|survived|surviving|conjur(?:ed|ing|es)?|summon(?:ed|ing|s)?|banish(?:ed|ing)?|raise[sd]?|raising|against|versus|corpse of|carcass of|remains of|pelt of|hide of|slaying of|trophy)\b[^.!?;:]*/g;
+
+// The appearance scope: the card's look-describing text, lowercased, with
+// combat clauses scrubbed. Prefers an explicit appearance field/section;
+// otherwise keeps only self-descriptive sentences from the full text; falls
+// back to the full text when a card is too terse to window.
+function appearanceScope(card, fullText) {
+  let src = (card.appearance || '').trim().toLowerCase();
+  if (src.length < 15) {
+    const sents = fullText.split(/(?<=[.!?])\s+/);
+    const SELF = /\b(?:has|have|had|with|wears?|wearing|dressed|clad|robed|skin|complexion|hair|locks|mane|eyes?|gaze|body|figure|build|frame|physique|tail|ears?|horns?|antlers|wings?|halo|scales?|scaled|fur|furred|feathers?|stands?|tall|short|petite|slender|willowy|muscular|curvy|busty|appears?|looks?|features?|adorned|marked|covered|is an?|are)\b/;
+    const kept = sents.filter(s => SELF.test(s));
+    src = kept.join(' ');
+    if (src.length < 15) src = fullText;
+  }
+  return src.replace(COMBAT_CLAUSE, ' ');
 }
 
 export function parseCharacter(input, salt = 0) {
   const card = normalizeCard(input);
   const text = (card.name + ' ' + card.description + ' ' + card.tags.join(' ')).toLowerCase();
+  // Physical traits read from an appearance scope, not the whole card, so a
+  // creature named in the backstory never becomes the character's anatomy.
+  const bodyText = appearanceScope(card, text);
   const seed = (hash(card.name || card.description.slice(0, 40)) + salt * 7919) >>> 0;
   const pick = (arr, salt = 0) => arr[(seed + salt) % arr.length];
 
@@ -186,74 +227,74 @@ export function parseCharacter(input, salt = 0) {
   }
   if (!role) { role = pick(['striker', 'caster', 'support'], 1); cls = { striker: 'Adventurer', caster: 'Adept', support: 'Companion' }[role]; }
 
-  // --- appearance ---
-  const ghost = /\bghost|spectral|wraith|phantom|undead|spirit\b|shade\b|revenant|banshee|ethereal/.test(text);
-  const shadowBody = /made of (?:shadow|dark)|shadow[- ]?(?:entity|creature|being)|living shadow/.test(text);
+  // --- appearance ---  (read from bodyText, the scrubbed appearance scope)
+  const ghost = /\bghost|spectral|wraith|phantom|undead|spirit\b|shade\b|revenant|banshee|ethereal/.test(bodyText);
+  const shadowBody = /made of (?:shadow|dark)|shadow[- ]?(?:entity|creature|being)|living shadow/.test(bodyText);
   const spec = {
-    skin: shadowBody ? 0x1a1626 : (colorNear(text, SKIN_TONES, 'skin') ?? colorNear(text, SKIN_TONES, 'complexion') ?? pick([0xf6ddc0, 0xf2d4b0, 0xd8b088, 0xc8a878, 0x9a6a42], 2)),
-    hair: /\bbald|hairless|no hair/.test(text) || shadowBody ? null
-      : (colorNear(text, HAIR_COLORS, 'hair') ?? colorNear(text, HAIR_COLORS, 'locks') ?? colorNear(text, HAIR_COLORS, 'mane') ?? pick(Object.values(HAIR_COLORS), 3)),
-    hairstyle: /\bbraid|war-braid|war braid|cornrow|dreadlock|plaited/.test(text) ? 'braided'
-      : /long[\w\s,-]{0,18}hair|hair (?:falls|down|past|to (?:her|his|the) waist)|waist-length|flowing[\w\s,-]{0,14}hair|ponytail/.test(text) ? 'long'
-      : /curly|curls|ringlets|twin ?tails|twin-tails|drills/.test(text) ? 'curly'
-      : /straight[\w\s,-]{0,14}hair|sleek[\w\s,-]{0,14}hair|bob\b|blunt/.test(text) ? 'straight' : 'short',
-    eyeColor: colorNear(text, EYE_COLORS, 'eyes') ?? colorNear(text, EYE_COLORS, 'gaze') ?? 0x1c1c24,
-    eyeGlow: ghost || shadowBody || /glowing eyes|eyes glow|luminous eyes|burning eyes/.test(text),
-    elf: /\belf\b|elven|elvish|half-elf|pointed ears/.test(text),
-    ears: /rabbit|bunny|lapin|lop[- ]ear/.test(text) ? 'rabbit'
-      : /kitsune|fox[- ]?(?:girl|boy|ears|spirit|folk)|vulpine/.test(text) ? 'fox'
-      : /wolf[- ]?(?:girl|boy|ears|kin)|lupine/.test(text) ? 'wolf'
-      : /\bneko\b|cat[- ]?(?:girl|boy|ears|kin)|feline/.test(text) ? 'cat' : null,
-    tail: /dragon(?:kin|born)?|draconic|\bwyrm|drake/.test(text) && /tail/.test(text) ? 'dragon'
-      : /demon|devil|imp|succubus|tiefling/.test(text) && /tail/.test(text) ? 'devil'
-      : /fox|kitsune|vulpine/.test(text) && /tail|kitsune|fox/.test(text) ? 'fox'
-      : /wolf|lupine|canine/.test(text) && /tail/.test(text) ? 'wolf'
-      : /\bcat|feline|neko/.test(text) && /tail/.test(text) ? 'cat'
-      : /\btail\b/.test(text) ? 'plain' : null,
-    horns: /\bhorns?\b|demon(?:ess)?|oni\b|draconic|dragonkin|tiefling|succubus|devil/.test(text),
-    wings: /\bwings?\b|\bangel(?:ic)?\b|valkyrie|harpy|\bfairy\b|\bseraph(?:im)?\b/.test(text),
-    halo: /\bhalo\b|\bangel(?:ic)?\b|\bseraph(?:im)?\b|\bsaint(?:ly)?\b/.test(text),
-    mask: /\bmasked?\b|porcelain face|faceplate|visor/.test(text),
+    skin: shadowBody ? 0x1a1626 : (colorNear(bodyText, SKIN_TONES, 'skin') ?? colorNear(bodyText, SKIN_TONES, 'complexion') ?? pick([0xf6ddc0, 0xf2d4b0, 0xd8b088, 0xc8a878, 0x9a6a42], 2)),
+    hair: /\bbald|hairless|no hair/.test(bodyText) || shadowBody ? null
+      : (colorNear(bodyText, HAIR_COLORS, 'hair') ?? colorNear(bodyText, HAIR_COLORS, 'locks') ?? colorNear(bodyText, HAIR_COLORS, 'mane') ?? pick(Object.values(HAIR_COLORS), 3)),
+    hairstyle: /\bbraid|war-braid|war braid|cornrow|dreadlock|plaited/.test(bodyText) ? 'braided'
+      : /long[\w\s,-]{0,18}hair|hair (?:falls|down|past|to (?:her|his|the) waist)|waist-length|flowing[\w\s,-]{0,14}hair|ponytail/.test(bodyText) ? 'long'
+      : /curly|curls|ringlets|twin ?tails|twin-tails|drills/.test(bodyText) ? 'curly'
+      : /straight[\w\s,-]{0,14}hair|sleek[\w\s,-]{0,14}hair|bob\b|blunt/.test(bodyText) ? 'straight' : 'short',
+    eyeColor: colorNear(bodyText, EYE_COLORS, 'eyes') ?? colorNear(bodyText, EYE_COLORS, 'gaze') ?? 0x1c1c24,
+    eyeGlow: ghost || shadowBody || /glowing eyes|eyes glow|luminous eyes|burning eyes/.test(bodyText),
+    elf: /\belf\b|elven|elvish|half-elf|pointed ears/.test(bodyText),
+    ears: /rabbit|bunny|lapin|lop[- ]ear/.test(bodyText) ? 'rabbit'
+      : /kitsune|fox[- ]?(?:girl|boy|ears|spirit|folk)|vulpine/.test(bodyText) ? 'fox'
+      : /wolf[- ]?(?:girl|boy|ears|kin)|lupine/.test(bodyText) ? 'wolf'
+      : /\bneko\b|cat[- ]?(?:girl|boy|ears|kin)|feline/.test(bodyText) ? 'cat' : null,
+    tail: /dragon(?:kin|born)?|draconic|\bwyrm|drake/.test(bodyText) && /tail/.test(bodyText) ? 'dragon'
+      : /demon|devil|imp|succubus|tiefling/.test(bodyText) && /tail/.test(bodyText) ? 'devil'
+      : /fox|kitsune|vulpine/.test(bodyText) && /tail|kitsune|fox/.test(bodyText) ? 'fox'
+      : /wolf|lupine|canine/.test(bodyText) && /tail/.test(bodyText) ? 'wolf'
+      : /\bcat|feline|neko/.test(bodyText) && /tail/.test(bodyText) ? 'cat'
+      : /\btail\b/.test(bodyText) ? 'plain' : null,
+    horns: /\bhorns?\b|demon(?:ess)?|oni\b|draconic|dragonkin|tiefling|succubus|devil/.test(bodyText),
+    wings: /\bwings?\b|\bangel(?:ic)?\b|valkyrie|harpy|\bfairy\b|\bseraph(?:im)?\b/.test(bodyText),
+    halo: /\bhalo\b|\bangel(?:ic)?\b|\bseraph(?:im)?\b|\bsaint(?:ly)?\b/.test(bodyText),
+    mask: /\bmasked?\b|porcelain face|faceplate|visor/.test(bodyText),
     ghost,
     // ---- newly supported body features ----
-    lowerBody: /naga|lamia|serpent(?:ine)? (?:body|tail|lower)|snake (?:body|tail)|snake-bodied/.test(text) ? 'serpent'
-      : /centaur|\btaur\b|horse (?:body|lower|legs)|equine lower/.test(text) ? 'centaur'
-      : /mermaid|merfolk|merman|siren\b|fish tail|fishtail|fish-tailed/.test(text) ? 'fishtail'
-      : /satyr|faun\b|hooves|hoofed|goat (?:legs|-legged)|digitigrade/.test(text) ? 'hooves' : null,
-    scaled: /\bscaled\b|\bscales\b|scaly|reptilian|lizard(?:folk|man|kin)?|dragonkin|dragonborn|draconic/.test(text),
-    extraArms: /four[- ]?arm|six[- ]?arm|extra arms|multiple arms|many arms|multi-armed/.test(text),
-    thirdEye: /third eye|extra eyes|many eyes|multiple eyes/.test(text),
-    crown: /\bcrown\b|tiara|circlet|diadem|coronet/.test(text),
-    cape: /\bcape\b|long cloak|trailing cloak|flowing cloak|mantle/.test(text),
-    scar: /\bscar\b|scarred|scars\b/.test(text),
-    eyepatch: /eyepatch|eye patch|one eye covered/.test(text),
-    glasses: /glasses|spectacles|monocle/.test(text),
-    antennae: /antennae|antenna\b/.test(text),
-    feathers: /feathers|feathered|plumage/.test(text),
+    lowerBody: /naga|lamia|serpent(?:ine)? (?:body|tail|lower)|snake (?:body|tail)|snake-bodied/.test(bodyText) ? 'serpent'
+      : /centaur|\btaur\b|horse (?:body|lower|legs)|equine lower/.test(bodyText) ? 'centaur'
+      : /mermaid|merfolk|merman|siren\b|fish tail|fishtail|fish-tailed/.test(bodyText) ? 'fishtail'
+      : /satyr|faun\b|hooves|hoofed|goat (?:legs|-legged)|digitigrade/.test(bodyText) ? 'hooves' : null,
+    scaled: /\bscaled\b|\bscales\b|scaly|reptilian|lizard(?:folk|man|kin)?|dragonkin|dragonborn|draconic/.test(bodyText),
+    extraArms: /four[- ]?arm|six[- ]?arm|extra arms|multiple arms|many arms|multi-armed/.test(bodyText),
+    thirdEye: /third eye|extra eyes|many eyes|multiple eyes/.test(bodyText),
+    crown: /\bcrown\b|tiara|circlet|diadem|coronet/.test(bodyText),
+    cape: /\bcape\b|long cloak|trailing cloak|flowing cloak|mantle/.test(bodyText),
+    scar: /\bscar\b|scarred|scars\b/.test(bodyText),
+    eyepatch: /eyepatch|eye patch|one eye covered/.test(bodyText),
+    glasses: /glasses|spectacles|monocle/.test(bodyText),
+    antennae: /antennae|antenna\b/.test(bodyText),
+    feathers: /feathers|feathered|plumage/.test(bodyText),
     // ---- exotic bodies ----
-    slime: /\bslime\b|\booze\b|gelatinous|\bgoo\b|amorphous|made of (?:slime|jelly|water)|liquid body/.test(text),
-    tentacles: /tentacle|cephalopod|octopus|squid|kraken|eldritch appendage/.test(text),
-    mechanical: /cyber|mechanical (?:arm|leg|limb|body|parts)|prosthetic|automaton|clockwork|robotic|android|cybernetic|mechanized|augmetic|metal limb/.test(text),
-    fins: /\bfins?\b|\bgills\b|aquatic|finned/.test(text),
-    furry: /fur-covered|covered in fur|full[- ]?fur|furred|fluffy body|beast-?kin|anthro/.test(text),
-    facialHair: /\bbeard|mustache|moustache|goatee|stubble|bearded/.test(text),
-    cane: /\bcane\b|walking stick|walking-stick|uses a staff to walk/.test(text),
+    slime: /\bslime\b|\booze\b|gelatinous|\bgoo\b|amorphous|made of (?:slime|jelly|water)|liquid body/.test(bodyText),
+    tentacles: /tentacle|cephalopod|octopus|squid|kraken|eldritch appendage/.test(bodyText),
+    mechanical: /cyber|mechanical (?:arm|leg|limb|body|parts)|prosthetic|automaton|clockwork|robotic|android|cybernetic|mechanized|augmetic|metal limb/.test(bodyText),
+    fins: /\bfins?\b|\bgills\b|aquatic|finned/.test(bodyText),
+    furry: /fur-covered|covered in fur|full[- ]?fur|furred|fluffy body|beast-?kin|anthro/.test(bodyText),
+    facialHair: /\bbeard|mustache|moustache|goatee|stubble|bearded/.test(bodyText),
+    cane: /\bcane\b|walking stick|walking-stick|uses a staff to walk/.test(bodyText),
     // ---- cosmetics from the Codex scan ----
-    markings: /tattoo|inked|body art|\bmarkings\b|daedric marking|runic (?:skin|marking)|ceremonial(?:ly)? scar|war ?paint|tribal mark/.test(text),
-    freckles: /freckl/.test(text),
-    piercings: /piercing|nose ring|septum|pierced (?:ears|nose|lip)|\bstuds\b/.test(text),
-    collar: /\bcollar\b|choker/.test(text),
-    antlers: /antlers|stag\b|\bdeer\b|elk\b|\bfaun-|forest spirit/.test(text),
-    scale: /towering|giant(?:ess)?|massive|hulking|seven fe?e?t|colossal/.test(text) ? 1.18
-      : /\btiny\b|petite|diminutive|small stature|halfling|gnome|fairy/.test(text) ? 0.85 : 1,
+    markings: /tattoo|inked|body art|\bmarkings\b|daedric marking|runic (?:skin|marking)|ceremonial(?:ly)? scar|war ?paint|tribal mark/.test(bodyText),
+    freckles: /freckl/.test(bodyText),
+    piercings: /piercing|nose ring|septum|pierced (?:ears|nose|lip)|\bstuds\b/.test(bodyText),
+    collar: /\bcollar\b|choker/.test(bodyText),
+    antlers: /antlers|stag\b|\bdeer\b|elk\b|\bfaun-|forest spirit/.test(bodyText),
+    scale: /towering|giant(?:ess)?|massive|hulking|seven fe?e?t|colossal/.test(bodyText) ? 1.18
+      : /\btiny\b|petite|diminutive|small stature|halfling|gnome|fairy/.test(bodyText) ? 0.85 : 1,
     // ---- body build & chest (character differentiation) ----
-    build: /muscular|athletic build|broad[- ]shoulder|powerful build|warrior build|strapping|brawny|burly/.test(text) ? 'broad'
-      : /plump|thick|curvy|full[- ]figured|rubenesque|voluptuous|soft build|chubby|shapely|hourglass/.test(text) ? 'curvy'
-      : /slender|slim|lithe|willowy|waifish|lean\b|slight build/.test(text) ? 'slim' : 'average',
-    outfitStyle: /armor|armour|plate|chain ?mail|breastplate/.test(text) ? 'armor'
-      : /\brobes?\b|vestment|habit\b/.test(text) ? 'robe'
-      : /\bdress\b|\bgown\b|skirt/.test(text) ? 'dress' : null,
-    outfit: colorNear(text, HAIR_COLORS, '(?:cloak|robe|dress|gown|armor|coat|jacket|tunic|uniform|clothes)')
+    build: /muscular|athletic build|broad[- ]shoulder|powerful build|warrior build|strapping|brawny|burly/.test(bodyText) ? 'broad'
+      : /plump|thick|curvy|full[- ]figured|rubenesque|voluptuous|soft build|chubby|shapely|hourglass/.test(bodyText) ? 'curvy'
+      : /slender|slim|lithe|willowy|waifish|lean\b|slight build/.test(bodyText) ? 'slim' : 'average',
+    outfitStyle: /armor|armour|plate|chain ?mail|breastplate/.test(bodyText) ? 'armor'
+      : /\brobes?\b|vestment|habit\b/.test(bodyText) ? 'robe'
+      : /\bdress\b|\bgown\b|skirt/.test(bodyText) ? 'dress' : null,
+    outfit: colorNear(bodyText, HAIR_COLORS, '(?:cloak|robe|dress|gown|armor|coat|jacket|tunic|uniform|clothes)')
       ?? { tank: 0x8a8f96, healer: 0x7a9a58, caster: 0x2a2438, striker: 0x4a4a52, support: 0x8a6d3a }[role],
     legColor: 0x33373d,
     frill: 0xd9b96a,
@@ -263,14 +304,16 @@ export function parseCharacter(input, salt = 0) {
   if (spec.ghost || shadowBody) spec.eyeGlow = true;
   // a dedicated lower body supplies its own tail — drop the redundant one
   if (['serpent', 'fishtail', 'centaur'].includes(spec.lowerBody)) spec.tail = null;
-  if (spec.scaled && !/\bskin\b|complexion/.test(text)) spec.skin = 0x6a9a5a; // scaly green default
+  if (spec.scaled && !/\bskin\b|complexion/.test(bodyText)) spec.skin = 0x6a9a5a; // scaly green default
 
-  // body chest sizing (0 none → 3 large) for character differentiation
+  // body chest sizing (0 none → 3 large) for character differentiation.
+  // Gender presentation reads the whole card (pronouns are everywhere); the
+  // explicit size descriptors read the appearance scope.
   const femalePresenting = /gender:\s*female|female[- ]presenting|\bshe\b|\bher\b|\bwoman\b|\bgirl\b|\bfemale\b|\blady\b|mistress|sorceress|enchantress|priestess|matron|\bqueen\b|princess|maiden|\bwife\b|\bmother\b|daughter|\bsister\b|\bnun\b/.test(text);
   const malePresenting = /gender:\s*male|\bhe\b|\bhis\b|\bhim\b|\bman\b|\bmale\b|\bboy\b|\blord\b|\bking\b|\bprince\b|\bfather\b|\bson\b|\bbrother\b|\bsir\b/.test(text);
-  if (/flat[- ]?chest|small (?:breasts|bust|chest)|modest (?:bust|chest)|a-cup|boyish figure|petite (?:bust|chest)/.test(text)) spec.chest = 1;
-  else if (/busty|buxom|voluptuous|large (?:breasts|bust|chest)|full (?:breasts|bust)|ample (?:bust|chest|breasts)|big (?:breasts|bust)|heavy (?:breasts|bust)|generous (?:bust|chest|figure)|huge (?:breasts|bust)|dd?-?cup/.test(text)) spec.chest = 3;
-  else if (/curvy|shapely|hourglass|full[- ]figured|womanly|rubenesque/.test(text)) spec.chest = 2;
+  if (/flat[- ]?chest|small (?:breasts|bust|chest)|modest (?:bust|chest)|a-cup|boyish figure|petite (?:bust|chest)/.test(bodyText)) spec.chest = 1;
+  else if (/busty|buxom|voluptuous|large (?:breasts|bust|chest)|full (?:breasts|bust)|ample (?:bust|chest|breasts)|big (?:breasts|bust)|heavy (?:breasts|bust)|generous (?:bust|chest|figure)|huge (?:breasts|bust)|dd?-?cup/.test(bodyText)) spec.chest = 3;
+  else if (/curvy|shapely|hourglass|full[- ]figured|womanly|rubenesque/.test(bodyText)) spec.chest = 2;
   else spec.chest = (femalePresenting && !malePresenting) ? 2 : (malePresenting ? 0 : 1);
   if (spec.build === 'curvy' && spec.chest < 2) spec.chest = 2;
 
@@ -300,7 +343,7 @@ export function parseCharacter(input, salt = 0) {
   ].filter(Boolean);
 
   const passive = pick(arch.passives, 5);
-  const gaps = forgeGaps(text, spec, role);
+  const gaps = forgeGaps(text, bodyText, spec, role);
   return { card, seed, role, cls, spec, features, kit, passive, gaps, themeLabel: theme ? theme.label : null };
 }
 
@@ -326,9 +369,12 @@ const UNSUPPORTED_SKILL_THEMES = [
   { re: /trap|snare|\bbomb|explosive|alchemy/, label: 'traps / alchemy' },
 ];
 
-export function forgeGaps(text, spec, role) {
+export function forgeGaps(text, bodyText, spec, role) {
+  // Structural body gaps read the appearance scope so a foe fought in the
+  // backstory doesn't get reported as the character's own missing limb, etc.
+  if (bodyText == null) bodyText = text; // back-compat if called positionally
   const feats = [];
-  for (const f of UNSUPPORTED_FEATURES) if (f.re.test(text) && !feats.includes(f.label)) feats.push(f.label);
+  for (const f of UNSUPPORTED_FEATURES) if (f.re.test(bodyText) && !feats.includes(f.label)) feats.push(f.label);
   const themes = [];
   for (const t of UNSUPPORTED_SKILL_THEMES) if (t.re.test(text) && !themes.includes(t.label)) themes.push(t.label);
   return { features: feats.slice(0, 8), skills: themes.slice(0, 6) };
