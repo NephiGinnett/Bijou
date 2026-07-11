@@ -95,6 +95,21 @@ function chibi(o = {}) {
     const coils = [[0, 0.15, 0.0, 0.27], [0.15, 0.10, -0.03, 0.23], [-0.13, 0.06, -0.08, 0.2], [0.11, 0.04, -0.15, 0.16], [-0.05, 0.03, -0.22, 0.13], [0.02, 0.03, -0.29, 0.1]];
     for (const [x, y, z, r] of coils) add(g, S(r, 12, 10), tm, x, y, z).scale.set(1.25, 0.72, 1.25);
     torso = add(g, Cap(0.24, 0.36, 4, 12), torsoMat, 0, 0.62, 0);
+  } else if (o.lowerBody === 'fishtail') {
+    // mermaid: a scaled tail curving down to a fluke
+    const tm = mat(o.tailColor ?? 0x3a8ab0, { rough: 0.5, flat: true });
+    add(g, Cap(0.2, 0.34, 4, 10), tm, 0, 0.28, -0.02);
+    add(g, Cap(0.12, 0.26, 4, 8), tm, 0.02, 0.05, -0.12, 0.5);
+    add(g, Cone(0.22, 0.12, 6), tm, 0.08, -0.05, -0.24, 0, 0, 1.4);   // fluke
+    add(g, Cone(0.22, 0.12, 6), tm, -0.04, -0.05, -0.24, 0, 0, 1.9);
+    torso = add(g, Cap(0.24, 0.36, 4, 12), torsoMat, 0, 0.62, 0);
+  } else if (o.lowerBody === 'centaur') {
+    // humanoid torso atop a horse barrel + four legs + tail
+    const hm = mat(o.legColor ?? o.skin ?? 0x8a5a3a, { rough: 0.85 });
+    add(g, Cap(0.26, 0.5, 4, 10), hm, 0, 0.42, -0.34, 0, 0, Math.PI / 2); // barrel
+    for (const [x, z] of [[-0.14, -0.16], [0.14, -0.16], [-0.14, -0.52], [0.14, -0.52]]) add(g, Cyl(0.05, 0.06, 0.42, 6), hm, x, 0.2, z);
+    add(g, Cap(0.03, 0.3, 4, 6), mat(o.hair ?? hm.color, { rough: 0.9 }), 0, 0.4, -0.62, -0.6); // horse tail
+    torso = add(g, Cap(0.24, 0.36, 4, 12), torsoMat, 0, 0.66, 0.02);
   } else if (o.outfitStyle === 'dress' || o.outfitStyle === 'robe') {
     torso = add(g, Cone(0.42, 0.85, 10), mat(outfit), 0, 0.46, 0);
     if (o.frill) add(g, Tor(0.32, 0.05, 8, 16), mat(o.frill), 0, 0.12, 0, Math.PI / 2);
@@ -593,7 +608,7 @@ function customChibi(spec) {
   if (spec.halo) add(g, Tor(0.16, 0.02, 6, 16), mat(0xffe28a, { emissive: 0xffd24a, ei: 1.4 }), 0, 1.62, -0.02, Math.PI / 2.2);
 
   // tail (skip if the lower body is already a snake)
-  if (spec.lowerBody !== 'serpent') {
+  if (!spec.lowerBody || spec.lowerBody === 'hooves') {
     if (spec.tail === 'fox') {
       add(g, Cap(0.11, 0.34, 4, 8), mat(spec.hair ?? 0xd87c3a, { rough: 0.85 }), 0, 0.42, -0.3, 0.9);
       add(g, S(0.09, 8, 8), mat(0xf4efe6), 0, 0.62, -0.44);
@@ -659,6 +674,58 @@ function customChibi(spec) {
     }
   }
 
+  // facial hair
+  if (spec.facialHair) {
+    const fm = mat(spec.hair ?? 0x4a3a2a, { rough: 0.9 });
+    add(g, Box(0.26, 0.14, 0.1), fm, 0, 1.02, 0.24);      // beard
+    add(g, Box(0.16, 0.04, 0.06), fm, 0, 1.1, 0.28);      // mustache
+  }
+
+  // tentacles — writhing appendages from the lower back
+  if (spec.tentacles) {
+    const tm = mat(spec.tentacleColor ?? spec.skin ?? 0x8a5a9a, { rough: 0.6 });
+    for (let i = 0; i < 5; i++) {
+      const a = (i / 4 - 0.5) * 1.9;
+      add(g, Cap(0.045, 0.4, 4, 6), tm, Math.sin(a) * 0.26, 0.28, -0.24 - Math.cos(a) * 0.05, 0.6, a, Math.sin(a) * 0.5);
+      add(g, S(0.04, 6, 6), tm, Math.sin(a) * 0.34, 0.1, -0.3);
+    }
+  }
+
+  // mechanical / prosthetic parts — a metal arm, panel lines, a core light
+  if (spec.mechanical) {
+    const mm = mat(0x8a929c, { metal: 0.85, rough: 0.3 });
+    add(g, Cap(0.075, 0.3, 4, 8), mm, 0.31, 0.75, 0, 0, 0, -0.35);   // metal right arm
+    add(g, S(0.08, 8, 8), mm, 0.39, 0.58, 0);
+    add(g, Tor(0.05, 0.012, 6, 10), mm, 0.31, 0.82, 0, Math.PI / 2); // shoulder joint
+    add(g, S(0.05, 10, 10), mat(spec.accent ?? 0x54d8ff, { emissive: spec.accent ?? 0x54d8ff, ei: 1.8 }), 0, 0.72, 0.2); // core
+    add(g, Box(0.2, 0.02, 0.02), mm, 0, 0.6, 0.22);
+  }
+
+  // fins & gills (aquatic) — ear-fins + gill slits
+  if (spec.fins) {
+    const fm = mat(spec.finColor ?? spec.tailColor ?? 0x4aa0c0, { rough: 0.4, flat: true, opacity: 0.9 });
+    for (const sx of [-1, 1]) {
+      add(g, Cone(0.13, 0.18, 3), fm, sx * 0.3, 1.22, -0.02, 0, 0, sx * 1.3);        // ear fin
+      for (let i = 0; i < 3; i++) add(g, Box(0.03, 0.05, 0.01), mat(0x2a4a5a), sx * 0.22, 1.02 - i * 0.05, 0.16); // gills
+    }
+  }
+
+  // full fur coat — tufts around the body
+  if (spec.furry) {
+    const fm = mat(spec.hair ?? spec.skin ?? 0xa88a5a, { rough: 1, flat: true });
+    for (let i = 0; i < 10; i++) {
+      const a = (i / 10) * Math.PI * 2;
+      add(g, Cone(0.05, 0.12, 4), fm, Math.cos(a) * 0.26, 0.62 + Math.sin(a * 2) * 0.1, Math.sin(a) * 0.2, Math.cos(a), 0, Math.sin(a));
+    }
+    add(g, Tor(0.26, 0.06, 6, 14), fm, 0, 0.95, 0, Math.PI / 2); // ruff at neck
+  }
+
+  // mobility aid — a cane
+  if (spec.cane) {
+    add(g, Cyl(0.018, 0.018, 0.6, 6), mat(0x6a4a2a, { rough: 0.6 }), 0.44, 0.32, 0.06);
+    add(g, Tor(0.05, 0.016, 6, 10), mat(0x6a4a2a), 0.44, 0.6, 0.06, Math.PI / 2, 0, Math.PI / 2);
+  }
+
   // mask: a smooth faceplate over the features
   if (spec.mask) {
     const mm = mat(spec.maskColor ?? 0xece6da, { rough: 0.35 });
@@ -669,6 +736,16 @@ function customChibi(spec) {
   // spectral bodies: translucent and drifting
   if (spec.ghost) {
     g.traverse(m => { if (m.material) { m.material.transparent = true; m.material.opacity = Math.min(m.material.opacity, 0.68); } });
+    g.userData.float = true;
+  }
+
+  // slime / ooze body: translucent, glossy, gently gelatinous
+  if (spec.slime) {
+    const tint = spec.slimeColor ?? spec.skin ?? 0x6ad8a8;
+    g.traverse(m => { if (m.material) { m.material.transparent = true; m.material.opacity = Math.min(m.material.opacity ?? 1, 0.72); m.material.color.set(tint); m.material.roughness = 0.15; } });
+    // a couple of drips
+    add(g, S(0.06, 8, 8), mat(tint, { rough: 0.15, opacity: 0.72 }), -0.18, 0.42, 0.14);
+    add(g, S(0.05, 8, 8), mat(tint, { rough: 0.15, opacity: 0.72 }), 0.2, 0.5, 0.1);
     g.userData.float = true;
   }
 
