@@ -100,12 +100,22 @@ prevailing tone for future content.
 ### The Character Forge
 
 **⚗ Forge** in the guild hall turns character descriptions into playable
-guildmates. Paste a Warlock's Codex card, a tavern-card JSON, or plain
-prose — the Forge reads hair/skin/eye colors, hairstyles, outfits, and
-non-human features (elf/rabbit/cat/fox/wolf ears, horns, tails, wings,
-halos, masks, spectral bodies, shadow-forms, unusual sizes), infers a
-class and role from the text, assembles a combat kit and passive, and
-renders a chibi preview. Summon them and every system picks them up:
+guildmates. Upload a JSON card, paste a Warlock's Codex / tavern-card, or
+just describe them in prose — the Forge reads hair/skin/eye colors,
+hairstyles (incl. braids), **body build and chest size** (for character
+differentiation), and features: elf/rabbit/cat/fox/wolf ears; horns and
+**antlers**; fox/dragon/devil/cat/wolf tails; serpent or hooved lower
+bodies; scaled skin; extra arms; a third eye; wings; halos; crowns;
+capes; masks; **markings/tattoos, freckles, piercings, collars**; scars,
+eyepatches, glasses, antennae, feathers; spectral bodies, shadow-forms,
+unusual sizes. It infers a class and role — including a **Shifter**
+class (a shapeshifter whose *Apex Mimic* passive lets it take the shape
+of any enemy it fells, learning one of that creature's skills for the
+rest of the battle) — and assembles a combat kit, with **themed
+elemental/status skill lines** when the description implies one
+(fire→Burn, ice→Slow/Freeze, lightning→Stun, poison, holy, earth→Sunder,
+wind→Haste, bleed, curse, shadow) plus a passive, then renders a chibi
+preview. Summon them and every system picks them up:
 party, dispatch, mastery, the Smith, and the Sanctum (their card text
 becomes their chat persona). Forged souls persist across NG+ cycles and
 can be re-summoned, released, or forgotten at the Forge. If the Codex

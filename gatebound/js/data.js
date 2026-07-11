@@ -317,6 +317,7 @@ export const STATUSES = {
   vulnerable:{ name: 'Exposed',    icon: '⊗', kind: 'debuff', takenUp: 0.25 },
   enrage:    { name: 'Enraged',    icon: '🔺', kind: 'buff',   mods: { atk: 0.4, def: -0.15 } },
   blessed:   { name: 'Blessed',    icon: '✚', kind: 'buff',   hot: 0.12 },
+  shifted:   { name: 'Shifted',    icon: '⟳', kind: 'buff',   mods: { atk: 0.15, mag: 0.15, agi: 0.1 } },
 };
 
 // ------------------------------------------------------------
@@ -397,6 +398,52 @@ export const SKILLS = {
   umbral_coil:   { name: 'Umbral Coil', type: 'mag', power: 1.7, mp: 16, target: 'enemy', anim: 'cast', apply: { to: 'target', id: 'vulnerable', turns: 2, chance: 0.7 }, desc: 'Shadow constricts, and keeps a grip. Leaves the target Exposed.' },
   eclipse:       { name: 'Eclipse', type: 'mag', power: 1.1, mp: 26, target: 'all_enemies', anim: 'cast', apply: { to: 'target', id: 'atk_down', turns: 2, chance: 0.6 }, desc: 'She turns off the light. All enemies, Weakened.' },
   midnight_rite: { name: 'Midnight Rite', type: 'mag', power: 1.45, mp: 36, target: 'all_enemies', anim: 'cast', apply: { to: 'target', id: 'res_down', turns: 2, chance: 0.8 }, desc: 'The College forbids this one. She footnoted her objection and learned it anyway.' },
+
+  // ---- Themed elemental / status skill lines (Character Forge) ----
+  // Forged heroes whose descriptions imply an element get one of these
+  // kits. No resistances — the point is the status the theme inflicts.
+  // Fire → Burn
+  th_fire1: { name: 'Ember Spark', type: 'mag', power: 0.9, mp: 6, target: 'enemy', anim: 'cast', apply: { to: 'target', id: 'burn', turns: 2, chance: 0.5 }, desc: 'A dart of flame that may set the target Burning.' },
+  th_fire2: { name: 'Immolate', type: 'mag', power: 1.8, mp: 16, target: 'enemy', anim: 'cast', apply: { to: 'target', id: 'burn', turns: 3, chance: 0.9 }, desc: 'Wreathe a foe in fire. Almost always Burns.' },
+  th_fire3: { name: 'Firestorm', type: 'mag', power: 1.1, mp: 26, target: 'all_enemies', anim: 'cast', apply: { to: 'target', id: 'burn', turns: 2, chance: 0.7 }, desc: 'A storm of embers over the field. May Burn all.' },
+  // Ice → Slow (+ freeze/stun)
+  th_ice1: { name: 'Frostbite', type: 'mag', power: 0.95, mp: 7, target: 'enemy', anim: 'cast', apply: { to: 'target', id: 'agi_down', turns: 2, chance: 0.75 }, desc: 'Biting cold that Slows.' },
+  th_ice2: { name: 'Deep Freeze', type: 'mag', power: 1.5, mp: 16, target: 'enemy', anim: 'cast', apply: [{ to: 'target', id: 'stun', turns: 1, chance: 0.5 }, { to: 'target', id: 'agi_down', turns: 2 }], desc: 'Locks a foe in ice — may freeze them solid, always Slows.' },
+  th_ice3: { name: 'Blizzard', type: 'mag', power: 1.05, mp: 26, target: 'all_enemies', anim: 'cast', apply: { to: 'target', id: 'agi_down', turns: 2, chance: 0.8 }, desc: 'A screaming gale of ice. Slows the field.' },
+  // Lightning → Stun (shock)
+  th_bolt1: { name: 'Spark', type: 'mag', power: 1.0, mp: 7, target: 'enemy', anim: 'cast', apply: { to: 'target', id: 'stun', turns: 1, chance: 0.3 }, desc: 'A jolt that may Stun.' },
+  th_bolt2: { name: 'Thunderstrike', type: 'mag', power: 1.7, mp: 16, target: 'enemy', anim: 'cast', apply: { to: 'target', id: 'stun', turns: 1, chance: 0.6 }, desc: 'A bolt from the blue. Often Stuns.' },
+  th_bolt3: { name: 'Chain Lightning', type: 'mag', power: 1.0, mp: 24, target: 'all_enemies', anim: 'cast', apply: { to: 'target', id: 'stun', turns: 1, chance: 0.35 }, desc: 'Arcs across the field; may Stun.' },
+  // Poison → Poison
+  th_pois1: { name: 'Venom Dart', type: 'mag', power: 0.7, mp: 6, target: 'enemy', anim: 'cast', apply: { to: 'target', id: 'poison', turns: 3, chance: 0.85 }, desc: 'A toxic sting. Poisons.' },
+  th_pois2: { name: 'Plague Touch', type: 'mag', power: 1.2, mp: 14, target: 'enemy', anim: 'cast', apply: [{ to: 'target', id: 'poison', turns: 3, chance: 0.9 }, { to: 'target', id: 'atk_down', turns: 2 }], desc: 'Sickness that Weakens and Poisons.' },
+  th_pois3: { name: 'Miasma', type: 'mag', power: 0.8, mp: 22, target: 'all_enemies', anim: 'cast', apply: { to: 'target', id: 'poison', turns: 3, chance: 0.7 }, desc: 'A creeping cloud of poison over the field.' },
+  // Holy → Radiant (smite/bless)
+  th_holy1: { name: 'Smite', type: 'mag', power: 1.2, mp: 8, target: 'enemy', anim: 'cast', apply: { to: 'target', id: 'atk_down', turns: 2, chance: 0.6 }, desc: 'Radiant light that sears and cows. May Weaken.' },
+  th_holy2: { name: 'Blessing', type: 'support', mp: 12, target: 'ally', anim: 'buff', apply: { to: 'target', id: 'blessed', turns: 3 }, desc: 'Bathes an ally in restoring light (strong regen).' },
+  th_holy3: { name: 'Consecrate', type: 'mag', power: 1.0, mp: 24, target: 'all_enemies', anim: 'cast', apply: { to: 'target', id: 'vulnerable', turns: 2, chance: 0.6 }, desc: 'Hallowed ground. The unholy are left Exposed.' },
+  // Earth → Sunder / quake
+  th_earth1: { name: 'Stone Fist', type: 'phys', power: 1.1, mp: 7, target: 'enemy', anim: 'melee', apply: { to: 'target', id: 'def_down', turns: 2, chance: 0.7 }, desc: 'A crushing blow that cracks armor (Sundered).' },
+  th_earth2: { name: 'Boulder', type: 'phys', power: 1.7, mp: 15, target: 'enemy', anim: 'melee', apply: { to: 'target', id: 'stun', turns: 1, chance: 0.4 }, desc: 'Drops a rock the size of an argument. May Stun.' },
+  th_earth3: { name: 'Earthquake', type: 'phys', power: 0.95, mp: 22, target: 'all_enemies', anim: 'melee', apply: { to: 'target', id: 'def_down', turns: 2, chance: 0.5 }, desc: 'The ground bucks. Sunders the field.' },
+  // Wind → haste / multi-hit
+  th_wind1: { name: 'Gale Cut', type: 'phys', power: 0.7, hits: 2, mp: 8, target: 'enemy', anim: 'dash', desc: 'Twin slashes carried on the wind.' },
+  th_wind2: { name: 'Zephyr', type: 'support', mp: 10, target: 'self', anim: 'buff', freeAction: true, apply: { to: 'target', id: 'haste', turns: 2 }, desc: 'Rides the wind. Grants Haste — free action.' },
+  th_wind3: { name: 'Cyclone', type: 'phys', power: 0.85, mp: 20, target: 'all_enemies', anim: 'dash', apply: { to: 'self', id: 'haste', turns: 2 }, desc: 'A whirling storm of blades; leaves the caster Hasted.' },
+  // Bleed → Bleed
+  th_bleed1: { name: 'Rend', type: 'phys', power: 1.15, mp: 7, target: 'enemy', anim: 'melee', apply: { to: 'target', id: 'bleed', turns: 3, chance: 0.7 }, desc: 'A ragged cut that leaves them Bleeding.' },
+  th_bleed2: { name: 'Hemorrhage', type: 'phys', power: 1.6, mp: 16, target: 'enemy', anim: 'melee', apply: { to: 'target', id: 'bleed', turns: 3, chance: 0.9 }, desc: 'A deep, deliberate wound. Heavy Bleed.' },
+  th_bleed3: { name: 'Bloodletting', type: 'phys', power: 0.9, mp: 20, target: 'all_enemies', anim: 'melee', apply: { to: 'target', id: 'bleed', turns: 3, chance: 0.6 }, desc: 'One wide arc; the whole field Bleeds.' },
+  // Curse → hex / doom
+  th_curse1: { name: 'Hex', type: 'mag', power: 0.7, mp: 8, target: 'enemy', anim: 'cast', apply: [{ to: 'target', id: 'atk_down', turns: 2 }, { to: 'target', id: 'res_down', turns: 2 }], desc: 'A withering hex — Weakens and Hexes.' },
+  th_curse2: { name: 'Doom', type: 'mag', power: 1.3, mp: 18, target: 'enemy', anim: 'cast', apply: { to: 'target', id: 'vulnerable', turns: 2, chance: 0.8 }, desc: 'Marks a soul for ruin. Leaves them Exposed.' },
+  th_curse3: { name: 'Malediction', type: 'mag', power: 0.85, mp: 24, target: 'all_enemies', anim: 'cast', apply: { to: 'target', id: 'atk_down', turns: 2, chance: 0.7 }, desc: 'A curse spoken over the whole field. Weakens all.' },
+
+  // ---- Shifter (shapeshifter class) ----
+  feral_claw:  { name: 'Feral Claw', type: 'phys', power: 1.15, mp: 5, target: 'enemy', anim: 'melee', apply: { to: 'target', id: 'bleed', turns: 2, chance: 0.5 }, desc: 'A raking strike. May cause Bleeding.' },
+  pounce_sh:   { name: 'Pounce', type: 'phys', power: 1.35, mp: 10, target: 'enemy', anim: 'dash', apply: { to: 'target', id: 'agi_down', turns: 2, chance: 0.7 }, desc: 'Leap on prey; slows it.' },
+  primal_roar: { name: 'Primal Roar', type: 'support', mp: 12, target: 'self', anim: 'buff', apply: { to: 'target', id: 'enrage', turns: 3 }, desc: 'A beast\'s challenge. Enrages the self.' },
+  apex_rend:   { name: 'Apex Rend', type: 'phys', power: 1.8, mp: 20, target: 'enemy', anim: 'melee', apply: { to: 'target', id: 'bleed', turns: 3, chance: 0.9 }, desc: 'The predator\'s finisher. Heavy Bleed.' },
 
   // Enemies
   e_bite:        { name: 'Bite', type: 'phys', power: 1.0, mp: 0, target: 'enemy', anim: 'melee' },
@@ -675,6 +722,7 @@ export const ROLE_INFO = {
   caster:  { name: 'Arcanist', icon: '☄', bonus: 0.08, desc: 'someone to erase the problem rooms' },
   striker: { name: 'Striker',  icon: '⚔', bonus: 0.08, desc: 'someone to finish fights fast' },
   support: { name: 'Support',  icon: '❀', bonus: 0.06, desc: 'someone to keep spirits up' },
+  shifter: { name: 'Shifter',  icon: '⟳', bonus: 0.09, desc: 'someone who becomes what it kills' },
 };
 
 // Rough level a party member should be to face each rank evenly.

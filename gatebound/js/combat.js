@@ -216,7 +216,7 @@ export class Combat {
         const dmg = Math.max(1, Math.round(u.maxHp * def.dot));
         u.hp = Math.max(0, u.hp - dmg);
         ev.push({ t: 'dot', uid: u.uid, dmg, id: st.id, hpAfter: u.hp });
-        if (u.hp <= 0) { ev.push({ t: 'die', uid: u.uid }); }
+        if (u.hp <= 0) { ev.push({ t: 'die', uid: u.uid }); this.maybeShapeshift(u, ev); }
       }
       if (def.hot) {
         const amt = Math.max(1, Math.round(u.maxHp * def.hot));
@@ -515,6 +515,29 @@ export class Combat {
       tgt.statuses = [];
       ev.push({ t: 'die', uid: tgt.uid });
       ev.push({ t: 'log', text: `${tgt.name} falls!` });
+      this.maybeShapeshift(tgt, ev);
+    }
+  }
+
+  // Shifter passive (Apex Mimic): when an enemy falls, a shifter takes
+  // its shape — learns one of its skills for the rest of the battle and
+  // gains the Shifted buff. "Becomes what it kills."
+  maybeShapeshift(dead, ev) {
+    if (dead.side !== 'enemy') return;
+    for (const u of this.units) {
+      if (u.side !== 'party' || u.hp <= 0) continue;
+      const p = HEROES[u.heroId] && HEROES[u.heroId].passive;
+      if (!p || !p.apexMimic) continue;
+      const pool = (dead.skills || []).filter(s => SKILLS[s] && s !== 'strike' && !u.skills.includes(s));
+      if (pool.length) {
+        const gained = pool[Math.floor(Math.random() * pool.length)];
+        u.skills.push(gained);
+        ev.push({ t: 'log', text: `${u.name} takes the shape of ${dead.name} — learns ${SKILLS[gained].name}!` });
+      } else {
+        ev.push({ t: 'log', text: `${u.name} takes the shape of ${dead.name}.` });
+      }
+      this.addStatus(u, 'shifted', 99, ev);
+      u.shiftForm = dead.model;
     }
   }
 

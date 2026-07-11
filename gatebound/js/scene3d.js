@@ -680,9 +680,10 @@ export class Stage {
 let portraitRenderer = null;
 const portraitCache = new Map();
 
-export async function makePortrait(kind, variant = null) {
+export async function makePortrait(kind, variant = null, opts = {}) {
   const key = kind + '|' + (variant || '');
-  if (portraitCache.has(key)) return portraitCache.get(key);
+  if (opts.cache === false) portraitCache.delete(key);      // force a fresh render (Forge preview)
+  else if (portraitCache.has(key)) return portraitCache.get(key);
 
   if (!portraitRenderer) {
     portraitRenderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, preserveDrawingBuffer: true });
@@ -705,6 +706,6 @@ export async function makePortrait(kind, variant = null) {
   cam.lookAt(0, 1.12, 0);
   portraitRenderer.render(scene, cam);
   const url = portraitRenderer.domElement.toDataURL('image/png');
-  portraitCache.set(key, url);
+  if (opts.cache !== false) portraitCache.set(key, url);
   return url;
 }
