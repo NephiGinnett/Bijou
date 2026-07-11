@@ -52,6 +52,7 @@ const CLASS_WORDS = [
   [/berserker|barbarian/, 'tank', 'Berserker'],
   [/cleric|priest(?:ess)?|nun|saint|chaplain/, 'healer', 'Cleric'],
   [/healer|medic|physician|apothecar|herbalist|alchemist/, 'healer', 'Healer'],
+  [/shapeshi|shape-shi|changeling|doppel|skinwalker|skin-walker|\bmimic\b|were(?:wolf|creature|beast)|wild ?shape|polymorph|lycanthrop/, 'shifter', 'Shifter'],
   [/druid|shaman/, 'healer', 'Druid'],
   [/necromancer|warlock|witch\b|occultist|hex/, 'caster', 'Warlock'],
   [/sorcer|wizard|mage|magus|arcanist|enchant|elementalist|spellblade/, 'caster', 'Mage'],
@@ -112,6 +113,15 @@ const ARCHETYPES = {
     weapon: 'book',
     passives: [
       { id: 'good_company', name: 'Good Company', desc: 'Fights feel lighter and pay better: +15% gold.', goldMult: 0.15 },
+    ],
+  },
+  shifter: {
+    base: { hp: 108, mp: 34, atk: 15, mag: 9, def: 9, res: 9, agi: 14, luk: 11 },
+    growth: { hp: 9, mp: 3, atk: 2.1, mag: 1.2, def: 1.2, res: 1.2, agi: 1.6, luk: 1.2 },
+    kit: { 1: 'feral_claw', 2: 'pounce_sh', 10: 'primal_roar', 20: 'apex_rend' },
+    weapon: 'claw',
+    passives: [
+      { id: 'apex_mimic', name: 'Apex Mimic', desc: 'When an enemy falls, take its shape — learn one of its skills for the rest of the battle and gain Shifted (+ATK/MAG/AGI).', apexMimic: true },
     ],
   },
 };
@@ -183,7 +193,8 @@ export function parseCharacter(input, salt = 0) {
     skin: shadowBody ? 0x1a1626 : (colorNear(text, SKIN_TONES, 'skin') ?? colorNear(text, SKIN_TONES, 'complexion') ?? pick([0xf6ddc0, 0xf2d4b0, 0xd8b088, 0xc8a878, 0x9a6a42], 2)),
     hair: /\bbald|hairless|no hair/.test(text) || shadowBody ? null
       : (colorNear(text, HAIR_COLORS, 'hair') ?? colorNear(text, HAIR_COLORS, 'locks') ?? colorNear(text, HAIR_COLORS, 'mane') ?? pick(Object.values(HAIR_COLORS), 3)),
-    hairstyle: /long[\w\s,-]{0,18}hair|hair (?:falls|down|past|to (?:her|his|the) waist)|waist-length|flowing[\w\s,-]{0,14}hair|braided|braid\b|ponytail/.test(text) ? 'long'
+    hairstyle: /\bbraid|war-braid|war braid|cornrow|dreadlock|plaited/.test(text) ? 'braided'
+      : /long[\w\s,-]{0,18}hair|hair (?:falls|down|past|to (?:her|his|the) waist)|waist-length|flowing[\w\s,-]{0,14}hair|ponytail/.test(text) ? 'long'
       : /curly|curls|ringlets|twin ?tails|twin-tails|drills/.test(text) ? 'curly'
       : /straight[\w\s,-]{0,14}hair|sleek[\w\s,-]{0,14}hair|bob\b|blunt/.test(text) ? 'straight' : 'short',
     eyeColor: colorNear(text, EYE_COLORS, 'eyes') ?? colorNear(text, EYE_COLORS, 'gaze') ?? 0x1c1c24,
@@ -200,8 +211,8 @@ export function parseCharacter(input, salt = 0) {
       : /\bcat|feline|neko/.test(text) && /tail/.test(text) ? 'cat'
       : /\btail\b/.test(text) ? 'plain' : null,
     horns: /\bhorns?\b|demon(?:ess)?|oni\b|draconic|dragonkin|tiefling|succubus|devil/.test(text),
-    wings: /\bwings?\b|angel(?:ic)?|valkyrie|harpy|fairy|seraph/.test(text),
-    halo: /\bhalo\b|angel(?:ic)?|seraph|saint(?:ly)?/.test(text),
+    wings: /\bwings?\b|\bangel(?:ic)?\b|valkyrie|harpy|\bfairy\b|\bseraph(?:im)?\b/.test(text),
+    halo: /\bhalo\b|\bangel(?:ic)?\b|\bseraph(?:im)?\b|\bsaint(?:ly)?\b/.test(text),
     mask: /\bmasked?\b|porcelain face|faceplate|visor/.test(text),
     ghost,
     // ---- newly supported body features ----
@@ -217,8 +228,18 @@ export function parseCharacter(input, salt = 0) {
     glasses: /glasses|spectacles|monocle/.test(text),
     antennae: /antennae|antenna\b/.test(text),
     feathers: /feathers|feathered|plumage/.test(text),
+    // ---- cosmetics from the Codex scan ----
+    markings: /tattoo|inked|body art|\bmarkings\b|daedric marking|runic (?:skin|marking)|ceremonial(?:ly)? scar|war ?paint|tribal mark/.test(text),
+    freckles: /freckl/.test(text),
+    piercings: /piercing|nose ring|septum|pierced (?:ears|nose|lip)|\bstuds\b/.test(text),
+    collar: /\bcollar\b|choker/.test(text),
+    antlers: /antlers|stag\b|\bdeer\b|elk\b|\bfaun-|forest spirit/.test(text),
     scale: /towering|giant(?:ess)?|massive|hulking|seven fe?e?t|colossal/.test(text) ? 1.18
       : /\btiny\b|petite|diminutive|small stature|halfling|gnome|fairy/.test(text) ? 0.85 : 1,
+    // ---- body build & chest (character differentiation) ----
+    build: /muscular|athletic build|broad[- ]shoulder|powerful build|warrior build|strapping|brawny|burly/.test(text) ? 'broad'
+      : /plump|thick|curvy|full[- ]figured|rubenesque|voluptuous|soft build|chubby|shapely|hourglass/.test(text) ? 'curvy'
+      : /slender|slim|lithe|willowy|waifish|lean\b|slight build/.test(text) ? 'slim' : 'average',
     outfitStyle: /armor|armour|plate|chain ?mail|breastplate/.test(text) ? 'armor'
       : /\brobes?\b|vestment|habit\b/.test(text) ? 'robe'
       : /\bdress\b|\bgown\b|skirt/.test(text) ? 'dress' : null,
@@ -231,6 +252,15 @@ export function parseCharacter(input, salt = 0) {
   spec.accent = spec.hair ?? spec.eyeColor;
   if (spec.ghost || shadowBody) spec.eyeGlow = true;
   if (spec.scaled && !/\bskin\b|complexion/.test(text)) spec.skin = 0x6a9a5a; // scaly green default
+
+  // body chest sizing (0 none → 3 large) for character differentiation
+  const femalePresenting = /gender:\s*female|female[- ]presenting|\bshe\b|\bher\b|\bwoman\b|\bgirl\b|\bfemale\b|\blady\b|mistress|sorceress|enchantress|priestess|matron|\bqueen\b|princess|maiden|\bwife\b|\bmother\b|daughter|\bsister\b|\bnun\b/.test(text);
+  const malePresenting = /gender:\s*male|\bhe\b|\bhis\b|\bhim\b|\bman\b|\bmale\b|\bboy\b|\blord\b|\bking\b|\bprince\b|\bfather\b|\bson\b|\bbrother\b|\bsir\b/.test(text);
+  if (/flat[- ]?chest|small (?:breasts|bust|chest)|modest (?:bust|chest)|a-cup|boyish figure|petite (?:bust|chest)/.test(text)) spec.chest = 1;
+  else if (/busty|buxom|voluptuous|large (?:breasts|bust|chest)|full (?:breasts|bust)|ample (?:bust|chest|breasts)|big (?:breasts|bust)|heavy (?:breasts|bust)|generous (?:bust|chest|figure)|huge (?:breasts|bust)|dd?-?cup/.test(text)) spec.chest = 3;
+  else if (/curvy|shapely|hourglass|full[- ]figured|womanly|rubenesque/.test(text)) spec.chest = 2;
+  else spec.chest = (femalePresenting && !malePresenting) ? 2 : (malePresenting ? 0 : 1);
+  if (spec.build === 'curvy' && spec.chest < 2) spec.chest = 2;
 
   // themed skill line from the description
   const theme = themeSkillFor(text);
@@ -247,6 +277,9 @@ export function parseCharacter(input, salt = 0) {
     spec.scaled && 'scaled skin', spec.extraArms && 'extra arms', spec.thirdEye && 'third eye',
     spec.crown && 'crown', spec.cape && 'cape', spec.scar && 'scar', spec.eyepatch && 'eyepatch',
     spec.glasses && 'glasses', spec.antennae && 'antennae', spec.feathers && 'feathers',
+    spec.markings && 'markings', spec.freckles && 'freckles', spec.piercings && 'piercings',
+    spec.collar && 'collar', spec.antlers && 'antlers', spec.hairstyle === 'braided' && 'braids',
+    spec.build !== 'average' && `${spec.build} build`,
     spec.mask && 'mask', spec.ghost && 'spectral', shadowBody && 'shadow-form',
     spec.scale > 1 && 'towering', spec.scale < 1 && 'small',
   ].filter(Boolean);
@@ -267,7 +300,6 @@ export function parseCharacter(input, salt = 0) {
 const UNSUPPORTED_FEATURES = [
   { re: /slime|ooze|gelatinous|goo\b/, label: 'slime / ooze body' },
   { re: /tentacle/, label: 'tentacles' },
-  { re: /tattoo|inked|body art|glowing (?:marking|rune|vein)|runic (?:skin|marking)/, label: 'tattoos / markings' },
   { re: /beard|mustache|moustache|stubble|goatee/, label: 'facial hair' },
   { re: /cyber|mechanical|prosthetic|automaton|clockwork|robotic|android/, label: 'mechanical / prosthetic parts' },
   { re: /centaur|\btaur\b|horse (?:body|lower)/, label: 'full centaur body' },
@@ -280,7 +312,6 @@ const UNSUPPORTED_FEATURES = [
 // lines are built now — see SUPPORTED_THEMES).
 const UNSUPPORTED_SKILL_THEMES = [
   { re: /summon|conjure|familiar|raise (?:the )?dead|necromanc/, label: 'summoning' },
-  { re: /shapeshi|transform|polymorph|were(?:wolf|creature)/, label: 'shapeshifting' },
   { re: /music|song|sing\b|melody|\bbard\b/, label: 'song / performance' },
   { re: /trap|snare|\bbomb|explosive|alchemy/, label: 'traps / alchemy' },
 ];
@@ -327,7 +358,7 @@ function themedKit(theme, role, baseKit) {
 // hero assembly & registration
 // ------------------------------------------------------------------
 
-const ROLE_COLORS = { tank: '#9aa2ac', healer: '#8fce7a', caster: '#b08cff', striker: '#e8c04a', support: '#d8a04a' };
+const ROLE_COLORS = { tank: '#9aa2ac', healer: '#8fce7a', caster: '#b08cff', striker: '#e8c04a', support: '#d8a04a', shifter: '#c98adf' };
 
 export function forgeHero(parsed, S) {
   const { card, role, cls, spec, kit, passive } = parsed;

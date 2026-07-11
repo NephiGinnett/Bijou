@@ -317,6 +317,7 @@ export const STATUSES = {
   vulnerable:{ name: 'Exposed',    icon: '⊗', kind: 'debuff', takenUp: 0.25 },
   enrage:    { name: 'Enraged',    icon: '🔺', kind: 'buff',   mods: { atk: 0.4, def: -0.15 } },
   blessed:   { name: 'Blessed',    icon: '✚', kind: 'buff',   hot: 0.12 },
+  shifted:   { name: 'Shifted',    icon: '⟳', kind: 'buff',   mods: { atk: 0.15, mag: 0.15, agi: 0.1 } },
 };
 
 // ------------------------------------------------------------
@@ -437,6 +438,12 @@ export const SKILLS = {
   th_curse1: { name: 'Hex', type: 'mag', power: 0.7, mp: 8, target: 'enemy', anim: 'cast', apply: [{ to: 'target', id: 'atk_down', turns: 2 }, { to: 'target', id: 'res_down', turns: 2 }], desc: 'A withering hex — Weakens and Hexes.' },
   th_curse2: { name: 'Doom', type: 'mag', power: 1.3, mp: 18, target: 'enemy', anim: 'cast', apply: { to: 'target', id: 'vulnerable', turns: 2, chance: 0.8 }, desc: 'Marks a soul for ruin. Leaves them Exposed.' },
   th_curse3: { name: 'Malediction', type: 'mag', power: 0.85, mp: 24, target: 'all_enemies', anim: 'cast', apply: { to: 'target', id: 'atk_down', turns: 2, chance: 0.7 }, desc: 'A curse spoken over the whole field. Weakens all.' },
+
+  // ---- Shifter (shapeshifter class) ----
+  feral_claw:  { name: 'Feral Claw', type: 'phys', power: 1.15, mp: 5, target: 'enemy', anim: 'melee', apply: { to: 'target', id: 'bleed', turns: 2, chance: 0.5 }, desc: 'A raking strike. May cause Bleeding.' },
+  pounce_sh:   { name: 'Pounce', type: 'phys', power: 1.35, mp: 10, target: 'enemy', anim: 'dash', apply: { to: 'target', id: 'agi_down', turns: 2, chance: 0.7 }, desc: 'Leap on prey; slows it.' },
+  primal_roar: { name: 'Primal Roar', type: 'support', mp: 12, target: 'self', anim: 'buff', apply: { to: 'target', id: 'enrage', turns: 3 }, desc: 'A beast\'s challenge. Enrages the self.' },
+  apex_rend:   { name: 'Apex Rend', type: 'phys', power: 1.8, mp: 20, target: 'enemy', anim: 'melee', apply: { to: 'target', id: 'bleed', turns: 3, chance: 0.9 }, desc: 'The predator\'s finisher. Heavy Bleed.' },
 
   // Enemies
   e_bite:        { name: 'Bite', type: 'phys', power: 1.0, mp: 0, target: 'enemy', anim: 'melee' },
@@ -715,6 +722,7 @@ export const ROLE_INFO = {
   caster:  { name: 'Arcanist', icon: '☄', bonus: 0.08, desc: 'someone to erase the problem rooms' },
   striker: { name: 'Striker',  icon: '⚔', bonus: 0.08, desc: 'someone to finish fights fast' },
   support: { name: 'Support',  icon: '❀', bonus: 0.06, desc: 'someone to keep spirits up' },
+  shifter: { name: 'Shifter',  icon: '⟳', bonus: 0.09, desc: 'someone who becomes what it kills' },
 };
 
 // Rough level a party member should be to face each rank evenly.
