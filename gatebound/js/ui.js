@@ -8,7 +8,7 @@ import { Combat } from './combat.js';
 import { Stage, makePortrait } from './scene3d.js';
 import { EVENTS, SPEAKERS, DUNGEON_EVENTS, pickGuildEvent, pickCampEvent, endingFor, weddingFor, pickRumorEvent, rumorLine } from './story.js';
 import { openSanctum } from './sanctum.js';
-import { parseCharacter, summonHero, releaseHero, restoreCustomHeroes, registerCustomHero, setVisualHook } from './forge.js';
+import { parseCharacter, summonHero, releaseHero, restoreCustomHeroes, registerCustomHero, setVisualHook, listCards } from './forge.js';
 import { registerCustomActor, ACTOR_ACCENTS } from './actors3d.js';
 import * as AU from './audio.js';
 
@@ -1376,10 +1376,13 @@ async function forgeScreen(keepInput) {
   const savedRows = saved.length ? saved.map(d => {
     const inRoster = S.recruited.includes(d.id);
     const isAway = away.has(d.id);
+    const gp = d.gaps || { features: [], skills: [] };
+    const gapNote = (gp.features.length || gp.skills.length)
+      ? `<p class="sm-text forge-gap-note">⚠ to tweak: ${[...gp.features, ...gp.skills].join(', ')}</p>` : '';
     return `<div class="shop-row">
       <div>${portraitImg(d.id)}</div>
       <div style="flex:1"><b style="color:${d.color}">${esc(d.name)}</b> <small class="muted">${esc(d.cls)} · ${ROLE_INFO[d.role]?.icon || ''} ${ROLE_INFO[d.role]?.name || d.role}</small>
-        <p class="muted sm-text">${inRoster ? (isAway ? 'in the field (dispatched)' : 'guild member') : 'awaiting summons (kept through cycles)'}</p></div>
+        <p class="muted sm-text">${inRoster ? (isAway ? 'in the field (dispatched)' : 'guild member') : 'awaiting summons (kept through cycles)'}</p>${gapNote}</div>
       ${inRoster
         ? `<button class="btn sm danger f-release ${isAway ? 'disabled' : ''}" data-id="${d.id}" title="${isAway ? 'Cannot release while dispatched.' : 'Remove from the guild. Their gear returns to your bag; the forged soul stays saved here.'}">release</button>`
         : `<button class="btn sm f-resummon" data-id="${d.id}">summon</button> <button class="btn sm ghost danger f-forget" data-id="${d.id}" title="Delete this forged soul permanently.">forget</button>`}
@@ -1392,15 +1395,23 @@ async function forgeScreen(keepInput) {
     const p = forgeParsed;
     const src = await forgePreviewPortrait(p.spec);
     const kitNames = Object.entries(p.kit).map(([lv, id]) => `${SKILLS[id].name} <small class="muted">(Lv ${lv})</small>`).join(' · ');
+    const gaps = p.gaps || { features: [], skills: [] };
+    const gapHtml = (gaps.features.length || gaps.skills.length) ? `
+      <div class="forge-gaps">
+        <b class="sm-text">⚠ The Forge noticed these but can't build them yet — tweak the text, or note them for later:</b>
+        ${gaps.features.length ? `<p class="sm-text"><b>Body:</b> ${gaps.features.join(', ')}</p>` : ''}
+        ${gaps.skills.length ? `<p class="sm-text"><b>Themed skills:</b> ${gaps.skills.join(', ')} <span class="muted">(kit is a generic ${ROLE_INFO[p.role]?.name || p.role} set)</span></p>` : ''}
+      </div>` : '<p class="sm-text muted">✓ The Forge could represent everything it read.</p>';
     previewHtml = `
       <div class="forge-preview">
         <img class="portrait big" src="${src}" alt="">
         <div>
           <b style="font-size:1.05rem">${esc(p.card.name || 'Stranger')}</b> <small class="muted">${esc(p.cls)} · ${ROLE_INFO[p.role]?.icon || ''} ${ROLE_INFO[p.role]?.name}</small>
-          ${p.features.length ? `<p class="sm-text gold">◆ ${p.features.join(' · ')}</p>` : '<p class="sm-text muted">no unusual features read</p>'}
+          ${p.features.length ? `<p class="sm-text gold">◆ built: ${p.features.join(' · ')}</p>` : '<p class="sm-text muted">no unusual features read</p>'}
           <p class="sm-text muted"><b>Kit:</b> ${kitNames}</p>
           <p class="sm-text muted"><b>Passive:</b> ${esc(p.passive.name)} — ${esc(p.passive.desc)}</p>
           <p class="sm-text muted"><b>Joins at:</b> Lv ${Math.max(20, (S.heroes.player?.level || 20) - 2)}</p>
+          ${gapHtml}
           <div class="row gap" style="margin-top:8px">
             <button class="btn primary" id="f-summon">Summon to the guild</button>
             <button class="btn sm" id="f-reroll" title="Keep the description; reshuffle the ambiguous parts of the look.">⟲ reshuffle look</button>
@@ -1412,14 +1423,18 @@ async function forgeScreen(keepInput) {
   screen(`
     <div class="panel map-panel">
       <div class="row spread"><h2>⚗ The Character Forge</h2><button class="btn ghost" id="f-back">← Guild</button></div>
-      <p class="muted">Feed the Forge a description and it reads out a soul: look, class, kit. Codex cards work as-is; so does plain prose. Rabbit ears, horns, wings, masks, shades and spirits — the Forge renders what it reads.</p>
+      <p class="muted">Feed the Forge a character — upload a JSON card, paste one, or just describe them in words. Codex cards work as-is. Rabbit ears, horns, wings, masks, shades and spirits — the Forge renders what it reads, and tells you what it can't.</p>
       <div class="shop-cols">
         <div>
-          <h3>Describe a soul</h3>
-          <textarea id="f-input" rows="7" placeholder='{"name":"...","description":"..."}  — or just describe them in words'></textarea>
-          <div class="row gap" style="margin-top:6px">
-            <button class="btn" id="f-read">🜂 Read the description</button>
+          <h3>Summon a soul</h3>
+          <div class="row gap wrap" style="margin-bottom:6px">
+            <label class="btn" id="f-upload-label">⬆ Upload JSON<input type="file" id="f-file" accept=".json,application/json,.png" hidden></label>
             <button class="btn sm ghost" id="f-scan" title="Scan this browser's Warlock's Codex storage (wc_chars / sanctum_chars) for characters.">scan Codex storage</button>
+          </div>
+          <div id="f-cards"></div>
+          <textarea id="f-input" rows="6" placeholder='...or paste a JSON card / describe them in words'></textarea>
+          <div class="row gap" style="margin-top:6px">
+            <button class="btn" id="f-read">🜂 Read it</button>
           </div>
           <div id="f-scan-out"></div>
           <div id="f-preview">${previewHtml}</div>
@@ -1431,16 +1446,57 @@ async function forgeScreen(keepInput) {
   const input = $('#f-input');
   if (keepInput != null) input.value = keepInput;
 
-  $('#f-back').onclick = () => { forgeParsed = null; guild(); };
-  $('#f-read').onclick = () => {
+  // Read a JSON blob; if it holds multiple named characters, offer a picker.
+  const ingest = (text, sourceLabel) => {
+    const cards = listCards(text);
+    const cardsBox = $('#f-cards');
+    if (cards.length > 1) {
+      cardsBox.innerHTML = `<p class="sm-text muted">${sourceLabel} holds ${cards.length} characters — pick one:</p><div class="row gap wrap">` +
+        cards.map(c => `<button class="btn sm f-pick" data-i="${c.index}">${esc(c.name)}</button>`).join('') + '</div>';
+      cardsBox._cards = cards;
+      cardsBox.querySelectorAll('.f-pick').forEach(b => b.onclick = () => {
+        const c = cards[Number(b.dataset.i)];
+        input.value = JSON.stringify(c.card, null, 1);
+        AU.sfx('ui');
+        readInput();
+      });
+    } else {
+      cardsBox.innerHTML = '';
+      input.value = cards.length === 1 ? JSON.stringify(cards[0].card, null, 1) : text;
+      readInput();
+    }
+  };
+
+  const readInput = () => {
     const v = input.value.trim();
-    if (!v) { toast('The Forge needs words to read.'); return; }
+    if (!v) { toast('The Forge needs a character to read.'); return; }
     forgeSalt = 0;
     try { forgeParsed = parseCharacter(v, forgeSalt); } catch (e) { toast('The Forge could not read that: ' + e.message, 'danger'); return; }
-    if (!forgeParsed.card.name) toast('No name found — the Forge will call them "Stranger" unless the text names them.');
+    if (!forgeParsed.card.name) toast('No name found — the Forge will call them "Stranger" unless the card/text names them.');
     AU.sfx('magic');
     forgeScreen(v);
   };
+
+  $('#f-back').onclick = () => { forgeParsed = null; guild(); };
+  $('#f-file').onchange = (e) => {
+    const file = e.target.files && e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      let text = String(reader.result || '');
+      // tavern PNG cards embed JSON in a base64 'chara' tEXt chunk
+      if (file.name.toLowerCase().endsWith('.png')) {
+        const m = text.match(/chara[\x00-\x20]*([A-Za-z0-9+/=]{40,})/);
+        if (m) { try { text = decodeURIComponent(escape(atob(m[1]))); } catch (err) { /* fall through */ } }
+      }
+      if (!listCards(text).length && !text.trim().startsWith('{')) {
+        toast('That file didn\'t contain a readable character card.', 'danger'); return;
+      }
+      ingest(text, file.name);
+    };
+    reader.readAsText(file);
+  };
+  $('#f-read').onclick = () => readInput();
   const rr = $('#f-reroll');
   if (rr) rr.onclick = () => {
     forgeParsed = parseCharacter(input.value.trim(), ++forgeSalt);
@@ -1478,7 +1534,7 @@ async function forgeScreen(keepInput) {
     out.querySelectorAll('.f-card').forEach(b => b.onclick = () => {
       input.value = JSON.stringify(found[Number(b.dataset.i)], null, 1);
       AU.sfx('ui');
-      toast('Card loaded — now Read the description.');
+      readInput();
     });
   };
   document.querySelectorAll('.f-release:not(.disabled)').forEach(b => b.onclick = () => {
