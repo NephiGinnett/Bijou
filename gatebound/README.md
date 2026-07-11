@@ -104,10 +104,12 @@ guildmates. Upload a JSON card, paste a Warlock's Codex / tavern-card, or
 just describe them in prose — the Forge reads hair/skin/eye colors,
 hairstyles (incl. braids), **body build and chest size** (for character
 differentiation), and features: elf/rabbit/cat/fox/wolf ears; horns and
-**antlers**; fox/dragon/devil/cat/wolf tails; serpent or hooved lower
-bodies; scaled skin; extra arms; a third eye; wings; halos; crowns;
-capes; masks; **markings/tattoos, freckles, piercings, collars**; scars,
-eyepatches, glasses, antennae, feathers; spectral bodies, shadow-forms,
+**antlers**; fox/dragon/devil/cat/wolf tails; **serpent, hooved,
+centaur, or mermaid lower bodies**; scaled skin; extra arms; a third
+eye; wings; halos; crowns; capes; masks; **markings/tattoos, freckles,
+piercings, collars**; scars, eyepatches, glasses, antennae, feathers;
+**slime/ooze bodies, tentacles, mechanical/prosthetic parts, fins &
+gills, full fur, facial hair, canes**; spectral bodies, shadow-forms,
 unusual sizes. It infers a class and role — including a **Shifter**
 class (a shapeshifter whose *Apex Mimic* passive lets it take the shape
 of any enemy it fells, learning one of that creature's skills for the

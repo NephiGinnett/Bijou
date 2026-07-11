@@ -217,6 +217,8 @@ export function parseCharacter(input, salt = 0) {
     ghost,
     // ---- newly supported body features ----
     lowerBody: /naga|lamia|serpent(?:ine)? (?:body|tail|lower)|snake (?:body|tail)|snake-bodied/.test(text) ? 'serpent'
+      : /centaur|\btaur\b|horse (?:body|lower|legs)|equine lower/.test(text) ? 'centaur'
+      : /mermaid|merfolk|merman|siren\b|fish tail|fishtail|fish-tailed/.test(text) ? 'fishtail'
       : /satyr|faun\b|hooves|hoofed|goat (?:legs|-legged)|digitigrade/.test(text) ? 'hooves' : null,
     scaled: /\bscaled\b|\bscales\b|scaly|reptilian|lizard(?:folk|man|kin)?|dragonkin|dragonborn|draconic/.test(text),
     extraArms: /four[- ]?arm|six[- ]?arm|extra arms|multiple arms|many arms|multi-armed/.test(text),
@@ -228,6 +230,14 @@ export function parseCharacter(input, salt = 0) {
     glasses: /glasses|spectacles|monocle/.test(text),
     antennae: /antennae|antenna\b/.test(text),
     feathers: /feathers|feathered|plumage/.test(text),
+    // ---- exotic bodies ----
+    slime: /\bslime\b|\booze\b|gelatinous|\bgoo\b|amorphous|made of (?:slime|jelly|water)|liquid body/.test(text),
+    tentacles: /tentacle|cephalopod|octopus|squid|kraken|eldritch appendage/.test(text),
+    mechanical: /cyber|mechanical (?:arm|leg|limb|body|parts)|prosthetic|automaton|clockwork|robotic|android|cybernetic|mechanized|augmetic|metal limb/.test(text),
+    fins: /\bfins?\b|\bgills\b|aquatic|finned/.test(text),
+    furry: /fur-covered|covered in fur|full[- ]?fur|furred|fluffy body|beast-?kin|anthro/.test(text),
+    facialHair: /\bbeard|mustache|moustache|goatee|stubble|bearded/.test(text),
+    cane: /\bcane\b|walking stick|walking-stick|uses a staff to walk/.test(text),
     // ---- cosmetics from the Codex scan ----
     markings: /tattoo|inked|body art|\bmarkings\b|daedric marking|runic (?:skin|marking)|ceremonial(?:ly)? scar|war ?paint|tribal mark/.test(text),
     freckles: /freckl/.test(text),
@@ -251,6 +261,8 @@ export function parseCharacter(input, salt = 0) {
   spec.weapon = ARCHETYPES[role].weapon;
   spec.accent = spec.hair ?? spec.eyeColor;
   if (spec.ghost || shadowBody) spec.eyeGlow = true;
+  // a dedicated lower body supplies its own tail — drop the redundant one
+  if (['serpent', 'fishtail', 'centaur'].includes(spec.lowerBody)) spec.tail = null;
   if (spec.scaled && !/\bskin\b|complexion/.test(text)) spec.skin = 0x6a9a5a; // scaly green default
 
   // body chest sizing (0 none → 3 large) for character differentiation
@@ -274,11 +286,14 @@ export function parseCharacter(input, salt = 0) {
     spec.elf && 'elf ears', spec.ears && spec.ears + ' ears', spec.horns && 'horns',
     spec.wings && 'wings', spec.halo && 'halo', spec.tail && tailLabel[spec.tail],
     spec.lowerBody === 'serpent' && 'serpent lower body', spec.lowerBody === 'hooves' && 'hooved legs',
+    spec.lowerBody === 'centaur' && 'centaur body', spec.lowerBody === 'fishtail' && 'mermaid tail',
     spec.scaled && 'scaled skin', spec.extraArms && 'extra arms', spec.thirdEye && 'third eye',
     spec.crown && 'crown', spec.cape && 'cape', spec.scar && 'scar', spec.eyepatch && 'eyepatch',
     spec.glasses && 'glasses', spec.antennae && 'antennae', spec.feathers && 'feathers',
     spec.markings && 'markings', spec.freckles && 'freckles', spec.piercings && 'piercings',
     spec.collar && 'collar', spec.antlers && 'antlers', spec.hairstyle === 'braided' && 'braids',
+    spec.slime && 'slime body', spec.tentacles && 'tentacles', spec.mechanical && 'mechanical parts',
+    spec.fins && 'fins/gills', spec.furry && 'fur', spec.facialHair && 'facial hair', spec.cane && 'cane',
     spec.build !== 'average' && `${spec.build} build`,
     spec.mask && 'mask', spec.ghost && 'spectral', shadowBody && 'shadow-form',
     spec.scale > 1 && 'towering', spec.scale < 1 && 'small',
@@ -294,18 +309,13 @@ export function parseCharacter(input, salt = 0) {
 // render or build, so the player knows what to tweak (or ask for).
 // ------------------------------------------------------------------
 
-// Body/appearance traits STILL without a builder. (Serpent/hooved lower
-// bodies, scales, extra arms, third eye, crown, cape, scar, eyepatch,
-// glasses, antennae, feathers, and tail variants are built now.)
+// Body/appearance traits STILL without a builder. The Forge now renders
+// the vast majority of what it reads; only the genuinely-structural
+// remainders live here.
 const UNSUPPORTED_FEATURES = [
-  { re: /slime|ooze|gelatinous|goo\b/, label: 'slime / ooze body' },
-  { re: /tentacle/, label: 'tentacles' },
-  { re: /beard|mustache|moustache|stubble|goatee/, label: 'facial hair' },
-  { re: /cyber|mechanical|prosthetic|automaton|clockwork|robotic|android/, label: 'mechanical / prosthetic parts' },
-  { re: /centaur|\btaur\b|horse (?:body|lower)/, label: 'full centaur body' },
-  { re: /gills|fins\b|mermaid|merfolk|siren\b/, label: 'aquatic features (fins / gills)' },
-  { re: /fur-covered|covered in fur|full fur|furred body/, label: 'full fur coat' },
-  { re: /wheelchair|peg leg|missing (?:an? )?(?:arm|leg|hand)/, label: 'mobility aid / missing limb' },
+  { re: /wheelchair|peg leg|missing (?:an? )?(?:arm|leg|hand)|amputee/, label: 'missing limb' },
+  { re: /multiple heads|two heads|hydra/, label: 'multiple heads' },
+  { re: /swarm of|hive body|made of (?:insects|bees|rats)/, label: 'swarm body' },
 ];
 
 // Skill themes the generic kit still doesn't capture (elemental/status
