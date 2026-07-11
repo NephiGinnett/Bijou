@@ -101,7 +101,12 @@ prevailing tone for future content.
 
 **⚗ Forge** in the guild hall turns character descriptions into playable
 guildmates. Upload a JSON card, paste a Warlock's Codex / tavern-card, or
-just describe them in prose — the Forge reads hair/skin/eye colors,
+just describe them in prose. It reads **physical traits from how the
+character looks, not from their backstory** — an explicit `appearance`
+field or "Appearance:" section wins, and otherwise it keeps the
+self-describing sentences and ignores creatures the character merely
+*fought* (so a wood elf who "battled a slime" stays a wood elf, not a
+slime). From that scope it reads hair/skin/eye colors,
 hairstyles (incl. braids), **body build and chest size** (for character
 differentiation), and features: elf/rabbit/cat/fox/wolf ears; horns and
 **antlers**; fox/dragon/devil/cat/wolf tails; **serpent, hooved,
