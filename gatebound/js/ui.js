@@ -141,6 +141,8 @@ export function playEvent(ev) {
         const st = steps[idx];
         // intimacy variant lines: show only the tier matching the player's setting
         if (st.spice && st.spice !== (S.settings.spice || 'gentle')) { idx++; continue; }
+        // conditional lines (e.g. NG+ pace-aware variants)
+        if (st.cond && !st.cond(S)) { idx++; continue; }
         if (st.flag) { S.flags[st.flag] = true; idx++; continue; }
         if (st.give) {
           if (st.give.gold) { S.gold += st.give.gold; toast(`+${st.give.gold} gold`, 'gold'); }
@@ -1060,10 +1062,12 @@ function promptCommand(u, c) {
     };
 
     const mainMenu = () => {
-      const skillBtns = opts.skills.map(sk =>
-        `<button class="btn skill ${sk.usable ? '' : 'disabled'}" data-id="${sk.id}" title="${esc(sk.desc)}${sk.rank ? ` (mastery ${'★'.repeat(sk.rank)})` : ''}">
+      const skillBtns = opts.skills.map(sk => {
+        const mtag = u.heroId ? ` — ${masteryTagline(u.heroId, sk.id)}` : '';
+        return `<button class="btn skill ${sk.usable ? '' : 'disabled'}" data-id="${sk.id}" title="${esc(sk.desc)}${esc(mtag)}">
           ${esc(sk.name)}${sk.rank ? `<small class="mastery">${'★'.repeat(sk.rank)}</small>` : ''}${sk.mp ? `<small>${sk.mp} MP</small>` : '<small>—</small>'}${sk.cd ? `<small class="danger">CD ${sk.cd}</small>` : ''}${sk.free ? '<small class="free-tag">FREE</small>' : ''}
-        </button>`).join('');
+        </button>`;
+      }).join('');
       area.innerHTML = `
         <div class="cmd-title" style="color:${SPEAKERS[u.uid]?.color || '#fff'}">${esc(u.name)}'s turn <small class="muted">MP ${u.mp}/${u.maxMp}</small></div>
         <div class="cmd-list">${skillBtns}</div>
@@ -1177,6 +1181,23 @@ async function results(result) {
 // party sheet
 // ------------------------------------------------------------------
 
+// Human-readable mastery progression for a skill on a hero.
+// Explains what the stars actually do, and the current/next step.
+function masteryTagline(heroId, skillId) {
+  const rank = ST.masteryRank(S, heroId, skillId);
+  const uses = ST.masteryUses(S, heroId, skillId);
+  const baseMp = SKILLS[skillId].mp || 0;
+  const parts = [];
+  if (rank > 0) parts.push(`now +${rank * 5}% power`);
+  if (rank >= 5) parts.push(baseMp ? `−20% MP (${baseMp}→${Math.ceil(baseMp * 0.8)})` : 'mastered');
+  else {
+    const nextAt = ST.MASTERY_THRESHOLDS[rank + 1];
+    const nextIsMax = rank + 1 === 5;
+    parts.push(`next ★ at ${nextAt} uses (${uses}/${nextAt})${nextIsMax && baseMp ? ' — adds −20% MP' : ''}`);
+  }
+  return `✦ Mastery: +5% power per ★ · −20% MP at ★★★★★ — ${parts.join(', ')}`;
+}
+
 function party(sel = 'player') {
   ST.ensureYuki(S);
   ensureYukiPortrait();
@@ -1200,7 +1221,7 @@ function party(sel = 'player') {
     const autoBtn = isAuto ? `<button class="btn sm auto-set on" data-skill="${id}" title="This is ${sel === 'player' ? esc(S.name) : def.name}'s auto-battle skill. Tap to clear (auto falls back to Strike).">★ auto</button>`
       : rank >= 3 ? `<button class="btn sm ghost auto-set" data-skill="${id}" title="Use this skill in auto-battle when possible.">set auto</button>`
       : '<small class="muted" title="Reach ★★★ mastery to set as the auto-battle skill.">auto at ★★★</small>';
-    return `<div class="skill-row"><b>${sk.name}</b><small class="mastery" title="${mTip}">${rank ? '★'.repeat(rank) : '☆'}</small><small>${sk.mp ? sk.mp + ' MP' : '—'}</small>${autoBtn}<p>${sk.desc || ''}</p></div>`;
+    return `<div class="skill-row"><b>${sk.name}</b><small class="mastery" title="${mTip}">${rank ? '★'.repeat(rank) : '☆'}</small><small>${sk.mp ? sk.mp + ' MP' : '—'}</small>${autoBtn}<p>${sk.desc || ''}</p><p class="mastery-tag">${masteryTagline(sel, id)}</p></div>`;
   }).join('');
   const gearRows = ['weapon', 'armor', 'charm'].map(slot => {
     const g = h.gear[slot];

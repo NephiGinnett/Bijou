@@ -112,6 +112,16 @@ can be re-summoned, released, or forgotten at the Forge. If the Codex
 is hosted on the same domain, **scan Codex storage** imports its
 characters directly.
 
+**Companion trials** (adapted from the Codex): every forged soul carries
+a heart track like the girls, and a **generated four-scene bond arc**
+built from an *inner theme* the Forge reads in their description
+(loneliness, duty, pride, timidity, atonement, debt, curiosity, grief,
+or belonging). The arc runs arrival → confession → a System-flagged
+**inner trial** → devotion, with the same Wholesome/Domineering/Rejection
+tone choices and intimacy variants as the main cast. Fighting alongside
+them in cleared gates deepens the bond between scenes, and their current
+hearts feed into their Sanctum chats.
+
 ### The Sanctum (optional AI chat)
 
 **✉ Sanctum** in the guild hall opens a chat room with any party member

@@ -261,6 +261,7 @@ E.promo_D = {
     { s: 'guild', t: 'By witness of clears recorded: {name}, F-rank... is F-rank no longer. D-Class. Fastest promotion this office has stamped in nine years.' },
     { s: 'erin', t: 'NINE YEARS. Did you hear— {name}, that\'s— okay, drinks are on Shiro!' },
     { s: 'shiro', t: 'They are not. But the sentiment stands. Your growth curve is... statistically objectionable.' },
+    { s: 'shiro', cond: S => (S.legacy && S.legacy.cycle) > 0, t: '...No. "Objectionable" undersells it. I have watched you do this before — I only lack the memory of it. The arithmetic has the shape of a thing repeating, and repeating faster.' },
     { s: 'sakura', t: '(whispering) I told you. I told you both. I watched him in the gate — the monsters make sense to him.' },
     { s: 'sys', t: '[ Rank D achieved. The System is... mildly satisfied. Deeper gates await. ]' },
   ],
@@ -269,7 +270,8 @@ E.promo_C = {
   id: 'promo_C', where: 'auto', once: true, priority: 90,
   steps: [
     { s: 'guild', t: 'C-Class. At this pace, {name}, I\'m to inform you the assessment board would like to "study you." I told them to get in line.' },
-    { s: 'shiro', t: 'A month ago you were escorted baggage. I have rerun the arithmetic eleven times. It does not balance. People do not grow like this.' },
+    { s: 'shiro', cond: S => !(S.legacy && S.legacy.cycle), t: 'Days ago you were escorted baggage. I have rerun the arithmetic more times than I will admit to. It does not balance. People do not grow like this — in weeks, let alone this.' },
+    { s: 'shiro', cond: S => (S.legacy && S.legacy.cycle) > 0, t: 'Days. It took days. The System does not merely accelerate you anymore — it accelerates the acceleration. I have stopped trying to make the arithmetic balance and started simply enjoying watching it break.' },
     { s: 'player', t: 'And yet.' },
     { s: 'shiro', t: '...And yet. (Her eyes narrow — not with suspicion this time. With appetite. A puzzle worth solving.)' },
     { s: 'sys', t: '[ Rank C achieved. The measured pace of your world begins to bore the System. Faster. ]' },
@@ -292,6 +294,7 @@ E.promo_A = {
     { s: 'erin', t: 'Equal footing. Huh. So that\'s what it looks like.' },
     { s: 'shiro', t: 'It looks expensive. The betting pool I ran against this outcome certainly was.' },
     { s: 'sakura', t: 'We\'re... we\'re the same rank now. All four of us. (Her smile could power the guild\'s lamps for a week.)' },
+    { s: 'shiro', cond: S => (S.legacy && S.legacy.cycle) > 0, t: 'Equal footing, reached before the ink on your F-license was dry. I have kept a great many records in my life. This is the first one I suspect I have kept more than once.' },
     { s: 'sys', t: '[ Rank A achieved. One letter remains. The Monarch\'s door will open soon. Sharpen. ]' },
   ],
 };

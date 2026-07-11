@@ -598,6 +598,10 @@ export function endRun(S, outcome) {
   for (const id of run.partyIds) {
     if (id === 'yuki' && !S.flags.yuki_member) continue; // guest Yuki earns no XP
     result.levelUps.push(...gainXp(S, id, result.xp));
+    // forged companions: fighting together deepens trust between their scenes
+    if (outcome === 'clear' && HEROES[id] && HEROES[id].custom && Math.random() < 0.4) {
+      addBond(S, id, 1);
+    }
   }
   for (const g of result.gear) S.gearBag.push(g);
   for (const [it, n] of Object.entries(result.items)) {

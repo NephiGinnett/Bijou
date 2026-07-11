@@ -8,7 +8,7 @@
 // ============================================================
 
 import { HEROES } from './data.js';
-import { SPEAKERS } from './story.js';
+import { SPEAKERS, EVENTS } from './story.js';
 
 // Visual registration is injected by the UI layer (actors3d imports
 // three.js, which keeps this module headless-testable).
@@ -256,12 +256,184 @@ export function forgeHero(parsed, S) {
 export function registerCustomHero(def) {
   HEROES[def.id] = def;
   SPEAKERS[def.id] = { name: def.name, color: def.color };
+  registerBondArc(def);
   if (registerVisuals) registerVisuals(def);
+}
+
+// ------------------------------------------------------------------
+// Companion trials — the Codex's psyche-themed trial generator,
+// adapted into hearts and camp scenes. Each forged soul carries an
+// inner THEME read from their description; the Forge assembles a
+// four-scene bond arc around it: arrival → the crack → the trial →
+// devotion. Scenes register as ordinary camp events, so the existing
+// picker, spice variants, and tone tracking all apply.
+// ------------------------------------------------------------------
+
+const THEMES = [
+  { id: 'loneliness', detect: /lonel|alone|solitary|outcast|shunned|friendless|isolat/,
+    was: 'someone who left every fire first, so it couldn\'t leave me',
+    crack: 'people like me learn to travel light. You stop keeping things that can be taken. Company was always the first thing to go.',
+    trialFace: 'every campfire I ever left before dawn, so nobody could leave it first',
+    vow: 'staying. Out loud. Where the whole fire can hear it.' },
+  { id: 'duty', detect: /duty|oath|sworn|honor|obligat|vow\b|service|loyal/,
+    was: 'a stack of orders standing in boots',
+    crack: 'I have followed orders my whole life. Take away the orders and I honestly do not know what is left standing here.',
+    trialFace: 'every order I followed so I would not have to choose',
+    vow: 'choosing this. Not because anyone commanded it. Because I do.' },
+  { id: 'pride', detect: /proud|pride|arrogan|haught|superior|vain|boastful/,
+    was: 'a summit with no company on it',
+    crack: 'being the best was the whole plan. Nobody warns you the view from the top is mostly of the climb — and everyone you stepped past on it.',
+    trialFace: 'every hand I refused because taking it would have meant admitting I needed it',
+    vow: 'asking for help. Once. As practice. Do not make it strange.' },
+  { id: 'timidity', detect: /shy|timid|nervous|anxious|meek|soft-spoken|skittish|flinch/,
+    was: 'three rehearsals deep in every sentence',
+    crack: 'I rehearse. Everything. Every sentence, three times, before I say it. You are the first person the rehearsals keep failing around, and I do not hate it.',
+    trialFace: 'every room I did not enter because someone might look up',
+    vow: 'saying the unrehearsed thing. Here it comes. ...Thank you for looking up.' },
+  { id: 'atonement', detect: /atone|guilt|sin\b|redempt|forgive|penance|shame|regret/,
+    was: 'a debt wearing a person',
+    crack: 'there is a thing I did, back before. I will not dress it up for you. I came to gates because dangerous work felt like installments on a debt.',
+    trialFace: 'the person I was when I earned the debt',
+    vow: 'forgiving the wretch. Not forgetting — forgiving. There is a difference, and you taught it to me.' },
+  { id: 'debt', detect: /debt|owe|coin|gold|poverty|poor\b|hungry|starv/,
+    was: 'someone bracing for the bill',
+    crack: 'everything in my life has had a price on it since I was small. I keep waiting for this guild to hand me the bill. It is very unsettling that it has not.',
+    trialFace: 'every kindness I refused because I could not afford to owe it',
+    vow: 'accepting something freely given. Watch. I am doing it right now. It is agonizing. Thank you.' },
+  { id: 'curiosity', detect: /curious|curiosity|scholar|question|wonder|learn|secrets|knowledge/,
+    was: 'someone who took every wonder apart to see the gears',
+    crack: 'I have wanted to know how everything works since I could crawl. Then I met this party, and for the first time the question scares me — because some things stop working when you take them apart.',
+    trialFace: 'every wonder I dissected instead of simply standing inside',
+    vow: 'leaving one thing unstudied. This one. Us. I will simply... be in it.' },
+  { id: 'grief', detect: /grie[fv]|mourn|widow|lost (?:his|her|their)|dead (?:wife|husband|lover|family|sister|brother)|buried/,
+    was: 'living a room away from the past tense',
+    crack: 'I had people, before. I do not talk about them because the talking makes them past tense, and I am not done with the present tense yet.',
+    trialFace: 'the goodbye I never said, standing patient as a door',
+    vow: 'saying it. The goodbye. And then walking back to a fire that is still burning.' },
+  { id: 'belonging', detect: /./,
+    was: 'a guest with boots by the door',
+    crack: 'I have been a guest everywhere I ever slept. Good guests keep their boots by the door. Mine are still by the door. Old habit.',
+    trialFace: 'every threshold I stood on, waiting to be told I could come in',
+    vow: 'unpacking. Properly. Boots away from the door and everything.' },
+];
+
+// role flavor: what they're doing when camp scenes find them
+const ROLE_BITS = {
+  tank:    { doing: 'oiling the straps of that battered shield by firelight', gift: 'the mended strap of your pack — fixed without being asked' },
+  healer:  { doing: 'sorting dried herbs into neat paper twists', gift: 'a paper twist of tea "for the watch — it helps with the cold"' },
+  caster:  { doing: 'tracing slow sigils in the air that glow and gutter', gift: 'a warmth-charm scratched onto a river stone' },
+  striker: { doing: 'walking the perimeter for the third time this hour', gift: 'the perimeter, walked, and your bedroll moved out of the wind' },
+  support: { doing: 'writing in a journal by ember-light', gift: 'a page torn from the journal: a sketch of the whole party, laughing' },
+};
+
+export function themeFor(text) {
+  const t = text.toLowerCase();
+  return THEMES.find(th => th.detect.test(t)) || THEMES[THEMES.length - 1];
+}
+
+// Register the four bond scenes for a forged hero into EVENTS.
+function registerBondArc(def) {
+  const id = def.id, name = def.name;
+  const theme = themeFor(def.persona + ' ' + def.desc);
+  const bits = ROLE_BITS[def.role] || ROLE_BITS.support;
+  const inParty = S => (S.recruited || []).includes(id);
+
+  EVENTS['cbond_' + id + '_1'] = {
+    id: 'cbond_' + id + '_1', where: 'camp', once: true, priority: 45,
+    cond: S => inParty(S),
+    steps: [
+      { s: 'narr', t: `Camp, after the clear. The newest member of the guild sits a careful half-step outside the fire's circle, ${bits.doing} — present, useful, and very deliberately not assuming a place.` },
+      { s: id, t: `Oh — {name}. I didn't mean to be underfoot. I can take a farther watch, if the fire's crowded.` },
+      { choice: [
+        { t: `Move over and make the space obvious. "The fire seats everyone who fought for it. That's the whole rule."`, tone: 'kind', bond: { [id]: 1 },
+          r: [
+            { s: id, t: `(a pause; then they move — one half-step, into the light, like it costs something and pays more) ...Everyone who fought for it. I can work with that rule.` },
+            { s: 'narr', t: `In the morning you find ${bits.gift}. Nobody saw it happen. That, apparently, is also part of their rule.` },
+          ] },
+        { t: `"You're mine now — guild, fire, watch and all. Sit where I can see you."`, tone: 'dom', bond: { [id]: 1 },
+          r: [
+            { s: id, t: `(the careful distance collapses all at once; they sit — close, watchful, oddly settled) Yours. Well. That answers the seating question with unusual efficiency, {name}.` },
+            { s: 'narr', t: `They stay in the circle the whole night. In the morning you find ${bits.gift} — tribute, or thanks, or both.` },
+          ] },
+      ] },
+    ],
+  };
+
+  EVENTS['cbond_' + id + '_2'] = {
+    id: 'cbond_' + id + '_2', where: 'camp', once: true, priority: 45,
+    cond: S => inParty(S) && (S.bond[id] || 0) >= 3,
+    steps: [
+      { s: 'narr', t: `Late watch. ${name} has stopped ${bits.doing} and is looking into the fire the way people look at things much farther away.` },
+      { s: id, t: `Can I say a true thing, {name}? Since you keep collecting those. (a breath) The truth is, ${theme.crack}` },
+      { s: 'narr', t: `The fire pops. They don't take it back.` },
+      { choice: [
+        { t: `Say nothing. Refill their cup and stay until the silence turns companionable.`, tone: 'kind', bond: { [id]: 1 },
+          r: [{ s: id, t: `(much later, quietly, to the fire) ...You didn't flinch at it. I'm going to remember that longer than you'll know.` }] },
+        { t: `"Noted. It changes nothing about where you sleep tonight — inside the circle, with us."`, tone: 'kind', bond: { [id]: 1 },
+          r: [{ s: id, t: `(a rough, surprised laugh) Inside the circle. You make it sound like a standing order. ...Leave it standing.` }] },
+      ] },
+    ],
+  };
+
+  EVENTS['cbond_' + id + '_3'] = {
+    id: 'cbond_' + id + '_3', where: 'camp', once: true, priority: 46,
+    cond: S => inParty(S) && (S.bond[id] || 0) >= 6,
+    steps: [
+      { s: 'sys', t: `[ Resonance detected. Subject "${name}" carries an unresolved gate — not in the world. In the chest. The System recognizes the architecture; it has been inside one of these before. Recommend: accompany them through. ]` },
+      { s: 'narr', t: `${name} is on their feet at the camp's edge, staring at nothing you can see — or at everything they carry. When they speak, it's steadier than you expected.` },
+      { s: id, t: `You can see it too, can't you. Some kind of door, where my ribs should be. (a shaky laugh) I know what's behind it: ${theme.trialFace}. I've kept it shut a long time, {name}. I don't want to keep it shut in front of you.` },
+      { s: 'narr', t: `They open it. What comes out isn't a monster — it never was. It's an hour of talking, and a voice that cracks twice, and the specific courage of being fully seen on purpose.` },
+      { choice: [
+        { t: `Stand with them the whole way through. When it's over: "The gate's cleared. It stays cleared."`, tone: 'kind', bond: { [id]: 2 },
+          r: [
+            { s: 'sys', t: `[ Trial complete. Subject's resonance: settled. The System has no metric for what just happened and has decided, after consideration, not to invent one. ]` },
+            { s: id, t: `(hollowed out and lighter for it) Cleared. Stars. So that's what your party does. You walk into people's worst rooms and hold the light up. No wonder the gates lost.` },
+          ] },
+        { t: `"I've seen what's behind it now. It doesn't get to keep you — you're mine, and I keep what's mine whole."`, tone: 'dom', bond: { [id]: 2 },
+          r: [
+            { s: 'sys', t: `[ Trial complete. Claim registered. The System notes the subject did not object; the System further notes the subject's pulse, and declines to editorialize. ]` },
+            { s: id, t: `(a long exhale, like setting down a pack carried for years) Kept whole. By you. ...The door doesn't frighten me half so much as how easily you said that. Do keep saying it.` },
+          ] },
+      ] },
+    ],
+  };
+
+  EVENTS['cbond_' + id + '_4'] = {
+    id: 'cbond_' + id + '_4', where: 'camp', once: true, priority: 46,
+    cond: S => inParty(S) && (S.bond[id] || 0) >= 9,
+    steps: [
+      { s: 'narr', t: `The others have turned in. ${name} waits by the banked fire with the particular stillness of someone who has decided something and means to say it before the courage cools.` },
+      { s: id, t: `{name}. Before the watch turns over — I owe the fire one more true thing. When I came to this guild I was ${theme.was}. (they hold your eyes, steady) I'm not, anymore. So tonight I'm ${theme.vow}` },
+      { choice: [
+        { t: `Meet them in the firelight, gently. "Then stay. You were always going to be kept."`, tone: 'kind', bond: { [id]: 1 },
+          r: [
+            { s: 'narr', t: `What follows is quiet and certain: the newest heart in the guild coming all the way inside the circle at last, and the fire burning lower and warmer than the wood should allow.`, spice: 'gentle' },
+            { s: 'narr', t: `They close the distance first — unhurried, sure, four scenes' worth of wanting finally spent — and the banked fire watches two shadows become one shape and stay that way until the watch is long past due. Whoever was supposed to relieve it, wisely, does not.`, spice: 'steamy' },
+            { s: id, t: `(afterward, against your shoulder, wonder plain in it) Kept. Present tense. I finally like the sound of a tense.` },
+          ] },
+        { t: `"Come here, then. You've been mine since the day the Forge read you out loud — time you heard me say it."`, tone: 'dom', bond: { [id]: 1 },
+          r: [
+            { s: 'narr', t: `They come — no half-step, no careful distance, nothing held back at the threshold — and the claiming is said and answered and sealed by the fire, thoroughly enough that the night keeps the rest.`, spice: 'gentle' },
+            { s: 'narr', t: `They come to you like a door finally opened from the inside — yours, said against your mouth, worn like something fitted at last — and the fire burns to embers over the long, unhurried proof of it. When the ember-light finds them asleep against you, the careful half-step is gone for good.`, spice: 'steamy' },
+            { s: id, t: `(drowsy, certain) Read out loud and kept. The Forge undersold you, {name}.` },
+          ] },
+        { t: `"Not tonight. But the circle's yours for good — that part's already true."`, tone: 'reject', reopen: true,
+          r: [{ s: id, t: `(a breath; a small, unbothered smile) Already true. Then I'm patient — I've kept harder doors than this one. Goodnight, {name}.` }] },
+      ] },
+    ],
+  };
+}
+
+function unregisterBondArc(id) {
+  for (let i = 1; i <= 4; i++) delete EVENTS['cbond_' + id + '_' + i];
 }
 
 // Re-register everything in S.custom (called after any save load).
 export function restoreCustomHeroes(S) {
-  for (const def of Object.values(S.custom || {})) registerCustomHero(def);
+  for (const def of Object.values(S.custom || {})) {
+    registerCustomHero(def);
+    if (S.bond && !(def.id in S.bond)) S.bond[def.id] = 0; // older forge saves
+  }
 }
 
 // Forge, register, persist, and enroll in one step.
@@ -272,6 +444,7 @@ export function summonHero(parsed, S) {
   registerCustomHero(def);
   S.heroes[def.id] = { level: def.startLevel, xp: 0, gear: { weapon: null, armor: null, charm: null } };
   if (!S.recruited.includes(def.id)) S.recruited.push(def.id);
+  if (!(def.id in S.bond)) S.bond[def.id] = 0; // hearts, from day one
   return def;
 }
 
@@ -283,7 +456,9 @@ export function releaseHero(S, id) {
   if (h) for (const slot of ['weapon', 'armor', 'charm']) { if (h.gear[slot]) S.gearBag.push(h.gear[slot]); }
   delete S.heroes[id];
   delete S.custom[id];
+  delete S.bond[id];
   S.recruited = S.recruited.filter(x => x !== id);
   delete HEROES[id];
+  unregisterBondArc(id);
   return true;
 }
