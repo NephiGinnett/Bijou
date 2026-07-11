@@ -438,6 +438,18 @@ export const SKILLS = {
   th_curse1: { name: 'Hex', type: 'mag', power: 0.7, mp: 8, target: 'enemy', anim: 'cast', apply: [{ to: 'target', id: 'atk_down', turns: 2 }, { to: 'target', id: 'res_down', turns: 2 }], desc: 'A withering hex — Weakens and Hexes.' },
   th_curse2: { name: 'Doom', type: 'mag', power: 1.3, mp: 18, target: 'enemy', anim: 'cast', apply: { to: 'target', id: 'vulnerable', turns: 2, chance: 0.8 }, desc: 'Marks a soul for ruin. Leaves them Exposed.' },
   th_curse3: { name: 'Malediction', type: 'mag', power: 0.85, mp: 24, target: 'all_enemies', anim: 'cast', apply: { to: 'target', id: 'atk_down', turns: 2, chance: 0.7 }, desc: 'A curse spoken over the whole field. Weakens all.' },
+  // Song / performance — sonic damage, party buffs, field debuffs
+  th_song1: { name: 'Discordant Note', type: 'mag', power: 0.9, mp: 7, target: 'enemy', anim: 'cast', apply: { to: 'target', id: 'atk_down', turns: 2, chance: 0.7 }, desc: 'A jarring chord that rattles a foe. May Weaken.' },
+  th_song2: { name: 'Rallying Anthem', type: 'support', mp: 12, target: 'all_allies', anim: 'buff', apply: { to: 'target', id: 'atk_up', turns: 3 }, desc: 'A song of courage — Fires Up the whole party.' },
+  th_song3: { name: 'Requiem', type: 'mag', power: 1.0, mp: 22, target: 'all_enemies', anim: 'cast', apply: { to: 'target', id: 'res_down', turns: 2, chance: 0.7 }, desc: 'A dirge that unravels every foe\'s guard (Hexed).' },
+  // Traps — control and denial
+  th_trap1: { name: 'Caltrops', type: 'phys', power: 0.8, mp: 6, target: 'enemy', anim: 'melee', apply: { to: 'target', id: 'bleed', turns: 2, chance: 0.75 }, desc: 'Scatter spikes underfoot. May cause Bleeding.' },
+  th_trap2: { name: 'Snare', type: 'phys', power: 0.7, mp: 12, target: 'enemy', anim: 'melee', apply: [{ to: 'target', id: 'stun', turns: 1, chance: 0.5 }, { to: 'target', id: 'agi_down', turns: 2 }], desc: 'A spring-loaded snare — may hold a foe fast, always Slows.' },
+  th_trap3: { name: 'Powder Bomb', type: 'mag', power: 1.2, mp: 20, target: 'all_enemies', anim: 'cast', apply: { to: 'target', id: 'burn', turns: 2, chance: 0.6 }, desc: 'A thrown charge that bursts over the field. May Burn all.' },
+  // Alchemy — flasks, philters, and toxins
+  th_alch1: { name: 'Acid Flask', type: 'mag', power: 1.0, mp: 7, target: 'enemy', anim: 'cast', apply: { to: 'target', id: 'def_down', turns: 2, chance: 0.8 }, desc: 'Hurled acid eats through armor (Sundered).' },
+  th_alch2: { name: 'Elixir', type: 'heal', power: 1.4, mp: 12, target: 'ally', anim: 'buff', apply: { to: 'target', id: 'regen', turns: 3 }, desc: 'A restorative brew — heals and leaves Mending.' },
+  th_alch3: { name: 'Toxic Bomb', type: 'mag', power: 0.9, mp: 22, target: 'all_enemies', anim: 'cast', apply: { to: 'target', id: 'poison', turns: 3, chance: 0.7 }, desc: 'A bursting vial of toxin. Poisons the field.' },
 
   // ---- Shifter (shapeshifter class) ----
   feral_claw:  { name: 'Feral Claw', type: 'phys', power: 1.15, mp: 5, target: 'enemy', anim: 'melee', apply: { to: 'target', id: 'bleed', turns: 2, chance: 0.5 }, desc: 'A raking strike. May cause Bleeding.' },
