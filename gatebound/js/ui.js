@@ -1367,7 +1367,7 @@ let forgeParsed = null;
 
 async function forgePreviewPortrait(spec) {
   registerCustomActor('__preview', spec);
-  return makePortrait('__preview');
+  return makePortrait('__preview', null, { cache: false }); // always fresh — spec changes per parse/reshuffle
 }
 
 async function forgeScreen(keepInput) {

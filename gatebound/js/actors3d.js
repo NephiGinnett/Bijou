@@ -85,14 +85,26 @@ function chibi(o = {}) {
   const skin = o.skin ?? 0xf2d0b8;
   const outfit = o.outfit ?? 0x5a6270;
 
-  if (o.outfitStyle === 'dress' || o.outfitStyle === 'robe') {
+  const torsoMat = o.outfitStyle === 'armor' ? mat(outfit, { metal: 0.75, rough: 0.3 }) : mat(outfit);
+  if (o.lowerBody === 'serpent') {
+    // no legs — a coiled snake tail at the base, torso as usual
+    const tm = mat(o.tailColor ?? o.legColor ?? 0x4a8a5a, { rough: 0.85, flat: true });
+    const coils = [[0, 0.15, 0.0, 0.27], [0.15, 0.10, -0.03, 0.23], [-0.13, 0.06, -0.08, 0.2], [0.11, 0.04, -0.15, 0.16], [-0.05, 0.03, -0.22, 0.13], [0.02, 0.03, -0.29, 0.1]];
+    for (const [x, y, z, r] of coils) add(g, S(r, 12, 10), tm, x, y, z).scale.set(1.25, 0.72, 1.25);
+    add(g, Cap(0.24, 0.36, 4, 12), torsoMat, 0, 0.62, 0);
+  } else if (o.outfitStyle === 'dress' || o.outfitStyle === 'robe') {
     add(g, Cone(0.42, 0.85, 10), mat(outfit), 0, 0.46, 0);
     if (o.frill) add(g, Tor(0.32, 0.05, 8, 16), mat(o.frill), 0, 0.12, 0, Math.PI / 2);
     add(g, Cap(0.2, 0.22, 4, 10), mat(outfit), 0, 0.85, 0);
   } else {
-    add(g, Cyl(0.075, 0.09, 0.34, 8), mat(o.legColor ?? 0x3a3f4a), -0.11, 0.19, 0);
-    add(g, Cyl(0.075, 0.09, 0.34, 8), mat(o.legColor ?? 0x3a3f4a), 0.11, 0.19, 0);
-    const torsoMat = o.outfitStyle === 'armor' ? mat(outfit, { metal: 0.75, rough: 0.3 }) : mat(outfit);
+    const legMat = mat(o.legColor ?? 0x3a3f4a);
+    add(g, Cyl(0.075, 0.09, 0.34, 8), legMat, -0.11, 0.19, 0);
+    add(g, Cyl(0.075, 0.09, 0.34, 8), legMat, 0.11, 0.19, 0);
+    if (o.lowerBody === 'hooves') {
+      const hm = mat(0x2a221a, { rough: 0.6 });
+      add(g, Cyl(0.085, 0.06, 0.1, 6), hm, -0.11, 0.03, 0.01);
+      add(g, Cyl(0.085, 0.06, 0.1, 6), hm, 0.11, 0.03, 0.01);
+    }
     add(g, Cap(0.24, 0.36, 4, 12), torsoMat, 0, 0.62, 0);
   }
   // arms
@@ -526,6 +538,7 @@ function customChibi(spec) {
     outfit: spec.outfit, outfitStyle: spec.outfitStyle, frill: spec.frill,
     sleeve: spec.sleeve ?? spec.outfit, legColor: spec.legColor,
     eyeColor: spec.eyeColor, eyeGlow: spec.eyeGlow, elf: spec.elf,
+    lowerBody: spec.lowerBody, tailColor: spec.tailColor ?? spec.skin,
   });
 
   // ears
@@ -554,13 +567,61 @@ function customChibi(spec) {
   if (spec.wings) wings(g, spec.wingColor ?? 0xe8e4da, 1.0, 0.5);
   if (spec.halo) add(g, Tor(0.16, 0.02, 6, 16), mat(0xffe28a, { emissive: 0xffd24a, ei: 1.4 }), 0, 1.62, -0.02, Math.PI / 2.2);
 
-  // tail
-  if (spec.tail === 'fox') {
-    const t = add(g, Cap(0.11, 0.34, 4, 8), mat(spec.hair ?? 0xd87c3a, { rough: 0.85 }), 0, 0.42, -0.3, 0.9);
-    add(g, S(0.09, 8, 8), mat(0xf4efe6), 0, 0.62, -0.44);
-  } else if (spec.tail) {
-    add(g, Cap(0.045, 0.36, 4, 6), mat(spec.tailColor ?? spec.skin, { rough: 0.85 }), 0, 0.4, -0.3, 1.1);
+  // tail (skip if the lower body is already a snake)
+  if (spec.lowerBody !== 'serpent') {
+    if (spec.tail === 'fox') {
+      add(g, Cap(0.11, 0.34, 4, 8), mat(spec.hair ?? 0xd87c3a, { rough: 0.85 }), 0, 0.42, -0.3, 0.9);
+      add(g, S(0.09, 8, 8), mat(0xf4efe6), 0, 0.62, -0.44);
+    } else if (spec.tail === 'dragon') {
+      const dm = mat(spec.tailColor ?? spec.skin, { rough: 0.7, flat: true });
+      add(g, Cap(0.06, 0.5, 4, 6), dm, 0, 0.32, -0.32, 1.2);
+      add(g, Cone(0.09, 0.16, 4), dm, 0.06, 0.08, -0.5, 0, 0, 0.6); // barbed tip
+    } else if (spec.tail === 'devil') {
+      const dm = mat(spec.tailColor ?? 0x8a2a2a, { rough: 0.7 });
+      add(g, Cap(0.035, 0.44, 4, 6), dm, 0, 0.34, -0.3, 1.15);
+      add(g, Cone(0.08, 0.14, 3), dm, 0.05, 0.1, -0.46); // spade tip
+    } else if (spec.tail === 'wolf') {
+      add(g, Cap(0.08, 0.32, 4, 8), mat(spec.hair ?? spec.tailColor ?? spec.skin, { rough: 0.9 }), 0, 0.36, -0.3, 1.05);
+    } else if (spec.tail === 'cat') {
+      add(g, Cap(0.03, 0.42, 4, 6), mat(spec.tailColor ?? spec.hair ?? spec.skin, { rough: 0.85 }), 0, 0.4, -0.28, 1.25);
+    } else if (spec.tail) {
+      add(g, Cap(0.045, 0.36, 4, 6), mat(spec.tailColor ?? spec.skin, { rough: 0.85 }), 0, 0.4, -0.3, 1.1);
+    }
   }
+
+  // extra pair of arms
+  if (spec.extraArms) {
+    const am = mat(spec.sleeve ?? spec.outfit ?? 0x5a6270);
+    add(g, Cap(0.06, 0.28, 4, 8), am, -0.32, 0.55, 0.06, 0, 0, 0.5);
+    add(g, Cap(0.06, 0.28, 4, 8), am, 0.32, 0.55, 0.06, 0, 0, -0.5);
+    add(g, S(0.065, 8, 8), mat(spec.skin ?? 0xf2d0b8), -0.42, 0.4, 0.1);
+    add(g, S(0.065, 8, 8), mat(spec.skin ?? 0xf2d0b8), 0.42, 0.4, 0.1);
+  }
+
+  // scaled skin: a few plates on cheeks and chest
+  if (spec.scaled) {
+    const sm = mat(spec.skin ?? 0x6a9a5a, { rough: 0.5, flat: true });
+    for (const [x, y, z] of [[-0.2, 1.14, 0.22], [0.2, 1.14, 0.22], [0, 0.7, 0.22], [-0.12, 0.55, 0.2], [0.12, 0.55, 0.2]]) {
+      add(g, Ico(0.05, 0), sm, x, y, z);
+    }
+  }
+
+  // crown / circlet (reuse the helper)
+  if (spec.crown) crown(g, spec.crownColor ?? 0xd9b96a, 1.55, 0.19);
+
+  // trailing cape
+  if (spec.cape) add(g, Cone(0.4, 0.7, 9, 1, true), mat(spec.capeColor ?? spec.outfit ?? 0x3a2a55), 0, 0.62, -0.14, 0.12);
+
+  // face details
+  if (spec.thirdEye) add(g, S(0.045, 8, 8), mat(spec.eyeColor ?? 0xb08cff, { emissive: spec.eyeColor ?? 0xb08cff, ei: 1.4 }), 0, 1.33, 0.25);
+  if (spec.antennae) {
+    const am = mat(spec.hair ?? spec.skin, { rough: 0.7 });
+    for (const sx of [-1, 1]) { add(g, Cap(0.012, 0.24, 4, 6), am, sx * 0.1, 1.5, 0, 0, 0, sx * 0.3); add(g, S(0.035, 6, 6), mat(spec.accent ?? 0xffd24a, { emissive: spec.accent ?? 0xffd24a, ei: 1 }), sx * 0.17, 1.63, 0); }
+  }
+  if (spec.feathers) { const fm = mat(spec.hair ?? 0xe8e4da, { rough: 0.8, flat: true }); for (let i = 0; i < 3; i++) add(g, Box(0.05, 0.2, 0.01), fm, -0.16 + i * 0.16, 1.44 + (i === 1 ? 0.05 : 0), -0.1, -0.3, 0, (i - 1) * 0.2); }
+  if (spec.eyepatch) { add(g, S(0.07, 8, 8), mat(0x1a1a1e), 0.11, 1.21, 0.26).scale.set(1.1, 1.1, 0.5); add(g, Box(0.5, 0.02, 0.02), mat(0x1a1a1e), 0, 1.25, 0.2, 0, 0.2, 0.15); }
+  if (spec.glasses) { const gm = mat(0x2a2a30, { metal: 0.4 }); add(g, Tor(0.05, 0.008, 6, 12), gm, -0.11, 1.21, 0.26, Math.PI / 2); add(g, Tor(0.05, 0.008, 6, 12), gm, 0.11, 1.21, 0.26, Math.PI / 2); add(g, Box(0.08, 0.01, 0.01), gm, 0, 1.21, 0.27); }
+  if (spec.scar) add(g, Box(0.012, 0.11, 0.01), mat(0xc86a5a), 0.13, 1.2, 0.27, 0, 0, 0.25);
 
   // mask: a smooth faceplate over the features
   if (spec.mask) {

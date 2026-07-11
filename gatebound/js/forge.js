@@ -193,12 +193,30 @@ export function parseCharacter(input, salt = 0) {
       : /kitsune|fox[- ]?(?:girl|boy|ears|spirit|folk)|vulpine/.test(text) ? 'fox'
       : /wolf[- ]?(?:girl|boy|ears|kin)|lupine/.test(text) ? 'wolf'
       : /\bneko\b|cat[- ]?(?:girl|boy|ears|kin)|feline/.test(text) ? 'cat' : null,
-    tail: /fox|kitsune|vulpine/.test(text) && /tail|kitsune|fox/.test(text) ? 'fox' : /\btail\b/.test(text) ? 'plain' : null,
+    tail: /dragon(?:kin|born)?|draconic|\bwyrm|drake/.test(text) && /tail/.test(text) ? 'dragon'
+      : /demon|devil|imp|succubus|tiefling/.test(text) && /tail/.test(text) ? 'devil'
+      : /fox|kitsune|vulpine/.test(text) && /tail|kitsune|fox/.test(text) ? 'fox'
+      : /wolf|lupine|canine/.test(text) && /tail/.test(text) ? 'wolf'
+      : /\bcat|feline|neko/.test(text) && /tail/.test(text) ? 'cat'
+      : /\btail\b/.test(text) ? 'plain' : null,
     horns: /\bhorns?\b|demon(?:ess)?|oni\b|draconic|dragonkin|tiefling|succubus|devil/.test(text),
     wings: /\bwings?\b|angel(?:ic)?|valkyrie|harpy|fairy|seraph/.test(text),
     halo: /\bhalo\b|angel(?:ic)?|seraph|saint(?:ly)?/.test(text),
     mask: /\bmasked?\b|porcelain face|faceplate|visor/.test(text),
     ghost,
+    // ---- newly supported body features ----
+    lowerBody: /naga|lamia|serpent(?:ine)? (?:body|tail|lower)|snake (?:body|tail)|snake-bodied/.test(text) ? 'serpent'
+      : /satyr|faun\b|hooves|hoofed|goat (?:legs|-legged)|digitigrade/.test(text) ? 'hooves' : null,
+    scaled: /\bscaled\b|\bscales\b|scaly|reptilian|lizard(?:folk|man|kin)?|dragonkin|dragonborn|draconic/.test(text),
+    extraArms: /four[- ]?arm|six[- ]?arm|extra arms|multiple arms|many arms|multi-armed/.test(text),
+    thirdEye: /third eye|extra eyes|many eyes|multiple eyes/.test(text),
+    crown: /\bcrown\b|tiara|circlet|diadem|coronet/.test(text),
+    cape: /\bcape\b|long cloak|trailing cloak|flowing cloak|mantle/.test(text),
+    scar: /\bscar\b|scarred|scars\b/.test(text),
+    eyepatch: /eyepatch|eye patch|one eye covered/.test(text),
+    glasses: /glasses|spectacles|monocle/.test(text),
+    antennae: /antennae|antenna\b/.test(text),
+    feathers: /feathers|feathered|plumage/.test(text),
     scale: /towering|giant(?:ess)?|massive|hulking|seven fe?e?t|colossal/.test(text) ? 1.18
       : /\btiny\b|petite|diminutive|small stature|halfling|gnome|fairy/.test(text) ? 0.85 : 1,
     outfitStyle: /armor|armour|plate|chain ?mail|breastplate/.test(text) ? 'armor'
@@ -212,19 +230,30 @@ export function parseCharacter(input, salt = 0) {
   spec.weapon = ARCHETYPES[role].weapon;
   spec.accent = spec.hair ?? spec.eyeColor;
   if (spec.ghost || shadowBody) spec.eyeGlow = true;
+  if (spec.scaled && !/\bskin\b|complexion/.test(text)) spec.skin = 0x6a9a5a; // scaly green default
+
+  // themed skill line from the description
+  const theme = themeSkillFor(text);
+  const arch = ARCHETYPES[role];
+  const kit = theme ? themedKit(theme, role, arch.kit) : arch.kit;
 
   // features list for the preview UI
+  const tailLabel = { fox: 'fox tail', dragon: 'dragon tail', devil: 'devil tail', wolf: 'wolf tail', cat: 'cat tail', plain: 'tail' };
   const features = [
+    theme && `${theme.label} kit`,
     spec.elf && 'elf ears', spec.ears && spec.ears + ' ears', spec.horns && 'horns',
-    spec.wings && 'wings', spec.halo && 'halo', spec.tail && (spec.tail === 'fox' ? 'fox tail' : 'tail'),
+    spec.wings && 'wings', spec.halo && 'halo', spec.tail && tailLabel[spec.tail],
+    spec.lowerBody === 'serpent' && 'serpent lower body', spec.lowerBody === 'hooves' && 'hooved legs',
+    spec.scaled && 'scaled skin', spec.extraArms && 'extra arms', spec.thirdEye && 'third eye',
+    spec.crown && 'crown', spec.cape && 'cape', spec.scar && 'scar', spec.eyepatch && 'eyepatch',
+    spec.glasses && 'glasses', spec.antennae && 'antennae', spec.feathers && 'feathers',
     spec.mask && 'mask', spec.ghost && 'spectral', shadowBody && 'shadow-form',
     spec.scale > 1 && 'towering', spec.scale < 1 && 'small',
   ].filter(Boolean);
 
-  const arch = ARCHETYPES[role];
   const passive = pick(arch.passives, 5);
   const gaps = forgeGaps(text, spec, role);
-  return { card, seed, role, cls, spec, features, kit: arch.kit, passive, gaps };
+  return { card, seed, role, cls, spec, features, kit, passive, gaps, themeLabel: theme ? theme.label : null };
 }
 
 // ------------------------------------------------------------------
@@ -232,60 +261,66 @@ export function parseCharacter(input, salt = 0) {
 // render or build, so the player knows what to tweak (or ask for).
 // ------------------------------------------------------------------
 
-// Body/appearance traits with no builder yet. label = what to show.
+// Body/appearance traits STILL without a builder. (Serpent/hooved lower
+// bodies, scales, extra arms, third eye, crown, cape, scar, eyepatch,
+// glasses, antennae, feathers, and tail variants are built now.)
 const UNSUPPORTED_FEATURES = [
-  { re: /four[- ]?arm|six[- ]?arm|extra arms|multiple arms|many arms|multi-armed/, label: 'extra arms' },
-  { re: /\bscales\b|scaled skin|reptilian|lizard(?:folk|man)?/, label: 'scaled skin' },
   { re: /slime|ooze|gelatinous|goo\b/, label: 'slime / ooze body' },
   { re: /tentacle/, label: 'tentacles' },
-  { re: /third eye|extra eyes|many eyes|multiple eyes/, label: 'extra eyes' },
-  { re: /eyepatch|eye patch/, label: 'eyepatch' },
-  { re: /glasses|spectacles|monocle/, label: 'glasses / monocle' },
-  { re: /\bscar\b|scarred|scars\b/, label: 'facial scar' },
-  { re: /tattoo|inked|body art/, label: 'tattoos / markings' },
+  { re: /tattoo|inked|body art|glowing (?:marking|rune|vein)|runic (?:skin|marking)/, label: 'tattoos / markings' },
   { re: /beard|mustache|moustache|stubble|goatee/, label: 'facial hair' },
   { re: /cyber|mechanical|prosthetic|automaton|clockwork|robotic|android/, label: 'mechanical / prosthetic parts' },
-  { re: /hooves|hoofed|centaur|satyr|faun\b/, label: 'hooved / taur lower body' },
-  { re: /naga|lamia|serpent(?:ine)? (?:body|tail|lower)|snake body/, label: 'serpent lower body' },
+  { re: /centaur|\btaur\b|horse (?:body|lower)/, label: 'full centaur body' },
   { re: /gills|fins\b|mermaid|merfolk|siren\b/, label: 'aquatic features (fins / gills)' },
-  { re: /feathers|feathered|plumage/, label: 'feathers' },
   { re: /fur-covered|covered in fur|full fur|furred body/, label: 'full fur coat' },
-  { re: /antennae|antenna\b/, label: 'antennae' },
-  { re: /glowing (?:tattoo|marking|rune|vein)|runic (?:skin|marking)/, label: 'glowing runic markings' },
-  { re: /crown\b|tiara|circlet|diadem/, label: 'crown / circlet' },
-  { re: /cape\b|cloak trailing|long cloak/, label: 'flowing cape' },
-  { re: /wheelchair|prosthetic leg|peg leg|missing (?:an? )?(?:arm|leg|hand)/, label: 'mobility aid / missing limb' },
+  { re: /wheelchair|peg leg|missing (?:an? )?(?:arm|leg|hand)/, label: 'mobility aid / missing limb' },
 ];
 
-// Thematic skill hints — the kit is a generic role set, so flag the
-// flavor the description implies for hand-tuning later.
-const SKILL_THEMES = [
-  { re: /\bfire\b|flame|burn|pyro|inferno|ember|ash\b/, label: 'fire / burn' },
-  { re: /\bice\b|frost|freeze|cryo|winter|glacial|rime/, label: 'ice / frost' },
-  { re: /lightning|thunder|storm|shock|electric|volt/, label: 'lightning / storm' },
-  { re: /poison|venom|toxic|plague|blight/, label: 'poison / venom' },
-  { re: /shadow|dark magic|void|umbral|eclipse|night magic/, label: 'shadow / void' },
-  { re: /holy|radiant|divine|sacred|blessed|celestial/, label: 'holy / radiant' },
+// Skill themes the generic kit still doesn't capture (elemental/status
+// lines are built now — see SUPPORTED_THEMES).
+const UNSUPPORTED_SKILL_THEMES = [
   { re: /summon|conjure|familiar|raise (?:the )?dead|necromanc/, label: 'summoning' },
-  { re: /\bbleed|sever|rend|lacerat|hemorrhag/, label: 'bleed' },
-  { re: /curse|hex|doom|jinx|malediction/, label: 'curse / debuff' },
   { re: /shapeshi|transform|polymorph|were(?:wolf|creature)/, label: 'shapeshifting' },
-  { re: /earth|stone|rock|quake|seismic/, label: 'earth / stone' },
-  { re: /wind\b|gale|tempest|air magic/, label: 'wind' },
-  { re: /music|song|sing|melody|dance/, label: 'song / performance' },
-  { re: /trap|snare|bomb|explosive|alchemy/, label: 'traps / alchemy' },
+  { re: /music|song|sing\b|melody|\bbard\b/, label: 'song / performance' },
+  { re: /trap|snare|\bbomb|explosive|alchemy/, label: 'traps / alchemy' },
 ];
 
 export function forgeGaps(text, spec, role) {
   const feats = [];
   for (const f of UNSUPPORTED_FEATURES) if (f.re.test(text) && !feats.includes(f.label)) feats.push(f.label);
-
   const themes = [];
-  for (const t of SKILL_THEMES) if (t.re.test(text) && !themes.includes(t.label)) themes.push(t.label);
-  // healing flavor is already covered when the role is a healer
-  const filtered = themes.filter(t => !(t === 'holy / radiant' && role === 'healer'));
+  for (const t of UNSUPPORTED_SKILL_THEMES) if (t.re.test(text) && !themes.includes(t.label)) themes.push(t.label);
+  return { features: feats.slice(0, 8), skills: themes.slice(0, 6) };
+}
 
-  return { features: feats.slice(0, 8), skills: filtered.slice(0, 6) };
+// ------------------------------------------------------------------
+// Themed skill lines — a description implying an element/status gives
+// the forged hero a matching kit. Ordered: first match wins.
+// ------------------------------------------------------------------
+
+const SUPPORTED_THEMES = [
+  { id: 'fire',      re: /\bfire\b|flame|flaming|burn|pyro|inferno|ember|magma|lava/, label: 'fire', skills: ['th_fire1', 'th_fire2', 'th_fire3'] },
+  { id: 'ice',       re: /\bice\b|frost|freezing|freeze|cryo|glacial|rime|snow/, label: 'ice', skills: ['th_ice1', 'th_ice2', 'th_ice3'] },
+  { id: 'lightning', re: /lightning|thunder|storm|shock|electric|volt|tempest/, label: 'lightning', skills: ['th_bolt1', 'th_bolt2', 'th_bolt3'] },
+  { id: 'poison',    re: /poison|venom|toxic|plague|blight|acid/, label: 'poison', skills: ['th_pois1', 'th_pois2', 'th_pois3'] },
+  { id: 'holy',      re: /holy|radiant|divine|sacred|celestial|hallow/, label: 'holy', skills: ['th_holy1', 'th_holy2', 'th_holy3'] },
+  { id: 'shadow',    re: /shadow|dark magic|void|umbral|eclipse|night magic|gloom/, label: 'shadow', skills: ['shadow_lash', 'umbral_coil', 'midnight_rite'] },
+  { id: 'earth',     re: /\bearth\b|stone|rock|quake|seismic|geoman/, label: 'earth', skills: ['th_earth1', 'th_earth2', 'th_earth3'] },
+  { id: 'wind',      re: /\bwind\b|gale|zephyr|cyclone|aeroman|air magic/, label: 'wind', skills: ['th_wind1', 'th_wind2', 'th_wind3'] },
+  { id: 'bleed',     re: /\bbleed|sever|lacerat|hemorrhag|gore\b/, label: 'bleed', skills: ['th_bleed1', 'th_bleed2', 'th_bleed3'] },
+  { id: 'curse',     re: /curse|hex|doom|jinx|malediction|blood magic/, label: 'curse', skills: ['th_curse1', 'th_curse2', 'th_curse3'] },
+];
+
+export function themeSkillFor(text) {
+  return SUPPORTED_THEMES.find(t => t.re.test(text)) || null;
+}
+
+// Damage roles get a fully themed kit; support roles keep their identity
+// and graft the theme's opener + finisher for flavor.
+function themedKit(theme, role, baseKit) {
+  const [x1, x2, x3] = theme.skills;
+  if (role === 'caster' || role === 'striker') return { 1: x1, 10: x2, 22: x3 };
+  return { ...baseKit, 14: x1, 24: x3 };
 }
 
 // ------------------------------------------------------------------
