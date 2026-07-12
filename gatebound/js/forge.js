@@ -48,16 +48,16 @@ const EYE_COLORS = {
 const CLASS_WORDS = [
   [/paladin|crusader/, 'tank', 'Paladin'],
   [/knight/, 'tank', 'Knight'],
-  [/guard(?:ian)?|warden|sentinel|shield|bulwark|juggernaut|protector/, 'tank', 'Warden'],
+  [/guardian|warden|sentinel|bulwark|juggernaut|protector|defender|shield ?maiden|shieldbearer/, 'tank', 'Warden'],
   [/berserker|barbarian/, 'tank', 'Berserker'],
   [/cleric|priest(?:ess)?|nun|saint|chaplain/, 'healer', 'Cleric'],
   [/healer|medic|physician|apothecar|herbalist|alchemist/, 'healer', 'Healer'],
   [/shapeshi|shape-shi|changeling|doppel|skinwalker|skin-walker|\bmimic\b|were(?:wolf|creature|beast)|wild ?shape|polymorph|lycanthrop/, 'shifter', 'Shifter'],
   [/druid|shaman/, 'healer', 'Druid'],
-  [/necromancer|warlock|witch\b|occultist|hex/, 'caster', 'Warlock'],
+  [/necromancer|warlock|\bwitch\b|occultist|\bhex(?:e|ing)/, 'caster', 'Warlock'],
   [/sorcer|wizard|mage|magus|arcanist|enchant|elementalist|spellblade/, 'caster', 'Mage'],
   [/oracle|seer|astrologer/, 'caster', 'Oracle'],
-  [/assassin|rogue|thief|shadow(?:blade)?|cutthroat|infiltrator/, 'striker', 'Rogue'],
+  [/assassin|\brogue\b|thief|\bshadowblade\b|cutthroat|infiltrator/, 'striker', 'Rogue'],
   [/duelist|fencer|swashbuckler|blademaster|samurai|ronin|swords(?:man|woman)/, 'striker', 'Duelist'],
   [/hunter|ranger|archer|marksman|scout|tracker/, 'striker', 'Hunter'],
   [/monk|brawler|pugilist|martial/, 'striker', 'Monk'],
@@ -181,19 +181,35 @@ export function normalizeCard(input) {
   return { name, description: desc || String(card.description || ''), persona: card.persona || card.personality || '', tags, appearance };
 }
 
-// Pull the character's look out of a prose card. Handles two common layouts:
-//   1. W++/boostyle inline fields — {Body: ...}, {Appearance: ...}
-//   2. a headed "Appearance:" / "Physical description:" section
-// Deliberately does NOT grab a bare "Description:" header — that carries the
-// backstory, which is exactly what we're trying to keep out of the body read.
+// Headers that mark the START of a different section — used to stop the
+// appearance capture. (Bullet "- Foo:" sub-fields don't count as headers, so
+// a bulleted body block stays intact.)
+const NEXT_SECTION = 'personality|behavio|background|history|biograph|lore|combat|abilit|skills?|sexual|goals?|setting|likes|dislikes|relationship|quirks|weapons?|equipment|story|scenario|fetish|kink|speech|stats|trivia|notes';
+
+// Pull the character's look out of a prose card. Handles three layouts:
+//   1. W++/boostyle curly fields — {Body: ...}, {Appearance: ...}
+//   2. W++ paren blocks — "body: skin(pale), breasts(huge, full), ...;"
+//   3. a headed "Appearance:" / "Physical description:" section
+// Deliberately does NOT grab a bare "Description:" header (that's backstory),
+// and skips secondary sections like "Appearance in Moonrage:" (a transform).
 function sectionFromProse(body) {
   if (!body) return '';
   const out = [];
   // 1. curly inline fields (may appear more than once)
   const curly = /\{\s*(?:body|appearance|physical(?: description| appearance| features)?|looks)\s*:\s*([^}]+)\}/gi;
   for (let m; (m = curly.exec(body)); ) out.push(m[1].trim());
-  // 2. a headed appearance section, up to the next header or blank line
-  const sect = body.match(/(?:^|\n)[ \t>*#_]*(?:appearance|physical description|physical appearance|physical features|looks like|visual description)[ \t]*[:\-–—]?[ \t]*\n?([\s\S]*?)(?=\n[ \t>*#_]*[A-Za-z][A-Za-z /]{2,24}[ \t]*[:\-–—]\s|\n\s*\n|$)/i);
+  // 2. a W++ paren body block: two or more "word(value)" pairs after "body:"
+  const paren = body.match(/\bbody\s*:\s*((?:[A-Za-z][A-Za-z ]*\([^)]*\)[,;\s]*){2,})/i);
+  if (paren) out.push(paren[1].trim());
+  // 3. a headed appearance section: consume the whole header line, then take
+  //    content up to the next section header / markdown header / end. Allows
+  //    blank lines between the header and the body, and between sub-fields.
+  const hdr = new RegExp(
+    '(?:^|\\n)[ \\t>*#_]*(?:appearance|physical description|physical appearance|' +
+    'physical features|looks|visual description)(?!\\s+(?:in|during|when|while|' +
+    'after|upon|under)\\b)(?:\\s*&[^\\n:]*)?[ \\t]*[:\\-–—]?[ \\t]*([\\s\\S]*?)' +
+    '(?=\\n[ \\t>*#_]*(?:#{1,6}\\s*)?(?:' + NEXT_SECTION + '|description)\\b|\\n#{1,6}\\s|$)', 'i');
+  const sect = body.match(hdr);
   if (sect) out.push(sect[1].trim());
   return out.filter(Boolean).join('\n');
 }
@@ -203,11 +219,25 @@ function sectionFromProse(body) {
 // slime body. The verb consumes its object up to the next clause boundary.
 const COMBAT_CLAUSE = /\b(?:fought|fighting|battled|battling|slew|slain|slaying|defeat(?:ed|ing)?|kill(?:ed|ing)?|hunt(?:ed|ing|s)?|vanquish(?:ed|ing)?|faced|facing|encounter(?:ed|ing|s)?|escap(?:ed|ing)|fled|fleeing|survived|surviving|conjur(?:ed|ing|es)?|summon(?:ed|ing|s)?|banish(?:ed|ing)?|raise[sd]?|raising|against|versus|corpse of|carcass of|remains of|pelt of|hide of|slaying of|trophy)\b[^.!?;:]*/g;
 
+// Shared world-lore sections (Setting / World / Scenario) describe the setting,
+// not the character — many guild cards paste a block that names "warriors and
+// mages", which would misclassify every card. Strip these before class/theme
+// detection. Body detection already reads only the appearance scope.
+function stripLore(text) {
+  // Sections that talk about the world or the character's wishes/partners
+  // rather than what they ARE — a Goal to "find powerful mages to cure me"
+  // shouldn't class the character as a mage.
+  return text.replace(/(?:^|\n)[ \t>*#_]*(?:setting|worldbuilding|world info|world|scenario|lore|goals?|ambitions?|sexuality|sexual|fetish(?:es)?|kinks?|relationships?)\b[^\n]*\n[\s\S]*?(?=\n[ \t>*#_]*#{1,6}\s|\n[ \t>*#_]*(?:appearance|personality|behavior|combat|skills|description|background|abilities|weapon)\b[^\n]*[:\n]|$)/gi, ' ');
+}
+
 // The appearance scope: the card's look-describing text, lowercased, with
 // combat clauses scrubbed. Prefers an explicit appearance field/section;
 // otherwise keeps only self-descriptive sentences from the full text; falls
 // back to the full text when a card is too terse to window.
 function appearanceScope(card, fullText) {
+  // an explicit Race/Species is identity, not incidental — feed it into the
+  // body read so "Race: Wood Elf" gives elf ears and "Rabbitkin" gives rabbit.
+  const race = (fullText.match(/(?:^|[\n{|])[-*#>\s]*(?:race|species)\s*[:=]\s*([^.\n}|]+)/i) || [])[1] || '';
   let src = (card.appearance || '').trim().toLowerCase();
   if (src.length < 15) {
     const sents = fullText.split(/(?<=[.!?])\s+/);
@@ -216,6 +246,10 @@ function appearanceScope(card, fullText) {
     src = kept.join(' ');
     if (src.length < 15) src = fullText;
   }
+  src = (race + ' ' + src).toLowerCase();
+  // flatten W++ "word(value)" pairs → "value word" so "breasts(huge, full)"
+  // and "eyes(dark purple)" read like ordinary description.
+  src = src.replace(/([a-z][a-z ]{1,20})\(([^)]{1,60})\)/gi, ' $2 $1 ');
   return src.replace(COMBAT_CLAUSE, ' ');
 }
 
@@ -225,6 +259,9 @@ export function parseCharacter(input, salt = 0) {
   // Physical traits read from an appearance scope, not the whole card, so a
   // creature named in the backstory never becomes the character's anatomy.
   const bodyText = appearanceScope(card, text);
+  // Class & theme read from the character's own text, with shared world-lore
+  // ("warriors and mages…") stripped so it can't misclassify them.
+  const coreText = stripLore(text);
   const seed = (hash(card.name || card.description.slice(0, 40)) + salt * 7919) >>> 0;
   const pick = (arr, salt = 0) => arr[(seed + salt) % arr.length];
 
@@ -233,9 +270,9 @@ export function parseCharacter(input, salt = 0) {
   // keyword scan of the whole card, so kit-description words ("frontline tank",
   // "barrier", "protective") don't misclassify a card that says "Class: Wizard".
   let role = null, cls = null;
-  const decl = (text.match(/(?:^|[\n{|])[-*#>\s]*(?:class|occupation|profession|archetype|role|job|calling)\s*[:=]\s*([^.\n}|]+)/i) || [])[1] || '';
+  const decl = (coreText.match(/(?:^|[\n{|])[-*#>\s]*(?:class|occupation|profession|archetype|role|job|calling)\s*[:=]\s*([^.\n}|]+)/i) || [])[1] || '';
   if (decl) for (const [re, r, c] of CLASS_WORDS) { if (re.test(decl)) { role = r; cls = c; break; } }
-  if (!role) for (const [re, r, c] of CLASS_WORDS) { if (re.test(text)) { role = r; cls = c; break; } }
+  if (!role) for (const [re, r, c] of CLASS_WORDS) { if (re.test(coreText)) { role = r; cls = c; break; } }
   if (!role) { role = pick(['striker', 'caster', 'support'], 1); cls = { striker: 'Adventurer', caster: 'Adept', support: 'Companion' }[role]; }
 
   // --- appearance ---  (read from bodyText, the scrubbed appearance scope)
@@ -323,13 +360,13 @@ export function parseCharacter(input, salt = 0) {
   const femalePresenting = /gender:\s*female|female[- ]presenting|\bshe\b|\bher\b|\bwoman\b|\bgirl\b|\bfemale\b|\blady\b|mistress|sorceress|enchantress|priestess|matron|\bqueen\b|princess|maiden|\bwife\b|\bmother\b|daughter|\bsister\b|\bnun\b/.test(text);
   const malePresenting = /gender:\s*male|\bhe\b|\bhis\b|\bhim\b|\bman\b|\bmale\b|\bboy\b|\blord\b|\bking\b|\bprince\b|\bfather\b|\bson\b|\bbrother\b|\bsir\b/.test(text);
   if (/flat[- ]?chest|small (?:breasts|bust|chest|tits|boobs)|modest (?:bust|chest)|a-cup|boyish figure|petite (?:bust|chest)/.test(bodyText)) spec.chest = 1;
-  else if (/busty|buxom|voluptuous|(?:large|full|ample|big|heavy|huge|massive|fat) (?:breasts|bust|chest|tits|boobs|knockers)|generous (?:bust|chest|figure)|dd?-?cup|huge tits/.test(bodyText)) spec.chest = 3;
+  else if (/busty|buxom|voluptuous|generous (?:bust|chest|figure)|dd?-?cup|\b(?:huge|massive|enormous|large|big|ample|heavy|fat|giant)\b[^.;:\n]{0,45}\b(?:breasts?|bust|tits|boobs|knockers|melons)\b|\b(?:breasts?|bust|tits|boobs)\b[^.;:\n]{0,20}\b(?:huge|massive|enormous|large|big|ample|heavy)\b/.test(bodyText)) spec.chest = 3;
   else if (/curvy|shapely|hourglass|full[- ]figured|womanly|rubenesque/.test(bodyText)) spec.chest = 2;
   else spec.chest = (femalePresenting && !malePresenting) ? 2 : (malePresenting ? 0 : 1);
   if (spec.build === 'curvy' && spec.chest < 2) spec.chest = 2;
 
-  // themed skill line from the description
-  const theme = themeSkillFor(text);
+  // themed skill line from the description (lore-stripped)
+  const theme = themeSkillFor(coreText);
   const arch = ARCHETYPES[role];
   const kit = theme ? themedKit(theme, role, arch.kit) : arch.kit;
 
@@ -421,7 +458,9 @@ const SUPPORTED_THEMES = [
     weak: /\bholy\b|divine|radiant|sacred|celestial|hallow/, ctx: MAGIC },
   { id: 'shadow', label: 'shadow', skills: ['shadow_lash', 'umbral_coil', 'midnight_rite'],
     strong: /shadow ?magic|dark ?magic|umbral|void ?magic|necromanc|shadowmanc|command(?:s)? (?:the )?shadows|weave(?:s)? (?:the )?dark|night ?magic/,
-    weak: /shadow|\bvoid\b|umbral|eclipse|gloom|\bdark(?:ness)?\b/, ctx: MAGIC },
+    // \bshadow\b so "overshadowed"/"eyeshadow" don't count; "dark" dropped (it's
+    // usually a hair/skin/eye colour, not shadow magic — see "dark magic" strong)
+    weak: /\bshadows?\b|\bvoid\b|umbral|eclipse|\bgloom/, ctx: MAGIC },
   { id: 'earth', label: 'earth', skills: ['th_earth1', 'th_earth2', 'th_earth3'],
     strong: /geomanc|terramanc|earth ?magic|stone ?magic|earthbend|command(?:s)? (?:the )?(?:earth|stone|rock)|seismic|rockslide|conjure(?:s|d)? (?:stone|rock|earth)/,
     weak: /\bearth\b|\bstone\b|\brock\b|\bquake\b|\bboulder\b/, ctx: MAGIC },
@@ -436,7 +475,7 @@ const SUPPORTED_THEMES = [
     weak: /\bcurse|\bhex\b|\bdoom\b|\bjinx\b|malediction/, ctx: MAGIC },
   // ---- non-elemental themed kits ----
   { id: 'song', label: 'song', skills: ['th_song1', 'th_song2', 'th_song3'],
-    strong: /\bbard\b|minstrel|troubadour|\bskald\b|siren'?s? song|song ?magic|battle hymn|plays? the (?:lute|harp|flute|violin|drum|lyre|fiddle)|sings? (?:a )?(?:spell|hymn|dirge|anthem|ballad)|weaves? (?:a )?melody|enchant(?:s|ing)? (?:with|through) (?:song|music|voice)/,
+    strong: /\bbard\b|minstrel|troubadour|\bskald\b|\bdancer\b|dance[- ]combat|tambourine|siren'?s? song|song ?magic|battle hymn|plays? the (?:lute|harp|flute|violin|drum|lyre|fiddle)|sings? (?:a )?(?:spell|hymn|dirge|anthem|ballad)|weaves? (?:a )?melody|enchant(?:s|ing)? (?:with|through) (?:song|music|voice)/,
     weak: /\bsong\b|\bmusic(?:al|ian)?\b|melody|\bballad\b|\bhymn\b|lullaby|\blute\b|\bharp\b|\bflute\b|\bviolin\b|\blyre\b|\bfiddle\b/,
     // context must be agentive (performs / is a musician), not just the noun
     ctx: /sing(?:s|er|ing)?\b|\bsung\b|music(?:al|ian)?|melod|perform|\bbard\b|minstrel|\bplays?\b|\blyre\b|\blute\b|\bvoice\b|chant|instrument|hymn|ballad/ },
@@ -446,10 +485,10 @@ const SUPPORTED_THEMES = [
     // agentive: sets/lays them, or is a class that would
     ctx: /\btrapper\b|\branger\b|\brogue\b|\bhunter\b|engineer|tinker|saboteur|demolition|\bsapper\b|caltrop|ambush|lays?\b|sets? (?:a|the|up)|rigs?\b|plants?\b|deploys?|scatters?/ },
   { id: 'alchemy', label: 'alchemy', skills: ['th_alch1', 'th_alch2', 'th_alch3'],
-    strong: /alchemist|alchemy|apothecary|potion[- ]?(?:maker|master)|brews? (?:potions|elixirs|concoctions|poisons)|throws? (?:a )?(?:vial|flask|potion|bomb)|acid flask|\bphilter\b|\bphiltre\b|homunculus|\bchemist\b/,
-    weak: /alchem|\bpotions?\b|\belixir|\bflask\b|\bvial\b|concoction|reagent|tincture/,
-    // agentive: brews / crafts / throws them, or is an alchemist
-    ctx: /alchemist|apothec|\bchemist\b|brew|distill|\bmix(?:es|ing|ed)?\b|concoct|\bcraft|throws?\b|hurls?\b|reagent|cauldron|potion[- ]?(?:maker|master)|\blab\b/ },
+    strong: /alchemist|alchem(?:y|ical)|apothecary|herbalist|potion[- ]?(?:maker|master)|brews? (?:potions|elixirs|concoctions|poisons|remedies)|throws? (?:a )?(?:vial|flask|potion|bomb)|acid flask|\bphilter\b|\bphiltre\b|homunculus|\bchemist\b/,
+    weak: /alchem|\bpotions?\b|\belixir|\bflask\b|\bvial\b|concoction|reagent|tincture|\bherbs?\b/,
+    // agentive: brews / crafts / throws them, or is an alchemist/herbalist
+    ctx: /alchem|apothec|\bchemist\b|herbalist|brew|distill|\bmix(?:es|ing|ed)?\b|concoct|\bcraft|throws?\b|hurls?\b|reagent|cauldron|experiment|remed(?:y|ies)|potion[- ]?(?:maker|master)|\blab\b/ },
 ];
 
 export function themeSkillFor(text) {
