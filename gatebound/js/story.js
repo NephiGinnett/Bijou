@@ -2031,6 +2031,187 @@ E.rumor_note_shiro = {
   ],
 };
 
+// Which way the player tends to lead, once they've made enough choices to
+// have a habit. Domineering scenes and step-variants gate on this.
+export function prevailingTone(S) {
+  const t = (S.stats && S.stats.tone) || {};
+  const dom = t.dom || 0, kind = t.kind || 0;
+  if (dom + kind < 2) return null;
+  return dom >= kind ? 'dom' : 'kind';
+}
+const isDom = S => prevailingTone(S) === 'dom';
+const domCount = S => ((S.stats && S.stats.tone && S.stats.tone.dom) || 0);
+
+// ------------------------------------------------------------
+// THE COMMANDING VOICE — a domineering-route arc. Unlocks once the
+// player has led with a firm hand often enough that it's who they are.
+// ------------------------------------------------------------
+
+E.dom_command_1 = {
+  id: 'dom_command_1', where: 'camp', once: true, priority: 43,
+  cond: S => isDom(S) && domCount(S) >= 3 && (S.bond.erin >= 4 || S.bond.sakura >= 4 || S.bond.shiro >= 4),
+  steps: [
+    { s: 'narr', t: 'Camp, after a hard clear. You give one order — short, certain, no room in it for debate — and the whole camp moves before the sentence is finished. Erin\'s already on the perimeter. Sakura\'s wards go up. Shiro logs it. Nobody discussed it. Nobody had to.' },
+    { s: 'shiro', t: '(watching them scatter to your word, then watching you notice it) You felt that. The lag between the order and the motion. It\'s gone. It used to be half a second while they decided whether to trust you. There\'s no gap anymore.' },
+    { s: 'erin', t: '(returning, grinning, entirely unbothered) Because he stopped asking like it was a favour and started saying it like it was true. I have followed a lot of people, Commander. I know the difference in my spine.' },
+    { s: 'sakura', t: '(quiet, pink, absolutely not looking up from her spellbook) ...I like it when you\'re sure. It makes the dark less big. That\'s — that\'s all I\'m saying about it. Tonight.' },
+    { s: 'sys', t: '[ Observation: party cohesion under your command exceeds the sum of its stats. The System has no line item for authority freely granted. It is beginning to suspect that is the point. ]' },
+    { s: 'narr', t: 'You did not take command of these three. That was never on offer — they are the strongest people you know. They handed it to you, one certain word at a time, because you never once used it to make them smaller. You are learning the shape of that difference. So are they.' },
+  ],
+};
+
+E.dom_command_2 = {
+  id: 'dom_command_2', where: 'guild', once: true, priority: 42,
+  cond: S => S.seen.dom_command_1,
+  steps: [
+    { s: 'narr', t: 'The guild hall, mid-afternoon, loud. A dispute at the board is about to become a brawl — two parties, one contested bounty, a lot of drink. You don\'t raise a hand. You raise your voice exactly once, and pitch it to carry.' },
+    { s: 'player', t: '"Enough."' },
+    { s: 'narr', t: 'The hall stops. Not because you\'re the strongest thing in it — though you are — but because the word arrives with the full weight of someone who has never once said it and been wrong. The contested bounty gets split three ways in under a minute, both parties oddly grateful to have been told.' },
+    { s: 'guild', t: '(from behind the counter, not looking up from his ledger) ...I have run this hall for thirty years with a bell and a big stick. You did it with a word. (a beat) You\'ll not be borrowing the stick, then.' },
+    { s: 'shiro', t: '(appearing at your elbow, dry as the desert) I have now watched a room of armed professionals arrange themselves around your certainty like iron filings. For the record, I find it — (she selects the word with great care) — efficient. We will not be discussing my pulse rate.' },
+    { s: 'narr', t: 'Command, it turns out, isn\'t volume. It\'s the quiet underneath the one word you actually mean. You\'re getting frighteningly good at the quiet.' },
+  ],
+};
+
+E.dom_command_3 = {
+  id: 'dom_command_3', where: 'camp', once: true, priority: 43,
+  cond: S => S.seen.dom_command_2,
+  steps: [
+    { s: 'narr', t: 'Late, the fire low, the others asleep or pretending. Whichever of them is closest to your side tonight shifts, restless, and finally gives up the pretense — comes to you in the dark with the particular boldness of someone who has decided to stop waiting to be chosen.' },
+    { s: 'narr', t: 'You don\'t make her ask twice. You tell her exactly where you want her, in the low even voice the whole guild has learned to move for — and watch the order land somewhere much softer than a battlefield. "Good," you say, when she obeys. It is, apparently, her favourite word in the language now.', spice: 'gentle' },
+    { s: 'narr', t: 'You don\'t make her ask twice, and you don\'t make it gentle unless she earns gentle. The same voice that stops a guild hall stops her breath in her throat — every quiet instruction obeyed on a gasp, every "good girl" spent like coin she\'d cross any gate to earn. She surrenders the way the strong surrender: completely, gratefully, and only ever to the one hand she trusts not to close too hard. By the time the fire\'s embers she is boneless against you, wearing your command like the only armour she ever wanted, mumbling that you can give her orders like that anytime the stars are out.', spice: 'steamy' },
+    { s: 'narr', t: 'Afterward, in the hush, the dynamic sits easy between you — no smaller for the softness, no less hers for being yours. Power freely handed back and forth in the dark, and kept safe both directions. That was always the whole trick of it.' },
+  ],
+};
+
+// ------------------------------------------------------------
+// YUKI × YOU × COMPANION — once Yuki has come home as a member and
+// the household is openly shared, she stops standing at the edge of it.
+// ------------------------------------------------------------
+
+E.yuki_trio_erin = {
+  id: 'yuki_trio_erin', where: 'camp', once: true, priority: 45,
+  cond: S => S.flags.yuki_member && (S.bond.yuki || 0) >= 4 && (S.bond.erin || 0) >= 4,
+  steps: [
+    { s: 'narr', t: 'Erin has Yuki cornered by the fire, which is to say Erin has decided Yuki is family and is prosecuting the case with her whole chest. There is wine. There is a training bruise being fussed over. There is Yuki, pink and delighted and out of practice at being fussed over.' },
+    { s: 'erin', t: 'See, this is what I mean. You spent four years learning to take a hit and nobody ever taught you to take a *kindness*. Sit still. Let the shield do her job for once off the field.' },
+    { s: 'yuki', t: '(to you, helpless, glowing) She won\'t let me thank her. Every time I try she just — hands me another reason.' },
+    { s: 'erin', t: '(cheerfully, arm already around Yuki, hand already reaching for yours) Because you don\'t thank family, you *keep* them. Both of you. Come here — the good spot by the fire\'s mine and I\'m feeling generous about the lease.' },
+    { s: 'narr', t: 'And that\'s how the night folds the three of you together — Erin\'s easy warmth in the middle of it, Yuki tucked under one of your arms and one of hers, the edge-dweller learning by firelight that some doors, once you\'re through them, simply don\'t have an outside anymore.', spice: 'gentle' },
+    { s: 'narr', t: 'And that\'s how the night goes from firelit to breathless — Erin, who guards everything, holding you both like the two people she most intends to keep, and Yuki gasping her way through the discovery that being wanted by more than one certain pair of hands is not a thing to survive but a thing to *drown* in. Erin sets the pace the way she sets a battle line: total commitment, no retreat, laughing low against Yuki\'s throat while the girl who spent four years learning "no" spends one night learning, thoroughly, out loud, what "ours" is going to mean from now on. Nobody sleeps much. Nobody minds.', spice: 'steamy' },
+    { s: 'narr', t: 'Near dawn Yuki is boneless and beaming between the two of you, and Erin — smug, satisfied, one arm thrown over the pair of you like a drawn shield — declares the matter of Yuki\'s belonging permanently, gloriously settled.' },
+  ],
+};
+
+E.yuki_trio_sakura = {
+  id: 'yuki_trio_sakura', where: 'camp', once: true, priority: 45,
+  cond: S => S.flags.yuki_member && (S.bond.yuki || 0) >= 6 && (S.bond.sakura || 0) >= 6,
+  steps: [
+    { s: 'narr', t: 'You find them shoulder to shoulder over a battered novel — Sakura reading aloud, Yuki listening with the total absorption of someone who never had time for stories, both of them going pink at the same paragraph and refusing to be the first to look up.' },
+    { s: 'sakura', t: '(catching you watching, mortified, thrilled) It\'s — it\'s the volume where the two rivals stop pretending. I thought Yuki should — that is, it\'s better read to someone, and she\'d never — we\'re not—' },
+    { s: 'yuki', t: '(gently rescuing her, and not) She was going to say she wanted us both here for the good part. She gets shy exactly one sentence before I do. It\'s the only race I ever win.' },
+    { s: 'narr', t: 'Two of the bravest people you know, undone by a paperback and the terrifying prospect of being caught wanting. You close the distance and settle in on the other side of them, and the book, mercifully, gets forgotten around chapter nine.', spice: 'gentle' },
+    { s: 'narr', t: 'Two of the most dangerous women of their generation, reduced to blushes by a paperback — until you take the book from Sakura\'s hands and the pretense goes with it. What follows is all fearless-once-they-start: Sakura\'s spellwork-steady hands and Yuki\'s four-years-patient hunger, the two of them trading nerve back and forth like a dare, discovering in the dark that shy and shy make something remarkably bold once someone they both trust says *yes, both of you, come here*. The prodigy and the edge-dweller learn each other and you all at once, thoroughly, gasping, and the novel\'s good part goes forever unread because the three of you write a considerably better one.', spice: 'steamy' },
+    { s: 'narr', t: 'Later, tangled and warm, Sakura mumbles that volume nine was overrated anyway, and Yuki laughs — the whole, unguarded laugh, the one it took her a lifetime and your whole strange family to find — and neither of them lets go of you, or of each other, until well past the stars.' },
+  ],
+};
+
+E.yuki_trio_shiro = {
+  id: 'yuki_trio_shiro', where: 'camp', once: true, priority: 45,
+  cond: S => S.flags.yuki_member && (S.bond.yuki || 0) >= 8 && (S.bond.shiro || 0) >= 8,
+  steps: [
+    { s: 'narr', t: 'Shiro has done a thing she will deny: she has kept a second, private ledger on Yuki. Not tactics. Tells. The exact configuration of things that make the edge-dweller finally, fully relax. Tonight, with you beside her, she has decided to spend the whole account at once.' },
+    { s: 'shiro', t: '(to Yuki, precise, and with the faintest unsteadiness only the two of you would catch) You flinch a quarter-second before kindness, still. Four years of habit. I have modelled the correction. It requires two people who have already decided the answer is yes, and a great deal of patience. I have both. He is the both.' },
+    { s: 'yuki', t: '(barely a whisper, wrecked by being *seen* that precisely) You wrote me down.' },
+    { s: 'shiro', t: 'I wrote you *home*. There is a difference. Tonight I intend to prove it, clause by clause, with witnesses. (a glance at you, warm enough to melt the composure clean off) Commander — if you would.' },
+    { s: 'narr', t: 'And so the strategist runs the tenderest campaign of her life — you and her, unhurried, dismantling four years of flinch one gentle certainty at a time until Yuki stops bracing and simply lets herself be held by two people who charted exactly how. It works. Of course it works. Shiro did the arithmetic.', spice: 'gentle' },
+    { s: 'narr', t: 'And so the White Queen runs her most thorough campaign to date: every archived tell called and collected, every quarter-second of flinch overwritten with something better, the two of you taking Yuki apart with a patience that is its own kind of ruthless. Shiro narrates none of it and controls all of it, right up until you turn the same attention on *her* and the famous composure comes undone clause by clause — and then there are three of you in the dark and no ledger in the world could keep the count. By dawn the edge-dweller sleeps dead center without a single brace left in her body, and the strategist, cheek on your chest, admits in a murmur that this is the one outcome she never once managed to model in advance.', spice: 'steamy' },
+    { s: 'narr', t: 'In the grey before sunrise Shiro closes the private ledger for good — she doesn\'t need it anymore; the correction holds — and the three of you lie stacked and unhurried in the warmth, one strategist, one edge-dweller, and the commander who somehow made a family out of everyone the world underestimated.' },
+  ],
+};
+
+// ------------------------------------------------------------
+// HAPPILY EVER AFTER — the family grows. Chains off the wedding
+// epilogues; plays out at the guild between gates.
+// ------------------------------------------------------------
+
+E.family_talk = {
+  id: 'family_talk', where: 'guild', once: true, priority: 39,
+  cond: S => !!S.seen.epilogue_kitchen,
+  steps: [
+    { s: 'narr', t: 'It comes up the way the biggest things do — sideways, over dishes, on an ordinary evening in the improbable house the guild insisted on giving you. A child two doors down has just learned to run, and the whole table has gone quiet watching through the window, and nobody wants to be the first to say it.' },
+    { s: 'erin', t: '(the bravest, always, first through every door) ...I want one. Or some. I said it. I\'m not taking it back. I have thought about very little else since the Threshold and I refuse to be a coward about the one thing that actually scares me.' },
+    { s: 'sakura', t: '(very small, very sure) ...me too. A whole shelf of little ones and a whole shelf of books to read them. I already have the second shelf.' },
+    { s: 'shiro', t: '(who has, it emerges, already costed it — schooling, space, the lot — and says none of that) I find I have run the numbers on a future I did not used to let myself want. They come out to yes. Emphatically, illogically, yes.' },
+    { s: 'narr', t: 'Every face at the table turns to you. This is the one clear they can\'t make without their fourth.' },
+    { choice: [
+      { t: '"Then let\'s build it. All of it. Starting now." (warm)', tone: 'kind',
+        r: [
+          { s: 'narr', t: 'The word "now" lands like a struck bell. Erin laughs and cries at once. Sakura hides in your shoulder. Shiro, very quietly, amends a document she has apparently been carrying folded in her coat for weeks.' },
+          { s: 'sys', t: '[ New objective detected — undefined duration, unbounded reward. The System will require a great many new categories. It begins drafting them, and does not complain. ]' },
+        ] },
+      { t: '"Then here\'s how it\'s going to go. Come here — all of you." (commanding)', tone: 'dom',
+        r: [
+          { s: 'narr', t: 'You take the whole trembling, hopeful table in hand the way you take a war council — one certain voice, no room in it for doubt — and lay out a future like an order given: this house, this family, this life, starting tonight, no more waiting to be sure. Three of the strongest people alive lean into the certainty like it\'s the warmest fire in the room.' },
+          { s: 'erin', t: '(breathless, grinning, already halfway out of her chair) *Yes, Commander.* Gods, say the rest of it just like that—' },
+          { s: 'sys', t: '[ New objective accepted under your command. The System notes the party\'s morale has broken its own measuring instruments. Again. ]' },
+        ] },
+    ] },
+  ],
+};
+
+E.family_trying = {
+  id: 'family_trying', where: 'guild', once: true, priority: 39,
+  cond: S => !!S.seen.family_talk,
+  steps: [
+    { s: 'narr', t: 'And so a new kind of campaign begins — the happiest and least strategic one your household has ever undertaken, and the only one anybody volunteers for twice a night.' },
+    { s: 'narr', t: 'The house is warmer than it used to be, and busier after dark, and full of a new and tender purpose. There is a great deal of holding on, afterward, and a great deal of quiet talk about names. Whatever comes of it, the trying is its own homecoming — everyone finally reaching, out loud, for the future they all stopped believing they were allowed.', spice: 'gentle' },
+    { s: 'narr', t: 'And they are, all of them, gloriously unsubtle about it. Erin approaches the project like a siege she fully intends to win — "we are going to do this *properly*, Commander, which means often" — and makes good on it with her whole reckless heart. Sakura, pink to her ears and twice as bold for it, whispers exactly what she wants and exactly why, hands fearless as her spellwork. Shiro produces, unromantically and then very romantically, a chart — and then abandons the chart entirely, undone clause by clause, murmuring against your throat about the future she planned for everything except how badly she\'d want. Night after night, with intent, with laughter, with the whole household reaching for the same impossible warm tomorrow — and every single one of them wearing your certainty like the surest thing they own.', spice: 'steamy' },
+    { s: 'sys', t: '[ The System, tactfully, logs nothing about the nights. It logs only the mornings: a household that keeps waking up more sure of itself. Trend: rising. Recommendation: continue. ]' },
+  ],
+};
+
+E.family_news = {
+  id: 'family_news', where: 'guild', once: true, priority: 39,
+  cond: S => !!S.seen.family_trying,
+  steps: [
+    { s: 'narr', t: 'The physician\'s visit is meant to be routine. It is not routine. She looks up from her examination with the particular careful smile of someone about to change a household forever, and asks who, exactly, she should be congratulating.' },
+    { s: 'narr', cond: S => !!S.flags.harem_formed, t: 'The answer, it turns out, is *everyone, and possibly more than once.* The physician revises her notes, and her estimate of how many chairs your kitchen is going to need.' },
+    { s: 'erin', t: '(who has faced down a Monarch without blinking, and is now openly, magnificently falling apart) I — okay. Okay. I\'ve got — I don\'t have a plan for this feeling. I guard things. I\'m going to be so unbearably good at guarding this.' },
+    { s: 'sakura', t: '(both hands over her mouth, then over her middle, then reaching for you) There\'s going to be a *whole new person.* Who\'ll want stories. I know *so many stories.*' },
+    { s: 'shiro', t: '(the ledger entirely forgotten in her lap, her voice not quite steady for once and no one pretending otherwise) I have modelled a great many futures. (she takes your hand, and then Erin\'s, and then Sakura\'s) I did not model this one, because I did not dare. I have never been so glad to be caught unprepared.' },
+    { s: 'sys', t: '[ New entity detected — projected. Unquantifiable. The System has run out of superlatives and has, for the first time in its operation, simply stopped counting to feel something instead. ]' },
+    { s: 'narr', t: 'The house that the guild built to keep its heroes is, it turns out, going to keep a great deal more than that. Nobody at that long-ago assessment table would have scored it. You wouldn\'t trade the total for the world.' },
+  ],
+};
+
+E.family_grow = {
+  id: 'family_grow', where: 'guild', once: true, priority: 39,
+  cond: S => !!S.seen.family_news,
+  steps: [
+    { s: 'narr', t: 'The spare room becomes a nursery in a single riotous weekend. Erin builds the crib twice — the first one was "structurally an insult." Shiro chooses the safest possible everything and then, caught, admits she also chose the softest. Sakura paints tiny constellations across the ceiling, accurate ones, so the little one "learns the real sky first."' },
+    { s: 'guild', t: '(delivering a rocking chair he swears is surplus, fooling no one) Strategic hero retention, this. Can\'t have my best table distracted by furniture shopping. (he lingers in the doorway a moment too long, gruff and misty) ...It\'s a good room. It\'s a good house. You did that.' },
+    { s: 'narr', cond: S => !!S.flags.yuki_member, t: 'Yuki, who spent four years learning that no room was ever quite hers, sits in the middle of this one on the floor with the paint and the tiny socks and cannot stop touching everything, as if checking it\'s real, as if she\'s allowed. She is. You made very sure she knows she is.' },
+    { s: 'narr', t: 'You stand in the doorway of a room that did not exist a season ago, in a life that did not exist a year ago, built by hands the whole world underestimated, for someone who isn\'t here yet and is already the most defended person on the continent.' },
+    { s: 'sys', t: '[ Nursery complete. Threat assessment of anything that might ever approach its occupant: the System advises the universe not to. The whole family concurs. ]' },
+  ],
+};
+
+E.family_harem_brood = {
+  id: 'family_harem_brood', where: 'guild', once: true, priority: 39,
+  cond: S => !!S.seen.family_grow && !!S.flags.harem_formed,
+  steps: [
+    { s: 'narr', t: 'Years fold forward, the way good years do — fast, and full. The house the guild gave you long ago stopped being big enough and cheerfully refused to admit it. There are boots by the door in six sizes. There is a chore rotation Shiro maintains with the rigor of a syndicate audit and the mercy of a doting mother, which is to say it is never actually enforced.' },
+    { s: 'erin', t: '(hollering up the stairs, radiant, exhausted, exactly where she always wanted to be) If the small one has climbed the bookshelf AGAIN — Sakura, that\'s YOUR shelf-climber, she has your exact face when she\'s about to do something brave and stupid—' },
+    { s: 'sakura', t: '(not even a little sorry) She\'s reconnaissance. She reports back. It\'s adorable intelligence work. (a beat, softer, leaning into you) ...We really did it. All the shelves are full. Both kinds.' },
+    { s: 'shiro', t: '(a child asleep on her ledger, another using her as a fortress wall, her composure nowhere to be found and clearly unmissed) I once described this household, on day one, as convenient and disposable. (she surveys the beautiful chaos, unhurried, complete) I have never in my life been so thoroughly, so happily, so permanently wrong about a projection.' },
+    { s: 'narr', cond: S => !!S.flags.yuki_member, t: 'And Yuki — home, all the way home, forever — is in the thick of it with a toddler on her hip and no flinch left anywhere in her, the edge-dweller who got the exact loud crowded center she never once let herself imagine.' },
+    { s: 'narr', t: 'You stand in the doorway of the fullest house on the continent — every chair taken, every voice raised, every single one of them chosen and choosing back — and you think about a table, long ago, where three A-ranks and a nervous nobody were told they didn\'t add up.' },
+    { s: 'sys', t: '[ Final tally, and the last one the System will ever bother to keep: everyone accounted for. Everyone home. Everyone loved, out loud, past all argument. Highest-value outcome on record. ♥ ]' },
+    { s: 'narr', t: '♥  GATEBOUND — and they lived, gate after gate, and cradle after cradle, gloriously, permanently, happily.  ♥' },
+  ],
+};
+
 export function pickRumorEvent(S) {
   return Object.values(EVENTS)
     .filter(e => e.where === 'rumor' && !(e.once && S.seen[e.id]) && (!e.cond || e.cond(S)))
