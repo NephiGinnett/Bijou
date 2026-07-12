@@ -103,12 +103,14 @@ prevailing tone for future content.
 guildmates. Upload a JSON card, paste a Warlock's Codex / tavern-card, or
 just describe them in prose. It reads **physical traits from how the
 character looks, not from their backstory** — an explicit `appearance`
-field or "Appearance:" section wins, and otherwise it keeps the
-self-describing sentences and ignores creatures the character merely
-*fought* (so a wood elf who "battled a slime" stays a wood elf, not a
-slime). From that scope it reads hair/skin/eye colors,
+field, an `Appearance:` / `Physical description:` section, or a W++/boostyle
+`{Body: ...}` block wins, and otherwise it keeps the self-describing
+sentences and ignores creatures the character merely *fought* (so a wood
+elf who "battled a slime" stays a wood elf, not a slime). From that scope
+it reads hair/skin/eye colors,
 hairstyles (incl. braids), **body build and chest size** (for character
-differentiation), and features: elf/rabbit/cat/fox/wolf ears; horns and
+differentiation), and features: elf/rabbit/cat (incl. jaguar & other big
+cats)/fox/wolf ears; horns and
 **antlers**; fox/dragon/devil/cat/wolf tails; **serpent, hooved,
 centaur, or mermaid lower bodies**; scaled skin; extra arms; a third
 eye; wings; halos; crowns; capes; masks; **markings/tattoos, freckles,
@@ -118,10 +120,16 @@ gills, full fur, facial hair, canes**; spectral bodies, shadow-forms,
 unusual sizes. It infers a class and role — including a **Shifter**
 class (a shapeshifter whose *Apex Mimic* passive lets it take the shape
 of any enemy it fells, learning one of that creature's skills for the
-rest of the battle) — and assembles a combat kit, with **themed
-elemental/status skill lines** when the description implies one
-(fire→Burn, ice→Slow/Freeze, lightning→Stun, poison, holy, earth→Sunder,
-wind→Haste, bleed, curse, shadow) plus a passive, then renders a chibi
+rest of the battle) — reading an explicit `Class:` / `Occupation:` field
+first so a wizard isn't mistaken for a tank. It assembles a combat kit,
+with **themed skill lines** when the description genuinely implies one —
+elemental/status (fire→Burn, ice→Slow/Freeze, lightning→Stun, poison,
+holy, earth→Sunder, wind→Haste, bleed, curse, shadow) plus **song/bardic,
+traps, and alchemy** kits. Theme detection is context-aware: it takes
+unambiguous cues ("pyromancer", "hurls fire", "plays the lute") outright
+but ignores incidental prose ("fire in her eyes", "a fiery temper") unless
+real magic/combat context backs it, so flavor text no longer hands out
+elemental kits by accident. Each hero also gets a passive, then a chibi
 preview. Summon them and every system picks them up:
 party, dispatch, mastery, the Smith, and the Sanctum (their card text
 becomes their chat persona). Forged souls persist across NG+ cycles and

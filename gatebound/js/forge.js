@@ -181,13 +181,21 @@ export function normalizeCard(input) {
   return { name, description: desc || String(card.description || ''), persona: card.persona || card.personality || '', tags, appearance };
 }
 
-// Pull the text under an "Appearance"/"Physical description" header out of
-// a prose card, up to the next header or blank line. Deliberately does NOT
-// match a bare "Description:" header — that usually carries the backstory.
+// Pull the character's look out of a prose card. Handles two common layouts:
+//   1. W++/boostyle inline fields — {Body: ...}, {Appearance: ...}
+//   2. a headed "Appearance:" / "Physical description:" section
+// Deliberately does NOT grab a bare "Description:" header — that carries the
+// backstory, which is exactly what we're trying to keep out of the body read.
 function sectionFromProse(body) {
   if (!body) return '';
-  const m = body.match(/(?:^|\n)[ \t>*#_]*(?:appearance|physical description|physical appearance|physical features|looks like|visual description)[ \t]*[:\-–—]?[ \t]*\n?([\s\S]*?)(?=\n[ \t>*#_]*[A-Za-z][A-Za-z /]{2,24}[ \t]*[:\-–—]\s|\n\s*\n|$)/i);
-  return m ? m[1].trim() : '';
+  const out = [];
+  // 1. curly inline fields (may appear more than once)
+  const curly = /\{\s*(?:body|appearance|physical(?: description| appearance| features)?|looks)\s*:\s*([^}]+)\}/gi;
+  for (let m; (m = curly.exec(body)); ) out.push(m[1].trim());
+  // 2. a headed appearance section, up to the next header or blank line
+  const sect = body.match(/(?:^|\n)[ \t>*#_]*(?:appearance|physical description|physical appearance|physical features|looks like|visual description)[ \t]*[:\-–—]?[ \t]*\n?([\s\S]*?)(?=\n[ \t>*#_]*[A-Za-z][A-Za-z /]{2,24}[ \t]*[:\-–—]\s|\n\s*\n|$)/i);
+  if (sect) out.push(sect[1].trim());
+  return out.filter(Boolean).join('\n');
 }
 
 // Clauses that describe things the character encountered rather than IS —
@@ -221,10 +229,13 @@ export function parseCharacter(input, salt = 0) {
   const pick = (arr, salt = 0) => arr[(seed + salt) % arr.length];
 
   // --- role & class ---
+  // An explicit "Class: / Occupation: / Profession:" declaration wins over a
+  // keyword scan of the whole card, so kit-description words ("frontline tank",
+  // "barrier", "protective") don't misclassify a card that says "Class: Wizard".
   let role = null, cls = null;
-  for (const [re, r, c] of CLASS_WORDS) {
-    if (re.test(text)) { role = r; cls = c; break; }
-  }
+  const decl = (text.match(/(?:^|[\n{|])[-*#>\s]*(?:class|occupation|profession|archetype|role|job|calling)\s*[:=]\s*([^.\n}|]+)/i) || [])[1] || '';
+  if (decl) for (const [re, r, c] of CLASS_WORDS) { if (re.test(decl)) { role = r; cls = c; break; } }
+  if (!role) for (const [re, r, c] of CLASS_WORDS) { if (re.test(text)) { role = r; cls = c; break; } }
   if (!role) { role = pick(['striker', 'caster', 'support'], 1); cls = { striker: 'Adventurer', caster: 'Adept', support: 'Companion' }[role]; }
 
   // --- appearance ---  (read from bodyText, the scrubbed appearance scope)
@@ -244,12 +255,12 @@ export function parseCharacter(input, salt = 0) {
     ears: /rabbit|bunny|lapin|lop[- ]ear/.test(bodyText) ? 'rabbit'
       : /kitsune|fox[- ]?(?:girl|boy|ears|spirit|folk)|vulpine/.test(bodyText) ? 'fox'
       : /wolf[- ]?(?:girl|boy|ears|kin)|lupine/.test(bodyText) ? 'wolf'
-      : /\bneko\b|cat[- ]?(?:girl|boy|ears|kin)|feline/.test(bodyText) ? 'cat' : null,
+      : /\bneko\b|cat[- ]?(?:girl|boy|ears|kin)|feline|jaguar|panther|leopard|\btiger|lion(?:ess)?|\blynx|cheetah|ocelot|cougar|puma|ocelomeh/.test(bodyText) ? 'cat' : null,
     tail: /dragon(?:kin|born)?|draconic|\bwyrm|drake/.test(bodyText) && /tail/.test(bodyText) ? 'dragon'
-      : /demon|devil|imp|succubus|tiefling/.test(bodyText) && /tail/.test(bodyText) ? 'devil'
+      : /demon|devil|\bimp\b|succubus|tiefling/.test(bodyText) && /tail/.test(bodyText) ? 'devil'
       : /fox|kitsune|vulpine/.test(bodyText) && /tail|kitsune|fox/.test(bodyText) ? 'fox'
       : /wolf|lupine|canine/.test(bodyText) && /tail/.test(bodyText) ? 'wolf'
-      : /\bcat|feline|neko/.test(bodyText) && /tail/.test(bodyText) ? 'cat'
+      : /\bcat|feline|neko|jaguar|panther|leopard|\btiger|\blion|\blynx|cheetah|ocelot|cougar|puma/.test(bodyText) && /tail/.test(bodyText) ? 'cat'
       : /\btail\b/.test(bodyText) ? 'plain' : null,
     horns: /\bhorns?\b|demon(?:ess)?|oni\b|draconic|dragonkin|tiefling|succubus|devil/.test(bodyText),
     wings: /\bwings?\b|\bangel(?:ic)?\b|valkyrie|harpy|\bfairy\b|\bseraph(?:im)?\b/.test(bodyText),
@@ -288,7 +299,7 @@ export function parseCharacter(input, salt = 0) {
     scale: /towering|giant(?:ess)?|massive|hulking|seven fe?e?t|colossal/.test(bodyText) ? 1.18
       : /\btiny\b|petite|diminutive|small stature|halfling|gnome|fairy/.test(bodyText) ? 0.85 : 1,
     // ---- body build & chest (character differentiation) ----
-    build: /muscular|athletic build|broad[- ]shoulder|powerful build|warrior build|strapping|brawny|burly/.test(bodyText) ? 'broad'
+    build: /muscular|\bathletic\b|\btoned\b|broad[- ]shoulder|powerful build|warrior build|strapping|brawny|burly/.test(bodyText) ? 'broad'
       : /plump|thick|curvy|full[- ]figured|rubenesque|voluptuous|soft build|chubby|shapely|hourglass/.test(bodyText) ? 'curvy'
       : /slender|slim|lithe|willowy|waifish|lean\b|slight build/.test(bodyText) ? 'slim' : 'average',
     outfitStyle: /armor|armour|plate|chain ?mail|breastplate/.test(bodyText) ? 'armor'
@@ -311,8 +322,8 @@ export function parseCharacter(input, salt = 0) {
   // explicit size descriptors read the appearance scope.
   const femalePresenting = /gender:\s*female|female[- ]presenting|\bshe\b|\bher\b|\bwoman\b|\bgirl\b|\bfemale\b|\blady\b|mistress|sorceress|enchantress|priestess|matron|\bqueen\b|princess|maiden|\bwife\b|\bmother\b|daughter|\bsister\b|\bnun\b/.test(text);
   const malePresenting = /gender:\s*male|\bhe\b|\bhis\b|\bhim\b|\bman\b|\bmale\b|\bboy\b|\blord\b|\bking\b|\bprince\b|\bfather\b|\bson\b|\bbrother\b|\bsir\b/.test(text);
-  if (/flat[- ]?chest|small (?:breasts|bust|chest)|modest (?:bust|chest)|a-cup|boyish figure|petite (?:bust|chest)/.test(bodyText)) spec.chest = 1;
-  else if (/busty|buxom|voluptuous|large (?:breasts|bust|chest)|full (?:breasts|bust)|ample (?:bust|chest|breasts)|big (?:breasts|bust)|heavy (?:breasts|bust)|generous (?:bust|chest|figure)|huge (?:breasts|bust)|dd?-?cup/.test(bodyText)) spec.chest = 3;
+  if (/flat[- ]?chest|small (?:breasts|bust|chest|tits|boobs)|modest (?:bust|chest)|a-cup|boyish figure|petite (?:bust|chest)/.test(bodyText)) spec.chest = 1;
+  else if (/busty|buxom|voluptuous|(?:large|full|ample|big|heavy|huge|massive|fat) (?:breasts|bust|chest|tits|boobs|knockers)|generous (?:bust|chest|figure)|dd?-?cup|huge tits/.test(bodyText)) spec.chest = 3;
   else if (/curvy|shapely|hourglass|full[- ]figured|womanly|rubenesque/.test(bodyText)) spec.chest = 2;
   else spec.chest = (femalePresenting && !malePresenting) ? 2 : (malePresenting ? 0 : 1);
   if (spec.build === 'curvy' && spec.chest < 2) spec.chest = 2;
@@ -361,12 +372,11 @@ const UNSUPPORTED_FEATURES = [
   { re: /swarm of|hive body|made of (?:insects|bees|rats)/, label: 'swarm body' },
 ];
 
-// Skill themes the generic kit still doesn't capture (elemental/status
-// lines are built now — see SUPPORTED_THEMES).
+// Skill themes the generic kit still doesn't capture. Song, traps, and
+// alchemy are built now (see SUPPORTED_THEMES); only summoning of persistent
+// pets — which the turn engine has no unit-spawning for — remains.
 const UNSUPPORTED_SKILL_THEMES = [
-  { re: /summon|conjure|familiar|raise (?:the )?dead|necromanc/, label: 'summoning' },
-  { re: /music|song|sing\b|melody|\bbard\b/, label: 'song / performance' },
-  { re: /trap|snare|\bbomb|explosive|alchemy/, label: 'traps / alchemy' },
+  { re: /\bsummons?\b|conjure(?:s|d)? (?:a |an |the )?(?:familiar|pet|minion|skeleton|spirit|elemental|golem)|raise(?:s|d)? (?:the )?dead|necromanc|calls? forth a/, label: 'summoning / pets' },
 ];
 
 export function forgeGaps(text, bodyText, spec, role) {
@@ -385,21 +395,69 @@ export function forgeGaps(text, bodyText, spec, role) {
 // the forged hero a matching kit. Ordered: first match wins.
 // ------------------------------------------------------------------
 
+// A theme is chosen from STRONG signals first (unambiguous: "pyromancer",
+// "hurls fire", "plays the lute"), then from WEAK element words only when a
+// matching CONTEXT is also present. This stops incidental prose — "fire in
+// her eyes", "a fiery temper", "burning ambition" — from grabbing a whole
+// elemental kit off a character with no magic at all.
+const MAGIC = /\bmagic|\bmage\b|wizard|witch|sorcer|\bspell|\bcast(?:s|ing|er)?\b|arcane|conjur|incant|enchant|element(?:al)?|affinity|attuned|channel|imbue|\bwield|unleash|kinesis|kinetic|mancy|mancer|weave|\brune|\bglyph|invok|warlock|shaman|\bdruid|adept|ritual/;
+const COMBAT = /blade|sword|dagger|knife|\bclaw|\baxe\b|\bcut\b|slash|wound|warrior|assassin|\brogue\b|reaver|berserk|butcher|mercenary|hunt|striker|\bspear|\bbow\b/;
+
 const SUPPORTED_THEMES = [
-  { id: 'fire',      re: /\bfire\b|flame|flaming|burn|pyro|inferno|ember|magma|lava/, label: 'fire', skills: ['th_fire1', 'th_fire2', 'th_fire3'] },
-  { id: 'ice',       re: /\bice\b|frost|freezing|freeze|cryo|glacial|rime|snow/, label: 'ice', skills: ['th_ice1', 'th_ice2', 'th_ice3'] },
-  { id: 'lightning', re: /lightning|thunder|storm|shock|electric|volt|tempest/, label: 'lightning', skills: ['th_bolt1', 'th_bolt2', 'th_bolt3'] },
-  { id: 'poison',    re: /poison|venom|toxic|plague|blight|acid/, label: 'poison', skills: ['th_pois1', 'th_pois2', 'th_pois3'] },
-  { id: 'holy',      re: /holy|radiant|divine|sacred|celestial|hallow/, label: 'holy', skills: ['th_holy1', 'th_holy2', 'th_holy3'] },
-  { id: 'shadow',    re: /shadow|dark magic|void|umbral|eclipse|night magic|gloom/, label: 'shadow', skills: ['shadow_lash', 'umbral_coil', 'midnight_rite'] },
-  { id: 'earth',     re: /\bearth\b|stone|rock|quake|seismic|geoman/, label: 'earth', skills: ['th_earth1', 'th_earth2', 'th_earth3'] },
-  { id: 'wind',      re: /\bwind\b|gale|zephyr|cyclone|aeroman|air magic/, label: 'wind', skills: ['th_wind1', 'th_wind2', 'th_wind3'] },
-  { id: 'bleed',     re: /\bbleed|sever|lacerat|hemorrhag|gore\b/, label: 'bleed', skills: ['th_bleed1', 'th_bleed2', 'th_bleed3'] },
-  { id: 'curse',     re: /curse|hex|doom|jinx|malediction|blood magic/, label: 'curse', skills: ['th_curse1', 'th_curse2', 'th_curse3'] },
+  { id: 'fire', label: 'fire', skills: ['th_fire1', 'th_fire2', 'th_fire3'],
+    strong: /pyromanc|pyrokine|\bpyro\b|fire ?magic|flame ?magic|fire mage|flame mage|fireball|flames? (?:erupt|burst|engulf|lash|roar|leap|dance)|hurl(?:s|ing)? (?:fire|flame)|breathe?s? (?:fire|flame)|wreathed in (?:fire|flame)|conjure(?:s|d)? (?:fire|flame)|infernal|molten|volcanic|\bmagma\b|\blava\b|immolat/,
+    weak: /\bfire\b|\bflame\b|\bflames\b|\bember|\bcinders?\b|\bpyre\b/, ctx: MAGIC },
+  { id: 'ice', label: 'ice', skills: ['th_ice1', 'th_ice2', 'th_ice3'],
+    strong: /cryomanc|cryokine|ice ?magic|frost ?magic|ice mage|freezes?|freezing|frostbite|glacial|blizzard|permafrost|conjure(?:s|d)? (?:ice|frost)|frost bolt|ice spike|\brime\b/,
+    weak: /\bice\b|\bfrost\b|\bsnow\b|\bicy\b|\bchill/, ctx: MAGIC },
+  { id: 'lightning', label: 'lightning', skills: ['th_bolt1', 'th_bolt2', 'th_bolt3'],
+    strong: /electromanc|storm ?magic|lightning mage|call(?:s|ing)? (?:the )?(?:lightning|thunder|storm)|thunderbolt|chain lightning|electrocut|conjure(?:s|d)? (?:lightning|storm)/,
+    weak: /lightning|thunder|\bstorm\b|\bshock|electric|\bvolt|tempest/, ctx: MAGIC },
+  { id: 'poison', label: 'poison', skills: ['th_pois1', 'th_pois2', 'th_pois3'],
+    strong: /poison(?:er|ous)|envenom|coats? (?:her|his|their|the)? ?(?:blade|weapon)s? (?:in|with) (?:poison|venom)|plague ?(?:doctor|magic)|toxic (?:cloud|magic)|blightcaller/,
+    weak: /poison|venom|toxic|\bplague\b|\bblight\b|\bacid\b/, ctx: MAGIC },
+  { id: 'holy', label: 'holy', skills: ['th_holy1', 'th_holy2', 'th_holy3'],
+    strong: /holy ?magic|divine ?magic|\bsmite|\bcleric\b|\bpriest(?:ess)?\b|\bpaladin\b|radiant (?:light|beam|burst|energy|magic)|holy (?:light|fire|wrath)|consecrat|sanctif|channel(?:s|ing)? (?:the )?(?:light|divine)|god(?:dess)? of light/,
+    weak: /\bholy\b|divine|radiant|sacred|celestial|hallow/, ctx: MAGIC },
+  { id: 'shadow', label: 'shadow', skills: ['shadow_lash', 'umbral_coil', 'midnight_rite'],
+    strong: /shadow ?magic|dark ?magic|umbral|void ?magic|necromanc|shadowmanc|command(?:s)? (?:the )?shadows|weave(?:s)? (?:the )?dark|night ?magic/,
+    weak: /shadow|\bvoid\b|umbral|eclipse|gloom|\bdark(?:ness)?\b/, ctx: MAGIC },
+  { id: 'earth', label: 'earth', skills: ['th_earth1', 'th_earth2', 'th_earth3'],
+    strong: /geomanc|terramanc|earth ?magic|stone ?magic|earthbend|command(?:s)? (?:the )?(?:earth|stone|rock)|seismic|rockslide|conjure(?:s|d)? (?:stone|rock|earth)/,
+    weak: /\bearth\b|\bstone\b|\brock\b|\bquake\b|\bboulder\b/, ctx: MAGIC },
+  { id: 'wind', label: 'wind', skills: ['th_wind1', 'th_wind2', 'th_wind3'],
+    strong: /aeromanc|windbend|wind ?magic|air ?magic|command(?:s)? (?:the )?(?:wind|air|sky)|cyclone|whirlwind|\bgale\b magic|conjure(?:s|d)? (?:wind|gale)/,
+    weak: /\bwind\b|\bgale\b|zephyr|cyclone|\baero|\bbreeze\b/, ctx: MAGIC },
+  { id: 'bleed', label: 'bleed', skills: ['th_bleed1', 'th_bleed2', 'th_bleed3'],
+    strong: /hemorrhag|lacerat|exsanguinat|opens? (?:deep )?wounds|bloodletting|\bbleeds? (?:them|it|the|his|her|out)/,
+    weak: /\bbleed|\bsever\b|\bgore\b|\brend\b/, ctx: COMBAT },
+  { id: 'curse', label: 'curse', skills: ['th_curse1', 'th_curse2', 'th_curse3'],
+    strong: /maledict|witch(?:es)? (?:curse|hex)|lays? (?:a )?curse|blood ?magic|dark (?:ritual|pact)|voodoo|hexes\b|\bcurse(?:s|d)? (?:them|it|the|a|his|her)/,
+    weak: /\bcurse|\bhex\b|\bdoom\b|\bjinx\b|malediction/, ctx: MAGIC },
+  // ---- non-elemental themed kits ----
+  { id: 'song', label: 'song', skills: ['th_song1', 'th_song2', 'th_song3'],
+    strong: /\bbard\b|minstrel|troubadour|\bskald\b|siren'?s? song|song ?magic|battle hymn|plays? the (?:lute|harp|flute|violin|drum|lyre|fiddle)|sings? (?:a )?(?:spell|hymn|dirge|anthem|ballad)|weaves? (?:a )?melody|enchant(?:s|ing)? (?:with|through) (?:song|music|voice)/,
+    weak: /\bsong\b|\bmusic(?:al|ian)?\b|melody|\bballad\b|\bhymn\b|lullaby|\blute\b|\bharp\b|\bflute\b|\bviolin\b|\blyre\b|\bfiddle\b/,
+    // context must be agentive (performs / is a musician), not just the noun
+    ctx: /sing(?:s|er|ing)?\b|\bsung\b|music(?:al|ian)?|melod|perform|\bbard\b|minstrel|\bplays?\b|\blyre\b|\blute\b|\bvoice\b|chant|instrument|hymn|ballad/ },
+  { id: 'trap', label: 'traps', skills: ['th_trap1', 'th_trap2', 'th_trap3'],
+    strong: /\btrapper\b|lays? (?:down )?(?:a |the )?traps?|sets? (?:a |the )?(?:trap|snare)|trap[- ]?master|caltrops|tripwire|pit trap|spring(?:s|ing)? (?:a )?trap|rigs? (?:up )?(?:a )?(?:trap|explosive)|demolition|\bsapper\b/,
+    weak: /\btraps?\b|\bsnares?\b|\bmines?\b|tripwire|caltrop|\bbomb|explosive/,
+    // agentive: sets/lays them, or is a class that would
+    ctx: /\btrapper\b|\branger\b|\brogue\b|\bhunter\b|engineer|tinker|saboteur|demolition|\bsapper\b|caltrop|ambush|lays?\b|sets? (?:a|the|up)|rigs?\b|plants?\b|deploys?|scatters?/ },
+  { id: 'alchemy', label: 'alchemy', skills: ['th_alch1', 'th_alch2', 'th_alch3'],
+    strong: /alchemist|alchemy|apothecary|potion[- ]?(?:maker|master)|brews? (?:potions|elixirs|concoctions|poisons)|throws? (?:a )?(?:vial|flask|potion|bomb)|acid flask|\bphilter\b|\bphiltre\b|homunculus|\bchemist\b/,
+    weak: /alchem|\bpotions?\b|\belixir|\bflask\b|\bvial\b|concoction|reagent|tincture/,
+    // agentive: brews / crafts / throws them, or is an alchemist
+    ctx: /alchemist|apothec|\bchemist\b|brew|distill|\bmix(?:es|ing|ed)?\b|concoct|\bcraft|throws?\b|hurls?\b|reagent|cauldron|potion[- ]?(?:maker|master)|\blab\b/ },
 ];
 
 export function themeSkillFor(text) {
-  return SUPPORTED_THEMES.find(t => t.re.test(text)) || null;
+  // strong signals win outright, checked across all themes first
+  for (const t of SUPPORTED_THEMES) if (t.strong.test(text)) return t;
+  // then weak element words, but only when the theme's context is present
+  for (const t of SUPPORTED_THEMES) if (t.weak && t.weak.test(text) && (!t.ctx || t.ctx.test(text))) return t;
+  return null;
 }
 
 // Damage roles get a fully themed kit; support roles keep their identity
