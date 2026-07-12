@@ -788,6 +788,7 @@ function dungeonScreen() {
       ${pathBar()}
       <div class="dungeon-body">${body}</div>
       <div class="row gap wrap">${actions}
+        <button class="btn ghost" id="d-auto" title="Send the party through the rest of the gate on its own, using each hero's auto-skill — no manual turns. Fast-forward to the results.">⏩ Auto-clear</button>
         <button class="btn ghost" id="d-retreat">Retreat from gate</button>
       </div>
       <div class="mini-party">${hpRows}</div>
@@ -843,11 +844,97 @@ function dungeonScreen() {
     dungeonScreen();
   });
 
+  const autoBtnD = $('#d-auto');
+  if (autoBtnD) autoBtnD.onclick = () => { AU.sfx('confirm'); autoResolveDungeon(); };
+
   $('#d-retreat').onclick = () => {
     AU.sfx('ui');
     const result = ST.endRun(S, 'retreat');
     results(result);
   };
+}
+
+// Fast-forward the rest of the run with no per-turn UI: each remaining
+// chamber is resolved by the same auto-battle brain the ▶ Auto toggle uses
+// (each hero's chosen auto-skill, else Strike). Handy for blowing past a
+// gate to reach the story beyond it, or for testing party vs. stat blocks.
+async function autoResolveDungeon() {
+  const run = S.run;
+  if (!run) return;
+  const gate = run.gate;
+
+  const overlay = el(`<div class="dialogue-layer"><div class="panel" style="max-width:340px;text-align:center">
+    <h3>Clearing the gate…</h3>
+    <div class="muted" id="ar-status">The party moves on its own.</div>
+    <div class="bar-outer" style="margin-top:12px"><div class="bar-inner" id="ar-bar" style="width:0%"></div></div>
+  </div></div>`);
+  document.body.appendChild(overlay);
+  const status = overlay.querySelector('#ar-status');
+  const bar = overlay.querySelector('#ar-bar');
+  const total = run.nodes.length;
+  const tick = (msg) => {
+    if (status) status.textContent = msg;
+    if (bar) bar.style.width = Math.round(Math.min(run.nodeIdx, total) / total * 100) + '%';
+  };
+
+  let fights = 0, dmg = 0;
+  let guard = 0;
+  while (S.run && run.nodeIdx < run.nodes.length && guard++ < 200) {
+    const node = run.nodes[run.nodeIdx];
+
+    if (node.type === 'branch') {
+      // take the calmer door when auto-resolving; the elite den is opt-in
+      run.nodes[run.nodeIdx] = node.options.find(o => !o.elite) || node.options[0];
+      ST.save(S);
+      continue;
+    }
+
+    if (node.type === 'fight' || node.type === 'boss') {
+      tick(node.type === 'boss' ? 'The boss chamber.' : `Chamber ${run.nodeIdx + 1}…`);
+      await stage.wait(window.__FAST ? 60 : 220);
+      const hpBefore = run.partyIds.reduce((a, id) => a + run.party[id].hp, 0);
+      const c = new Combat(S, node.group);
+      let r = c.step(), g2 = 0;
+      while (!r.outcome && g2++ < 2000) {
+        r = r.needCommand ? c.step(c.autoCommand(r.needCommand, S.autoSkill[r.needCommand.heroId])) : c.step();
+      }
+      fights++;
+      if (r.outcome === 'wipe') { overlay.remove(); AU.sfx('wipe'); return results(ST.endRun(S, 'wipe')); }
+      if (r.outcome === 'retreat') { overlay.remove(); return results(ST.endRun(S, 'retreat')); }
+      dmg += Math.max(0, hpBefore - run.partyIds.reduce((a, id) => a + run.party[id].hp, 0));
+      if (node.type === 'boss') {
+        ST.rollBossDrop(S, gate);
+        overlay.remove();
+        AU.sfx('victory');
+        toast(`Gate auto-cleared — ${fights} fights.`, 'gold');
+        return results(ST.endRun(S, 'clear'));
+      }
+      run.nodeIdx++;
+    } else if (node.type === 'treasure') {
+      ST.rollTreasure(S, gate, Math.random);
+      run.nodeIdx++;
+    } else if (node.type === 'rest' || node.type === 'stranded') {
+      const pct = node.type === 'stranded' ? 0.2 : 0.3;
+      for (const id of run.partyIds) {
+        const st = ST.heroStats(S, id);
+        run.party[id].hp = Math.min(st.hp, Math.round(run.party[id].hp + st.hp * pct));
+        run.party[id].mp = Math.min(st.mp, Math.round(run.party[id].mp + st.mp * pct));
+      }
+      run.nodeIdx++;
+    } else if (node.type === 'event') {
+      const evd = DUNGEON_EVENTS[Math.floor(node.roll * DUNGEON_EVENTS.length)];
+      applyDungeonEffect(evd.choices[0].effect, gate);
+      run.nodeIdx++;
+    } else {
+      run.nodeIdx++;
+    }
+    tick('Pressing on…');
+    ST.save(S);
+  }
+
+  // Safety net: a run with no boss node still resolves cleanly.
+  overlay.remove();
+  if (S.run) return results(ST.endRun(S, 'clear'));
 }
 
 function applyDungeonEffect(eff, gate) {

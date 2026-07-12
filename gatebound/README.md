@@ -48,7 +48,13 @@ Add `?fast=1` to the URL for instant text and 3× animation speed.
    has a chain), pair scenes between the girls, the Yuki drama thread from
    the source scenario, rank promotion ceremonies, and four different
    endings chosen by your bonds after the S-rank **Monarch's Threshold** —
-   plus wedding epilogues and married-life vignettes beyond it.
+   plus wedding epilogues and married-life vignettes beyond it, a
+   **happily-ever-after family chain** (the conversation, the trying, the
+   news, the nursery, and a crowded-house finale for the harem route), and
+   **Yuki × you × companion** scenes once she's home as a member.
+   In a hurry to reach the story? **⏩ Auto-clear** on the dungeon screen
+   sends the party through the rest of the gate on its own — each hero's
+   auto-skill, no manual turns — and fast-forwards to the results.
 5. **Post-Monarch** — the guild grows: newcomers adapted from *the
    Warlock's Codex* (Mira, Nessa, Vex, Seris) petition to join after
    hearing about your clear. Recruit them, gear them, and use the
@@ -94,8 +100,11 @@ devotion night, the harem's formation — now offer **wholesome,
 domineering, and rejection** options. Characters react in character
 (Erin thrills to command; Sakura flusters and follows; Shiro audits it
 and approves; Yuki chooses her place with open eyes), rejections stay
-retryable rather than locking a route, and the game quietly tracks your
-prevailing tone for future content.
+retryable rather than locking a route, and the game tracks your
+prevailing tone. Lead with a firm hand often enough and a **Commanding
+Voice** arc unlocks — the party organizing around your certainty in camp,
+in the guild hall, and after dark — and your prevailing manner also colors
+the Sanctum chats and the family scenes.
 
 ### The Character Forge
 
