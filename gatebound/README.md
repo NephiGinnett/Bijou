@@ -104,71 +104,19 @@ retryable rather than locking a route, and the game tracks your
 prevailing tone. Lead with a firm hand often enough and a **Commanding
 Voice** arc unlocks — the party organizing around your certainty in camp,
 in the guild hall, and after dark — and your prevailing manner also colors
-the Sanctum chats and the family scenes.
+the family scenes.
 
-### The Character Forge
+### The Character Forge & the Sanctum → moved to the Codex
 
-**⚗ Forge** in the guild hall turns character descriptions into playable
-guildmates. Upload a JSON card, paste a Warlock's Codex / tavern-card, or
-just describe them in prose. It reads **physical traits from how the
-character looks, not from their backstory** — an explicit `appearance`
-field, an `Appearance:` / `Physical description:` section, or a W++/boostyle
-block (both `{Body: ...}` and `breasts(huge, full)` paren style) wins, and
-otherwise it keeps the self-describing sentences and ignores creatures the
-character merely *fought* (so a wood elf who "battled a slime" stays a wood
-elf). It skips transformation sections like "Appearance in Moonrage:" so a
-were-form doesn't overwrite the base look, honors a `Race:` / `Species:`
-line (Wood Elf → elf ears, Rabbitkin → rabbit), and ignores shared world
-lorebooks so "warriors and mages" boilerplate can't misclassify anyone.
-From that scope it reads hair/skin/eye colors,
-hairstyles (incl. braids), **body build and chest size** (for character
-differentiation), and features: elf/rabbit/cat (incl. jaguar & other big
-cats)/fox/wolf ears; horns and
-**antlers**; fox/dragon/devil/cat/wolf tails; **serpent, hooved,
-centaur, or mermaid lower bodies**; scaled skin; extra arms; a third
-eye; wings; halos; crowns; capes; masks; **markings/tattoos, freckles,
-piercings, collars**; scars, eyepatches, glasses, antennae, feathers;
-**slime/ooze bodies, tentacles, mechanical/prosthetic parts, fins &
-gills, full fur, facial hair, canes**; spectral bodies, shadow-forms,
-unusual sizes. It infers a class and role — including a **Shifter**
-class (a shapeshifter whose *Apex Mimic* passive lets it take the shape
-of any enemy it fells, learning one of that creature's skills for the
-rest of the battle) — reading an explicit `Class:` / `Occupation:` field
-first so a wizard isn't mistaken for a tank. It assembles a combat kit,
-with **themed skill lines** when the description genuinely implies one —
-elemental/status (fire→Burn, ice→Slow/Freeze, lightning→Stun, poison,
-holy, earth→Sunder, wind→Haste, bleed, curse, shadow) plus **song/bardic,
-traps, and alchemy** kits. Theme detection is context-aware: it takes
-unambiguous cues ("pyromancer", "hurls fire", "plays the lute") outright
-but ignores incidental prose ("fire in her eyes", "a fiery temper") unless
-real magic/combat context backs it, so flavor text no longer hands out
-elemental kits by accident. Each hero also gets a passive, then a chibi
-preview. Summon them and every system picks them up:
-party, dispatch, mastery, the Smith, and the Sanctum (their card text
-becomes their chat persona). Forged souls persist across NG+ cycles and
-can be re-summoned, released, or forgotten at the Forge. If the Codex
-is hosted on the same domain, **scan Codex storage** imports its
-characters directly.
+This is the **story build** — the Yuki/harem campaign, standalone. The
+character-raising features that turned *Warlock's Codex* cards into playable
+companions — the **⚗ Forge** (card → class/stats/model) and the **✉ Sanctum**
+(AI chat) — now live in the Codex itself, as a companion-raising view where
+your bound and active-pursuit characters level through their milestone
+development rather than through battles. They're no longer part of this game.
 
-**Companion trials** (adapted from the Codex): every forged soul carries
-a heart track like the girls, and a **generated four-scene bond arc**
-built from an *inner theme* the Forge reads in their description
-(loneliness, duty, pride, timidity, atonement, debt, curiosity, grief,
-or belonging). The arc runs arrival → confession → a System-flagged
-**inner trial** → devotion, with the same Wholesome/Domineering/Rejection
-tone choices and intimacy variants as the main cast. Fighting alongside
-them in cleared gates deepens the bond between scenes, and their current
-hearts feed into their Sanctum chats.
-
-### The Sanctum (optional AI chat)
-
-**✉ Sanctum** in the guild hall opens a chat room with any party member
-or petitioning newcomer, backed by whatever AI endpoint you configure
-(⚙ Connection — KoboldCpp or any OpenAI-compatible server, local or
-remote). The game builds a system prompt from live state — your rank,
-bonds, story progress, and the character's persona — so they know who
-they're talking to. Entirely optional; the game never requires it.
-Chat histories live in localStorage, outside the save code.
+(`js/forge.js` remains in the tree only so older saves that carry a forged
+guildmate still load; there's no in-game way to create new ones here.)
 
 Progress saves automatically to localStorage (export/import codes in
 Settings).
