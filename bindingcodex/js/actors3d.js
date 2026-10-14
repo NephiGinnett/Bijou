@@ -765,6 +765,14 @@ function customChibi(spec) {
     const em = mat(spec.hair ?? spec.skin, { rough: 0.8 });
     add(g, Cone(size, size * 1.7, 4), em, -0.17, 1.5, 0, 0, 0, -0.25);
     add(g, Cone(size, size * 1.7, 4), em, 0.17, 1.5, 0, 0, 0, 0.25);
+  } else if (spec.ears === 'round') {
+    // big-cat ears: small, rounded, dark-backed, sitting high on the head
+    const em = mat(spec.hair ?? spec.skin, { rough: 0.8 });
+    const back = mat(spec.spots ?? 0x2a1a10, { rough: 0.9 });
+    for (const sx of [-1, 1]) {
+      add(g, S(0.075, 10, 8), em, sx * 0.2, 1.54, -0.02).scale.set(1, 1.05, 0.45);
+      add(g, S(0.05, 8, 6), back, sx * 0.2, 1.55, -0.05).scale.set(1, 1, 0.4);
+    }
   } else if (spec.ears === 'fox') {
     const em = mat(spec.hair ?? 0xd87c3a, { rough: 0.8 });
     const inner = mat(0xf4efe6);
@@ -837,6 +845,14 @@ function customChibi(spec) {
       add(g, Cone(0.08, 0.14, 3), dm, 0.05, 0.1, -0.46); // spade tip
     } else if (spec.tail === 'wolf') {
       add(g, Cap(0.08, 0.32, 4, 8), mat(spec.hair ?? spec.tailColor ?? spec.skin, { rough: 0.9 }), 0, 0.36, -0.3, 1.05);
+    } else if (spec.tail === 'cheetah') {
+      // long, curving up at the end, dark rings and a pale tip
+      const tm = mat(spec.tailColor ?? spec.hair ?? spec.skin, { rough: 0.85 });
+      const rm = mat(spec.spots ?? 0x2a1a10, { rough: 0.9 });
+      add(g, Cap(0.045, 0.36, 4, 8), tm, 0, 0.38, -0.36, 1.3);
+      add(g, Cap(0.04, 0.26, 4, 8), tm, 0, 0.45, -0.66, -0.6);
+      for (const [y, z] of [[0.41, -0.62], [0.47, -0.67], [0.53, -0.71]]) add(g, Cyl(0.047, 0.047, 0.025, 8), rm, 0, y, z, -0.6);
+      add(g, S(0.045, 8, 6), mat(0xf4efe6), 0, 0.58, -0.75);
     } else if (spec.tail === 'cat') {
       add(g, Cap(0.03, 0.42, 4, 6), mat(spec.tailColor ?? spec.hair ?? spec.skin, { rough: 0.85 }), 0, 0.4, -0.28, 1.25);
     } else if (spec.tail) {
@@ -862,6 +878,16 @@ function customChibi(spec) {
     for (const [x, y, z] of [[-0.22, 1.14, 0.2], [0.22, 1.14, 0.2], [-0.25, 1.08, 0.17], [0.25, 1.08, 0.17]]) add(g, Ico(0.035, 0), plate, x, y, z);       // cheek scales
     for (const sx of [-1, 1]) for (let i = 0; i < 3; i++) add(g, Ico(0.045, 0), plate, sx * (0.26 + i * 0.03), 0.92 - i * 0.07, 0.06);              // shoulder plates
     void sm;
+  }
+
+  // spotted coat (cheetah-folk): dark spots on cheeks, arms and legs, plus tear marks
+  if (spec.spots) {
+    const spm = mat(spec.spots, { rough: 0.9 });
+    const pts = [[-0.24, 1.12, 0.18], [0.24, 1.12, 0.18], [-0.27, 1.2, 0.13], [0.27, 1.2, 0.13],
+      [-0.33, 0.8, 0.07], [-0.37, 0.69, 0.07], [0.33, 0.8, 0.07], [0.37, 0.69, 0.07],
+      [-0.12, 0.3, 0.1], [0.12, 0.24, 0.1], [-0.13, 0.16, 0.1], [0.11, 0.36, 0.1]];
+    for (const [x, y, z] of pts) add(g, S(0.022, 6, 5), spm, x, y, z).scale.set(1, 1, 0.5);
+    for (const sx of [-1, 1]) add(g, Cap(0.012, 0.08, 3, 4), spm, sx * 0.12, 1.12, 0.285, 0, 0, sx * 0.15);
   }
 
   // crown / circlet (reuse the helper)

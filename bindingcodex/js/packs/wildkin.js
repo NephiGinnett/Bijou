@@ -32,31 +32,62 @@ export const looks = {
   lysandre: { skin: 0xe0d0e8, hair: 0x2a6a5a, hairstyle: 'long', outfit: 0x2a2a3a, sleeve: 0x3a3a4a, legColor: 0x1a1a2a, eyeColor: 0x8ad8a8, eyeColor2: 0xd8a84a, eyeGlow: true, horns: true, hornStyle: 'swept', hornSize: 'small', hornColor: 0x4a3a5a, tail: 'dragon', tailColor: 0x2a6a5a, earFins: true, finColor: 0x4ab89a, changeArm: true, scaled: true, scaleColor: 0x2a8a6a, chest: 2, markings: true, markingColor: 0x8ad8a8 },
 };
 
-// Four looks per tribe for the kin who come to the Bower (variations on the envoy).
-const KIN_LOOKS = {
-  aerie:  [{ hair: 0xd8c8a8, wingColor: 0xd8c8b0, wingTip: 0x6a5a4a, sleeve: 0xd8c8b0, eyeColor: 0x8ac8e8 },
-           { hair: 0x3a2a1a, wingColor: 0x5a4a3a, wingTip: 0x1a1410, sleeve: 0x5a4a3a, skin: 0xc89a78, hairstyle: 'short' },
-           { hair: 0xb85a2a, wingColor: 0xc87a4a, wingTip: 0xf0e0c8, sleeve: 0xc87a4a, hairstyle: 'braided' },
-           { hair: 0x8a8a9a, wingColor: 0x9a9aaa, wingTip: 0x2a2a3a, sleeve: 0x9a9aaa, skin: 0xf0d8c0, hairstyle: 'curly' }],
-  coil:   [{ tailColor: 0x2a5a8a, scaleColor: 0x2a5a8a, finColor: 0x8ac8e8, hair: 0x0a1a2a, crown: false },
-           { tailColor: 0x8a6a2a, scaleColor: 0x8a6a2a, finColor: 0xe8c86a, skin: 0xc8b088, hair: 0x3a2a10, crown: false, hairstyle: 'braided' },
-           { tailColor: 0x6a2a5a, scaleColor: 0x6a2a5a, finColor: 0xd88ac8, skin: 0xb8a8c8, hair: 0x2a1a2a, crown: false, hairstyle: 'long' },
-           { tailColor: 0x5a8a3a, scaleColor: 0x5a8a3a, finColor: 0xc8e88a, hair: 0x5a6a2a, crown: false, hairstyle: 'short' }],
-  clutch: [{ tailColor: 0x8a2a2a, scaleColor: 0x8a2a2a, wingColor: 0x5a1a1a, hair: 0xd8d0c8, hairstyle: 'short', weapon: 'claw' },
-           { tailColor: 0x2a2a2a, scaleColor: 0x3a3a3a, wingColor: 0x1a1a1a, hair: 0xb83a1a, skin: 0xc88a6a, weapon: 'sword' },
-           { tailColor: 0xd8a83a, scaleColor: 0xd8a83a, wingColor: 0xa8782a, hair: 0x5a3a1a, skin: 0xe0a880, hairstyle: 'curly', weapon: 'shield' },
-           { tailColor: 0x3a6a8a, scaleColor: 0x3a6a8a, wingColor: 0x2a4a6a, hair: 0xe8e8f0, build: 'slim', weapon: 'sword' }],
+// Every tribeswoman who can come to the Bower has her own look, rolled
+// from her name so it never changes: skin, hair, eyes, chest, build,
+// height, and her tribe's colors (feathers, scales, coat).
+export const kinId = (tid, name) => `${tid}_${name.toLowerCase()}`;
+export const KIN_TRAITS = {}; // kin id -> { hex, word } for the bloodline tracker
+looks.tashra = { skin: 0xd8a878, hair: 0xe8b84a, hairstyle: 'long', outfit: 0x6a4a2a, sleeve: 0xd8a878, legColor: 0x6a4a2a, eyeColor: 0xe8a82a, eyeGlow: true, ears: 'round', tail: 'cheetah', tailColor: 0xe8b84a, spots: 0x2a1a10, chest: 2, build: 'slim' };
+
+function seeded(str) {
+  let h = 2166136261;
+  for (const c of str) { h ^= c.charCodeAt(0); h = Math.imul(h, 16777619); }
+  let a = h >>> 0;
+  return () => { a = (a + 0x6D2B79F5) | 0; let t = Math.imul(a ^ (a >>> 15), 1 | a); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; };
+}
+const pick = (r, arr) => arr[Math.floor(r() * arr.length)];
+const SKINS = [0xf6dcc4, 0xf0d0b0, 0xe8c8a0, 0xd8a880, 0xc08a68, 0x9a6a4a, 0x7a4a34, 0x5a3424];
+const HAIRS = [0x1a1410, 0x3a2a1a, 0x6a3a1a, 0x8a5a3a, 0xb85a2a, 0xd8c8a8, 0xe8e8f0, 0x2a1a2a, 0x8a8a9a, 0xd8a83a];
+const EYES = [0xe8a82a, 0xe8d84a, 0x8ad8a8, 0x8ac8e8, 0xb08cff, 0xff8a4a, 0xd8e8f0];
+const STYLES = ['short', 'long', 'curly', 'straight', 'braided'];
+const BUILDS = ['slim', 'average', 'average', 'curvy', 'curvy', 'broad'];
+const CHESTS = [0, 1, 1, 2, 2, 2, 3, 3];
+const TRIBE_ROLL = {
+  aerie: r => { const [w, tip, word] = pick(r, [[0xb8885a, 0x4a2a1a, 'tawny feathers'], [0xd8c8b0, 0x6a5a4a, 'pale, dove-grey feathers'], [0x5a4a3a, 0x1a1410, 'dark hawk feathers'],
+      [0xc87a4a, 0xf0e0c8, 'russet feathers'], [0x9a9aaa, 0x2a2a3a, 'storm-grey feathers'], [0xe8e0d0, 0x8a6a4a, 'snowy owl feathers'], [0x3a3a4a, 0xd8d8e8, 'night-black, white-tipped feathers'], [0xa83a2a, 0x2a1a1a, 'scarlet feathers']]);
+    return { look: { wingColor: w, sleeve: w, wingTip: tip }, hex: w, word }; },
+  coil: r => { const [c, word] = pick(r, [[0x3a8a5a, 'jade scales'], [0x2a5a8a, 'deep-water blue scales'], [0x8a6a2a, 'bronze scales'], [0x6a2a5a, 'plum scales'],
+      [0x5a8a3a, 'moss-green scales'], [0x2a2a2a, 'black scales'], [0xd8ccc0, 'pearl-white scales'], [0xa83a3a, 'coral-red scales']]);
+    return { look: { tailColor: c, scaleColor: c, finColor: pick(r, [0xd8b04a, 0x8ac8e8, 0xd88ac8, 0xc8e88a, 0xe8e8f0]), skin: pick(r, [0x9ac8a8, 0xc8b088, 0xb8a8c8, 0xe8d0c0, 0x8aa898, 0xd8c0a0, 0x7a6a5a]), crown: false }, hex: c, word }; },
+  clutch: r => { const [c, wing, word] = pick(r, [[0xb85a2a, 0x8a3a1a, 'ember-red scales'], [0x8a2a2a, 0x5a1a1a, 'blood-red scales'], [0x2a2a2a, 0x1a1a1a, 'soot-black scales'], [0xd8a83a, 0xa8782a, 'gold scales'],
+      [0x3a6a8a, 0x2a4a6a, 'frost-blue scales'], [0x5a8a4a, 0x3a5a2a, 'verdigris scales'], [0xe8e8f0, 0xb8b8c8, 'white-silver scales']]);
+    return { look: { tailColor: c, scaleColor: c, wingColor: wing, wingSize: 0.5 + r() * 0.25, hornSize: pick(r, ['small', 'large']), weapon: pick(r, ['sword', 'shield', 'claw', null]) }, hex: c, word }; },
+  pride: r => { const [coat, spot, word] = pick(r, [[0xe8b84a, 0x2a1a10, 'golden coat'], [0xf0e0b0, 0x5a4a3a, 'cream coat'], [0xd89a4a, 0x2a1a10, 'tawny coat'], [0x3a3a3a, 0x141414, 'black, ghost-spotted coat'],
+      [0xd8d8e0, 0x5a5a6a, 'snow-pale coat'], [0xc8883a, 0x3a2410, 'king-blotched coat']]);
+    return { look: { hair: coat, tailColor: coat, spots: spot, outfit: pick(r, [0x6a4a2a, 0x8a6a3a, 0x4a3a2a, 0x7a3a2a, 0x3a4a2a]) }, hex: coat, word }; },
 };
-const ENVOY_OF = { aerie: 'kestra', coil: 'sythra', clutch: 'vharra' };
-const KIN_COLOR = { aerie: '#c8a87a', coil: '#6ab88a', clutch: '#d87a4a' };
-for (const [tid, list] of Object.entries(KIN_LOOKS)) list.forEach((o, i) => { looks[`${tid}_kin${i}`] = { ...looks[ENVOY_OF[tid]], ...o }; });
+const ENVOY_OF = { aerie: 'kestra', coil: 'sythra', clutch: 'vharra', pride: 'tashra' };
+const KIN_COLOR = { aerie: '#c8a87a', coil: '#6ab88a', clutch: '#d87a4a', pride: '#e0b050' };
+const ENVOY_SIGN = { kestra: [0xb8885a, 'tawny feathers'], sythra: [0x3a8a5a, 'jade scales'], vharra: [0xb85a2a, 'ember-red scales'], tashra: [0xe8b84a, 'golden coat'] };
+for (const [tid, T] of Object.entries(TRIBES)) {
+  const [hex, word] = ENVOY_SIGN[T.envoy];
+  KIN_TRAITS[T.envoy] = { hex, word };
+  for (const [name] of T.kin) {
+    const r = seeded(tid + ':' + name);
+    const base = { skin: pick(r, SKINS), hair: pick(r, HAIRS), hairstyle: pick(r, STYLES), eyeColor: pick(r, EYES), chest: pick(r, CHESTS), build: pick(r, BUILDS), scale: 0.9 + r() * 0.2 };
+    const t = TRIBE_ROLL[tid](r);
+    looks[kinId(tid, name)] = { ...looks[ENVOY_OF[tid]], ...base, ...t.look };
+    KIN_TRAITS[kinId(tid, name)] = { hex: t.hex, word: t.word };
+  }
+}
 
 export const speakers = {
   kestra: { name: 'Kestra of the Aerie', color: '#c8a87a' },
   sythra: { name: 'Sythra of the Coil', color: '#6ab88a' },
   vharra: { name: 'Vharra of the Clutch', color: '#d87a4a' },
   lysandre: { name: 'Lysandre', color: '#8ad8a8' },
-  ...Object.fromEntries(Object.keys(KIN_LOOKS).flatMap(tid => [0, 1, 2, 3].map(i => [`${tid}_kin${i}`, { name: '{kin}', color: KIN_COLOR[tid] }]))),
+  tashra: { name: 'Tashra of the Pride', color: '#e0b050' },
+  ...Object.fromEntries(Object.entries(TRIBES).flatMap(([tid, T]) => T.kin.map(([name]) => [kinId(tid, name), { name, color: KIN_COLOR[tid] }]))),
 };
 
 // The rite: the envoy asks for herself; accept, decline, or not yet.
@@ -87,6 +118,7 @@ export function events(E) {
   for (const ev of Object.values(BOWER_NIGHTS)) E[ev.id] = ev;
   for (const ev of Object.values(KIN_RITES)) E[ev.id] = ev;
   for (const ev of KIN_STAGE_EVENTS) E[ev.id] = ev;
+  for (const ev of Object.values(KIN_NIGHTS)) E[ev.id] = ev;
   // ===================== THE SKYREND AERIE — harpies =====================
   E.tribe_aerie_arrive = { id: 'tribe_aerie_arrive', where: 'auto', once: true, priority: 72, steps: [
     { s: 'narr', t: 'A shadow crosses the library\'s broken skylight. Then another. Then a woman drops through it in a storm of tawny feathers and lands on the reading table in a crouch, talons gouging the wood.' },
@@ -170,6 +202,34 @@ export function events(E) {
     chronicle: 'Vharra of the Clutch carried your blood to the Ashreach hatchery.',
   });
 
+  // ===================== THE SUNRUN PRIDE — cheetah-folk =====================
+  E.tribe_pride_arrive = { id: 'tribe_pride_arrive', where: 'auto', once: true, priority: 72, steps: [
+    { s: 'narr', t: 'Something moves past the Menagerie gate too fast to see. When it stops, it is a woman: long-limbed and golden, spotted down her arms and cheeks, a tail flicking with impatience.' },
+    { s: 'tashra', t: 'Tashra, first runner of the Sunrun Pride. (she sniffs the air, then grins) The Lodge\'s hounds won\'t come near this place. That\'s the first thing that made us look. Your Menagerie is the second.' },
+    { s: 'tashra', t: 'The Hunters\' Lodge has run us out of the Charmed Glade three summers in a row. A pride that runs forever starves. Give us a reason to stop running, warlock.' },
+    { s: 'rue', cond: S => has(S, 'rue'), t: '(watching the tail go back and forth) Oh, I like her.' },
+  ] };
+  E.tribe_pride_friendly = { id: 'tribe_pride_friendly', where: 'auto', once: true, priority: 72, steps: [
+    { s: 'tashra', t: 'The pride-mothers are purring. Not literally. (a pause) A little literally. One more gift and we stop running for good.' },
+  ] };
+  E.tribe_pride_sworn = { id: 'tribe_pride_sworn', where: 'auto', once: true, priority: 74, steps: [
+    { s: 'narr', t: 'The Sunrun Pride swears at a dead sprint: thirty cheetah-folk race three times around the drowned library, so fast the dust hangs in rings, and stop in a line before you. Not one of them is out of breath.' },
+    { s: 'tashra', t: 'We\'ve stopped running, warlock. Now we run for you.' },
+    { s: 'codex', t: '[ THE SUNRUN PRIDE — SWORN. Tribute nightly; your party starts every battle Hasted. ]' },
+  ] };
+  E.tribe_pride_rite = rite('pride', 'tashra', {
+    ask: [
+      { s: 'tashra', t: 'Pride custom. When we find somewhere safe enough to stop running, one of us may ask the power that made it safe to sire the next litter. (her tail curls around her ankle, oddly shy) I\'m asking. For me. I\'ve been watching you since the first night at the gate.' },
+      { s: 'tashra', t: 'And the Pride stays sworn whatever you say. We don\'t run from promises.' },
+    ],
+    yes: 'Accept her.', mantle: 'Tashra circles you twice at speed, inspecting the Mantle from every side, then laughs out loud and headbutts your shoulder.',
+    gentle: 'She takes you out to the long grass beyond the Menagerie under a huge yellow moon, and the night is warm wind, her purr against your chest, and the stars.',
+    steamy: 'Out in the long grass under a yellow moon, Tashra courts you the way the Pride does: a chase she lets you win, a pounce with her claws sheathed, purring, playful and hungry and quick, until the grass is flattened for yards around.',
+    no: [{ s: 'tashra', t: '(an easy shrug, tail swishing) Then I\'ll chase other things. You\'re still ours, and we\'re still yours.' }],
+    later: 'I\'m the fastest thing in the Glade. I can be patient. (she visibly cannot)',
+    chronicle: 'Tashra of the Sunrun Pride carried your blood to the long grass.',
+  });
+
   // ===================== LYSANDRE — the Many-Shaped =====================
   E.lysandre_arrives = { id: 'lysandre_arrives', where: 'auto', once: true, priority: 75, steps: [
     { s: 'narr', t: 'The night your first hybrid hatches, something is waiting by its pen: a woman with sea-green hair and faintly scaled skin, crouched beside the newborn, letting it nose her hand.' },
@@ -243,6 +303,13 @@ export function events(E) {
 
 // The Envoys' Bower: talk lines, and nights together (the envoy's own invitation).
 export const BOWER_TALK = {
+  tashra: [
+    '(sprawled in the one patch of sun that reaches the Menagerie) Don\'t move. This is the best spot in your whole library.',
+    'The cubs have started racing your hounds. The hounds are losing. Badly. They seem to enjoy it.',
+    'In the Glade we slept in shifts, one eye open for the Lodge. Here I sleep all the way. (a slow blink) It\'s strange. It\'s good.',
+    'I ran to the Ashreach and back this morning just to see if I could. I could. Ask me why. (she grins) Because I could.',
+    '(purring, very quietly, and pretending she isn\'t) What? I\'m not doing anything.',
+  ],
   kestra: [
     'The nest-mothers ask after you. I told them you feed your beasts before yourself. They approved, loudly.',
     '(preening a wing over the rail) Your shrikes are ugly. I like them. Ugly things fight hardest.',
@@ -286,6 +353,14 @@ function nightEvent(tid, who, o) {
   };
 }
 export const BOWER_NIGHTS = {
+  pride: nightEvent('pride', 'tashra', {
+    invite: '(stretched out along the top of the Menagerie gate, tail dangling) The grass is warm and the moon\'s fat. Race me out there?',
+    yes: 'Race her out to the long grass.',
+    mantle: 'She makes you unfurl your Mantle\'s wings just to see whether you\'ll cheat on the race. You do. She doesn\'t mind at all.',
+    gentle: 'Warm grass, her purr, and the slow wheel of the stars until dawn.',
+    steamy: 'She lets you catch her, barely, and the Pride\'s courtship turns into a tumble through the long grass: quick and playful and hot, all purrs and sheathed claws and laughter.',
+    talk: '(she flops onto her back in the Bower straw) Fine. Tell me something fast. I like fast stories.',
+  }),
   aerie: nightEvent('aerie', 'kestra', {
     invite: '(landing on the Menagerie rail, wings half-spread) The moon\'s good tonight. The high branch is empty. (she tilts her head) Come up with me?',
     yes: 'Go up to the high branch with her.',
@@ -352,6 +427,18 @@ function kinRite(tid, o) {
 }
 
 export const KIN_RITES = {
+  pride: kinRite('pride', {
+    arrive: 'A cheetah-folk woman you haven\'t met is sprawled in a patch of lamplight in the Bower, pretending she wasn\'t waiting for you: {kin}, {kinWho}.',
+    early: 'Tashra came back from the long grass purring so loud the whole Pride heard. (her tail flicks) I want to purr like that. I\'m asking you myself.',
+    mid: 'The Pride hasn\'t run from the Glade in a season. We sleep in the sun outside your Menagerie now and we\'ve stopped looking anywhere else. (she sits up, close) So. Me?',
+    late: 'Nobody in the Pride goes out on the long chase for a mate anymore. Why chase when the best is already here? (a grin, all sharp teeth) I came.',
+    oath: 'Say no and I\'ll still run for you. The Pride doesn\'t take back promises.',
+    mantle: 'She circles your Mantle at a run, delighted, and pounces on your tail.',
+    gentle: 'She takes you out into the warm long grass, and the night is her purr, her spotted arms around you, and a sky full of stars.',
+    steamy: 'Out in the long grass {kin} makes you chase her, lets you win, and courts you the Pride\'s way: quick and playful and hungry, claws sheathed, purring loud enough to wake the Menagerie.',
+    no: '(an easy stretch, unbothered) Alright. I\'ll still run for you tomorrow. (she\'s gone in a blur)',
+    later: 'Then I\'ll nap here. (she\'s asleep in the lamplight before you finish turning around)',
+  }),
   aerie: kinRite('aerie', {
     arrive: 'A harpy you haven\'t met is perched on the Bower rail, feathers fluffed against the damp: {kin}, {kinWho}.',
     early: 'Kestra came back from the high branch glowing. The whole nest saw. (she fidgets with a loose feather) I want to choose too. For me, not for the nest-mothers. Will you have me?',
@@ -393,6 +480,21 @@ export const KIN_RITES = {
 // Stage scenes: the tribe coming to rely on you instead of the wild.
 const stageEv = (tid, st, steps) => ({ id: `kin_stage_${tid}_${st}`, where: 'auto', once: true, priority: 70, steps });
 export const KIN_STAGE_EVENTS = [
+  stageEv('pride', 2, [
+    { s: 'narr', t: 'The Sunrun Pride has stopped moving camp. Every morning the cheetah-folk are stretched out in the sun on the library steps, and every evening they\'re still there.' },
+    { s: 'tashra', t: 'The Glade was always a place to run from. This is a place to stay. (a slow, content blink) We\'ve never had one of those.' },
+    { s: 'codex', t: '[ THE SUNRUN PRIDE — NESTING NEAR. Tribute ×3; suitors come more often. ]' },
+  ]),
+  stageEv('pride', 3, [
+    { s: 'narr', t: 'The Pride\'s runners no longer go out on the long chase to find mates in the far grasslands. Three different cheetah-folk tell you so, each one trying to be the first.' },
+    { s: 'tashra', t: 'The long chase used to take a whole season. Now it takes a walk to the Bower. (she grins) Nobody misses the season.' },
+    { s: 'codex', t: '[ THE SUNRUN PRIDE — DEVOTED. Tribute ×4; a suitor every few days. ]' },
+  ]),
+  stageEv('pride', 4, [
+    { s: 'narr', t: 'At dawn the whole Sunrun Pride runs one last circle around the drowned library, slower this time, side by side, and when they stop they lie down in the sun at your feet like they have finally come home.' },
+    { s: 'tashra', t: 'No more running from anything. The Pride is yours: every runner, every cub. We hunt for you now.' },
+    { s: 'codex', t: '[ THE SUNRUN PRIDE — YOUR TRIBE. Tribute ×5; they hunt for you now (+30 gold nightly). ]' },
+  ]),
   stageEv('aerie', 2, [
     { s: 'narr', t: 'At dawn you find nests woven into the library\'s broken skylight — a dozen of them, lined with moth dust and antler velvet.' },
     { s: 'kestra', t: 'The nest-mothers moved half the Aerie. The far woods are cold, and the hunting\'s thin. (she shrugs, smug) Here, there\'s you.' },
@@ -439,3 +541,66 @@ export const KIN_STAGE_EVENTS = [
     { s: 'codex', t: '[ THE ASHREACH CLUTCH — YOUR TRIBE. Tribute ×5; they hunt for you now (+30 gold nightly). ]' },
   ]),
 ];
+
+// ============================================================
+// KIN EVENINGS — send for one of your kin by name. She can say not
+// tonight (ev.busy); otherwise it's her choice to come, and yours
+// whether it's a night together or just talk.
+// ============================================================
+function kinNight(tid, o) {
+  return {
+    id: `kin_night_${tid}`, where: 'bower', once: false, busy: o.busy,
+    cond: tribeFree(tid, `${tid}_kin`),
+    tags: ['breeding', 'monster', 'sapient partner', 'repeatable'],
+    steps: [
+      { s: 'kin', t: o.invite },
+      { choice: [
+        { t: o.yes, flag: `kin_night_yes_${tid}`, r: [
+          { s: 'narr', cond: mantled, t: o.mantle },
+          { s: 'narr', t: o.gentle, spice: 'gentle' },
+          { s: 'narr', t: o.steamy, spice: 'steamy' },
+          { s: 'narr', t: '', spice: 'unbound', stub: `kin_night_${tid}` }, // ZOE: unbound
+        ] },
+        { t: '"Just stay and talk tonight."', r: [{ s: 'kin', t: o.talk }] },
+      ] },
+    ],
+  };
+}
+export const KIN_NIGHTS = {
+  aerie: kinNight('aerie', {
+    invite: '(landing on the Bower rail, breathless from the flight) You sent for me? (her feathers fluff up, pleased) You sent for me.',
+    yes: 'Take her up to the roof nests.',
+    mantle: 'She tucks herself under your Mantle\'s wing as if it had always been there for her.',
+    gentle: 'The roof nests, the wind, and {kin}\'s wings wrapped around you against the cold until morning.',
+    steamy: 'Up in the roof nests {kin} wraps you in her wings and courts you again, fiercer now that she knows you: all feathers and heat and happy hawk-cries into the dark.',
+    talk: '(she settles on the rail, preening) Talking\'s good. Tell me what the world looks like from the ground. I always wonder.',
+    busy: '{kin} sends word on the wind: she\'s flying patrol over the Pale Wood tonight. Tomorrow, she promises.',
+  }),
+  coil: kinNight('coil', {
+    invite: '(rising from the cistern almost before your message arrives) You called. (her coils loop, slow and pleased) I came.',
+    yes: 'Join her in the warm cistern.',
+    mantle: 'She traces your Mantle\'s scales with the tip of her tail, slowly, as though memorizing them.',
+    gentle: 'Warm water, warmer coils, and {kin}\'s riddles murmured against your shoulder until you both drift off.',
+    steamy: 'In the warm dark of the cistern {kin} gathers you into her coils again, unhurried and sure, until there is nothing but her heat and the low hiss of your name.',
+    talk: '(she drapes herself over the cistern rim) Then talk. I\'ll trade you a riddle for every secret.',
+    busy: '{kin} sends a ripple up through the cistern: she\'s deep in the brood-pools tonight, keeping the eggs warm. Tomorrow.',
+  }),
+  clutch: kinNight('clutch', {
+    invite: '(arriving at a run, wings still half-open) You sent for me. (a fierce grin) Good.',
+    yes: 'Go to the hatchery fires with her.',
+    mantle: '"Kin," she says, touching her horns to yours, and means it a little differently each time.',
+    gentle: 'Forge-warmth, {kin}\'s strong careful arms, and the crackle of the hatchery fires until morning.',
+    steamy: 'By the hatchery fires {kin} courts you like a rematch she has every intention of losing again, wings snapping wide, all heat and pride.',
+    talk: '(she sits on an anvil, tail swinging) Fine. Tell me about the last thing you fought. Slowly.',
+    busy: '{kin} sends word: she\'s on watch at the snowline tonight, and a Clutch blade doesn\'t leave her post. Tomorrow.',
+  }),
+  pride: kinNight('pride', {
+    invite: '(somehow already there before your message, stretched across the Bower gate) You wanted me? (her tail curls) You wanted me.',
+    yes: 'Race her out to the long grass.',
+    mantle: 'She pounces on your Mantle\'s tail the moment it appears. Every time.',
+    gentle: 'Long warm grass, {kin}\'s purr against your ribs, and the stars wheeling slow above you.',
+    steamy: 'Out in the long grass {kin} makes you chase her again, lets you win again, and the Pride\'s courtship is quick and hot and laughing, all purrs and sheathed claws.',
+    talk: '(she flops into the straw) Then talk. I\'ll just lie here and purr at you.',
+    busy: '{kin} sends word: the Pride is on a hunt tonight and she\'s leading the chase. Tomorrow — she says she\'ll run all the way back.',
+  }),
+};

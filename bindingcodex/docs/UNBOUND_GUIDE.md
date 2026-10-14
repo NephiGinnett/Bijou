@@ -1,6 +1,6 @@
 # Unbound Writing Guide
 
-Everything Zoe needs to fill the **Unbound** intimacy tier in Binding Codex (49 stubs across 36 scenes).
+Everything Zoe needs to fill the **Unbound** intimacy tier in Binding Codex (56 stubs across 43 scenes).
 
 ## How the tiers work
 
@@ -100,6 +100,13 @@ All partners here are **sapient adults speaking for themselves**. Menagerie beas
 | `kin_rite_aerie` | "Accept her." | breeding, monster (harpy), repeatable, `{kin}` | Another harpy of the Aerie who came to ask for herself (`{kin}` = her name, `{kinWho}` = e.g. "a storm-scout of the Aerie"; 12 possible). Set on the library roof among the Aerie's new nests. Write it so it works for any of them: her own eagerness, wings, feathers, talons. She chose you over the storms. |
 | `kin_rite_coil` | "Accept her." | breeding, monster (naga), repeatable, `{kin}` | A naga of the Coil, in the warm cistern under the library. Coils, patience, warm water. She chose you over the far pools. |
 | `kin_rite_clutch` | "Accept her." | breeding, monster (drake-kin), repeatable, `{kin}` | A drake-kin of the Clutch, by the hatchery fires. Pride, heat, a duel she means to lose. She chose you over the snowline. |
+| `tribe_pride_rite` | "Accept her." | breeding, monster (cheetah-folk) | Tashra, first runner of the Sunrun Pride, asks to bear your litter now that the Pride has stopped running. Out in the long grass under a yellow moon: a chase she lets you win, a pounce with claws sheathed, purring, quick and playful and hungry. Spots, tail, warm fur, sun-warmed grass. |
+| `envoy_night_pride` | "Race her out to the long grass." | monster (cheetah-folk), repeatable | Tashra's Bower evening. Shorter and familiar: the race, the tumble in the grass, the purr. |
+| `kin_rite_pride` | "Accept her." | breeding, monster (cheetah-folk), repeatable, `{kin}` | Any of the Pride's 12 runners (`{kin}`, `{kinWho}`). The long grass, a chase she lets you win. She chose you over the long chase across the grasslands. |
+| `kin_night_aerie` | "Take her up to the roof nests." | monster (harpy), repeatable, `{kin}` | You sent for one of your harpy kin by name. She already knows you; write it warmer and more familiar than her first rite. Roof nests, wings against the cold. |
+| `kin_night_coil` | "Join her in the warm cistern." | monster (naga), repeatable, `{kin}` | A naga kin you sent for. Warm water, coils, unhurried and sure of you. |
+| `kin_night_clutch` | "Go to the hatchery fires with her." | monster (drake-kin), repeatable, `{kin}` | A drake-kin kin you sent for. A rematch she means to lose again. |
+| `kin_night_pride` | "Race her out to the long grass." | monster (cheetah-folk), repeatable, `{kin}` | A cheetah-folk kin you sent for. The chase again, laughing this time, then purring. |
 | `nyxe_mantle` | "Then come down here and explode." | monster forms, abyssal | Nyxe faces something more monstrous than herself and is speechless for the first time, then very loud. Wings everywhere. |
 
 ## Voice cheat-sheet

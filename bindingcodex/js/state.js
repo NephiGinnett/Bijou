@@ -57,7 +57,7 @@ export function newGame(playerName, pronouns = 'she') {
     gearBag: [],
     factions: Object.fromEntries(Object.keys(FACTIONS).map(id => [id, { power: 100, fate: null }])),
     lieutenants: {},                 // lieutenant id → captured | yielded | slain
-    tribes: Object.fromEntries(Object.keys(TRIBES).map(id => [id, { status: null, gifts: 0, rite: false, favor: 0, talkDay: 0, tradeDay: 0, nightDay: -9, kin: [], rites: 0, suitor: null, suitorDay: null, stageSeen: 0, met: [] }])),
+    tribes: Object.fromEntries(Object.keys(TRIBES).map(id => [id, { status: null, gifts: 0, rite: false, favor: 0, talkDay: 0, tradeDay: 0, nightDay: -9, kin: [], rites: 0, suitor: null, suitorDay: null, stageSeen: 0, met: [], pairs: {}, pop: null, clutches: [], lineage: {}, born: 0, kinNightDay: -9 }])),
     visits: {},                      // location id → clears
     omen: null,                      // Vesper's card for today
     readingDay: 0,
@@ -109,7 +109,7 @@ export function ensureShape(S) {
   for (const k of Object.keys(d.factions)) if (!S.factions[k]) S.factions[k] = { power: 100, fate: null };
   for (const k of Object.keys(d.tribes)) {
     if (!S.tribes[k]) S.tribes[k] = d.tribes[k];
-    for (const f of ['favor', 'talkDay', 'tradeDay', 'nightDay', 'kin', 'rites', 'stageSeen', 'met']) if (S.tribes[k][f] == null) S.tribes[k][f] = d.tribes[k][f];
+    for (const f of ['favor', 'talkDay', 'tradeDay', 'nightDay', 'kin', 'rites', 'stageSeen', 'met', 'pairs', 'clutches', 'lineage', 'born', 'kinNightDay']) if (S.tribes[k][f] == null) S.tribes[k][f] = d.tribes[k][f];
   }
   if (S.stats.reagentsProduced == null) S.stats.reagentsProduced = 0;
   if (!S.settings.packs) S.settings.packs = d.settings.packs;
@@ -397,16 +397,28 @@ function tribeNight(S, log) {
   for (const [tid, T] of Object.entries(TRIBES)) {
     const t = S.tribes[tid];
     if (!packOn(S, 'wildkin')) continue;
-    if (!t.status && (S.stats.reagentsProduced || 0) >= T.draw) {
+    // the Lodge hunted the Pride; with the Lodge brought low they come sooner
+    const draw = T.draw - (tid === 'pride' && S.factions.lodge && S.factions.lodge.fate ? 25 : 0);
+    if (!t.status && (S.stats.reagentsProduced || 0) >= draw) {
       t.status = 'curious';
       S.queue.push(`tribe_${tid}_arrive`);
       log.push(`${T.race} have been seen circling the Menagerie.`);
     }
     if (t.status === 'sworn') {
       syncKin(S, tid);
+      if (t.pop == null) t.pop = T.pop;
+      // clutches laid after a rite hatch here; the tribe grows
+      for (const c of t.clutches.filter(c => c.due <= S.day)) {
+        t.pop += c.n; t.born += c.n;
+        t.lineage[c.from] = (t.lineage[c.from] || 0) + c.n;
+        const tr = KIN_TRAITS[kinKey(tid, c.from)];
+        log.push(`${c.n} ${c.n === 1 ? T.young.replace(/s$/, '') : T.young} ${c.n === 1 ? 'is' : 'are'} born to ${T.name.replace(/^The /, 'the ')}${tr ? `, with ${c.from}'s ${tr.word}` : ''}.`);
+      }
+      t.clutches = t.clutches.filter(c => c.due > S.day);
       const st = kinStage(S, tid);
       const mult = 1 + st;
-      for (const [r, n] of Object.entries(T.tribute)) S.reagents[r] = (S.reagents[r] || 0) + n * mult;
+      const more = Math.min(4, Math.floor((t.pop - T.pop) / 15)); // a bigger tribe brings more (capped)
+      for (const [r, n] of Object.entries(T.tribute)) S.reagents[r] = (S.reagents[r] || 0) + n * mult + more;
       if (st >= 4) S.gold += 30; // they hunt for you now
       if (st > t.stageSeen) {
         if (t.stageSeen >= 1) { S.queue.push(`kin_stage_${tid}_${st}`); log.push(`${T.name}: ${KIN_STAGES[st].name}. ${KIN_STAGES[st].desc}`); }
@@ -429,12 +441,26 @@ function tribeNight(S, log) {
 
 // --- kinship: how many of the tribe have chosen you ---------------------------------
 
+// Looks/colors for the bloodline tracker, filled in by the Wildkin pack.
+export const KIN_TRAITS = {};
+export function kinKey(tid, name) { const T = TRIBES[tid]; return name === T.envoyName ? T.envoy : `${tid}_${name.toLowerCase()}`; }
+
+// Every rite: tallied per partner, and a clutch is laid that hatches in a few days.
+// (The young are raised by the tribe; they never join the suitor pool.)
+function riteWith(S, tid, name) {
+  const t = S.tribes[tid], T = TRIBES[tid];
+  t.rites = (t.rites || 0) + 1;
+  t.pairs[name] = (t.pairs[name] || 0) + 1;
+  const [lo, hi] = T.brood;
+  t.clutches.push({ due: S.day + T.hatch, n: lo + Math.floor(Math.random() * (hi - lo + 1)), from: name });
+}
+
 // The envoy's own rite makes her the first of the tribe's kin.
 function syncKin(S, tid) {
   const t = S.tribes[tid];
   if (S.flags[`rite_${tid}`] && !t.kin.some(k => k.envoy)) {
     t.kin.unshift({ name: TRIBES[tid].envoyName, envoy: true, day: S.day });
-    t.rites = (t.rites || 0) + 1;
+    riteWith(S, tid, TRIBES[tid].envoyName);
     t.suitorDay = S.day;
   }
 }
@@ -457,14 +483,40 @@ export function kinAnswer(S, tid, ans) {
   t.suitor = null;
   t.suitorDay = S.day;
   if (ans === 'yes') {
-    t.kin.push({ name: s.name, who: s.who, look: s.look, day: S.day });
-    t.rites = (t.rites || 0) + 1;
+    t.kin.push({ name: s.name, who: s.who, day: S.day });
+    riteWith(S, tid, s.name);
     t.favor = Math.min(10, t.favor + 1);
     addChronicle(S, `${s.name}, ${s.who}, chose you, and carried your blood home to ${TRIBES[tid].name}.`);
   } else t.met = t.met.filter(n => n !== s.name); // she may ask again someday
 }
 // A Bower evening with the envoy that went past talking.
-export function kinNight(S, tid) { S.tribes[tid].rites = (S.tribes[tid].rites || 0) + 1; }
+export function kinNight(S, tid) { riteWith(S, tid, TRIBES[tid].envoyName); }
+
+// Sending for one of your kin by name: every other day per tribe.
+export function kinEveningOpen(S, tid) {
+  const t = S.tribes[tid];
+  return envoyHere(S, tid) && tribeSworn(S, tid) && t.kin.some(k => !k.envoy) && S.day - (t.kinNightDay ?? -9) >= 2;
+}
+export function kinEvening(S, tid, name, together) {
+  const t = S.tribes[tid];
+  t.kinNightDay = S.day;
+  if (together) riteWith(S, tid, name);
+}
+
+// The tribe's growth and whose looks it's taking after.
+export function broodInfo(S, tid) {
+  const t = S.tribes[tid], T = TRIBES[tid];
+  const pop = t.pop ?? T.pop;
+  const lines = Object.entries(t.lineage || {}).map(([name, n]) => ({ name, n, share: n / pop, ...(KIN_TRAITS[kinKey(tid, name)] || { hex: 0x888888, word: '' }) }))
+    .sort((a, b) => b.n - a.n);
+  const pairs = Object.entries(t.pairs || {}).sort((a, b) => b[1] - a[1]);
+  const lead = lines[0];
+  let resemble = '';
+  if (lead && lead.share >= 0.5) resemble = `Most of ${T.name.replace(/^The /, 'the ')} take after ${lead.name} now: ${lead.word} everywhere you look.`;
+  else if (lead && lead.share >= 0.3) resemble = `${T.name} is starting to look like ${lead.name}; you see her ${lead.word} all over.`;
+  else if (lead && lead.share >= 0.12) resemble = `More and more of ${T.name.replace(/^The /, 'the ')} have ${lead.name}'s ${lead.word}.`;
+  return { pop, base: T.pop, born: t.born || 0, warming: (t.clutches || []).reduce((a, c) => a + c.n, 0), rites: t.rites || 0, pairs, lines, resemble, young: T.young };
+}
 
 // What the tribe wants next, and whether you can give it.
 export function tribeRequest(S, tid) {

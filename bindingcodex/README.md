@@ -78,7 +78,8 @@ Abyss — by earning **Infamy**.
   across families into hybrids that yield both parents' reagents.
 - A thriving Menagerie draws **wild tribes** of sapient monster-folk — the
   harpies of the Skyrend Aerie, the naga of the Black Mire's Coil, the
-  drake-kin of the Ashreach Clutch. Meet their envoys' requests and they
+  drake-kin of the Ashreach Clutch, and the cheetah-folk of the Sunrun
+  Pride (sworn perk: your party starts every battle Hasted). Meet their envoys' requests and they
   swear fealty (tribute + a perk); a sworn tribe's envoy may ask, for
   herself, for a breeding rite (declining never breaks the oath).
 - **The Envoys' Bower** (in the Menagerie): visiting envoys can be talked
@@ -91,6 +92,14 @@ Abyss — by earning **Infamy**.
   rites you've shared. As kin grows the tribe relies on you more than the
   wild: Blood-bound → Nesting Near → Devoted → Your Tribe. Tribute scales
   up, suitors come more often, and at the top they hunt for you (+gold).
+- **The Brood.** Every rite is tallied per partner and lays a clutch that
+  hatches a few days later and grows the tribe. The Wild Tribes screen
+  shows rites offered, population, who you pair with most, and a bloodline
+  bar. Pair with one partner often enough and the tribe starts to take
+  after her (her feathers, scales or coat). You can **send for** any of
+  your kin by name from the Bower every other day; sometimes she's busy.
+- Every tribeswoman has her own model, rolled from her name: skin, hair,
+  eyes, chest, build, height and her tribe's colors.
 - **Lysandre**, a shapeshifter, arrives when your first hybrid hatches.
 - **The Wyrm's Mantle** (pact): horns, wings and tail on your model, a
   monstrous battle form, and scenes with the allies who'd love it.

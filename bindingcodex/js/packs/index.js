@@ -8,7 +8,7 @@
 
 import { HEROES, ENEMIES, LOCATIONS } from '../data.js';
 import { EVENTS, SPEAKERS } from '../story.js';
-import { registerNamedCaptive, registerNightly, packOn } from '../state.js';
+import { registerNamedCaptive, registerNightly, packOn, KIN_TRAITS } from '../state.js';
 import { negotiation } from './common.js';
 import * as obsidian from './obsidian.js';
 import * as northern from './northern.js';
@@ -19,7 +19,7 @@ export const PACKS = {
   obsidian: { name: 'Obsidian College', mod: obsidian, desc: 'Lady Auren Voss, the Revenant Bride, Mira Ashveil, Maren Soleil, Cole Ashmer, the Pale Stag; Seris\'s duels; Vex in the Menagerie.' },
   northern: { name: 'Northern Reach', mod: northern, desc: 'Valdra, Nyxe, Mira Vane, Rhea, Aelindra, Legate Aurelia, Brynn, Sera; the Ashreach testimony chain.' },
   classic:  { name: 'Classic Fantasy', mod: classic, desc: 'Elara Moonwhisper, Lady Seraphine, Elspeth, Sister Maren, Kira.' },
-  wildkin:  { name: 'Wildkin', mod: wildkin, desc: 'Harpy, naga and drake-kin tribes drawn to your Menagerie; Lysandre the shapeshifter; Wyrm\'s Mantle scenes.' },
+  wildkin:  { name: 'Wildkin', mod: wildkin, desc: 'Harpy, naga, drake-kin and cheetah-folk tribes drawn to your Menagerie; Lysandre the shapeshifter; Wyrm\'s Mantle scenes.' },
 };
 
 let installed = false;
@@ -34,6 +34,7 @@ export function installPacks() {
     Object.assign(ENEMIES, Object.fromEntries(Object.entries(m.enemies || {}).map(([k, v]) => [k, { ...v, pack: pid }])));
     Object.assign(SPEAKERS, m.speakers || {});
     for (const [k, v] of Object.entries(m.looks || {})) if (v) LOOKS[k] = v;
+    Object.assign(KIN_TRAITS, m.KIN_TRAITS || {});
     for (const [k, v] of Object.entries(m.captives || {})) registerNamedCaptive(k, { ...v, pack: pid });
     for (const [loc, lt] of Object.entries(m.lieutenants || {})) if (LOCATIONS[loc] && !LOCATIONS[loc].lieutenant) LOCATIONS[loc].lieutenant = lt;
     const before = new Set(Object.keys(EVENTS));

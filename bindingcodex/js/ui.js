@@ -803,18 +803,20 @@ function tribes() {
       <div class="row spread"><h3 style="color:${T.color}">${T.icon} ${esc(T.name)}</h3><span class="fate-tag" style="color:${T.color}">${t.status.toUpperCase()}${t.rite ? ' · BLOOD-BOUND' : ''}</span></div>
       <div class="recruit-head">${portraitImg(T.envoy)}<div><b style="color:${T.color}">${esc(SPEAKERS[T.envoy].name)}</b><br><small class="muted">${esc(T.race)} · ${esc(LOCATIONS[T.home].name)}</small></div></div>
       <div class="sm-text ${t.status === 'sworn' ? 'gold' : 'muted'}">Sworn perk: ${esc(T.perk)} Nightly tribute: ${Object.entries(T.tribute).map(([r, n]) => `${n}× ${REAGENTS[r].name}`).join(', ')}${t.status === 'sworn' && ST.kinInfo(S, id).mult > 1 ? ` (×${ST.kinInfo(S, id).mult})` : ''}.</div>
-      ${t.status === 'sworn' ? kinHtml(id) : ''}
+      ${t.status === 'sworn' ? kinHtml(id) + broodHtml(id) : ''}
       ${req ? `<div class="sm-text">They ask for ${esc(req.ask)}: ${Object.entries(req.reagents).map(([r, n]) => `${n}× ${REAGENTS[r].name} (have ${S.reagents[r] || 0})`).join(', ')}${req.gold ? ` + ${req.gold}g` : ''}</div>
         <button class="btn sm gift ${req.ok ? '' : 'disabled'}" data-id="${id}">Give the gift</button>` : ''}
     </div>`;
   }).join('');
   const next = Object.entries(TRIBES).filter(([id]) => !S.tribes[id].status).sort((a, b) => a[1].draw - b[1].draw)[0];
   const total = ST.kinTotal(S);
+  const born = Object.keys(TRIBES).reduce((a, tid) => a + (S.tribes[tid].born || 0), 0);
+  const most = Object.keys(TRIBES).filter(tid => S.tribes[tid].born).sort((a, b) => S.tribes[b].born - S.tribes[a].born)[0];
   screen(`
     <div class="panel map-panel">
       <div class="row spread"><h2>🪶 Wild Tribes</h2><button class="btn ghost" id="tb-back">← Codex</button></div>
       <p class="muted">Sapient monster-folk, drawn by a Menagerie that thrives. Meet their requests and they swear fealty: tribute, perks, and — if one of them asks you herself — a breeding rite. Saying no never breaks an oath. ${next ? `Your Menagerie has produced <b>${S.stats.reagentsProduced || 0}</b> reagents; something else is watching from far off.` : ''}</p>
-      ${total ? `<p class="gold">🥚 ${total} of the tribes' people ${total === 1 ? 'has' : 'have'} chosen you for the rite.</p>` : ''}
+      ${total ? `<p class="gold">🥚 ${total} of the tribes' people ${total === 1 ? 'has' : 'have'} chosen you for the rite${born ? `; ${born} young of your blood have been born across the tribes${most ? `, most of them to ${esc(TRIBES[most].name.replace(/^The /, 'the '))}` : ''}` : ''}.</p>` : ''}
       <div class="cells">${rows || '<p class="muted">No tribe has come yet.</p>'}</div>
     </div>
   `);
@@ -1646,6 +1648,22 @@ function kinHtml(tid) {
   </div>`;
 }
 
+// The brood: rites offered, the tribe's growth, and whose looks it's taking after.
+const hexCss = h => '#' + (h >>> 0).toString(16).padStart(6, '0');
+function broodHtml(tid) {
+  const b = ST.broodInfo(S, tid);
+  if (!b.rites) return '';
+  const old = Math.max(0, 100 - b.lines.reduce((a, l) => a + 100 * l.share, 0));
+  return `<div class="kin-box brood-box">
+    <div class="row spread"><b>🥚 The Brood</b><small class="muted">${b.rites} rite${b.rites === 1 ? '' : 's'} offered</small></div>
+    <div class="sm-text"><b>${b.pop}</b> strong: ${b.base} at the oath, +${b.born} ${esc(b.young)} of your blood${b.warming ? ` · ${b.warming} more on the way` : ''}</div>
+    <div class="bloodline">${b.lines.map(l => `<span style="width:${(100 * l.share).toFixed(1)}%;background:${hexCss(l.hex)}" title="${esc(l.name)}: ${l.n} (${esc(l.word)})"></span>`).join('')}</div>
+    <div class="sm-text muted">${b.lines.slice(0, 4).map(l => `<i style="color:${hexCss(l.hex)};font-style:normal">■</i> ${esc(l.name)} ${Math.round(100 * l.share)}%`).join(' · ')}${b.lines.length ? ` · old blood ${Math.round(old)}%` : 'No young have hatched yet.'}</div>
+    <div class="sm-text">Most often with: ${b.pairs.slice(0, 4).map(([n, c]) => `${esc(n)} ×${c}`).join(' · ')}</div>
+    ${b.resemble ? `<div class="sm-text gold">${esc(b.resemble)}</div>` : ''}
+  </div>`;
+}
+
 // The Envoys' Bower: visiting tribe envoys keep a corner of the Menagerie.
 function bowerHtml() {
   const here = Object.keys(TRIBES).filter(tid => ST.envoyHere(S, tid));
@@ -1660,7 +1678,11 @@ function bowerHtml() {
         <div class="recruit-head">${portraitImg(T.envoy)}<div><b style="color:${T.color}">${esc(SPEAKERS[T.envoy].name)}</b><br><small class="muted">${esc(T.race)} · ${t.status}</small></div></div>
         <div class="meter"><span>Favor</span>${bar('regard', t.favor * 10)}<span>${t.favor}/10</span></div>
         ${t.status === 'sworn' && t.kin && t.kin.length ? `<div class="sm-text gold">Kinship: ${esc(ST.kinInfo(S, tid).name)} · ${t.kin.length} kin</div>` : ''}
-        ${t.suitor ? `<div class="recruit-head suitor">${portraitImg(`${tid}_kin${t.suitor.look}`)}<div><b style="color:${T.color}">${esc(t.suitor.name)}</b><br><small class="muted">${esc(t.suitor.who)} — has come to ask for you herself.</small><br><button class="btn sm bw-suitor" data-t="${tid}">Meet her</button></div></div>` : ''}
+        ${t.suitor ? `<div class="recruit-head suitor">${portraitImg(ST.kinKey(tid, t.suitor.name))}<div><b style="color:${T.color}">${esc(t.suitor.name)}</b><br><small class="muted">${esc(t.suitor.who)} — has come to ask for you herself.</small><br><button class="btn sm bw-suitor" data-t="${tid}">Meet her</button></div></div>` : ''}
+        ${t.status === 'sworn' && t.kin.some(k => !k.envoy) ? `<div class="visit-row">
+          <select class="bw-kin" data-t="${tid}">${t.kin.filter(k => !k.envoy).map(k => `<option value="${esc(k.name)}">${esc(k.name)}${t.pairs && t.pairs[k.name] ? ` (×${t.pairs[k.name]})` : ''}</option>`).join('')}</select>
+          <button class="btn bw-kinnight ${ST.kinEveningOpen(S, tid) ? '' : 'disabled'}" data-t="${tid}" title="${ST.kinEveningOpen(S, tid) ? '' : 'You can send for one of your kin every other day.'}">☾ Send for her</button>
+        </div>` : ''}
         <div class="visit-row">
           <button class="btn bw-talk ${t.talkDay === S.day ? 'disabled' : ''}" data-t="${tid}">❝ Talk</button>
           <select class="bw-give" data-t="${tid}">${own.length ? own.map(r => `<option value="${r}">give 2× ${REAGENTS[r].name}</option>`).join('') : '<option value="">nothing to trade</option>'}</select>
@@ -1693,13 +1715,31 @@ function bindBower() {
   });
   document.querySelectorAll('.bw-suitor').forEach(b => b.onclick = async () => {
     const tid = b.dataset.t, su = S.tribes[tid].suitor;
-    Object.assign(TOKEN_CTX, { kin: su.name, kinWho: su.who, kinId: `${tid}_kin${su.look}` });
+    Object.assign(TOKEN_CTX, { kin: su.name, kinWho: su.who, kinId: ST.kinKey(tid, su.name) });
     screen('', '');
     await playEvent(EVENTS['kin_rite_' + tid]);
     const ans = S.flags['kin_yes_' + tid] ? 'yes' : S.flags['kin_no_' + tid] ? 'no' : 'later';
     delete S.flags['kin_yes_' + tid]; delete S.flags['kin_no_' + tid];
     ST.kinAnswer(S, tid, ans);
     if (ans === 'yes') { AU.sfx('promo'); toast(`${su.name} carries your blood home. Kinship: ${ST.kinInfo(S, tid).name}.`, 'gold'); }
+    ST.save(S); menagerie();
+  });
+  document.querySelectorAll('.bw-kinnight:not(.disabled)').forEach(b => b.onclick = async () => {
+    const tid = b.dataset.t, name = document.querySelector(`.bw-kin[data-t="${tid}"]`).value;
+    const k = S.tribes[tid].kin.find(x => x.name === name);
+    Object.assign(TOKEN_CTX, { kin: name, kinWho: (k && k.who) || '', kinId: ST.kinKey(tid, name) });
+    const ev = EVENTS['kin_night_' + tid];
+    screen('', '');
+    if (Math.random() < 0.15) {
+      // she has her own life: not tonight, but tomorrow
+      await playEvent({ id: 'kin_busy', steps: [{ s: 'narr', t: ev.busy }] });
+      S.tribes[tid].kinNightDay = S.day - 1;
+    } else {
+      await playEvent(ev);
+      const together = !!S.flags['kin_night_yes_' + tid];
+      delete S.flags['kin_night_yes_' + tid];
+      ST.kinEvening(S, tid, name, together);
+    }
     ST.save(S); menagerie();
   });
   document.querySelectorAll('.bw-night:not(.disabled)').forEach(b => b.onclick = async () => {

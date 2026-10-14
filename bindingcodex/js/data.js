@@ -1082,6 +1082,7 @@ export const TRIBES = {
     tribute: { moth_dust: 1, antler_velvet: 1 },
     perk: 'Harpy scouts fly ahead of you: Fog-Veiled holdings no longer hide their enemies.',
     envoyName: 'Kestra',
+    pop: 40, brood: [1, 3], hatch: 6, young: 'fledglings', sign: 'wingColor', signWord: 'feathers',
     kin: [['Ysra', 'a storm-scout of the Aerie'], ['Tiel', 'a nest-mother\'s eldest daughter'], ['Merrow', 'the Aerie\'s best hunter'], ['Skerry', 'a singer of the dawn spiral'],
           ['Anwe', 'a feather-weaver'], ['Corra', 'a cliff-runner with a mended wing'], ['Halcy', 'a sentry of the high branches'], ['Wren', 'a carrier of messages'],
           ['Fenna', 'a quiet egg-warden'], ['Larkspur', 'a loud, cheerful scavenger'], ['Sorrel', 'a wind-reader'], ['Kittiwake', 'a teacher of fledglings']] },
@@ -1092,6 +1093,7 @@ export const TRIBES = {
     tribute: { silk_venom: 1, drake_scale: 1 },
     perk: 'Naga venom-binders teach your seals to coil: Binding Seals on beasts +10%.',
     envoyName: 'Sythra',
+    pop: 30, brood: [2, 4], hatch: 8, young: 'hatchlings', sign: 'tailColor', signWord: 'scales',
     kin: [['Isseth', 'a venom-binder'], ['Vaska', 'a keeper of the brood-pools'], ['Nimue', 'a mire-guide'], ['Thessaly', 'a pearl-diver'],
           ['Ossa', 'a song-keeper of the Coil'], ['Sileth', 'a reed-hunter'], ['Murren', 'an elder\'s apprentice'], ['Quell', 'a lantern-bearer of the deep water'],
           ['Zahra', 'a dancer of the tide rite'], ['Ashai', 'a teller of riddles'], ['Venna', 'a healer of the Coil'], ['Lirael', 'a silent watcher of the shallows']] },
@@ -1102,9 +1104,21 @@ export const TRIBES = {
     tribute: { wyrm_frost: 1, cinder_ash: 1 },
     perk: 'Drake-kin flame-wardens stand with you: your party ignores Burning Floors.',
     envoyName: 'Vharra',
+    pop: 30, brood: [1, 2], hatch: 10, young: 'drakelings', sign: 'scaleColor', signWord: 'scales',
     kin: [['Cindra', 'a flame-warden'], ['Torva', 'a hoard-keeper'], ['Brannagh', 'a hatchery smith'], ['Skaldi', 'a duelist of the Clutch'],
           ['Reka', 'a scout of the snowline'], ['Ashka', 'a forge-singer'], ['Myrrhine', 'a scale-polisher with opinions'], ['Halda', 'a veteran of the Ashreach wars'],
           ['Vesska', 'a newly blooded blade'], ['Oriel', 'a keeper of the old fires'], ['Drusa', 'a wing-captain'], ['Kaelith', 'the hatchery\'s gentle giant']] },
+  pride: { name: 'The Sunrun Pride', race: 'Cheetah-folk', icon: '🐆', color: '#e0b050', home: 'charmed_glade', envoy: 'tashra',
+    draw: 85, // the Hunters' Lodge hunted them; a dominated Lodge brings them sooner
+    gifts: [ { reagents: { antler_velvet: 3 }, gold: 180, ask: 'antler velvet from a clean hunt, and coin for the pride-mothers' },
+             { reagents: { brimstone_salt: 2, moth_dust: 2 }, gold: 0, ask: 'brimstone salt and moth dust, to keep the Lodge\'s hounds off their trail' } ],
+    tribute: { antler_velvet: 1, brimstone_salt: 1 },
+    perk: 'Sunrun pacers run with your party: everyone starts each battle Hasted.',
+    envoyName: 'Tashra',
+    pop: 24, brood: [2, 4], hatch: 5, young: 'cubs', sign: 'hair', signWord: 'coat',
+    kin: [['Rinna', 'the Pride\'s fastest sprinter'], ['Kesh', 'a scar-eared tracker'], ['Solva', 'a pride-mother\'s second'], ['Teyra', 'a dawn-runner'],
+          ['Nimma', 'a lazy, sunny-tempered napper'], ['Vasha', 'a stalker of the long grass'], ['Callo', 'a storyteller of the old runs'], ['Ezri', 'a scout who came back from the Lodge'],
+          ['Brisa', 'a wrestler of the pride'], ['Luneth', 'a night-watcher with silver eyes'], ['Tavi', 'a laughing young huntress'], ['Sabre', 'a veteran of the long chase']] },
 };
 
 // Kinship: how many of a sworn tribe have chosen you for the rite. Each

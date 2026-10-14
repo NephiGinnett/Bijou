@@ -80,6 +80,8 @@ export class Combat {
       if (u.load.startShield > 0) u.statuses.push({ id: 'shield', turns: 3, power: Math.round(u.maxHp * u.load.startShield) });
       if (u.load.startHaste) u.statuses.push({ id: 'haste', turns: 2, power: 0 });
     }
+    // sworn Sunrun pacers: the party starts every battle Hasted
+    if (tribeSworn(S, 'pride')) for (const u of this.units) if (u.side !== 'enemy' && !u.statuses.some(x => x.id === 'haste')) u.statuses.push({ id: 'haste', turns: 1, power: 0 });
     // Tower rifts: the floor is on fire, for everyone.
     if (S.run.gate && S.run.gate.modifier === 'burning') {
       // sworn drake-kin flame-wardens shield the party from burning floors
