@@ -8,7 +8,15 @@ import * as ST from './state.js';
 import { Combat, SEAL_MP } from './combat.js';
 import { Stage, makePortrait } from './scene3d.js';
 import { EVENTS, SPEAKERS, DUNGEON_EVENTS, BARGAIN_EVENTS, VISIT_LINES, TAUNT_LINES, READING_LINES, pickGuildEvent, pickCampEvent, pickCellEvent, endingFor, pickRumorEvent, rumorLine, releaseEventFor, checkIntimacyGates } from './story.js';
-import { registerAlias, ACTOR_ACCENTS } from './actors3d.js';
+import { registerAlias, registerCustomActor, ACTOR_ACCENTS } from './actors3d.js';
+import { installPacks, PACKS, LOOKS } from './packs/index.js';
+
+// Character packs merge into the game tables before anything reads them.
+installPacks();
+for (const [id, spec] of Object.entries(LOOKS)) {
+  registerCustomActor(id, spec);
+  ACTOR_ACCENTS[id] = parseInt(((HEROES[id] && HEROES[id].color) || '#c86cff').slice(1), 16);
+}
 import * as AU from './audio.js';
 
 let S = null;
@@ -173,6 +181,7 @@ export function playEvent(ev) {
           idx++; continue;
         }
         if (st.chronicle) { ST.addChronicle(S, st.chronicle, ev.id); idx++; continue; }
+        if (st.capture) { const c = ST.addNamedCaptive(S, st.capture); if (c) toast(`⛓ ${esc(c.name)} is taken to the Undercroft.`, 'gold'); idx++; continue; }
         if (st.give) {
           if (st.give.gold) { S.gold += st.give.gold; toast(`+${st.give.gold} gold`, 'gold'); }
           if (st.give.item) { S.inventory[st.give.item] = (S.inventory[st.give.item] || 0) + 1; }
@@ -1829,6 +1838,9 @@ function shop() {
       <button class="btn ${S.gold >= ST.priceOf(S, it.price) ? '' : 'disabled'}" data-id="${id}">◈ ${ST.priceOf(S, it.price)}g</button>
     </div>`;
   }).join('');
+  const tavern = ST.isAlly(S, 'mira_ashveil') && ST.packOn(S, 'obsidian')
+    ? Object.entries(REAGENTS).map(([id, r]) => `<div class="shop-row"><div><b>${r.icon} ${r.name}</b> <small class="muted">×${S.reagents[id] || 0} · Lantern & Ash, under the counter</small></div>
+      <button class="btn buy-r ${S.gold >= ST.priceOf(S, r.price * 2) ? '' : 'disabled'}" data-r="${id}">◈ ${ST.priceOf(S, r.price * 2)}g</button></div>`).join('') : '';
   const penRow = `<div class="shop-row"><div><b>Menagerie pen</b> <small class="muted">${S.pens} built</small><p class="muted">Room for one more captured beast.</p></div>
       <button class="btn ${S.gold >= ST.penCost(S) ? '' : 'disabled'}" id="buy-pen">◈ ${ST.penCost(S)}g</button></div>`;
   const sellRows = S.gearBag.length ? S.gearBag.map(g => {
@@ -1841,7 +1853,7 @@ function shop() {
     <div class="panel shop-panel">
       <div class="row spread"><h2>◈ The Night Market</h2><div class="row gap"><span class="gold">◈ ${S.gold}g</span> <button class="btn" id="s-smith">⚒ Smith</button> <button class="btn ghost" id="s-back">← Codex</button></div></div>
       <div class="shop-cols">
-        <div><h3>Buy</h3>${rows}${penRow}</div>
+        <div><h3>Buy</h3>${rows}${penRow}${tavern}</div>
         <div><h3>Sell gear</h3><div class="sell-list">${sellRows}</div></div>
       </div>
     </div>
@@ -1849,7 +1861,13 @@ function shop() {
   $('#s-back').onclick = () => hub();
   $('#s-smith').onclick = () => { AU.sfx('ui'); smith(); };
   $('#buy-pen').onclick = () => { if (ST.buyPen(S)) { AU.sfx('promo'); ST.save(S); shop(); } };
-  document.querySelectorAll('.shop-row button[data-id]:not(.sell):not(.forge)').forEach(b => b.onclick = () => {
+  document.querySelectorAll('.buy-r:not(.disabled)').forEach(b => b.onclick = () => {
+    const cost = ST.priceOf(S, REAGENTS[b.dataset.r].price * 2);
+    if (S.gold < cost) return;
+    S.gold -= cost; S.reagents[b.dataset.r] = (S.reagents[b.dataset.r] || 0) + 1;
+    AU.sfx('coin'); ST.save(S); shop();
+  });
+  document.querySelectorAll('.shop-row button[data-id]:not(.sell):not(.forge):not(.buy-r)').forEach(b => b.onclick = () => {
     const it = ITEMS[b.dataset.id];
     const price = ST.priceOf(S, it.price);
     if (S.gold < price) return;
@@ -1939,6 +1957,7 @@ function settingsModal(back) {
       <option value="grim" ${s.gore === 'grim' ? 'selected' : ''}>Grim</option>
     </select></label>
     <p class="muted sm-text">Intimacy applies only between free allies, never captives. Grim adds harsher violence to battle logs and the Undercroft.</p>
+    ${S ? `<div class="pack-toggles"><b class="sm-text">Character packs</b>${Object.entries(PACKS).map(([id, P]) => `<label class="set-row" title="${esc(P.desc)}">${esc(P.name)} <input type="checkbox" class="pack-tg" data-id="${id}" ${S.settings.packs[id] !== false ? 'checked' : ''}></label>`).join('')}</div>` : ''}
     ${S && S.cleared ? `
     <div class="ngplus-box">
       <b>⟲ Begin Cycle ${(S.legacy?.cycle || 0) + 2} (NG+)</b>
@@ -1961,6 +1980,7 @@ function settingsModal(back) {
     s.textFast = modal.querySelector('#set-fast').checked;
     s.spice = modal.querySelector('#set-spice').value;
     s.gore = modal.querySelector('#set-gore').value;
+    modal.querySelectorAll('.pack-tg').forEach(cb => { s.packs = s.packs || {}; s.packs[cb.dataset.id] = cb.checked; });
     AU.applySettings(s);
     if (S) { S.settings = s; ST.save(S); }
   };
@@ -1969,6 +1989,7 @@ function settingsModal(back) {
   modal.querySelector('#set-fast').onchange = apply;
   modal.querySelector('#set-spice').onchange = apply;
   modal.querySelector('#set-gore').onchange = apply;
+  modal.querySelectorAll('.pack-tg').forEach(cb => cb.onchange = apply);
   if (S) {
     modal.querySelector('#set-export').onclick = () => { modal.querySelector('#save-blob').value = ST.exportSave(S); toast('Save code generated — copy it somewhere safe.'); };
     modal.querySelector('#set-import').onclick = () => {

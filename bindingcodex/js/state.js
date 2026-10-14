@@ -364,7 +364,11 @@ export function hitFaction(S, fid, amount, log) {
   return before - f.power;
 }
 
+const NIGHTLY = {};
+export function registerNightly(id, fn) { NIGHTLY[id] = fn; }
+
 function factionNight(S, log) {
+  for (const [pid, fn] of Object.entries(NIGHTLY)) if (packOn(S, pid)) fn(S, log);
   for (const [fid, f] of Object.entries(S.factions)) {
     const fate = f.fate;
     if (!fate) { if (f.power < 100) f.power = Math.min(100, f.power + POWER.regen); continue; }
@@ -807,6 +811,14 @@ export const NAMED_CAPTIVES = {
 };
 // Character packs register their named captives here.
 export function registerNamedCaptive(key, def) { NAMED_CAPTIVES[key] = def; }
+// Story events can put a named captive straight into the cells.
+export function addNamedCaptive(S, key) {
+  if (S.captives.some(c => c.named === key)) return null;
+  const cap = makeCaptive(S, { defId: key, named: key, faction: NAMED_CAPTIVES[key].faction });
+  S.captives.push(cap);
+  S.flags.undercroft_open = true;
+  return cap;
+}
 
 function makeCaptive(S, c) {
   const named = c.named && NAMED_CAPTIVES[c.named];
@@ -834,8 +846,10 @@ const BEAST_NAMES = ['Soot', 'Bramble', 'Morrow', 'Tallow', 'Wick', 'Ember', 'Gl
 function makeBeast(S, c, traitsOverride = null) {
   const fam = c.family || 'ember_hound';
   const traitIds = Object.keys(BEAST_TRAITS);
+  if (c.named === 'pale_stag') traitsOverride = ['lustrous', 'hardy'];
   const traits = traitsOverride || (c.elite ? [pick(traitIds), pick(traitIds)].filter((t, i, a) => a.indexOf(t) === i) : [pick(traitIds)]);
-  return { id: uid('bst_'), defId: c.defId, family: fam, name: pick(BEAST_NAMES),
+  return { id: uid('bst_'), defId: c.defId, family: fam, named: c.named || null,
+    name: c.named === 'pale_stag' ? 'The Pale Stag' : c.named === 'vex' ? 'The Watcher' : pick(BEAST_NAMES),
     kind: ENEMIES[c.defId]?.name || BEAST_FAMILIES[fam].name,
     // new arrivals come in fed (on whatever they were caught chewing) so the first night is safe
     tame: c.elite ? 15 : 25, hunger: 20, traits, yieldId: BEAST_FAMILIES[fam].reagent, fed: true, born: S.day };
@@ -941,7 +955,12 @@ export function bargainCost(S) {
 
 // Testimony needs a converted ally from the same faction.
 export function testimonyWitness(S, cap) {
-  return Object.entries(S.converts || {}).find(([id, d]) => isAlly(S, id) && d.faction === cap.faction)?.[0] || null;
+  const chain = cap.named && NAMED_CAPTIVES[cap.named] && NAMED_CAPTIVES[cap.named].witness;
+  if (chain && isAlly(S, chain)) return chain;
+  const conv = Object.entries(S.converts || {}).find(([id, d]) => isAlly(S, id) && d.faction === cap.faction)?.[0];
+  if (conv) return conv;
+  // reclaimed named characters (pack heroes, leaders) can testify too
+  return Object.values(NAMED_CAPTIVES).find(n => n.hero && n.faction === cap.faction && isAlly(S, n.hero))?.hero || null;
 }
 
 // Perform a visit. Returns { ok, text[] } for the UI to narrate.
@@ -984,7 +1003,8 @@ export function visitCaptive(S, capId, kind, opts = {}) {
   } else if (kind === 'testimony') {
     const w = testimonyWitness(S, cap);
     if (!w) { out.text.push('No one who once wore that brand stands with you yet.'); return out; }
-    const amt = Math.round(25 * traitMod(cap, 'testimonyMult'));
+    const chain = cap.named && NAMED_CAPTIVES[cap.named] && NAMED_CAPTIVES[cap.named].witness === w;
+    const amt = Math.round(25 * traitMod(cap, 'testimonyMult') * (chain ? 2 : 1) * (w === 'mira_vane' ? 1.5 : 1));
     cap.brand = Math.max(0, cap.brand - amt);
     cap.otherPts += amt;
     cap.regard = clamp(cap.regard + 5, -100, 100);
@@ -1137,6 +1157,12 @@ export function tendMenagerie(S) {
       }
     }
     b.fed = false;
+    // Vex: a beast that decides it would rather be a person
+    if (b.named === 'vex' && b.tame >= 50) {
+      S.menagerie = S.menagerie.filter(x => x !== b);
+      delete S.handlers[b.id];
+      S.queue.push('vex_promotes');
+    }
   }
   // eggs hatch after three days
   for (const egg of [...S.eggs]) {

@@ -4,7 +4,7 @@
 
 A dark gothic dungeon-crawler RPG built on the Gatebound engine and the
 **Warlock's Codex** cast. You are a rising warlock with a fresh mark who
-descends into tarot-chosen rifts, subdues and captures what you find there,
+raids the holdings of rival covens, subdues and captures what you find there,
 and reclaims Ashen Coven captives into allies — with **Vesper Morrow**
 (Keeper of the Codex), **Rue** (demon of the Ninth Ember, three favors in your
 debt) and **Dame Isolde Varr** (last knight of the Last Vigil) at your side.
@@ -35,44 +35,61 @@ Add `?fast=1` to the URL for instant text and 3× animation speed.
 
 ## The loop
 
-1. **The Codex** (hub) — the drowned library. Talk to your allies, visit the
-   **Undercroft** and **Menagerie**, brew at the **Alchemy** cauldron, swear
-   at the **Pact Altar**, read the **Chronicle**.
-2. **The Tarot Board** — each day Vesper deals three face-down cards; their
-   backs show the rift's Circle. Turn one (only one) to choose the night's
-   rift. The card sets the biome and a modifier:
-   The Tower (Coven forge, burning floors), The Moon (drowned, hidden foes),
-   Justice (Vigil purge), The Devil (demon market, bargains), Death
-   (catacombs, uncapturable undead, rich loot), The Lovers (charmed glade,
-   stronger seals, bond scenes).
-3. **Descend** — chambers, forks, caches, strange doors, then the rift's
-   heart. Every enemy has a **Will** bar under its health: hex it, pin it,
-   hurt it, and when Will is low cast a **⛓ Binding Seal** (the warlock's
-   command) to capture instead of kill. Humanoids go to the Undercroft;
-   beasts to the Menagerie; undead and constructs can't be sealed. Bosses
-   can only be sealed below 15% HP. Bring Vesper and her **Keeper's Eye**
-   shows exact Will and seal odds.
-4. **Return** — captures come home only if you clear the rift (a wipe or
-   retreat frees them). Assign **wardens** to captives and **handlers** to
-   beasts, then visit the cells: Interrogate, Intimidate, Bargain, Mercy,
-   or Testimony from a reclaimed former comrade. When a captive's Coven
-   brand burns to 0 they choose: **join** (regard ≥ 20), **leave**, or —
-   if you only ever bought their progress — **relapse**.
-5. **Pay for power** — pacts raise **Corruption**. 50+ opens the forbidden
-   Slot VI spells; 80+ and captives fear you. Corruption and your bonds
-   decide the ending after the **Ashen Heart**.
+1. **The Codex** (hub) — the drowned library. Vesper's **daily reading**
+   (a free tarot card every day, each with a boon: richer spoils, a
+   captive's secret, a rival weakened, free feed for the Menagerie…), the
+   **Undercroft**, **Menagerie**, **Alchemy**, **Pact Altar**,
+   **Chronicle**, **Rivals**, and petitions from people who want in.
+2. **Expedition** — a map of the dead city and beyond. Five rival
+   factions hold it: **the Ashen Coven** (Mother Cinder), **the Obsidian
+   College** (Archon Sorn), **the Last Vigil** (Lord-Commander Aldric),
+   **the Demon Market** (the Velvet Proprietor) and **the Hunters' Lodge**
+   (Guildmaster Hale), plus wild lands full of beasts. Raid a holding to
+   drain its owner's **Power**; seal its people to drain it faster. Some
+   holdings are kept by a named **lieutenant** — beat them (and sometimes
+   capture them) for a big hit.
+3. **Descend** — chambers, forks, caches, strange doors, then the boss.
+   Every enemy has a **Will** bar: hex it, pin it, hurt it, then cast a
+   **⛓ Binding Seal** to capture instead of kill. Humanoids go to the
+   Undercroft, beasts to the Menagerie; undead and constructs can't be
+   sealed.
+4. **Topple a faction** — at 35 Power its leader's **lair** opens. Leaders
+   *break* instead of dying: they fall to their knees and you choose —
+   **seal** them into the Undercroft (the faction is *subjugated*, and the
+   leader in your cells is a weapon of its own), or strike again and
+   **execute** them (*shattered*: tribute only, and Corruption). Reclaim a
+   bound leader and they swear to you. Dominated factions pay tribute and
+   grant perks (Coven reagents, College XP, Vigil armor, Market gold and
+   discounts, Lodge contracts).
+5. **Reclaim** — wardens burn Coven brands out of captives; visit daily to
+   Interrogate, Intimidate, Bargain, show Mercy, or bring Testimony from a
+   reclaimed comrade. At brand 0 they choose: join, leave, or relapse.
+6. **Pay for power** — pacts raise **Corruption**: 50+ opens Slot VI
+   spells, 80+ and captives fear you. Corruption and bonds decide the
+   ending after the **Ashen Heart**.
 
 Climb the six **Circles of the Codex** — Ash, Ember, Hex, Thorn, Crown,
-Abyss — by earning **Infamy**. Each inscription is a scene where the Codex
-writes your new title.
+Abyss — by earning **Infamy**.
+
+## Character packs
+
+Built from the Character Packs GDD (Settings → Character packs toggles
+each one; disabling a pack hides its people and events without breaking
+saves): **Obsidian College** (Lady Auren Voss, the Revenant Bride, Mira
+Ashveil, Maren Soleil, Cole Ashmer, the Pale Stag, Seris's duels, Vex
+through the Menagerie), **Northern Reach** (Valdra, Nyxe, Mira Vane, Rhea,
+Aelindra, Legate Aurelia, Brynn, Sera — and the Mira Vane → Rhea → Valdra
+testimony chain), **Classic Fantasy** (Elara Moonwhisper, Lady Seraphine,
+Elspeth, Sister Maren, Kira).
 
 ## Story
 
 - **Vesper — The Drowned Stacks** (opening): the bleeding-ink trail, the
   unturned third card, the Coven envoy, your first seal, the Binding.
+- **Isolde** is met at the Border Chapel; **Rue** through the blood map.
 - **Rue — Three Favors**: the pantry goat, the blood map, the binding trap,
   her terms. Her debt brand flashes on screen whenever she lies.
-- **Isolde — The Kneeling Sword**: drawn from *Justice*. A duel she ends by
+- **Isolde — The Kneeling Sword**: at the Border Chapel. A duel she ends by
   kneeling; then six Vigil riders, and her fourth rune.
 - **The Undercroft**: Calla, the envoy, fully written — intro, mid-
   Reclamation confession, release (join / leave / relapse), and a first
@@ -86,7 +103,11 @@ writes your new title.
   Ascended Warlock · The Codex Keeps You · secret: The Coven Unmade).
 
 Intimacy lines carry `spice: 'gentle' | 'steamy' | 'unbound'` and only the
-setting's tier shows. **Unbound** lines are stubs marked `// ZOE: unbound`.
+setting's tier shows. **Unbound** lines are stubs marked `// ZOE: unbound`
+— see **docs/UNBOUND_GUIDE.md** for every stub and what it should cover.
+Characters whose story began in chains (Calla, Mira Vane, Aelindra,
+Elspeth) can later ask, as free allies, to revisit that dynamic — always
+through a negotiation scene first, with their own limits and stop word.
 Every event with a spice line must use `free(...)` for its `cond`; a
 load-time check (`checkIntimacyGates`) warns in the console otherwise.
 Undercroft and captive scenes never carry spice.
@@ -99,9 +120,10 @@ growing XP boost.
 ```
 index.html            entry + import map
 css/style.css         all UI styling
-js/data.js            circles, heroes, skills, enemies, biomes, tarot,
+js/data.js            circles, heroes, skills, enemies, factions, locations, tarot,
                       captive/beast traits, reagents, recipes, pacts, gear
-js/story.js           all dialogue: arcs, Undercroft, endings, rift events
+js/story.js           all dialogue: arcs, Undercroft, conquest, endings
+js/packs/             character packs (obsidian, northern, classic) + installer
 js/state.js           save/load, tarot, rifts, captures, Reclamation,
                       Menagerie, alchemy, pacts, dispatch
 js/combat.js          turn-based engine with Will, subdue & Binding Seals

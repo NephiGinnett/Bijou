@@ -249,10 +249,15 @@ export function heroDesc(S, id) {
 
 // Recruits petitioning to join the Codex, given the current state.
 export function recruitOffers(S) {
+  const packOn = p => !p || !S.settings.packs || S.settings.packs[p] !== false;
   return Object.values(HEROES).filter(h => {
-    if (!h.recruit) return false;
+    if (h.pack && !packOn(h.pack)) return false;
+    const ov = h.packOverride ? Object.entries(h.packOverride).find(([p]) => packOn(p))?.[1] : null;
+    const recruit = ov && 'recruit' in ov ? ov.recruit : h.recruit;
+    if (!recruit) return false;
     if ((S.allies || []).includes(h.id)) return false;
-    const a = h.arrive || {};
+    const a = (ov && ov.arrive) || h.arrive || {};
+    if (a.flag && !(S.flags && S.flags[a.flag])) return false;
     if (a.circle != null && S.circleIdx < a.circle) return false;
     const since = S.day - ((S.circleDay || {})[a.circle] ?? S.day);
     if (a.day != null && since < a.day) return false;
