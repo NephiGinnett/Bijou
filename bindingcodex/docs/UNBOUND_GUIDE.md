@@ -1,6 +1,6 @@
 # Unbound Writing Guide
 
-Everything Zoe needs to fill the **Unbound** intimacy tier in Binding Codex (40 stubs across 32 scenes).
+Everything Zoe needs to fill the **Unbound** intimacy tier in Binding Codex (43 stubs across 30 scenes).
 
 ## How the tiers work
 
