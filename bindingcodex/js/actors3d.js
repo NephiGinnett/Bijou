@@ -195,6 +195,8 @@ function chibi(o = {}) {
 const HERO_BUILDERS = {
   player(v) {
     // the warlock: hooded ash-black coat, violet-lined, sigil-mark aglow
+    const scar = !!v && v.endsWith('_scar');
+    if (scar) v = v.slice(0, -5);
     const fem = v === 'she';
     const g = chibi({ skin: 0xead2bc, hair: 0x1e1a22, hairstyle: fem ? 'long' : v === 'they' ? 'straight' : 'short', outfit: 0x221c2a, sleeve: 0x221c2a, legColor: 0x17131c, eyeColor: 0x8a5ad8, chest: fem ? 1 : 0 });
     add(g, Cone(0.4, 0.62, 9, 1, true), mat(0x17131c), 0, 0.82, -0.06);                                   // long coat
@@ -203,6 +205,11 @@ const HERO_BUILDERS = {
     add(g, Tor(0.07, 0.02, 6, 10), mat(0xc86cff, { emissive: 0xc86cff, ei: 1.6 }), -0.39, 0.62, 0.02, Math.PI / 2); // the mark
     const orb = add(g, S(0.07, 10, 10), mat(0xc86cff, { emissive: 0xc86cff, ei: 2 }), 0.44, 0.72, 0.08);    // hex-light in hand
     orb.name = 'orb';
+    if (scar) { // the Scar Rite: a glowing ember scar across the face
+      const sm = mat(0xff5a3a, { emissive: 0xff5a3a, ei: 1.8 });
+      add(g, Box(0.03, 0.26, 0.012), sm, 0.08, 1.2, 0.3, 0.1, 0, -0.5);
+      add(g, Box(0.02, 0.1, 0.012), sm, 0.16, 1.08, 0.28, 0.1, 0, 0.6);
+    }
     return g;
   },
   vesper() {
@@ -428,14 +435,16 @@ const MONSTER_BUILDERS = {
       acolyte: { robe: 0x5a5458, trim: 0xe8823a }, zealot: { robe: 0x4a3a34, trim: 0xd84a2a }, witch: { robe: 0x3a3440, trim: 0xff9a4a },
       trapper: { robe: 0x4a4434, trim: 0xc87a3a }, knight: { robe: 0x2a2220, trim: 0xff6a2a }, envoy: { robe: 0x7a7470, trim: 0xe8a87a },
       matron: { robe: 0x3a1a14, trim: 0xff7a2a }, mother: { robe: 0x1a0c0a, trim: 0xff5a2a }, reclaimed: { robe: 0x2a2234, trim: 0xb06cff },
+      binder: { robe: 0x2a2a2e, trim: 0xd8d0c0 }, dragon: { robe: 0x5a1a14, trim: 0xffb02a }, frost: { robe: 0x8aa8c8, trim: 0xd8f0ff },
     }[v] || { robe: 0x5a5458, trim: 0xe8823a };
-    const armored = v === 'knight' || v === 'zealot';
+    const armored = v === 'knight' || v === 'zealot' || v === 'dragon';
     const g = chibi({ skin: 0xe8ccb4, hair: v === 'mother' ? 0xd8d0c8 : 0x3a2a24, hairstyle: v === 'envoy' || v === 'witch' || v === 'mother' || v === 'reclaimed' ? 'long' : 'short',
       outfit: look.robe, outfitStyle: armored ? 'armor' : 'robe', frill: look.trim, eyeColor: v === 'reclaimed' ? 0x5a4a7a : 0xd86a2a, eyeGlow: v !== 'reclaimed' });
     if (!armored) add(g, Cone(0.22, 0.32, 8), mat(look.robe), 0, 1.38, -0.06, 0.2);                       // hood
     if (v !== 'reclaimed') add(g, S(0.035, 6, 6), mat(look.trim, { emissive: look.trim, ei: 2 }), 0.12, 1.0, 0.2); // brand
     if (v === 'matron' || v === 'mother') crown(g, look.trim, 1.55, 0.2);
-    if (v === 'knight' || v === 'zealot') { const w = sword(0x8a7a6a, 0.6); w.position.set(0.42, 0.5, 0.05); w.rotation.z = -0.45; g.add(w); }
+    if (v === 'dragon') horns(g, 0xffb02a, 1.46, 0.14, 0.2);
+    if (v === 'knight' || v === 'zealot' || v === 'dragon') { const w = sword(0x8a7a6a, 0.6); w.position.set(0.42, 0.5, 0.05); w.rotation.z = -0.45; g.add(w); }
     else { const st = staff(look.trim); st.position.set(0.42, 0.15, 0.08); st.rotation.z = -0.12; g.add(st); }
     if (v === 'matron' || v === 'mother') g.scale.setScalar(1.12);
     return g;
@@ -446,10 +455,51 @@ const MONSTER_BUILDERS = {
     add(g, Box(0.3, 0.42, 0.04), mat(v === 'fallen' ? 0x2a2a34 : 0xe8e4d8), 0, 0.6, 0.22);                // tabard
     add(g, Box(0.06, 0.2, 0.05), mat(0xc8a050, { metal: 0.6 }), 0, 0.66, 0.245);                          // sigil cross
     add(g, S(0.33, 12, 10, 0, Math.PI * 2, 0, Math.PI / 2), mat(0x9a9ea8, { metal: 0.7, rough: 0.35 }), 0, 1.24, 0); // helm
-    if (v === 'cantor') { const b = grimoire(); b.position.set(-0.4, 0.66, 0.12); g.add(b); }
+    if (v === 'cantor' || v === 'inquisitor') { const b = grimoire(); b.position.set(-0.4, 0.66, 0.12); g.add(b); }
     else { const w = sword(0xd8dce4, v === 'marshal' ? 0.8 : 0.62); w.position.set(0.42, 0.5, 0.05); w.rotation.z = -0.4; g.add(w); }
     if (v === 'rider' || v === 'marshal') { const sh = shield(0xc8ccd8); sh.position.set(-0.42, 0.68, 0.08); g.add(sh); }
-    if (v === 'marshal') g.scale.setScalar(1.1);
+    if (v === 'marshal' || v === 'commander') g.scale.setScalar(1.15);
+    if (v === 'commander') { crown(g, 0xc8a050, 1.55, 0.2); add(g, Box(0.62, 0.9, 0.04), mat(0xe8e4d8), 0, 0.68, -0.3, 0.08); }
+    if (v === 'inquisitor') add(g, S(0.06, 8, 8), mat(0xff4a4a, { emissive: 0xff2a2a, ei: 1.4 }), 0, 1.0, 0.3);
+    return g;
+  },
+  college(v) {
+    // Obsidian College: black robes, gold piping, severe collars
+    const insq = v === 'inquisitor';
+    const g = chibi({ skin: 0xecd8c8, hair: insq ? 0x2a2a2a : 0x6a4a3a, hairstyle: insq ? 'short' : 'straight', outfit: 0x14121a, outfitStyle: insq ? 'armor' : 'robe', frill: 0xd8b04a, sleeve: 0x14121a, eyeColor: 0xd8b04a });
+    add(g, Tor(0.2, 0.025, 6, 14), mat(0xd8b04a, { metal: 0.7 }), 0, 1.02, 0, Math.PI / 2.4);
+    if (insq) { const w = sword(0x2a2a30, 0.6); w.position.set(0.42, 0.5, 0.05); w.rotation.z = -0.45; g.add(w); add(g, Box(0.5, 0.06, 0.02), mat(0xd8b04a), 0, 1.35, 0.3); }
+    else { const b = grimoire(); b.position.set(-0.4, 0.66, 0.12); g.add(b); }
+    return g;
+  },
+  hunter(v) {
+    // Hunters' Lodge: leathers, green cloaks, trophies
+    const master = v === 'master';
+    const g = chibi({ skin: 0xd8b494, hair: master ? 0x9a9a9a : 0x6a4a2a, hairstyle: v === 'archer' ? 'long' : 'short', outfit: 0x5a4a32, sleeve: 0x4a3a28, legColor: 0x3a3020, eyeColor: 0x3a3020 });
+    add(g, Cone(0.38, 0.55, 9, 1, true), mat(master ? 0x2a3a1a : 0x3a5a2a), 0, 0.85, -0.06);
+    if (v === 'archer') { add(g, Tor(0.3, 0.02, 6, 16, Math.PI), mat(0x6a4a2a), 0.42, 0.7, 0.05, 0, 0, Math.PI / 2); }
+    else if (v === 'trapper') { add(g, Tor(0.12, 0.03, 6, 12), mat(0x8a8a8a, { metal: 0.7 }), -0.4, 0.6, 0.1, Math.PI / 2); const w = sword(0xb8bcc4, 0.4); w.position.set(0.42, 0.5, 0.05); w.rotation.z = -0.5; g.add(w); }
+    else { const w = sword(0xb8bcc4, master ? 0.7 : 0.55); w.position.set(0.42, 0.5, 0.05); w.rotation.z = -0.45; g.add(w); }
+    if (master) { horns(g, 0xe8dcc8, 1.5, 0.2, 0.3); g.scale.setScalar(1.12); } // antler crown
+    return g;
+  },
+  moth() {
+    const g = new THREE.Group();
+    const bm = mat(0x6a6070, { rough: 1, flat: true });
+    add(g, Cap(0.12, 0.4, 4, 8), bm, 0, 0.9, 0);
+    for (const sx of [-1, 1]) {
+      const w = add(g, Box(0.6, 0.45, 0.02), mat(0x8a8090, { rough: 1, opacity: 0.9 }), sx * 0.36, 1.0, -0.05, 0, 0, sx * 0.3);
+      add(g, S(0.07, 8, 8), mat(0xe8d8a8, { emissive: 0xd8b04a, ei: 0.6 }), sx * 0.4, 1.05, -0.02);
+      void w;
+    }
+    eyes(g, 0xff8ab0, 1.1, 0.06, 0.1, 0.03, true);
+    g.userData.float = true;
+    return g;
+  },
+  harpy() {
+    const g = chibi({ skin: 0xc8a888, hair: 0x2a2a2a, hairstyle: 'long', outfit: 0x4a3a3a, legColor: 0x6a5a3a, eyeColor: 0xff6a3a, eyeGlow: true, lowerBody: 'hooves' });
+    wings(g, 0x3a2a2a, 0.95, 0.65);
+    g.userData.float = true;
     return g;
   },
   spider() {
@@ -464,21 +514,25 @@ const MONSTER_BUILDERS = {
     eyes(g, 0xc86cff, 0.56, 0.11, 0.38, 0.022, true);
     return g;
   },
-  drake() {
+  drake(v) {
     const g = new THREE.Group();
-    const bm = mat(0x3a5a44, { rough: 0.6, flat: true });
+    const col = { frost: 0x9ab8d8, basilisk: 0x5a6a3a, great: 0x2a4a34 }[v] ?? 0x3a5a44;
+    const bm = mat(col, { rough: 0.6, flat: true });
+    if (v === 'frost') wings(g, 0xc8d8e8, 0.85, 0.55);
+    if (v === 'basilisk') for (let i = 0; i < 4; i++) add(g, Cyl(0.03, 0.03, 0.18, 4), bm, 0.1 * i - 0.15, 0.3, 0.2 + (i % 2) * -0.4); // extra legs
     add(g, Cap(0.24, 0.6, 4, 10), bm, 0, 0.42, 0, 0, 0, Math.PI / 2);
     add(g, Cap(0.12, 0.3, 4, 8), bm, 0.5, 0.7, 0, 0, 0, -0.9);
     add(g, Box(0.26, 0.14, 0.18), bm, 0.72, 0.86, 0);
     add(g, Cone(0.1, 0.6, 6), bm, -0.62, 0.36, 0, 0, 0, Math.PI / 2);
     for (const [x, z] of [[0.25, 0.14], [0.25, -0.14], [-0.25, 0.14], [-0.25, -0.14]]) add(g, Cyl(0.05, 0.06, 0.3, 6), bm, x, 0.14, z);
     for (let i = 0; i < 5; i++) add(g, Cone(0.04, 0.12, 4), mat(0x6a8a54), -0.3 + i * 0.15, 0.68, 0);
-    eyes(g, 0xe8d84a, 0.92, 0.07, 0.8, 0.03, true);
+    eyes(g, v === 'basilisk' ? 0xff4a4a : v === 'frost' ? 0x8ad8ff : 0xe8d84a, 0.92, 0.07, 0.8, 0.03, true);
+    if (v === 'great') g.scale.setScalar(1.45);
     return g;
   },
   stag(v) {
     const g = new THREE.Group();
-    const bm = mat(v === 'great' ? 0xe8d8e8 : 0xa8a49a, { rough: 0.85 });
+    const bm = mat(v === 'pale' ? 0xf8f8f0 : v === 'great' ? 0xe8d8e8 : 0xa8a49a, { rough: 0.85 });
     add(g, Cap(0.2, 0.55, 4, 10), bm, 0, 0.6, 0, 0, 0, Math.PI / 2);
     add(g, Cap(0.08, 0.3, 4, 8), bm, 0.4, 0.88, 0, 0, 0, -0.5);
     add(g, Box(0.22, 0.14, 0.14), bm, 0.56, 1.06, 0);
@@ -490,6 +544,7 @@ const MONSTER_BUILDERS = {
     }
     eyes(g, 0x2a2a2a, 1.08, 0.06, 0.64, 0.025);
     if (v === 'great') g.scale.setScalar(1.3);
+    if (v === 'pale') { g.scale.setScalar(1.55); g.traverse(m => { if (m.material) { m.material = m.material.clone(); m.material.emissive = new THREE.Color(0x8a8a7a); m.material.emissiveIntensity = 0.4; } }); }
     return g;
   },
   goblin(v) {
@@ -505,8 +560,15 @@ const MONSTER_BUILDERS = {
     return g;
   },
   wolf(v) {
-    const colors = { frost: 0x9ec8dc, hell: 0x5a2a2a, dire: 0x3a3f4a, abyss: 0x46285a };
-    const w = quadruped({ color: colors[v] ?? 0x8a8f99, eye: v === 'hell' ? 0xff6a3a : v === 'abyss' ? 0xc86cff : 0xffd24a });
+    const colors = { frost: 0x9ec8dc, hell: 0x5a2a2a, dire: 0x3a3f4a, abyss: 0x46285a, vigil: 0xc8c0b0, hunt: 0x6a4a2a, chimera: 0x8a5a2a };
+    const w = quadruped({ color: colors[v] ?? 0x8a8f99, eye: v === 'hell' || v === 'chimera' ? 0xff6a3a : v === 'abyss' ? 0xc86cff : 0xffd24a });
+    if (v === 'vigil') add(w, Tor(0.2, 0.04, 6, 12), mat(0xc8a050, { metal: 0.7 }), 0, 0.72, 0.42, 0, Math.PI / 2, 0); // Vigil collar
+    if (v === 'chimera') { // goat horns, a serpent tail, a mane of embers
+      horns(w, 0x3a2a1a, 0.95, 0.12, 0.22);
+      add(w, Cone(0.05, 0.5, 6), mat(0x3a6a3a), 0, 0.7, -0.62, -0.9);
+      for (let i = 0; i < 6; i++) add(w, Cone(0.05, 0.16, 4), mat(0xff7a2a, { emissive: 0xff5a1a, ei: 0.8 }), Math.cos(i) * 0.18, 0.84, 0.32 + Math.sin(i) * 0.05);
+      w.scale.setScalar(1.25);
+    }
     if (v === 'dire') w.scale.setScalar(1.3);
     if (v === 'frost') w.scale.setScalar(1.1);
     if (v === 'abyss') w.scale.setScalar(1.16);
@@ -521,9 +583,9 @@ const MONSTER_BUILDERS = {
     return b;
   },
   sprite(v) {
-    const ice = v === 'ice';
+    const ice = v === 'ice', arc = v === 'arcane';
     const g = new THREE.Group();
-    add(g, S(0.22, 12, 12), mat(ice ? 0x9ed8ff : 0xaef2c8, { emissive: ice ? 0x6ab8ff : 0x7ae8a8, ei: 1.5 }), 0, 1.0, 0);
+    add(g, S(0.22, 12, 12), mat(arc ? 0xf0d890 : ice ? 0x9ed8ff : 0xaef2c8, { emissive: arc ? 0xd8b04a : ice ? 0x6ab8ff : 0x7ae8a8, ei: 1.5 }), 0, 1.0, 0);
     const wingC = ice ? 0xd8f0ff : 0xd8ffe8;
     add(g, Box(0.4, 0.22, 0.02), mat(wingC, { opacity: 0.55 }), -0.28, 1.1, -0.05, 0, 0, 0.5);
     add(g, Box(0.4, 0.22, 0.02), mat(wingC, { opacity: 0.55 }), 0.28, 1.1, -0.05, 0, 0, -0.5);
@@ -569,7 +631,7 @@ const MONSTER_BUILDERS = {
     return robed({ color: 0x3a2430, eye: 0xff6a8a });
   },
   golem(v) {
-    const g = golemish({ color: v === 'colossus' ? 0x6a6f78 : v === 'war' ? 0x5a4a4a : 0x7a7f86, core: v === 'colossus' ? 0xff6a3a : v === 'war' ? 0xff3a3a : 0xffa24a });
+    const g = golemish({ color: v === 'obsidian' ? 0x1a1820 : v === 'colossus' ? 0x6a6f78 : v === 'war' ? 0x5a4a4a : 0x7a7f86, core: v === 'obsidian' ? 0xd8b04a : v === 'colossus' ? 0xff6a3a : v === 'war' ? 0xff3a3a : 0xffa24a });
     if (v === 'colossus') g.scale.setScalar(1.4);
     if (v === 'war') g.scale.setScalar(1.12);
     return g;
@@ -595,13 +657,26 @@ const MONSTER_BUILDERS = {
     return g;
   },
   yeti(v) {
+    if (v === 'troll') {
+      const t = chibi({ skin: 0x5a6a3a, hair: 0x3a4a2a, hairstyle: 'curly', outfit: 0x4a3a2a, legColor: 0x4a5a2a, eyeColor: 0xd8c84a, eyeGlow: true, build: 'broad' });
+      add(t, Cone(0.05, 0.14, 5), mat(0xe8dcc8), -0.08, 1.04, 0.28, 2.6); add(t, Cone(0.05, 0.14, 5), mat(0xe8dcc8), 0.08, 1.04, 0.28, 2.6); // tusks
+      t.scale.setScalar(1.45);
+      return t;
+    }
     const giant = v === 'giant';
     const g = chibi({ skin: giant ? 0xc6d6ea : 0xe8ecf2, hair: 0xdde4ec, hairstyle: 'short', outfit: 0xdde4ec, legColor: 0xc8d0da, eyeColor: giant ? 0x4a6acc : 0x2a3a5a });
     g.scale.setScalar(giant ? 1.6 : 1.35);
     horns(g, 0x9aa4b0, 1.4, 0.16, 0.18);
     return g;
   },
-  imp() {
+  imp(v) {
+    if (v === 'gremlin') {
+      const gr = chibi({ skin: 0x6a8a4a, hair: null, outfit: 0x4a3a2a, legColor: 0x3a2a1a, eyeColor: 0xffd24a, eyeGlow: true });
+      add(gr, Cone(0.08, 0.3, 4), mat(0x6a8a4a), -0.34, 1.3, 0, 0, 0, 1.2); add(gr, Cone(0.08, 0.3, 4), mat(0x6a8a4a), 0.34, 1.3, 0, 0, 0, -1.2); // big ears
+      add(gr, Cyl(0.08, 0.08, 0.02, 10), mat(0xd8b04a, { metal: 0.8 }), 0.38, 0.6, 0.1, Math.PI / 2); // a stolen coin
+      gr.scale.setScalar(0.72);
+      return gr;
+    }
     const g = chibi({ skin: 0xc85a4a, hair: null, outfit: 0x8a3a32, legColor: 0x6a2a24, eyeColor: 0xffd24a, eyeGlow: true });
     horns(g, 0xf2d8b8, 1.44, 0.14, 0.22);
     add(g, Cone(0.05, 0.4, 6), mat(0xc85a4a), 0, 0.3, -0.3, Math.PI / 1.5);
@@ -609,6 +684,15 @@ const MONSTER_BUILDERS = {
     return g;
   },
   demon(v) {
+    if (v === 'velvet' || v === 'contract' || v === 'proprietor') {
+      const look = { velvet: [0xd88a9a, 0x5a1a3a, 0xff8ab0], contract: [0xa8443a, 0x2a1a1a, 0xffd24a], proprietor: [0x8a3a5a, 0x1a0a14, 0xd8b04a] }[v];
+      const d = chibi({ skin: look[0], hair: v === 'velvet' ? 0x2a0a1a : 0x1a0a0a, hairstyle: v === 'velvet' ? 'long' : 'short', outfit: look[1], outfitStyle: v === 'velvet' ? 'dress' : 'robe', frill: look[2], eyeColor: look[2], eyeGlow: true });
+      horns(d, 0x1a0a0a, 1.46, 0.15, v === 'proprietor' ? 0.34 : 0.22);
+      if (v === 'contract') { const b = grimoire(); b.position.set(-0.4, 0.66, 0.12); d.add(b); }
+      if (v === 'proprietor') { crown(d, 0xd8b04a, 1.55, 0.18); add(d, Tor(0.06, 0.02, 6, 10), mat(0xd8b04a, { metal: 0.9 }), 0.12, 1.22, 0.29); d.scale.setScalar(1.25); }
+      if (v === 'velvet') wings(d, 0x3a0a1a, 0.95, 0.45);
+      return d;
+    }
     const gen = v === 'general';
     const g = chibi({ skin: gen ? 0x8a3a4a : 0xa8443a, hair: null, outfit: gen ? 0x3a1a2a : 0x5a1f1a, outfitStyle: 'armor', legColor: 0x3a1512, eyeColor: gen ? 0xff7a4a : 0xffb24a, eyeGlow: true });
     horns(g, 0xf2d8b8, 1.46, 0.16, 0.3);
@@ -618,6 +702,14 @@ const MONSTER_BUILDERS = {
     return g;
   },
   herald(v) {
+    if (v === 'archon') {
+      const a = chibi({ skin: 0xe8d8c8, hair: 0xe8e8e8, hairstyle: 'short', outfit: 0x14121a, outfitStyle: 'robe', frill: 0xd8b04a, eyeColor: 0xd8b04a, eyeGlow: true });
+      crown(a, 0xd8b04a, 1.55, 0.19);
+      add(a, Box(0.6, 0.9, 0.04), mat(0x0c0a10), 0, 0.68, -0.3, 0.08);
+      const st = staff(0xd8b04a); st.position.set(0.42, 0.15, 0.08); st.rotation.z = -0.12; a.add(st);
+      a.scale.setScalar(1.35);
+      return a;
+    }
     const acc = v === 'seraph' ? 0x8ad8ff : 0xb06cff;
     const g = chibi({ skin: 0x1a1622, hair: null, outfit: v === 'seraph' ? 0x1b2838 : 0x211b30, outfitStyle: 'armor', legColor: 0x18131f, eyeColor: acc, eyeGlow: true });
     crown(g, v === 'seraph' ? 0x3a5a6a : 0x4a3a6a, 1.55, 0.2);

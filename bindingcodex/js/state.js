@@ -1,17 +1,18 @@
 // ============================================================
-// CODEXBOUND — game state, saves, progression, tarot & rifts,
+// BINDING CODEX — game state, saves, progression, tarot & rifts,
 // captures, the Undercroft, the Menagerie, alchemy and pacts
 // ============================================================
 
 import {
   RANKS, RANK_UP_GP, GATE_GP, XP_MULT, ENEMY_TIER, HEROES, heroStatsAt, heroSkillsAt,
-  xpToNext, BIOMES, GATE_ROOMS, TAROT, MONARCH_GATE, ENEMIES, makeGear, AFFIXES,
+  xpToNext, BIOMES, GATE_ROOMS, TAROT, ENEMIES, makeGear, AFFIXES,
+  FACTIONS, LOCATIONS, LAIR_POWER, POWER, GATE_MODIFIERS,
   ELITES, ELITE_XP_MULT, ELITE_GOLD_MULT, eliteChance, ROLE_INFO, DISPATCH_BENCHMARK,
   CAPTIVE_TRAITS, CAPTIVE_NAMES, SECRETS, WARDEN_STYLES, BEAST_FAMILIES, BEAST_TRAITS,
   REAGENTS, RECIPES, RECIPE_DISCOVERY, recipeFor, ITEMS, PACTS, SLOT_VI,
 } from './data.js';
 
-export const SAVE_KEY = 'codexbound_save';
+export const SAVE_KEY = 'bindingcodex_save';
 export const SAVE_V = 2;
 
 // --- deterministic rng ---------------------------------------------------
@@ -54,7 +55,11 @@ export function newGame(playerName, pronouns = 'she') {
     heroes: {},
     inventory: { potion: 3, ether: 1 },
     gearBag: [],
-    tarotHand: [],
+    factions: Object.fromEntries(Object.keys(FACTIONS).map(id => [id, { power: 100, fate: null }])),
+    lieutenants: {},                 // lieutenant id → captured | yielded | slain
+    visits: {},                      // location id → clears
+    omen: null,                      // Vesper's card for today
+    readingDay: 0,
     run: null,
     stats: { clears: 0, kills: 0, captures: 0, retreats: 0, wipes: 0, tone: {} },
     legacy: { cycle: 0, xpBoost: 0 },
@@ -65,7 +70,7 @@ export function newGame(playerName, pronouns = 'she') {
     autoSkill: {},
     dispatch: [],
     dispatchReports: [],
-    // Codexbound systems
+    // Binding Codex systems
     corruption: 0,
     pacts: [],
     sealPower: 0,                    // permanent seal bonus from pacts
@@ -81,10 +86,9 @@ export function newGame(playerName, pronouns = 'she') {
     reagents: {},
     recipes: [],
     chronicle: [],                   // { day, text, ev, crossed }
-    settings: { volume: 0.6, music: true, textFast: false, spice: 'gentle', gore: 'gentle', outfit: 'adventure', autoBattle: false },
+    settings: { volume: 0.6, music: true, textFast: false, spice: 'gentle', gore: 'gentle', outfit: 'adventure', autoBattle: false, packs: { obsidian: true, northern: true, classic: true } },
   };
   S.heroes.player = { level: 1, xp: 0, gear: { weapon: null, armor: null, charm: null } };
-  drawTarot(S);
   return S;
 }
 
@@ -93,7 +97,7 @@ export function newGame(playerName, pronouns = 'she') {
 export function save(S) {
   try { localStorage.setItem(SAVE_KEY, JSON.stringify(S)); } catch (e) { /* private mode */ }
 }
-// Default every field, so older Codexbound saves keep working.
+// Default every field, so older Binding Codex saves keep working.
 export function ensureShape(S) {
   if (!S) return S;
   const d = newGame(S.name, S.pronouns);
@@ -101,6 +105,8 @@ export function ensureShape(S) {
   for (const k of Object.keys(d.settings)) if (S.settings[k] === undefined) S.settings[k] = d.settings[k];
   for (const k of Object.keys(d.stats)) if (S.stats[k] === undefined) S.stats[k] = d.stats[k];
   for (const k of Object.keys(d.bond)) if (S.bond[k] === undefined) S.bond[k] = 0;
+  for (const k of Object.keys(d.factions)) if (!S.factions[k]) S.factions[k] = { power: 100, fate: null };
+  if (!S.settings.packs) S.settings.packs = d.settings.packs;
   if (!S.allies.includes('player')) S.allies.unshift('player');
   if (!PRONOUNS[S.pronouns]) S.pronouns = 'she';
   if (!['gentle', 'steamy', 'unbound'].includes(S.settings.spice)) S.settings.spice = 'gentle';
@@ -153,6 +159,7 @@ export function heroStats(S, id) {
   const s = heroStatsAt(def, level);
   const surge = (S.statSurge && S.statSurge[id]) || 0;
   if (surge) for (const k of ['hp', 'mp', 'atk', 'mag', 'def', 'res', 'agi']) s[k] = Math.round(s[k] * (1 + surge));
+  if (S.factions && perk(S, 'vigil')) { s.def = Math.round(s.def * 1.1); s.res = Math.round(s.res * 1.1); }
   if (h) {
     for (const g of Object.values(h.gear)) {
       if (!g) continue;
@@ -222,6 +229,7 @@ export function gainXp(S, id, amount) {
   // The Mark (+10% for the warlock) plus the NG+ legacy boost:
   // the warlock carries it in full, allies at half.
   const legacy = (S.legacy && S.legacy.xpBoost) || 0;
+  if (perk(S, 'college')) amount = Math.round(amount * 1.1);
   if (id === 'player') amount = Math.round(amount * (1.1 + legacy));
   else if (legacy) amount = Math.round(amount * (1 + legacy / 2));
   h.xp += amount;
@@ -330,164 +338,237 @@ export function infamyNeeded(S) {
   return S.circleIdx >= RANKS.length - 1 ? null : RANK_UP_GP[RANKS[S.circleIdx]];
 }
 
-// --- the tarot board ----------------------------------------------------------
+// --- rival factions -------------------------------------------------------------
 
-const RIFT_ADJ2 = ['Cracked', 'Silent', 'Roaring', 'Veiled', 'Broken', 'Waning'];
+export const DOMINATED = ['subjugated', 'sworn', 'humbled', 'shattered'];
+export function factionFate(S, fid) { return (S.factions && S.factions[fid] && S.factions[fid].fate) || null; }
+export function dominated(S, fid) { return DOMINATED.includes(factionFate(S, fid)); }
+// Full perks once the leader is bound, sworn or humbled; a slain leader
+// leaves a leaderless rabble that pays tribute but grants nothing else.
+export function perk(S, fid) { const f = factionFate(S, fid); return f === 'subjugated' || f === 'sworn' || f === 'humbled'; }
+// Leader-in-the-cells perks (only while they sit in the Undercroft).
+export function leaderInCells(S, fid) {
+  const named = { coven: 'cinder', vigil: 'aldric', market: 'proprietor', lodge: 'hale' }[fid];
+  return !!named && (S.captives || []).some(c => c.named === named);
+}
 
-function makeRift(S, cardId, rIdx, rng, idx) {
-  const card = TAROT[cardId];
+export function hitFaction(S, fid, amount, log) {
+  if (!fid || !S.factions[fid] || dominated(S, fid)) return 0;
+  const f = S.factions[fid];
+  const before = f.power;
+  f.power = clamp(f.power - amount, 0, 100);
+  if (before > LAIR_POWER && f.power <= LAIR_POWER) {
+    S.queue.push('lair_open_' + fid);
+    if (log) log.push(`${FACTIONS[fid].name} is reeling. ${FACTIONS[fid].leaderName}'s lair is exposed.`);
+  }
+  return before - f.power;
+}
+
+function factionNight(S, log) {
+  for (const [fid, f] of Object.entries(S.factions)) {
+    const fate = f.fate;
+    if (!fate) { if (f.power < 100) f.power = Math.min(100, f.power + POWER.regen); continue; }
+    const mult = fate === 'shattered' ? 0.5 : fate === 'sworn' ? 1.5 : 1;
+    if (fid === 'coven') {
+      S.reagents.cinder_ash = (S.reagents.cinder_ash || 0) + Math.max(1, Math.round(mult));
+      S.reagents.brimstone_salt = (S.reagents.brimstone_salt || 0) + Math.max(1, Math.round(mult));
+    }
+    if (fid === 'market') { const g = Math.round(60 * mult); S.gold += g; log.push(`Market tribute: ${g} gold.`); }
+    if (fid === 'lodge') addInfamy(S, Math.round(5 * mult));
+  }
+}
+
+// --- the map: holdings you can raid ------------------------------------------------
+
+export function locationOpen(S, locId) {
+  const L = LOCATIONS[locId];
+  if (!L) return { ok: false, why: 'unknown' };
+  if (L.circle > S.circleIdx + (L.lair ? 0 : 1)) return { ok: false, why: `Reach the ${RANKS[L.lair ? L.circle : L.circle - 1]} Circle` };
+  if (L.lair) {
+    const f = S.factions[L.faction];
+    if (f.fate) return { ok: false, why: 'Already dominated', done: true };
+    if (f.power > LAIR_POWER) return { ok: false, why: `Weaken ${FACTIONS[L.faction].name} to ${LAIR_POWER} Power` };
+    if (locId === 'citadel_vigil' && !S.flags.isolde_rune4) return { ok: false, why: 'Isolde\'s story must reach the riders first' };
+  }
+  return { ok: true };
+}
+
+// Build a raid on a holding. Difficulty follows your Circle (never below the holding's own).
+export function makeExpedition(S, locId) {
+  const L = LOCATIONS[locId];
+  const rIdx = Math.max(L.circle, Math.min(S.circleIdx, RANKS.length - 1));
   const rank = RANKS[rIdx];
-  const biome = BIOMES[card.biome];
-  const name = pick(biome.names, rng)
-    .replace('{adj}', rng() < 0.75 ? pick(biome.adj, rng) : pick(RIFT_ADJ2, rng))
-    .replace('{noun}', pick(biome.noun, rng));
   return {
-    id: 'rift_' + S.day + '_' + idx,
-    card: cardId,
-    rank, rankIdx: rIdx, biome: card.biome, name,
-    modifier: card.modifier,
-    rooms: GATE_ROOMS[rank],
-    seed: (rng() * 2 ** 31) | 0,
-    flipped: false,
+    id: 'exp_' + locId + '_' + S.day, loc: locId,
+    rank, rankIdx: rIdx, biome: L.biome, name: L.name, faction: L.faction,
+    modifier: L.modifier, lair: !!L.lair,
+    rooms: L.rooms || GATE_ROOMS[rank],
+    seed: (Math.random() * 2 ** 31) | 0,
   };
 }
 
-// Each day: three face-down cards. Their circles spread around yours
-// (one easier, one at, one stretch) so grinding stays possible.
-export function drawTarot(S) {
-  const rng = mulberry32(S.seed ^ (S.day * 2654435761));
-  const maxIdx = Math.min(S.circleIdx + 1, RANKS.length - 1);
-  const targets = [Math.max(0, S.circleIdx - 1), S.circleIdx, maxIdx];
-  const deck = Object.keys(TAROT).filter(id => !(id === 'justice' && !S.flags.vesper_joined));
-  const hand = [];
-  targets.forEach((rIdx, i) => {
-    // a card is drawn without replacement, so the day's three are distinct
-    const di = Math.floor(rng() * deck.length);
-    const cardId = deck.splice(di, 1)[0] || 'tower';
-    hand.push(makeRift(S, cardId, rIdx, rng, i));
-  });
-  // Story pulls: Justice brings the Vigil knight once Vesper has joined.
-  if (S.flags.vesper_joined && !S.flags.isolde_met && S.day >= 4 && !hand.some(c => c.card === 'justice')) {
-    hand[1] = makeRift(S, 'justice', S.circleIdx, rng, 1);
-    hand[1].story = 'isolde_hunter';
-  }
-  if (S.circleIdx === RANKS.length - 1 && !S.cleared) {
-    hand.unshift({ ...MONARCH_GATE, rankIdx: 5, seed: (rng() * 2 ** 31) | 0, flipped: true });
-  }
-  if (S.cleared) hand.unshift(makeEchoRift(S, (S.ngPlus || 0) + 1, rng));
-  S.tarotHand = hand;
-  S.flippedToday = false;
-}
-
-// Flip a card. The Codex allows one turned card per day.
-export function flipCard(S, i) {
-  const c = S.tarotHand[i];
-  if (!c || c.flipped || S.flippedToday) return false;
-  c.flipped = true;
-  S.flippedToday = true;
-  return true;
+// Post-ending: the Heart echoes, deeper each time.
+export function makeEchoRift(S) {
+  const depth = (S.ngPlus || 0) + 1;
+  return {
+    id: 'echo_' + S.day, loc: 'ashen_heart', rank: 'Abyss', rankIdx: 5, biome: 'heart', faction: null,
+    name: `Echo ${toRoman(depth)} — the Heart Remembers`, modifier: depth % 2 ? 'burning' : 'rich',
+    rooms: Math.min(8, 5 + Math.floor(depth / 2)), recursion: true, depth, seed: (Math.random() * 2 ** 31) | 0,
+  };
 }
 
 const ROMAN = ['', 'I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X'];
 function toRoman(n) { return n <= 10 ? ROMAN[n] : String(n); }
 
-function makeEchoRift(S, depth, rng) {
-  return {
-    id: 'echo_' + S.day,
-    card: 'death',
-    rank: 'Abyss', rankIdx: 5, biome: 'heart',
-    name: `Echo ${toRoman(depth)} — the Heart Remembers`,
-    modifier: depth % 2 ? 'burning' : 'rich',
-    rooms: Math.min(8, 5 + Math.floor(depth / 2)),
-    recursion: true, depth, flipped: true,
-    seed: (rng() * 2 ** 31) | 0,
-  };
+// Pending named lieutenant for a holding, if its pack is on and it's still at large.
+export function pendingLieutenant(S, locId) {
+  const lt = LOCATIONS[locId] && LOCATIONS[locId].lieutenant;
+  if (!lt || !ENEMIES[lt.id]) return null;
+  if (lt.pack && !packOn(S, lt.pack)) return null;
+  if (lt.circle != null && S.circleIdx < lt.circle) return null;
+  if (S.lieutenants[lt.id]) return null;
+  return lt.id;
+}
+export function packOn(S, pack) { return !pack || !S.settings.packs || S.settings.packs[pack] !== false; }
+
+// --- Vesper's daily reading --------------------------------------------------------
+
+export function canRead(S) { return isAlly(S, 'vesper') && S.readingDay !== S.day; }
+
+// Draw today's card and apply its immediate boon. Returns { card, text[] }.
+export function dailyReading(S) {
+  if (!canRead(S)) return null;
+  const ids = Object.keys(TAROT);
+  const rng = mulberry32(S.seed ^ (S.day * 2246822519));
+  const card = ids[Math.floor(rng() * ids.length)];
+  const T = TAROT[card];
+  S.readingDay = S.day;
+  S.omen = { card, day: S.day };
+  const out = { card, text: [] };
+  if (T.now === 'secret') {
+    const c = S.captives.find(x => x.knows.some(k => !x.learned.includes(k)));
+    const s = c && revealSecret(c);
+    out.text.push(s ? `${c.name}: “${s}”` : 'The ink pools, and finds nothing new to say.');
+  } else if (T.now === 'bond') {
+    const pool = roster(S).filter(id => id !== 'player' && id in S.bond);
+    const who = pool.length ? pick(pool, rng) : null;
+    if (who) { addBond(S, who, 1); out.bond = who; }
+  } else if (T.now === 'sabotage') {
+    const target = Object.entries(S.factions).filter(([, f]) => !f.fate).sort((a, b) => b[1].power - a[1].power)[0];
+    if (target) { hitFaction(S, target[0], 6, out.text); out.faction = target[0]; }
+  } else if (T.now === 'gold') {
+    const g = 30 * (S.circleIdx + 1);
+    S.gold += g; out.gold = g;
+  } else if (T.now === 'brands') {
+    for (const c of S.captives) c.brand = Math.max(0, c.brand - 5);
+  } else if (T.now === 'feed') {
+    for (const b of S.menagerie) b.fed = true;
+  } else if (T.now === 'reagents') {
+    const keys = Object.keys(REAGENTS);
+    for (let i = 0; i < 2; i++) { const r = pick(keys, rng); S.reagents[r] = (S.reagents[r] || 0) + 1; }
+  }
+  addChronicle(S, `Vesper drew ${T.name}.`);
+  return out;
+}
+
+// Today's omen effects for an expedition (or {}).
+export function omenRun(S) {
+  return S.omen && S.omen.day === S.day ? (TAROT[S.omen.card].run || {}) : {};
+}
+export function omenToday(S, now) { return !!(S.omen && S.omen.day === S.day && TAROT[S.omen.card].now === now); }
+
+// Market prices after perks and omens.
+export function priceOf(S, base) {
+  let p = base;
+  if (perk(S, 'market')) p *= 0.75;
+  if (omenToday(S, 'discount')) p *= 0.7;
+  return Math.max(1, Math.round(p));
 }
 
 // A fixed story rift (intro arcs): explicit enemy groups per chamber.
 export function storyRift(id, S = null) {
   const R = STORY_RIFTS[id];
-  // story beats scale up with you if you arrive late
   const rIdx = Math.max(R.rankIdx, S ? S.circleIdx : 0);
-  return { ...R, id, rank: RANKS[rIdx], rankIdx: rIdx, story: true, flipped: true, seed: (Math.random() * 2 ** 31) | 0 };
+  return { ...R, id, rank: RANKS[rIdx], rankIdx: rIdx, story: true, seed: (Math.random() * 2 ** 31) | 0 };
 }
+
 export const STORY_RIFTS = {
-  drowned_stacks: { name: 'The Drowned Stacks', rank: 'Ash', rankIdx: 0, biome: 'drowned', modifier: 'none', card: 'moon',
+  drowned_stacks: { name: 'The Drowned Stacks', rank: 'Ash', rankIdx: 0, biome: 'drowned', modifier: 'none',
     script: [{ type: 'fight', mobs: ['grave_spider'] }, { type: 'boss', mobs: ['coven_envoy'] }],
     onClear: 'vesper_pact', guests: ['vesper'] },
-  binding_trap: { name: 'The Binding Trap', rank: 'Ash', rankIdx: 0, biome: 'market', modifier: 'none', card: 'devil',
+  binding_trap: { name: 'The Binding Trap', rank: 'Ash', rankIdx: 0, biome: 'market', modifier: 'none', faction: 'coven',
     script: [{ type: 'fight', mobs: ['coven_trapper', 'lesser_imp'] }, { type: 'boss', mobs: ['coven_trapper', 'coven_trapper', 'ash_witch'] }],
     onClear: 'rue_terms' },
-  kneeling_sword: { name: 'The Kneeling Sword', rank: 'Ash', rankIdx: 0, biome: 'vigil', modifier: 'vigil', card: 'justice',
+  kneeling_sword: { name: 'The Kneeling Sword', rank: 'Ash', rankIdx: 0, biome: 'vigil', modifier: 'vigil', faction: 'vigil',
     script: [{ type: 'fight', mobs: ['vigil_knight', 'vigil_cantor'] }, { type: 'boss', mobs: ['isolde_duel'], duel: true }],
     onClear: 'isolde_kneel' },
-  dawnward_stand: { name: 'The Dawnward Stand', rank: 'Thorn', rankIdx: 3, biome: 'glade', modifier: 'none', card: 'justice',
+  dawnward_stand: { name: 'The Dawnward Stand', rank: 'Thorn', rankIdx: 3, biome: 'glade', modifier: 'charmed', faction: 'lodge',
     script: [{ type: 'boss', mobs: ['dw_erin', 'dw_sakura', 'dw_shiro', 'dw_yuki'] }],
     onClear: 'dawnward_kneel' },
-  oathbreaker: { name: 'Six Riders', rank: 'Ash', rankIdx: 0, biome: 'vigil', modifier: 'vigil', card: 'justice',
+  oathbreaker: { name: 'Six Riders', rank: 'Ash', rankIdx: 0, biome: 'vigil', modifier: 'vigil', faction: 'vigil',
     script: [{ type: 'boss', mobs: ['vigil_rider', 'vigil_rider', 'vigil_rider'] }, { type: 'boss', mobs: ['vigil_rider', 'vigil_rider', 'vigil_marshal'] }],
     onClear: 'isolde_rune4', guests: ['isolde'] },
 };
 
 // --- dungeon path & enemy scaling --------------------------------------------
 
-function mobPool(gate, biome) {
-  return gate.rankIdx >= 2 ? biome.mobs.concat(biome.mobsLate) : biome.mobs;
-}
-function bossPool(gate, biome) {
-  return gate.rankIdx >= 2 ? biome.bossesLate : biome.bosses;
+const MOD = id => GATE_MODIFIERS.find(m => m.id === id) || {};
+
+function mobPool(gate, L) {
+  return gate.rankIdx >= 2 && L.mobsLate ? L.mobs.concat(L.mobsLate) : L.mobs;
 }
 
-export function buildDungeon(gate) {
+export function buildDungeon(gate, S = null) {
   const rng = mulberry32(gate.seed);
   if (gate.script) {
-    // story rifts scale to the party's current circle at the time of entry
     return gate.script.map((n, i) => ({
       type: n.type, duel: !!n.duel,
       group: n.mobs.map(id => scaleEnemy(id, gate, i, n.type === 'boss', rng)),
     }));
   }
-  const biome = BIOMES[gate.biome];
-  const card = TAROT[gate.card] || {};
+  const L = LOCATIONS[gate.loc];
+  const mod = MOD(gate.modifier);
+  const om = S ? omenRun(S) : {};
+  const eliteBonus = (mod.eliteBonus || 0) + (om.eliteBonus || 0);
+  const tb = (mod.treasureBonus || 0) + (om.treasureBonus || 0);
   const nodes = [];
   for (let i = 0; i < gate.rooms; i++) {
-    nodes.push({ type: 'fight', group: makeGroup(gate, biome, i, rng, card) });
+    nodes.push({ type: 'fight', group: makeGroup(gate, L, i, rng, eliteBonus) });
     if (i < gate.rooms - 1) {
       const r = rng();
-      const tb = card.treasureBonus || 0;
-      if (r < 0.24) nodes.push(makeBranch(gate, biome, i, rng));
+      if (r < 0.24) nodes.push(makeBranch(gate, L, i, rng));
       else if (r < 0.42 + tb) nodes.push({ type: 'treasure' });
       else if (r < 0.62 + tb) nodes.push({ type: 'event', roll: rng() });
       else if (r < 0.74 + tb) nodes.push({ type: 'rest' });
     }
   }
-  nodes.push({ type: 'boss', group: makeBossGroup(gate, biome, rng) });
+  const lt = S && !gate.recursion ? pendingLieutenant(S, gate.loc) : null;
+  nodes.push({ type: 'boss', lieutenant: lt, group: makeBossGroup(gate, L, rng, lt) });
   return nodes;
 }
 
-function makeBranch(gate, biome, depth, rng) {
-  const risky = { type: 'fight', elite: true, group: makeEliteGroup(gate, biome, depth, rng) };
+function makeBranch(gate, L, depth, rng) {
+  const risky = { type: 'fight', elite: true, group: makeEliteGroup(gate, L, depth, rng) };
   const r = rng();
   const safe = r < 0.4 ? { type: 'treasure' } : r < 0.75 ? { type: 'event', roll: rng() } : { type: 'rest' };
   return { type: 'branch', options: [risky, safe] };
 }
 
-function makeGroup(gate, biome, depth, rng, card) {
+function makeGroup(gate, L, depth, rng, eliteBonus) {
   const n = Math.min(4, 2 + Math.floor(rng() * 2));
-  const pool = mobPool(gate, biome);
+  const pool = mobPool(gate, L);
   const group = [];
   let eliteRolled = false;
   for (let i = 0; i < n; i++) {
-    const defId = pick(pool, rng);
-    const elite = !eliteRolled && rng() < eliteChance(gate.rankIdx) + (card.eliteBonus || 0) ? pickElite(rng) : null;
+    const elite = !eliteRolled && rng() < eliteChance(gate.rankIdx) + eliteBonus ? pickElite(rng) : null;
     if (elite) eliteRolled = true;
-    group.push(scaleEnemy(defId, gate, depth, false, rng, elite));
+    group.push(scaleEnemy(pick(pool, rng), gate, depth, false, rng, elite));
   }
   return group;
 }
 
-function makeEliteGroup(gate, biome, depth, rng) {
-  const pool = mobPool(gate, biome);
+function makeEliteGroup(gate, L, depth, rng) {
+  const pool = mobPool(gate, L);
   const group = [scaleEnemy(pick(pool, rng), gate, depth + 1, false, rng, pickElite(rng))];
   const adds = 1 + Math.floor(rng() * 2);
   for (let i = 0; i < adds; i++) group.push(scaleEnemy(pick(pool, rng), gate, depth, false, rng));
@@ -496,13 +577,11 @@ function makeEliteGroup(gate, biome, depth, rng) {
 
 function pickElite(rng) { return pick(Object.keys(ELITES), rng); }
 
-function makeBossGroup(gate, biome, rng) {
-  const bossId = gate.id === 'heart' ? 'mother_cinder' : pick(bossPool(gate, biome), rng);
+function makeBossGroup(gate, L, rng, lieutenant) {
+  const bossId = lieutenant || pick(L.bosses, rng);
   const group = [scaleEnemy(bossId, gate, gate.rooms, true, rng)];
-  if (gate.rankIdx >= 2) {
-    const adds = gate.rankIdx >= 4 ? 2 : 1;
-    for (let i = 0; i < adds; i++) group.push(scaleEnemy(pick(mobPool(gate, biome), rng), gate, gate.rooms - 1, false, rng));
-  }
+  const adds = L.lair ? 2 : gate.rankIdx >= 4 ? 2 : gate.rankIdx >= 2 ? 1 : 0;
+  for (let i = 0; i < adds; i++) group.push(scaleEnemy(pick(mobPool(gate, L), rng), gate, gate.rooms - 1, false, rng));
   return group;
 }
 
@@ -554,7 +633,6 @@ export function startRun(S, gate, selectedIds) {
   const away = dispatchedIds(S);
   let ids = (selectedIds && selectedIds.length ? selectedIds : roster(S)).filter(id => S.heroes[id] && !away.has(id));
   if (!ids.includes('player')) ids.unshift('player');
-  // story guests fight alongside you before they formally join
   for (const g of gate.guests || []) {
     if (!S.heroes[g]) S.heroes[g] = { level: Math.max(HEROES[g].startLevel, S.heroes.player.level), xp: 0, gear: { weapon: null, armor: null, charm: null }, guest: true };
     if (!ids.includes(g)) ids.push(g);
@@ -564,14 +642,19 @@ export function startRun(S, gate, selectedIds) {
   for (const id of ids) { const st = heroStats(S, id); party[id] = { hp: st.hp, mp: st.mp }; }
   const baitBeasts = (S.inventory.beast_bait || 0) > 0;
   if (baitBeasts) S.inventory.beast_bait--;
+  const om = omenRun(S);
   S.run = {
-    gate, nodes: buildDungeon(gate), nodeIdx: 0,
+    gate, nodes: buildDungeon(gate, S), nodeIdx: 0,
     party, partyIds: ids,
     loot: { gold: 0, xp: 0, gear: [], items: {} },
     captures: [],          // sealed this run; committed only on a clear
-    favorUsed: false,      // Rue's Three Favors
+    slain: [],             // named/leader defIds killed this run
+    yielded: [],           // defIds that yielded
+    hits: {},              // faction → kills this run
+    favorUsed: false,
     bait: baitBeasts,
-    tempBuff: null,
+    omen: om,
+    tempBuff: om.firedUp ? 'mag' : null,
   };
 }
 
@@ -582,40 +665,85 @@ export function recordCapture(S, unit) {
     elite: unit.elite, faction: unit.faction, family: unit.family, named: unit.named,
   });
 }
+// Combat reports deaths so the factions feel them.
+export function recordKill(S, unit) {
+  if (!S.run) return;
+  if (unit.faction) S.run.hits[unit.faction] = (S.run.hits[unit.faction] || 0) + 1;
+  if (unit.named || ENEMIES[unit.defId]?.boss) S.run.slain.push(unit.defId);
+}
+export function recordYield(S, unit) { if (S.run) S.run.yielded.push(unit.defId); }
+
+const LEADER_OF = Object.fromEntries(Object.entries(FACTIONS).map(([fid, f]) => [f.leader, fid]));
 
 export function endRun(S, outcome) {
-  // outcome: 'clear' | 'retreat' | 'wipe'
   const run = S.run;
   const gate = run.gate;
-  const card = TAROT[gate.card] || {};
-  const result = { outcome, gate, gold: 0, xp: 0, gp: 0, gear: run.loot.gear, items: run.loot.items, levelUps: [], promos: [], captured: [], freed: [] };
-  result.gold = Math.round(run.loot.gold * (card.goldMult || 1));
+  const mod = MOD(gate.modifier);
+  const om = run.omen || {};
+  const result = { outcome, gate, gold: 0, xp: 0, gp: 0, gear: run.loot.gear, items: run.loot.items, levelUps: [], promos: [], captured: [], freed: [], power: [], fates: [] };
+  result.gold = Math.round(run.loot.gold * (mod.goldMult || 1) * (om.goldMult || 1));
   const xpEarners = run.partyIds.length;
   const smallPartyBonus = 1 + Math.max(0, 4 - xpEarners) * 0.35;
-  result.xp = Math.round(run.loot.xp * smallPartyBonus);
+  result.xp = Math.round(run.loot.xp * smallPartyBonus * (mod.xpMult || 1) * (om.xpMult || 1));
   result.partySize = xpEarners;
+  const log = [];
+
+  // kills always count — the dead stay dead
+  for (const [fid, n] of Object.entries(run.hits)) hitFaction(S, fid, n * POWER.kill, log);
 
   if (outcome === 'clear') {
-    result.gp = gate.story ? Math.round(GATE_GP[gate.rank] * 0.5) : GATE_GP[gate.rank] + (run.loot.gpBonus || 0);
+    result.gp = Math.round((gate.story ? GATE_GP[gate.rank] * 0.5 : GATE_GP[gate.rank] + (run.loot.gpBonus || 0)) * (om.infamyMult || 1));
     S.stats.clears++;
-    for (const c of run.captures) result.captured.push(commitCapture(S, c));
+    for (const c of run.captures) {
+      result.captured.push(commitCapture(S, c));
+      if (c.faction) hitFaction(S, c.faction, POWER.capture, log);
+    }
     if (gate.onClear) S.queue.push(gate.onClear);
+    // the holding itself falls
+    const fid = gate.faction || (gate.loc && LOCATIONS[gate.loc] && LOCATIONS[gate.loc].faction);
+    if (fid && !gate.lair) hitFaction(S, fid, POWER.clear, log);
+    if (gate.loc) S.visits[gate.loc] = (S.visits[gate.loc] || 0) + 1;
+    // lieutenants
+    const ltNode = run.nodes.find(n => n.lieutenant);
+    if (ltNode) {
+      const id = ltNode.lieutenant;
+      const fate = run.captures.some(c => c.defId === id) ? 'captured' : run.yielded.includes(id) ? 'yielded' : 'slain';
+      S.lieutenants[id] = fate;
+      const lfid = ENEMIES[id].faction;
+      if (lfid) hitFaction(S, lfid, fate === 'captured' ? POWER.lieutenantCapture : POWER.lieutenantDefeat, log);
+      S.queue.push(`lt_${id}_${fate}`);
+      result.fates.push({ id, fate });
+    }
+    // leaders
+    if (gate.lair) {
+      const L = LOCATIONS[gate.loc];
+      const leader = FACTIONS[L.faction].leader;
+      const fid = LEADER_OF[leader];
+      const f = S.factions[fid];
+      if (run.captures.some(c => c.defId === leader)) f.fate = 'subjugated';
+      else if (run.yielded.includes(leader)) f.fate = 'humbled';
+      else { f.fate = 'shattered'; addCorruption(S, 5); }
+      f.power = 0;
+      S.queue.push(`dominate_${fid}`);
+      result.fates.push({ id: leader, fate: f.fate, faction: fid });
+      addChronicle(S, `${FACTIONS[fid].name} fell: ${FACTIONS[fid].leaderName} ${f.fate === 'subjugated' ? 'was bound into the Undercroft' : f.fate === 'humbled' ? 'was humbled and yielded' : 'was slain'}.`);
+      if (gate.loc === 'ashen_heart') { S.cleared = true; S.clearedDay = S.day; }
+    }
   } else {
     result.freed = run.captures.map(c => c.name);
     if (outcome === 'retreat') { result.gold = Math.round(result.gold * 0.6); S.stats.retreats++; }
     else { result.gold = 0; result.xp = Math.round(result.xp * 0.5); S.stats.wipes++; }
   }
+  result.power = log;
 
   S.gold += result.gold;
-  // story guests earn their share too — they fought beside you
   for (const id of run.partyIds) result.levelUps.push(...gainXp(S, id, result.xp));
   for (const id of run.partyIds) if (S.heroes[id]?.guest) delete S.heroes[id].guest;
   for (const g of result.gear) S.gearBag.push(g);
   for (const [it, n] of Object.entries(result.items)) S.inventory[it] = (S.inventory[it] || 0) + n;
   if (result.gp) result.promos = addInfamy(S, result.gp);
-
-  if (gate.id === 'heart' && outcome === 'clear') { S.cleared = true; S.clearedDay = S.day; }
   if (gate.recursion && outcome === 'clear') S.ngPlus = (S.ngPlus || 0) + 1;
+  if (om.campScene) result.campScene = true;
 
   S.run = null;
   advanceDay(S);
@@ -623,16 +751,16 @@ export function endRun(S, outcome) {
   return result;
 }
 
-// A day passes: teams come home, the Undercroft and Menagerie tick,
-// a fresh hand of tarot is dealt.
+// A day passes: dispatches return, cells and pens tick, factions recover
+// (or pay tribute), and Vesper shuffles the deck.
 export function advanceDay(S) {
   S.day++;
   resolveDispatches(S);
   const log = [];
   log.push(...advanceReclamation(S));
   log.push(...tendMenagerie(S));
+  factionNight(S, log);
   S.dayLog = log;
-  drawTarot(S);
   return log;
 }
 
@@ -666,8 +794,19 @@ export const NAMED_CAPTIVES = {
     ], convert: 'calla' },
   cinder: { id: 'cap_cinder', name: 'Mother Cinder', title: 'Matriarch of the Ashen Coven', faction: 'coven',
     brand: 100, resolve: 100, regard: -80, traits: ['zealous', 'proud', 'stubborn'],
-    knows: SECRETS.coven.slice(), convert: 'cinder' },
+    knows: SECRETS.coven.slice(), convert: 'cinder', leader: true },
+  aldric: { id: 'cap_aldric', name: 'Aldric', title: 'Lord-Commander of the Last Vigil', faction: 'vigil',
+    brand: 100, resolve: 95, regard: -40, traits: ['proud', 'stubborn'], hero: 'aldric', leader: true,
+    knows: SECRETS.vigil.slice() },
+  proprietor: { id: 'cap_proprietor', name: 'The Proprietor', title: 'Owner of the Demon Market', faction: 'market',
+    brand: 100, resolve: 85, regard: -10, traits: ['greedy', 'proud'], hero: 'proprietor', leader: true,
+    knows: SECRETS.market.slice() },
+  hale: { id: 'cap_hale', name: 'Hale', title: 'Guildmaster of the Hunters\' Lodge', faction: 'lodge',
+    brand: 100, resolve: 80, regard: -30, traits: ['stubborn', 'doubting'], hero: 'hale', leader: true,
+    knows: SECRETS.lodge.slice() },
 };
+// Character packs register their named captives here.
+export function registerNamedCaptive(key, def) { NAMED_CAPTIVES[key] = def; }
 
 function makeCaptive(S, c) {
   const named = c.named && NAMED_CAPTIVES[c.named];
@@ -675,7 +814,7 @@ function makeCaptive(S, c) {
     return { id: named.id, defId: c.defId, name: named.name, title: named.title, faction: named.faction,
       brand: named.brand, resolve: named.resolve, regard: named.regard, traits: named.traits.slice(),
       knows: named.knows.slice(), learned: [], wardenId: null, days: 0, relapse: false,
-      bargainPts: 0, otherPts: 0, mercies: 0, visitedDay: 0, tonicDays: 0, named: c.named, hooked: false };
+      bargainPts: 0, otherPts: 0, mercies: 0, visitedDay: 0, tonicDays: 0, named: c.named, hooked: false, leader: !!named.leader };
   }
   const fac = c.faction || 'coven';
   const used = new Set([...S.captives, ...S.released].map(x => x.name));
@@ -741,6 +880,7 @@ export function advanceReclamation(S) {
       let rate = style.rate * traitMod(cap, 'brandMult') * resolveDrag;
       if (cap.tonicDays > 0) { rate *= 1.25; cap.tonicDays--; }
       if (badPair(wid, cap)) rate *= 0.5;
+      if (cap.faction === 'coven' && cap.named !== 'cinder' && leaderInCells(S, 'coven')) rate *= 1.25;
       const before = cap.brand;
       cap.brand = Math.max(0, cap.brand - Math.round(rate));
       cap.otherPts += before - cap.brand;
@@ -748,10 +888,10 @@ export function advanceReclamation(S) {
       if (style.hookChance && !cap.hooked && Math.random() < style.hookChance) { cap.hooked = true; log.push(`${cap.name} has started owing Rue small things. Rue is delighted.`); }
       if (style.weeklySecret && cap.days % 7 === 0) { const s = revealSecret(cap); if (s) log.push(`Vesper's notes on ${cap.name}: "${s}"`); }
       if (style.noRelapse) cap.isoldeWatched = true;
-      if (badPair(wid, cap) && Math.random() < cap.resolve / 100 * 0.03) { breakout(S, cap, log); continue; }
+      if (badPair(wid, cap) && !noBreakout(S, cap) && Math.random() < cap.resolve / 100 * 0.03) { breakout(S, cap, log); continue; }
     } else {
       cap.brand = Math.min(100, cap.brand + 2);
-      if (Math.random() < cap.resolve / 100 * 0.06) { breakout(S, cap, log); continue; }
+      if (!noBreakout(S, cap) && Math.random() < cap.resolve / 100 * 0.06) { breakout(S, cap, log); continue; }
     }
     if (cap.traits.includes('stubborn')) cap.resolve = Math.min(100, cap.resolve + CAPTIVE_TRAITS.stubborn.resolveRegen);
     if (cap.brand <= 0 && !cap.releasePending) {
@@ -761,6 +901,12 @@ export function advanceReclamation(S) {
     }
   }
   return log;
+}
+
+// Leaders never escape (they have the most to lose by being seen to run),
+// and Aldric in the cells keeps his knights in line.
+function noBreakout(S, cap) {
+  return !!(cap.leader || (cap.faction === 'vigil' && leaderInCells(S, 'vigil')));
 }
 
 function breakout(S, cap, log) {
@@ -787,8 +933,10 @@ export const VISITS = {
 };
 
 export function bargainCost(S) {
-  const base = 30 * (S.circleIdx + 1);
-  return isAlly(S, 'rue') ? Math.round(base * 0.7) : base;
+  let base = 30 * (S.circleIdx + 1);
+  if (isAlly(S, 'rue')) base *= 0.7;
+  if (leaderInCells(S, 'market')) base *= 0.5;
+  return Math.round(base);
 }
 
 // Testimony needs a converted ally from the same faction.
@@ -881,6 +1029,7 @@ export function releaseCaptive(S, capId, fate) {
     joinAlly(S, heroId, -1);
     if (cap.hooked) S.flags['rue_hook_' + heroId] = true;
     if (cap.named === 'cinder') S.flags.cinder_reclaimed = true;
+    if (cap.leader) { const fid = Object.keys(FACTIONS).find(f => f === cap.faction); if (fid && S.factions[fid]) S.factions[fid].fate = 'sworn'; }
     return heroId;
   }
   if (fate === 'relapse') S.flags.relapsed = (S.flags.relapsed || 0) + 1;
@@ -895,6 +1044,10 @@ const CONVERT_KITS = {
     skills: { 1: 'hex_bolt', 2: 'e_ash_brand', 6: 'page_of_mending', 14: 'chain_sigil', 24: 'bleeding_ink' }, model: 'coven', variant: 'reclaimed', color: '#e8a87a' },
   vigil:  { cls: 'Fallen Knight', role: 'tank', base: { hp: 140, mp: 22, atk: 14, mag: 4, def: 15, res: 12, agi: 8, luk: 7 }, growth: { hp: 11, mp: 2, atk: 1.9, mag: 0.5, def: 2, res: 1.6, agi: 0.9, luk: 0.8 },
     skills: { 1: 'shield_pin', 2: 'vigil_stance', 8: 'oath_ward', 16: 'kneeling_sword' }, model: 'vigil', variant: 'fallen', color: '#c8c8e0' },
+  college: { cls: 'Defrocked Adept', role: 'caster', base: { hp: 88, mp: 60, atk: 6, mag: 17, def: 7, res: 14, agi: 11, luk: 9 }, growth: { hp: 7, mp: 5, atk: 0.7, mag: 2.4, def: 1.0, res: 1.9, agi: 1.2, luk: 1 },
+    skills: { 1: 'ink_lash', 2: 'shadow_lash', 8: 'gloom_brand', 16: 'umbral_coil' }, model: 'college', variant: 'adept', color: '#d8b04a' },
+  lodge: { cls: 'Lapsed Hunter', role: 'striker', base: { hp: 105, mp: 30, atk: 15, mag: 5, def: 10, res: 8, agi: 13, luk: 10 }, growth: { hp: 9, mp: 3, atk: 2.2, mag: 0.6, def: 1.3, res: 1.1, agi: 1.6, luk: 1.1 },
+    skills: { 1: 'sunder_strike', 2: 'tail_trip', 8: 'crushing_blow', 16: 'umbral_cut' }, model: 'hunter', variant: 'hunter', color: '#8ab85a' },
   market: { cls: 'Broker', role: 'support', base: { hp: 95, mp: 44, atk: 10, mag: 12, def: 8, res: 10, agi: 12, luk: 14 }, growth: { hp: 8, mp: 4, atk: 1.4, mag: 1.6, def: 1.1, res: 1.3, agi: 1.4, luk: 1.5 },
     skills: { 1: 'stolen_spark', 2: 'encourage', 8: 'tail_trip', 16: 'war_banner' }, model: 'cultist', variant: null, color: '#d8a04a' },
 };
@@ -904,6 +1057,9 @@ const NAMED_CONVERTS = {
 };
 
 function convertToHero(S, cap) {
+  // named captives with their own hero sheet (leaders, pack characters)
+  const nc = cap.named && NAMED_CAPTIVES[cap.named];
+  if (nc && nc.hero && HEROES[nc.hero]) return nc.hero;
   const kit = CONVERT_KITS[cap.faction] || CONVERT_KITS.coven;
   const named = cap.named && NAMED_CONVERTS[NAMED_CAPTIVES[cap.named].convert];
   const heroId = named ? NAMED_CAPTIVES[cap.named].convert : 'cv_' + cap.id.replace(/[^a-z0-9]/gi, '').slice(-8);
@@ -1110,6 +1266,7 @@ export function dispatchForecast(S, gate, ids) {
   const roles = [...new Set(ids.map(id => HEROES[id]?.role).filter(Boolean))];
   let comp = roles.reduce((a, r) => a + (ROLE_INFO[r]?.bonus || 0), 0);
   if (ids.length >= 3) comp += 0.05;
+  if (perk(S, 'lodge')) comp += 0.15;
   const chance = clamp(0.5 + (avg / bench - 1) * 1.1 + comp, 0.05, 0.95);
   return { chance, comp, roles, avg: Math.round(avg), bench };
 }
@@ -1118,10 +1275,9 @@ export function sendDispatch(S, gate, ids) {
   const { chance } = dispatchForecast(S, gate, ids);
   S.dispatch.push({
     id: uid('m'),
-    gate: { rank: gate.rank, rankIdx: gate.rankIdx, name: gate.name, biome: gate.biome, modifier: gate.modifier },
+    gate: { rank: gate.rank, rankIdx: gate.rankIdx, name: gate.name, biome: gate.biome, modifier: gate.modifier, faction: gate.faction || null },
     team: ids.slice(), day: S.day, chance,
   });
-  S.tarotHand = S.tarotHand.filter(c => c !== gate);
   save(S);
 }
 
@@ -1143,6 +1299,7 @@ function resolveDispatches(S) {
       }
       S.gold += report.gold;
       addInfamy(S, report.gp);
+      if (m.gate.faction) hitFaction(S, m.gate.faction, Math.round(POWER.clear / 2));
     } else report.xp = Math.round(45 * tier);
     for (const id of m.team) report.levelUps.push(...gainXp(S, id, report.xp));
     S.dispatchReports.push(report);

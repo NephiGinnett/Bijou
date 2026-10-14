@@ -1,5 +1,5 @@
 // ============================================================
-// CODEXBOUND — game data & balance
+// BINDING CODEX — game data & balance
 // All static tables: circles, heroes, skills, statuses, enemies,
 // biomes, tarot, reagents, potions, pacts, gear. No state here.
 // ============================================================
@@ -216,6 +216,25 @@ export const HEROES = {
   },
 };
 
+// ---- Reclaimed leaders (join only from the Undercroft) ----
+Object.assign(HEROES, {
+  aldric: { id: 'aldric', convertOnly: true, name: 'Aldric', epithet: 'Lord-Commander, Unsworn', cls: 'Vigil Commander',
+    desc: 'Isolde\'s old mentor, who believed she could be saved. It turns out he was the one who needed it. Speaks to her now as an equal, carefully, and is ashamed of how long that took.',
+    startLevel: 20, base: { hp: 150, mp: 26, atk: 16, mag: 5, def: 17, res: 14, agi: 8, luk: 7 }, growth: { hp: 12, mp: 2, atk: 2.1, mag: 0.6, def: 2.2, res: 1.8, agi: 0.9, luk: 0.8 },
+    skills: { 1: 'shield_pin', 2: 'vigil_stance', 6: 'kneeling_sword', 12: 'oath_ward', 20: 'seventh_rune' },
+    passive: { id: 'commander', name: 'Old Command', desc: 'Intercepts hits on wounded allies.', cover: true }, role: 'tank', model: 'vigil', variant: 'commander', color: '#d8d0b0' },
+  proprietor: { id: 'proprietor', convertOnly: true, name: 'The Proprietor', epithet: 'Formerly of the Market', cls: 'Arch-Broker',
+    desc: 'The one who owned the Demon Market, now owned by nothing but the terms you negotiated. Still reads every contract twice. Still smiles with far too many teeth.',
+    startLevel: 20, base: { hp: 110, mp: 50, atk: 12, mag: 17, def: 10, res: 12, agi: 13, luk: 16 }, growth: { hp: 9, mp: 4, atk: 1.5, mag: 2.3, def: 1.2, res: 1.5, agi: 1.4, luk: 1.6 },
+    skills: { 1: 'stolen_spark', 2: 'infernal_leer', 6: 'tail_trip', 12: 'ninth_ember', 20: 'hellmouth' },
+    passive: { id: 'margins', name: 'Margins', desc: '+25% gold from battles.', goldMult: 0.25 }, role: 'support', model: 'demon', variant: 'proprietor', color: '#d84a6a' },
+  hale: { id: 'hale', convertOnly: true, name: 'Hale', epithet: 'Guildmaster, Retired', cls: 'Master Hunter',
+    desc: 'The Lodge\'s guildmaster, who built a plinth for your hands and now sharpens knives at your table. He says it\'s the best-run guild he\'s ever been in. He means it as an insult. Mostly.',
+    startLevel: 20, base: { hp: 125, mp: 30, atk: 18, mag: 5, def: 12, res: 10, agi: 14, luk: 11 }, growth: { hp: 10, mp: 2, atk: 2.4, mag: 0.5, def: 1.5, res: 1.2, agi: 1.6, luk: 1.1 },
+    skills: { 1: 'sunder_strike', 2: 'tail_trip', 6: 'crushing_blow', 12: 'umbral_cut', 20: 'rampart_cleave' },
+    passive: { id: 'tracker', name: 'Tracker', desc: '+10% critical chance.', crit: 0.1 }, role: 'striker', model: 'hunter', variant: 'master', color: '#8ab85a' },
+});
+
 // Story-stage bio: the first matching stage wins, falling back to the
 // base description. Stages may also override epithet and class label.
 export function heroDesc(S, id) {
@@ -401,6 +420,8 @@ export const SKILLS = {
   summon_spider: { name: 'Call the Spider', type: 'phys', power: 0.8, mp: 12, target: 'enemy', anim: 'cast', subdue: 25, apply: { to: 'target', id: 'agi_down', turns: 2 }, desc: 'Silk from above. Drains Will; Slows.' },
   summon_drake:  { name: 'Call the Drake', type: 'phys', power: 1.1, mp: 16, target: 'all_enemies', anim: 'melee', apply: { to: 'target', id: 'poison', turns: 2, chance: 0.6 }, desc: 'A mire drake surges up through the floor.' },
   summon_stag:   { name: 'Call the Stag', type: 'heal', power: 1.4, mp: 14, target: 'all_allies', anim: 'buff', desc: 'The hollow stag lowers its antlers. Moss-light mends the party.' },
+  summon_moth:   { name: 'Call the Moth', type: 'mag', power: 0.6, mp: 12, target: 'all_enemies', anim: 'cast', subdue: 12, desc: 'A drift of grey dust. Drains Will from everyone.' },
+  summon_wyrm:   { name: 'Call the Wyrm', type: 'mag', power: 1.4, mp: 16, target: 'enemy', anim: 'cast', apply: { to: 'target', id: 'agi_down', turns: 2 }, desc: 'Breath like the Ashreach in winter.' },
   summon_imp:    { name: 'Call the Imp', type: 'mag', power: 1.2, mp: 10, target: 'enemy', anim: 'cast', apply: { to: 'target', id: 'atk_down', turns: 2, chance: 0.7 }, desc: 'Your imp shrieks rude things. Weakens.' },
 
   // Enemies
@@ -479,6 +500,35 @@ export const ENEMIES = {
   war_golem:     { name: 'Forge Golem',     model: 'golem',    variant: 'war', captureType: null, base: { hp: 118, atk: 17, mag: 5, def: 15, res: 9, agi: 5 }, skills: ['strike', 'e_gore', 'e_sunder'], xp: 22, gold: 17 },
   abyss_hound:   { name: 'Abyssal Hound',   model: 'wolf',     variant: 'abyss', captureType: 'beast', family: 'ember_hound', sealResist: 0.25, will: 1.3, base: { hp: 84, atk: 19, mag: 9, def: 9, res: 8, agi: 16 }, skills: ['e_bite', 'e_pounce', 'e_howl'], xp: 22, gold: 17 },
 
+  // ---- Ashen Coven (expanded) ----
+  bone_binder:   { name: 'Coven Bone-Binder', model: 'coven', variant: 'binder', faction: 'coven', captureType: 'humanoid', sealResist: 0.2, base: { hp: 54, atk: 7, mag: 15, def: 6, res: 11, agi: 9 }, skills: ['e_drain', 'e_curse', 'e_heal'], xp: 14, gold: 11 },
+  dragon_cultist:{ name: 'Dragon Cultist', model: 'coven', variant: 'dragon', faction: 'coven', captureType: 'humanoid', sealResist: 0.2, will: 1.2, base: { hp: 70, atk: 15, mag: 10, def: 9, res: 8, agi: 10 }, skills: ['strike', 'e_ember', 'e_rend'], xp: 16, gold: 13 },
+  frost_witch:   { name: 'Ashreach Frost-Witch', model: 'coven', variant: 'frost', faction: 'coven', captureType: 'humanoid', sealResist: 0.2, base: { hp: 52, atk: 6, mag: 16, def: 5, res: 13, agi: 11 }, skills: ['e_frost', 'e_curse', 'e_shriek'], xp: 15, gold: 12 },
+  ashreach_wyrm: { name: 'Ashreach Wyrm',  model: 'drake', variant: 'frost', captureType: 'beast', family: 'frost_wyrm', sealResist: 0.15, will: 1.2, base: { hp: 80, atk: 15, mag: 12, def: 10, res: 9, agi: 10 }, skills: ['e_bite', 'e_frost', 'e_gore'], xp: 16, gold: 10 },
+  // ---- Obsidian College ----
+  obsidian_adept:{ name: 'Obsidian Adept', model: 'college', variant: 'adept', faction: 'college', captureType: 'humanoid', sealResist: 0.25, base: { hp: 50, atk: 6, mag: 16, def: 5, res: 13, agi: 11 }, skills: ['e_ember', 'e_shriek', 'e_frost'], xp: 15, gold: 13 },
+  college_inquisitor: { name: 'College Inquisitor', model: 'college', variant: 'inquisitor', faction: 'college', captureType: 'humanoid', sealResist: 0.3, will: 1.3, base: { hp: 68, atk: 12, mag: 13, def: 9, res: 12, agi: 10 }, skills: ['strike', 'e_hex', 'e_vigil_cut'], xp: 17, gold: 14 },
+  obsidian_warden: { name: 'Obsidian Warden', model: 'golem', variant: 'obsidian', captureType: null, base: { hp: 105, atk: 15, mag: 8, def: 15, res: 12, agi: 5 }, skills: ['strike', 'e_smash', 'e_sunder'], xp: 18, gold: 14 },
+  arcane_familiar: { name: 'Arcane Familiar', model: 'sprite', variant: 'arcane', captureType: 'beast', family: 'gloom_moth', sealResist: 0.1, base: { hp: 42, atk: 6, mag: 15, def: 4, res: 12, agi: 16 }, skills: ['e_ember', 'e_shriek'], xp: 13, gold: 9 },
+  // ---- Last Vigil (expanded) ----
+  vigil_hound:   { name: 'Vigil Warhound', model: 'wolf', variant: 'vigil', captureType: 'beast', family: 'ember_hound', sealResist: 0.1, base: { hp: 64, atk: 15, mag: 4, def: 8, res: 6, agi: 14 }, skills: ['e_bite', 'e_pounce'], xp: 13, gold: 8 },
+  vigil_inquisitor: { name: 'Vigil Inquisitor', model: 'vigil', variant: 'inquisitor', faction: 'vigil', captureType: 'humanoid', sealResist: 0.35, will: 1.3, base: { hp: 70, atk: 10, mag: 14, def: 10, res: 15, agi: 9 }, skills: ['e_hex', 'e_vigil_cut', 'e_shriek'], xp: 17, gold: 14 },
+  // ---- Demon Market (expanded) ----
+  velvet_fiend:  { name: 'Velvet Fiend',   model: 'demon', variant: 'velvet', faction: 'market', captureType: 'humanoid', sealResist: 0.25, base: { hp: 66, atk: 13, mag: 14, def: 7, res: 10, agi: 14 }, skills: ['e_drain', 'e_shriek', 'strike'], xp: 16, gold: 16 },
+  contract_devil:{ name: 'Contract Devil', model: 'demon', variant: 'contract', faction: 'market', captureType: 'humanoid', sealResist: 0.3, will: 1.3, base: { hp: 80, atk: 15, mag: 12, def: 10, res: 10, agi: 10 }, skills: ['e_rend', 'e_hex', 'e_drain'], xp: 18, gold: 18 },
+  gremlin:       { name: 'Coin Gremlin',   model: 'imp', variant: 'gremlin', captureType: 'beast', family: 'lesser_imp', sealResist: 0.05, base: { hp: 38, atk: 12, mag: 8, def: 5, res: 6, agi: 17 }, skills: ['e_bite', 'e_pounce'], xp: 10, gold: 14 },
+  // ---- Hunters' Lodge ----
+  lodge_hunter:  { name: 'Lodge Hunter',   model: 'hunter', variant: 'hunter', faction: 'lodge', captureType: 'humanoid', sealResist: 0.2, base: { hp: 66, atk: 14, mag: 4, def: 9, res: 8, agi: 12 }, skills: ['strike', 'e_rend', 'e_sunder'], xp: 14, gold: 12 },
+  lodge_archer:  { name: 'Lodge Archer',   model: 'hunter', variant: 'archer', faction: 'lodge', captureType: 'humanoid', sealResist: 0.2, base: { hp: 52, atk: 15, mag: 4, def: 6, res: 7, agi: 15 }, skills: ['strike', 'e_venom', 'e_pounce'], xp: 14, gold: 12 },
+  lodge_trapper: { name: 'Lodge Trapper',  model: 'hunter', variant: 'trapper', faction: 'lodge', captureType: 'humanoid', sealResist: 0.15, base: { hp: 58, atk: 12, mag: 6, def: 7, res: 7, agi: 13 }, skills: ['e_web', 'e_pounce', 'strike'], xp: 13, gold: 12 },
+  hunting_hound: { name: 'Lodge Bloodhound', model: 'wolf', variant: 'hunt', captureType: 'beast', family: 'ember_hound', sealResist: 0.05, base: { hp: 58, atk: 14, mag: 4, def: 7, res: 5, agi: 15 }, skills: ['e_bite', 'e_howl'], xp: 12, gold: 7 },
+  // ---- Wild monsters ----
+  gloom_moth:    { name: 'Gloom Moth',     model: 'moth', captureType: 'beast', family: 'gloom_moth', sealResist: 0.05, base: { hp: 40, atk: 7, mag: 14, def: 4, res: 10, agi: 17 }, skills: ['e_shriek', 'e_drain'], xp: 12, gold: 7 },
+  harpy:         { name: 'Gallows Harpy',  model: 'harpy', captureType: 'beast', family: 'gloom_moth', sealResist: 0.15, base: { hp: 56, atk: 14, mag: 9, def: 6, res: 8, agi: 16 }, skills: ['e_pounce', 'e_shriek', 'e_rend'], xp: 14, gold: 10 },
+  basilisk:      { name: 'Mire Basilisk',  model: 'drake', variant: 'basilisk', captureType: 'beast', family: 'mire_drake', sealResist: 0.2, will: 1.3, base: { hp: 86, atk: 14, mag: 12, def: 12, res: 10, agi: 7 }, skills: ['e_bite', 'e_frost', 'e_venom'], xp: 17, gold: 11 },
+  mire_troll:    { name: 'Mire Troll',     model: 'yeti', variant: 'troll', captureType: 'beast', family: 'mire_drake', sealResist: 0.2, will: 1.4, base: { hp: 110, atk: 17, mag: 4, def: 11, res: 7, agi: 6 }, skills: ['strike', 'e_smash', 'e_heal'], xp: 19, gold: 12 },
+  chimera:       { name: 'Ash Chimera',    model: 'wolf', variant: 'chimera', captureType: 'beast', family: 'ember_hound', sealResist: 0.3, will: 1.4, base: { hp: 92, atk: 17, mag: 13, def: 9, res: 9, agi: 13 }, skills: ['e_bite', 'e_ember', 'e_venom', 'e_aoe_phys'], xp: 20, gold: 14 },
+
   // ---- Bosses (×boss multiplier on top of scaling; sealable only below 15% HP) ----
   coven_envoy:   { name: 'Coven Envoy',     model: 'coven', variant: 'envoy', faction: 'coven', captureType: 'humanoid', named: 'envoy', tutorialSeal: true, noKill: true, sealResist: 0, base: { hp: 70, atk: 10, mag: 12, def: 6, res: 8, agi: 9 }, skills: ['e_ash_brand', 'strike'], xp: 30, gold: 30 },
   forge_matron:  { name: 'Forge Matron',    model: 'coven', variant: 'matron', boss: true, faction: 'coven', captureType: 'humanoid', sealResist: 0.6, base: { hp: 100, atk: 14, mag: 15, def: 9, res: 10, agi: 9 }, skills: ['e_ash_brand', 'e_aoe_mag', 'e_cinder_rite', 'e_enrage'], xp: 44, gold: 42 },
@@ -497,7 +547,13 @@ export const ENEMIES = {
   dw_sakura:     { name: 'Sakura of the Dawnward', model: 'sakura', faction: 'dawnward', captureType: null, yieldAt: 0.25, base: { hp: 70, atk: 5, mag: 19, def: 6, res: 13, agi: 9 }, skills: ['e_ember', 'e_aoe_mag'], xp: 50, gold: 20 },
   dw_shiro:      { name: 'Shiro of the Dawnward', model: 'shiro', faction: 'dawnward', captureType: null, yieldAt: 0.25, base: { hp: 76, atk: 6, mag: 15, def: 8, res: 15, agi: 10 }, skills: ['e_frost', 'e_heal', 'e_curse'], xp: 50, gold: 20 },
   dw_yuki:       { name: 'Yuki of the Dawnward', model: 'yuki', faction: 'dawnward', captureType: null, yieldAt: 0.25, base: { hp: 72, atk: 11, mag: 6, def: 9, res: 8, agi: 9 }, skills: ['strike', 'e_howl'], xp: 50, gold: 20 },
-  mother_cinder: { name: 'Mother Cinder',   model: 'coven', variant: 'mother', boss: true, faction: 'coven', captureType: 'humanoid', named: 'cinder', sealResist: 0.85, will: 1.6, base: { hp: 185, atk: 20, mag: 24, def: 14, res: 16, agi: 13 }, skills: ['e_devastate', 'e_aoe_mag', 'e_ash_brand', 'e_hex', 'e_cinder_rite', 'e_enrage'], xp: 130, gold: 160 },
+  mother_cinder: { name: 'Mother Cinder',   model: 'coven', variant: 'mother', boss: true, leaderBreak: true, faction: 'coven', captureType: 'humanoid', named: 'cinder', sealResist: 0.85, will: 1.6, base: { hp: 185, atk: 20, mag: 24, def: 14, res: 16, agi: 13 }, skills: ['e_devastate', 'e_aoe_mag', 'e_ash_brand', 'e_hex', 'e_cinder_rite', 'e_enrage'], xp: 130, gold: 160 },
+  // ---- Faction leaders (lairs) ----
+  archon_sorn:   { name: 'Archon Sorn',    model: 'herald', variant: 'archon', boss: true, faction: 'college', captureType: null, yieldAt: 0.15, base: { hp: 170, atk: 14, mag: 24, def: 13, res: 18, agi: 12 }, skills: ['e_aoe_mag', 'e_hex', 'e_curse', 'e_heal', 'e_enrage'], xp: 110, gold: 140 },
+  aldric:        { name: 'Lord-Commander Aldric', model: 'vigil', variant: 'commander', boss: true, leaderBreak: true, faction: 'vigil', captureType: 'humanoid', named: 'aldric', sealResist: 0.7, will: 1.4, base: { hp: 160, atk: 21, mag: 8, def: 17, res: 15, agi: 10 }, skills: ['e_vigil_cut', 'e_devastate', 'e_heal', 'e_enrage'], xp: 100, gold: 120 },
+  proprietor:    { name: 'The Velvet Proprietor', model: 'demon', variant: 'proprietor', boss: true, leaderBreak: true, faction: 'market', captureType: 'humanoid', named: 'proprietor', sealResist: 0.7, will: 1.4, base: { hp: 155, atk: 18, mag: 20, def: 12, res: 14, agi: 13 }, skills: ['e_drain', 'e_hex', 'e_aoe_mag', 'e_howl', 'e_enrage'], xp: 100, gold: 200 },
+  hale:          { name: 'Guildmaster Hale', model: 'hunter', variant: 'master', boss: true, leaderBreak: true, faction: 'lodge', captureType: 'humanoid', named: 'hale', sealResist: 0.65, will: 1.3, base: { hp: 150, atk: 20, mag: 6, def: 14, res: 11, agi: 14 }, skills: ['e_rend', 'e_devastate', 'e_howl', 'e_enrage'], xp: 95, gold: 120 },
+  mire_matriarch:{ name: 'The Mire Mother', model: 'drake', variant: 'great', boss: true, captureType: 'beast', family: 'mire_drake', sealResist: 0.6, base: { hp: 125, atk: 17, mag: 12, def: 12, res: 10, agi: 7 }, skills: ['e_gore', 'e_venom', 'e_aoe_phys', 'e_enrage'], xp: 50, gold: 44 },
   void_seraph:   { name: 'Echo of the Heart', model: 'herald', variant: 'seraph', boss: true, captureType: null, base: { hp: 190, atk: 23, mag: 22, def: 15, res: 15, agi: 14 }, skills: ['e_devastate', 'e_aoe_mag', 'e_hex', 'e_rend', 'e_enrage'], xp: 130, gold: 160 },
 };
 
@@ -521,76 +577,164 @@ export const ELITE_GOLD_MULT = 2.0;
 export function eliteChance(rankIdx) { return 0.06 + rankIdx * 0.03; }
 
 // ------------------------------------------------------------
-// Biomes, tarot & rift generation
+// Biomes, factions, locations & Vesper's tarot
 // ------------------------------------------------------------
-// mobs: early pool (Ash/Ember); mobsLate joins from the Hex Circle up.
+// Biomes are visual only (arena colors); each location supplies its own
+// enemy pools. mobsLate joins from the Hex Circle up.
 
 export const BIOMES = {
-  forge:    { name: 'Coven Forge-Rift', tint: 0xe8823a, fog: 0x140a06, floor: 0x3a2418,
-              mobs: ['coven_acolyte', 'coven_zealot', 'ember_hound', 'lesser_imp'], mobsLate: ['cinder_knight', 'war_golem', 'hellhound', 'dark_acolyte'],
-              bosses: ['forge_matron'], bossesLate: ['forge_matron', 'colossus'],
-              names: ['The {adj} Forge', '{adj} Crucible', 'Anvil of {noun}'], adj: ['Screaming', 'Ashen', 'Molten', 'Hollow'], noun: ['Cinders', 'the Matron', 'Brands'] },
-  drowned:  { name: 'Drowned Rift', tint: 0x4a8ab8, fog: 0x060c14, floor: 0x1c2a34,
-              mobs: ['mire_drake', 'grave_spider', 'coven_acolyte', 'sprite'], mobsLate: ['ice_wisp', 'banshee', 'ash_witch', 'mire_drake'],
-              bosses: ['drowned_matriarch'], bossesLate: ['drowned_matriarch', 'wraith_queen'],
-              names: ['The {adj} Stacks', '{adj} Undertow', 'Archive of {noun}'], adj: ['Sunken', 'Weeping', 'Silted', 'Lightless'], noun: ['Drowned Names', 'the Tide', 'Ink'] },
-  vigil:    { name: 'Vigil Purge', tint: 0xc8c8e0, fog: 0x0c0c12, floor: 0x2c2c38,
-              mobs: ['vigil_knight', 'vigil_rider', 'vigil_cantor', 'sentinel'], mobsLate: ['vigil_knight', 'vigil_rider', 'vigil_cantor', 'gargoyle'],
-              bosses: ['vigil_marshal'], bossesLate: ['vigil_marshal'],
-              names: ['{adj} Bastion', 'The {adj} Watch', 'Chapel of {noun}'], adj: ['Burning', 'Sworn', 'Pale', 'Last'], noun: ['the Seventh Rune', 'Oaths', 'Iron'] },
-  market:   { name: 'Demon Market', tint: 0xd84a6a, fog: 0x12060a, floor: 0x341a22,
-              mobs: ['lesser_imp', 'imp', 'cultist', 'ember_hound'], mobsLate: ['hellhound', 'abyss_hound', 'cultist', 'imp'],
-              bosses: ['pit_lord'], bossesLate: ['pit_lord', 'demon_general'],
-              names: ['The {adj} Bazaar', '{adj} Arcade', 'Stalls of {noun}'], adj: ['Grinning', 'Velvet', 'Bottomless', 'Red'], noun: ['Teeth', 'Fine Print', 'Favors'] },
-  catacomb: { name: 'Catacomb Rift', tint: 0x8a6ad8, fog: 0x0a0814, floor: 0x241f30,
-              mobs: ['skeleton', 'ghoul', 'grave_spider', 'wraith'], mobsLate: ['revenant', 'banshee', 'wraith', 'grave_spider'],
-              bosses: ['bone_tyrant'], bossesLate: ['bone_tyrant', 'wraith_queen'],
-              names: ['{adj} Ossuary', '{adj} Barrow', 'Tomb of {noun}'], adj: ['Sunken', 'Whispering', 'Hollow', 'Forgotten'], noun: ['Kings', 'the Unquiet', 'Silence'] },
-  glade:    { name: 'Charmed Glade', tint: 0xe88ac0, fog: 0x100a10, floor: 0x2a2430,
-              mobs: ['hollow_stag', 'wolf', 'sprite', 'boar'], mobsLate: ['hollow_stag', 'vine_horror', 'sprite', 'ash_witch'],
-              bosses: ['glade_hart', 'dire_wolf'], bossesLate: ['glade_hart', 'elder_treant'],
-              names: ['{adj} Glade', '{adj} Bower', 'Grove of {noun}'], adj: ['Blushing', 'Moonlit', 'Velvet', 'Thorned'], noun: ['Sighs', 'the Pale Hart', 'Promises'] },
-  heart:    { name: 'The Ashen Heart', tint: 0xff5a3a, fog: 0x0a0404, floor: 0x2a1410,
-              mobs: ['cinder_knight', 'dark_acolyte', 'ash_witch', 'hellhound'], mobsLate: ['cinder_knight', 'dark_acolyte', 'ash_witch', 'abyss_hound'],
-              bosses: ['void_seraph'], bossesLate: ['void_seraph'],
-              names: ['The {adj} Heart'], adj: ['Ashen', 'Burning', 'Unwritten', 'Hollow'], noun: ['Cinder'] },
+  forge:    { name: 'Coven Forge', tint: 0xe8823a, fog: 0x140a06, floor: 0x3a2418 },
+  drowned:  { name: 'Drowned Stacks', tint: 0x4a8ab8, fog: 0x060c14, floor: 0x1c2a34 },
+  vigil:    { name: 'Vigil Ground', tint: 0xc8c8e0, fog: 0x0c0c12, floor: 0x2c2c38 },
+  market:   { name: 'Demon Market', tint: 0xd84a6a, fog: 0x12060a, floor: 0x341a22 },
+  catacomb: { name: 'Catacombs', tint: 0x8a6ad8, fog: 0x0a0814, floor: 0x241f30 },
+  glade:    { name: 'Charmed Glade', tint: 0xe88ac0, fog: 0x100a10, floor: 0x2a2430 },
+  ashreach: { name: 'The Ashreach', tint: 0x9ac8e8, fog: 0x080c12, floor: 0x2a3440 },
+  college:  { name: 'Obsidian College', tint: 0xd8b04a, fog: 0x08080c, floor: 0x1a1a22 },
+  lodge:    { name: 'Lodge Woods', tint: 0x8ab85a, fog: 0x080e06, floor: 0x26301e },
+  palewood: { name: 'The Pale Wood', tint: 0xe8e8d8, fog: 0x0e0e0c, floor: 0x34342c },
+  mire:     { name: 'The Black Mire', tint: 0x6a9a4a, fog: 0x060a04, floor: 0x1c2416 },
+  heart:    { name: 'The Ashen Heart', tint: 0xff5a3a, fog: 0x0a0404, floor: 0x2a1410 },
 };
 
 // Chambers per rift circle (encounters before the boss room).
 export const GATE_ROOMS = { Ash: 3, Ember: 3, Hex: 4, Thorn: 4, Crown: 5, Abyss: 5 };
 
-// The tarot board: each card sets biome, modifier and capture bias.
-export const TAROT = {
-  tower:   { name: 'The Tower',  numeral: 'XVI',  icon: '⚡', biome: 'forge',    modifier: 'burning', desc: 'Coven forge-rift. More elites; the floors burn every combatant.', eliteBonus: 0.15 },
-  moon:    { name: 'The Moon',   numeral: 'XVIII',icon: '☾', biome: 'drowned',  modifier: 'hidden',  desc: 'Drowned rift. Enemies stay hidden until engaged.' },
-  justice: { name: 'Justice',    numeral: 'XI',   icon: '⚖', biome: 'vigil',    modifier: 'vigil',   desc: 'Vigil purge. Knights of the Last Vigil hunt here.' },
-  devil:   { name: 'The Devil',  numeral: 'XV',   icon: '⛧', biome: 'market',   modifier: 'bargain', desc: 'Demon market. Bargains in every corner; +40% gold.', goldMult: 1.4 },
-  death:   { name: 'Death',      numeral: 'XIII', icon: '☠', biome: 'catacomb', modifier: 'rich',    desc: 'Catacomb rift. Undead cannot be sealed — but the treasure is rich.', goldMult: 1.6, treasureBonus: 0.15 },
-  lovers:  { name: 'The Lovers', numeral: 'VI',   icon: '♡', biome: 'glade',    modifier: 'charmed', desc: 'Charmed glade. Seals bite deeper; bonds stir at camp.', sealBonus: 0.15 },
+// Rival factions. Weaken one by raiding its holdings and capturing its
+// people; when its Power falls low enough, its leader's lair opens.
+// Seal the leader into the Undercroft (subjugated), reclaim them (sworn),
+// or kill them (shattered). Dominated factions pay out benefits.
+export const FACTIONS = {
+  coven:   { name: 'The Ashen Coven', icon: '🔥', color: '#ff7a3a', leader: 'mother_cinder', leaderName: 'Mother Cinder', lair: 'ashen_heart',
+             desc: 'Brands its faithful with a burning hand. Wants the Codex back.',
+             perk: 'Tribute: cinder ash & brimstone salt nightly; Coven raids stop.',
+             cellPerk: 'Mother Cinder in your cells: Coven brands burn out 25% faster.' },
+  college: { name: 'The Obsidian College', icon: '◈', color: '#d8b04a', leader: 'archon_sorn', leaderName: 'Archon Sorn', lair: 'archons_sanctum',
+             desc: 'A lawful magical authority that wants the Codex catalogued — and you licensed or dismantled.',
+             perk: 'Its archives open: +10% XP for everyone; the Market stocks College elixirs.',
+             cellPerk: 'Archon Sorn cannot be bound. Humbling him is the only victory.' },
+  vigil:   { name: 'The Order of the Last Vigil', icon: '⚖', color: '#c8ccd8', leader: 'aldric', leaderName: 'Lord-Commander Aldric', lair: 'citadel_vigil',
+             desc: 'Six hundred years of hunting warlocks. Now hunting Isolde, too.',
+             perk: 'The Vigil stands down: allies +10% DEF and RES.',
+             cellPerk: 'Aldric in your cells: Vigil captives never break out.' },
+  market:  { name: 'The Demon Market', icon: '⛧', color: '#d84a6a', leader: 'proprietor', leaderName: 'The Velvet Proprietor', lair: 'velvet_vault',
+             desc: 'Owned by someone nobody can name. Rue can.',
+             perk: 'Tribute: 60 gold nightly; Market prices −25%.',
+             cellPerk: 'The Proprietor in your cells: Bargains cost half.' },
+  lodge:   { name: 'The Hunters\' Lodge', icon: '➹', color: '#8ab85a', leader: 'hale', leaderName: 'Guildmaster Hale', lair: 'lodge_hall',
+             desc: 'Licensed rift-closers who think warlocks are the next thing to close.',
+             perk: 'Lodge contracts flow to you: +5 Infamy nightly; dispatches +15% success.',
+             cellPerk: 'Hale in your cells: Binding Seals on beasts +10%.' },
 };
 
-// Modifier labels, shown on drawn cards.
+// Holdings. faction:null = wild land (beasts and worse).
+// lieutenant: a one-time named boss that replaces the boss room until beaten
+// (pack: only when that character pack is enabled). lair: the leader's seat.
+export const LOCATIONS = {
+  drowned_stacks: { name: 'The Drowned Stacks', faction: null, biome: 'drowned', circle: 0, modifier: 'hidden',
+    desc: 'The flooded stacks beneath the Codex. Things nest in the old shelving.',
+    mobs: ['mire_drake', 'grave_spider', 'gloom_moth', 'coven_acolyte'], mobsLate: ['ice_wisp', 'banshee', 'basilisk'], bosses: ['drowned_matriarch'] },
+  cinder_forge: { name: 'The Cinder Forge', faction: 'coven', biome: 'forge', circle: 0, modifier: 'burning',
+    desc: 'Where the Coven hammers its brands. The floors are never cool.',
+    mobs: ['coven_acolyte', 'coven_zealot', 'ember_hound', 'lesser_imp'], mobsLate: ['cinder_knight', 'war_golem', 'dragon_cultist', 'dark_acolyte'], bosses: ['forge_matron'],
+    lieutenant: { id: 'mira_vane', pack: 'northern' } },
+  night_bazaar: { name: 'The Night Bazaar', faction: 'market', biome: 'market', circle: 0, modifier: 'bargain',
+    desc: 'Velvet stalls, grinning keepers, prices paid in blood if you\'re careless.',
+    mobs: ['lesser_imp', 'imp', 'cultist', 'gremlin'], mobsLate: ['velvet_fiend', 'contract_devil', 'hellhound'], bosses: ['pit_lord'],
+    lieutenant: { id: 'nyxe', pack: 'northern', circle: 1 } },
+  ember_catacombs: { name: 'The Ember Catacombs', faction: 'coven', biome: 'catacomb', circle: 1, modifier: 'rich',
+    desc: 'Coven bone-binders raise the dead here. The dead cannot be sealed — but they guard rich graves.',
+    mobs: ['skeleton', 'ghoul', 'bone_binder', 'grave_spider'], mobsLate: ['revenant', 'banshee', 'bone_binder', 'wraith'], bosses: ['bone_tyrant'] },
+  border_chapel: { name: 'The Border Chapel', faction: 'vigil', biome: 'vigil', circle: 1, modifier: 'vigil',
+    desc: 'A Vigil waystation on the north road. Bells, banners, warhounds.',
+    mobs: ['vigil_knight', 'vigil_cantor', 'vigil_hound', 'sentinel'], mobsLate: ['vigil_rider', 'vigil_inquisitor', 'vigil_hound'], bosses: ['vigil_marshal'] },
+  hunters_waystation: { name: 'The Hunters\' Waystation', faction: 'lodge', biome: 'lodge', circle: 1, modifier: 'hunt',
+    desc: 'A Lodge camp at the forest edge. Cages, trophies, bloodhounds.',
+    mobs: ['lodge_hunter', 'lodge_archer', 'hunting_hound', 'lodge_trapper'], mobsLate: ['lodge_hunter', 'lodge_archer', 'chimera'], bosses: ['dire_wolf'] },
+  pale_wood: { name: 'The Pale Wood', faction: null, biome: 'palewood', circle: 1, modifier: 'none',
+    desc: 'Bone-white trees and hollow stags. Something old and antlered rules the deep wood.',
+    mobs: ['hollow_stag', 'wolf', 'harpy', 'gloom_moth', 'boar'], mobsLate: ['chimera', 'vine_horror', 'harpy'], bosses: ['elder_treant'],
+    lieutenant: { id: 'pale_stag', pack: 'obsidian', circle: 2 } },
+  ashreach_temple: { name: 'The Ashreach Temple', faction: 'coven', biome: 'ashreach', circle: 2, modifier: 'frozen',
+    desc: 'A frozen northern temple where the Coven recruits. Its high priestess keeps the old rites.',
+    mobs: ['frost_witch', 'coven_zealot', 'ashreach_wyrm', 'mire_troll'], mobsLate: ['frost_witch', 'cinder_knight', 'ashreach_wyrm', 'dark_acolyte'], bosses: ['forge_matron'],
+    lieutenant: { id: 'valdra', pack: 'northern' } },
+  varenthis_archive: { name: 'The Varenthis Archive', faction: 'college', biome: 'college', circle: 2, modifier: 'arcane',
+    desc: 'The College\'s outer archive. Its agents have been reading the Codex\'s mail.',
+    mobs: ['obsidian_adept', 'college_inquisitor', 'obsidian_warden', 'arcane_familiar'], mobsLate: ['obsidian_adept', 'college_inquisitor', 'obsidian_warden'], bosses: ['colossus'],
+    lieutenant: { id: 'maren_soleil', pack: 'obsidian' } },
+  black_mire: { name: 'The Black Mire', faction: null, biome: 'mire', circle: 2, modifier: 'hidden',
+    desc: 'Bogland past the city wall. Basilisks, trolls, and the thing that birthed them.',
+    mobs: ['mire_drake', 'basilisk', 'mire_troll', 'grave_spider'], mobsLate: ['chimera', 'basilisk', 'mire_troll'], bosses: ['mire_matriarch'] },
+  vigil_watchtower: { name: 'The Vigil Watchtower', faction: 'vigil', biome: 'vigil', circle: 2, modifier: 'vigil',
+    desc: 'The Order\'s forward tower. Inquisitors keep the warlock-slayer brands hot here.',
+    mobs: ['vigil_knight', 'vigil_rider', 'vigil_inquisitor', 'vigil_hound'], mobsLate: ['vigil_knight', 'vigil_rider', 'vigil_inquisitor', 'gargoyle'], bosses: ['vigil_marshal'] },
+  contract_pits: { name: 'The Contract Pits', faction: 'market', biome: 'market', circle: 2, modifier: 'bargain',
+    desc: 'Where debts are collected. The fine print has teeth.',
+    mobs: ['contract_devil', 'velvet_fiend', 'hellhound', 'gremlin'], mobsLate: ['contract_devil', 'velvet_fiend', 'abyss_hound'], bosses: ['demon_general'] },
+  charmed_glade: { name: 'The Charmed Glade', faction: 'lodge', biome: 'glade', circle: 2, modifier: 'charmed',
+    desc: 'Lodge hunting grounds, blooming out of season. Seals bite deeper here.',
+    mobs: ['hollow_stag', 'sprite', 'lodge_hunter', 'harpy'], mobsLate: ['lodge_archer', 'hollow_stag', 'chimera'], bosses: ['glade_hart'] },
+  obsidian_observatory: { name: 'The Obsidian Observatory', faction: 'college', biome: 'college', circle: 3, modifier: 'arcane',
+    desc: 'Where the College watches the stars — and you.',
+    mobs: ['obsidian_adept', 'college_inquisitor', 'obsidian_warden', 'arcane_familiar'], mobsLate: ['college_inquisitor', 'obsidian_warden', 'obsidian_adept'], bosses: ['colossus'],
+    lieutenant: { id: 'seris_duel', pack: 'obsidian' } },
+  dragon_spire: { name: 'The Dragon-Cult Spire', faction: 'coven', biome: 'forge', circle: 3, modifier: 'burning',
+    desc: 'A spire of black glass where the Coven\'s zealots worship something with wings.',
+    mobs: ['dragon_cultist', 'ashreach_wyrm', 'cinder_knight', 'hellhound'], mobsLate: ['dragon_cultist', 'ashreach_wyrm', 'cinder_knight', 'chimera'], bosses: ['colossus'],
+    lieutenant: { id: 'rhea', pack: 'northern' } },
+  // ---- leader lairs: open when the faction's Power is ≤ LAIR_POWER ----
+  velvet_vault: { name: 'The Velvet Vault', faction: 'market', biome: 'market', circle: 3, modifier: 'bargain', lair: true,
+    desc: 'The Proprietor\'s counting-house, beneath the Bazaar.', mobs: ['contract_devil', 'velvet_fiend', 'hellhound'], bosses: ['proprietor'] },
+  lodge_hall: { name: 'The Lodge Hall', faction: 'lodge', biome: 'lodge', circle: 3, modifier: 'hunt', lair: true,
+    desc: 'Guildmaster Hale\'s trophy hall. There is an empty plinth labelled WARLOCK.', mobs: ['lodge_hunter', 'lodge_archer', 'hunting_hound'], bosses: ['hale'] },
+  citadel_vigil: { name: 'The Citadel of the Last Vigil', faction: 'vigil', biome: 'vigil', circle: 3, modifier: 'vigil', lair: true,
+    desc: 'Lord-Commander Aldric waits in the chapel where Isolde took her vows.', mobs: ['vigil_knight', 'vigil_inquisitor', 'vigil_rider'], bosses: ['aldric'] },
+  archons_sanctum: { name: 'The Archon\'s Sanctum', faction: 'college', biome: 'college', circle: 4, modifier: 'arcane', lair: true,
+    desc: 'The heart of the Obsidian College, and its Archon.', mobs: ['college_inquisitor', 'obsidian_adept', 'obsidian_warden'], bosses: ['archon_sorn'] },
+  ashen_heart: { name: 'The Ashen Heart', faction: 'coven', biome: 'heart', circle: 4, modifier: 'burning', lair: true, rooms: 5,
+    desc: 'The Coven\'s heart, and Mother Cinder on her throne of brands.', mobs: ['cinder_knight', 'dark_acolyte', 'ash_witch', 'dragon_cultist'], bosses: ['mother_cinder'] },
+};
+
+export const LAIR_POWER = 35;   // a faction's leader becomes reachable at or below this
+export const POWER = { clear: 10, lairFail: 0, capture: 3, kill: 1, lieutenantCapture: 15, lieutenantDefeat: 8, regen: 1 };
+
+// Location modifiers (a holding's character).
 export const GATE_MODIFIERS = [
   { id: 'none',    name: null },
-  { id: 'burning', name: 'Burning Floors', desc: 'Everyone starts each fight Burning. More elites.' },
+  { id: 'burning', name: 'Burning Floors', desc: 'Everyone starts each fight Burning. More elites.', eliteBonus: 0.1 },
   { id: 'hidden',  name: 'Fog-Veiled',     desc: 'Enemies are hidden until engaged.' },
-  { id: 'vigil',   name: 'Vigil Hunt',     desc: 'Knights of the Last Vigil. Isolde\'s story stirs here.' },
-  { id: 'bargain', name: 'Bargains',       desc: 'Infernal deals in the corridors. +40% gold.' },
-  { id: 'rich',    name: 'Grave-Rich',     desc: 'Undead (uncapturable). +60% gold, richer caches.' },
-  { id: 'charmed', name: 'Charmed',        desc: 'Binding Seals +15%. Bond scenes at camp.' },
+  { id: 'vigil',   name: 'Vigil Hunt',     desc: 'Knights of the Last Vigil. Their cuts drain magic.' },
+  { id: 'bargain', name: 'Bargains',       desc: 'Infernal deals in the corridors. +40% gold.', goldMult: 1.4 },
+  { id: 'rich',    name: 'Grave-Rich',     desc: 'Mostly undead (unsealable). +60% gold, richer caches.', goldMult: 1.6, treasureBonus: 0.15 },
+  { id: 'charmed', name: 'Charmed',        desc: 'Binding Seals +15%.', sealBonus: 0.15 },
+  { id: 'frozen',  name: 'Bitter Cold',    desc: 'Everyone starts each fight Slowed.' },
+  { id: 'arcane',  name: 'Arcane Wards',   desc: 'Enemies resist magic. +20% XP.', xpMult: 1.2 },
+  { id: 'hunt',    name: 'Hunting Grounds', desc: 'Beasts everywhere. Beast seals +10%.', beastSeal: 0.1 },
 ];
 
-// The final rift: the Ashen Coven's heart, once you're inscribed in Abyss.
-export const MONARCH_GATE = {
-  id: 'heart',
-  rank: 'Abyss',
-  biome: 'heart',
-  name: 'The Ashen Heart',
-  modifier: 'burning',
-  card: 'tower',
-  rooms: 5,
-  story: true,
+// Vesper's daily reading: one free card a day, a vision and a small boon.
+// run: effects applied to today's expedition; now: immediate effects.
+export const TAROT = {
+  tower:     { name: 'The Tower',          numeral: 'XVI',   icon: '⚡', boon: 'More elites tonight — and half again the spoils.', run: { eliteBonus: 0.15, goldMult: 1.5 } },
+  moon:      { name: 'The Moon',           numeral: 'XVIII', icon: '☾', boon: 'A captive\'s secret surfaces in Vesper\'s ink.', now: 'secret' },
+  lovers:    { name: 'The Lovers',         numeral: 'VI',    icon: '♡', boon: 'Someone in the household warms to you (+1 bond); a camp scene stirs tonight.', now: 'bond', run: { campScene: true } },
+  justice:   { name: 'Justice',            numeral: 'XI',    icon: '⚖', boon: '+50% Infamy from tonight\'s raid.', run: { infamyMult: 1.5 } },
+  death:     { name: 'Death',              numeral: 'XIII',  icon: '☠', boon: 'Richer caches tonight.', run: { treasureBonus: 0.15, goldMult: 1.3 } },
+  devil:     { name: 'The Devil',          numeral: 'XV',    icon: '⛧', boon: 'The Market\'s keepers are nervous: −30% prices today.', now: 'discount' },
+  star:      { name: 'The Star',           numeral: 'XVII',  icon: '✧', boon: 'The party mends 15% after every fight tonight.', run: { mend: 0.15 } },
+  hierophant:{ name: 'The Hierophant',     numeral: 'V',     icon: '⛪', boon: 'Vesper leaks a rival\'s secrets: the strongest rival loses 6 Power.', now: 'sabotage' },
+  wheel:     { name: 'Wheel of Fortune',   numeral: 'X',     icon: '☸', boon: 'A windfall of gold.', now: 'gold' },
+  hanged:    { name: 'The Hanged Man',     numeral: 'XII',   icon: '⚓', boon: 'Binding Seals +15% tonight.', run: { sealBonus: 0.15 } },
+  chariot:   { name: 'The Chariot',        numeral: 'VII',   icon: '⛟', boon: '+25% XP tonight.', run: { xpMult: 1.25 } },
+  hermit:    { name: 'The Hermit',         numeral: 'IX',    icon: '🕯', boon: 'Every captive\'s brand dims by 5.', now: 'brands' },
+  empress:   { name: 'The Empress',        numeral: 'III',   icon: '❀', boon: 'Every beast in the Menagerie is fed, free.', now: 'feed' },
+  magician:  { name: 'The Magician',       numeral: 'I',     icon: '✦', boon: 'Two reagents appear on the cauldron\'s rim.', now: 'reagents' },
+  sun:       { name: 'The Sun',            numeral: 'XIX',   icon: '☀', boon: 'The party starts tonight\'s fights Fired Up.', run: { firedUp: true } },
 };
+
+// Kept for save compatibility with the first build.
+export const MONARCH_GATE = { id: 'ashen_heart' };
 
 // ------------------------------------------------------------
 // Items
@@ -608,6 +752,8 @@ export const ITEMS = {
   wardens_tonic:     { name: 'Warden\'s Tonic', desc: 'Undercroft: +25% warden rate on one captive for 3 days.', brewed: true, sell: 30, noCombat: true },
   blackblood_elixir: { name: 'Blackblood Elixir', desc: 'Huge ATK/MAG surge for 3 turns. +5 Corruption.', brewed: true, sell: 45, buff: 'atk_up_big', corruption: 5 },
   beast_bait:        { name: 'Beast Bait', desc: 'Carried into a rift: +15% seal chance on beasts for that run.', brewed: true, sell: 10, noCombat: true },
+  sleepwalkers_philter: { name: 'Sleepwalker\'s Philter', desc: 'Thrown at a foe: Binds it for 2 turns and drains 15% Will.', brewed: true, sell: 30, throwWill: 0.15, throwStatus: 'bound' },
+  frostheart_draught:   { name: 'Frostheart Draught', desc: 'Drink: a frost-ward on the whole party.', brewed: true, sell: 35, partyShield: 0.25 },
   sludge:            { name: 'Questionable Sludge', desc: 'It moved. Sells for 1 gold.', brewed: true, sell: 1, noCombat: true },
 };
 
@@ -748,7 +894,8 @@ export const ROLE_INFO = {
 export const DISPATCH_BENCHMARK = { Ash: 4, Ember: 10, Hex: 18, Thorn: 28, Crown: 40, Abyss: 54 };
 
 // Shop stock scales with guild rank.
-export function shopStock(rankIdx) {
+export function shopStock(rankIdx, collegeOpen = false) {
+  if (collegeOpen) rankIdx = Math.max(rankIdx, 3);
   const items = Object.entries(ITEMS)
     .filter(([, it]) => !it.brewed && (!it.minRank || RANKS.indexOf(it.minRank) <= rankIdx))
     .map(([id]) => id);
@@ -772,7 +919,9 @@ export const CAPTIVE_TRAITS = {
 export const CAPTIVE_NAMES = {
   coven:  ['Ansel', 'Brisa', 'Corwin', 'Dariel', 'Edda', 'Faye', 'Gisla', 'Hollis', 'Ines', 'Jory', 'Katrin', 'Lark', 'Mabyn', 'Nell', 'Oswin', 'Petra', 'Quill', 'Rosamund', 'Sabine', 'Tamsin', 'Una', 'Wren'],
   vigil:  ['Brother Aled', 'Brother Cael', 'Sister Darra', 'Brother Emrys', 'Sister Fenna', 'Brother Garet', 'Sister Hild', 'Brother Ivo'],
-  market: ['Smiling Dace', 'Velvet Orla', 'Old Tobiah', 'Mistress Sable', 'Two-Coins Ferro'],
+  market: ['Smiling Dace', 'Velvet Orla', 'Old Tobiah', 'Mistress Sable', 'Two-Coins Ferro', 'Lady Ninefold', 'Corvin Ash-Tongue'],
+  college: ['Adept Imre', 'Adept Solenne', 'Proctor Vane', 'Adept Thessaly', 'Inquisitor Brannoch', 'Adept Liesl'],
+  lodge:  ['Tamsin Reed', 'Old Garreth', 'Wren Holloway', 'Bram Ashby', 'Kestrel', 'Mags Fenwick'],
 };
 
 // Lore secrets a captive can give up under Interrogation.
@@ -790,6 +939,16 @@ export const SECRETS = {
     'The Vigil\'s warlock-slayer brands are burned into the hands of every knight. They cannot remove them.',
     'Six riders have been sent. Six more wait at the border chapel.',
     'The Order\'s founding oath has seven runes. Only Isolde\'s armor carries the old carving.',
+  ],
+  college: [
+    'Archon Sorn has a file on you thicker than the Codex. It has a section on Vesper titled RECOVERABLE ASSET.',
+    'The College licenses warlocks — and then quietly collects them. The licensed ones are kept in the Observatory.',
+    'Seris Val\'s reports on you stopped being submitted three weeks ago. Sorn has noticed.',
+  ],
+  lodge: [
+    'Guildmaster Hale keeps an empty plinth in his trophy hall. The plaque says WARLOCK.',
+    'The Lodge pays bounties on Coven brands and on warlock hands. It does not ask whose.',
+    'The Dawnward Company is the Lodge\'s favorite story. Hale is afraid of what happens if they stop believing it.',
   ],
   market: [
     'The Devil\'s market is owned. Nobody knows by whom. Rue might.',
@@ -817,6 +976,8 @@ export const BEAST_FAMILIES = {
   mire_drake:   { name: 'Mire drake',   reagent: 'drake_scale',    summon: 'summon_drake' },
   hollow_stag:  { name: 'Hollow stag',  reagent: 'antler_velvet',  plant: true, summon: 'summon_stag' },
   lesser_imp:   { name: 'Lesser imp',   reagent: 'brimstone_salt', infernal: true, summon: 'summon_imp' },
+  gloom_moth:   { name: 'Gloom moth',   reagent: 'moth_dust',      summon: 'summon_moth' },
+  frost_wyrm:   { name: 'Frost wyrm',   reagent: 'wyrm_frost',     summon: 'summon_wyrm' },
 };
 
 export const BEAST_TRAITS = {
@@ -834,6 +995,8 @@ export const REAGENTS = {
   drake_scale:    { name: 'Drake scale',    icon: '◆', price: 18, desc: 'Mire-green and harder than iron. From mire drakes.' },
   antler_velvet:  { name: 'Antler velvet',  icon: '❦', price: 16, desc: 'Moss-soft, faintly luminous. From hollow stags.' },
   brimstone_salt: { name: 'Brimstone salt', icon: '⛬', price: 15, desc: 'Yellow crystals that hiss in water. From lesser imps.' },
+  moth_dust:      { name: 'Moth dust',      icon: '❋', price: 15, desc: 'Grey powder that makes you yawn just looking at it. From gloom moths and harpies.' },
+  wyrm_frost:     { name: 'Wyrm frost',     icon: '❄', price: 20, desc: 'A rime that never melts. From Ashreach wyrms.' },
 };
 
 // Recipes are keyed by their sorted ingredient ids joined with '+'.
@@ -842,6 +1005,8 @@ export const RECIPES = {
   truth_draught:     { makes: 'truth_draught',     needs: ['antler_velvet', 'cinder_ash'] },
   wardens_tonic:     { makes: 'wardens_tonic',     needs: ['drake_scale', 'antler_velvet'] },
   blackblood_elixir: { makes: 'blackblood_elixir', needs: ['drake_scale', 'cinder_ash', 'brimstone_salt'] },
+  sleepwalkers_philter: { makes: 'sleepwalkers_philter', needs: ['moth_dust', 'silk_venom'] },
+  frostheart_draught:   { makes: 'frostheart_draught',   needs: ['wyrm_frost', 'drake_scale'] },
   beast_bait:        { makes: 'beast_bait',        needs: ['*'], gold: 20 }, // any one reagent + gold
 };
 export const RECIPE_DISCOVERY = 0.6; // unknown-but-valid combos discover the recipe this often

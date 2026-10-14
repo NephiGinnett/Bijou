@@ -1,12 +1,12 @@
 @echo off
 REM ============================================================
-REM  CODEXBOUND launcher — double-click this file to play.
+REM  BINDING CODEX launcher — double-click this file to play.
 REM  It starts a tiny local web server and opens your browser.
 REM  To STOP the game: close this black window.
 REM ============================================================
 cd /d "%~dp0"
 echo.
-echo   Starting CODEXBOUND...
+echo   Starting BINDING CODEX...
 echo   Your browser will open in a moment.
 echo.
 echo   If the page says it can't connect, wait a second and

@@ -1,5 +1,5 @@
 // ============================================================
-// CODEXBOUND — turn-based combat engine (Will, subdue & Binding Seals)
+// BINDING CODEX — turn-based combat engine (Will, subdue & Binding Seals)
 // Pure logic; emits an event list the UI/3D layer animates.
 // Usage:
 //   const c = new Combat(S, enemyGroup);
@@ -8,8 +8,8 @@
 //   r = c.step({kind:'skill', id, target});   // resolve & continue
 // ============================================================
 
-import { SKILLS, STATUSES, HEROES, ITEMS, ELITES, TAROT, ENEMIES } from './data.js';
-import { heroStats, heroSkills, heroLoadout, masteryRank, bumpMastery, MASTERY_POWER, MASTERY_MP_DISCOUNT, recordCapture, addCorruption } from './state.js';
+import { SKILLS, STATUSES, HEROES, ITEMS, ELITES, ENEMIES, GATE_MODIFIERS } from './data.js';
+import { heroStats, heroSkills, heroLoadout, masteryRank, bumpMastery, MASTERY_POWER, MASTERY_MP_DISCOUNT, recordCapture, recordKill, recordYield, addCorruption, leaderInCells } from './state.js';
 
 export const SEAL_MP = 10;
 const WILL_REGEN = 0.06;      // Will an enemy recovers each of its turns
@@ -63,7 +63,7 @@ export class Combat {
         will: e.will ?? 100, maxWill: e.maxWill ?? 100,
         captureType: e.captureType ?? null, sealResist: e.sealResist || 0, tutorialSeal: !!e.tutorialSeal,
         faction: e.faction || null, family: e.family || null, named: e.named || null,
-        yieldAt: (ENEMIES[e.defId] && ENEMIES[e.defId].yieldAt) || 0, noKill: !!(ENEMIES[e.defId] && ENEMIES[e.defId].noKill), captured: false, yielded: false,
+        yieldAt: (ENEMIES[e.defId] && ENEMIES[e.defId].yieldAt) || 0, noKill: !!(ENEMIES[e.defId] && ENEMIES[e.defId].noKill), leaderBreak: !!(ENEMIES[e.defId] && ENEMIES[e.defId].leaderBreak), broken: false, captured: false, yielded: false,
       });
     }
     // Gear affixes: start-of-battle wards & haste (Warding / Vigorous).
@@ -83,6 +83,10 @@ export class Combat {
     // Tower rifts: the floor is on fire, for everyone.
     if (S.run.gate && S.run.gate.modifier === 'burning') {
       for (const u of this.units) u.statuses.push({ id: 'burn', turns: 2, power: 0 });
+    }
+    // Ashreach cold: everyone moves slower
+    if (S.run.gate && S.run.gate.modifier === 'frozen') {
+      for (const u of this.units) u.statuses.push({ id: 'agi_down', turns: 2, power: 0 });
     }
     // dungeon-event buff: the whole party Fired Up for the next fight
     if (S.run.tempBuff === 'mag') {
@@ -109,9 +113,14 @@ export class Combat {
     let mult = 1 + (this.S.sealPower || 0);
     const p = HEROES[caster.heroId] && HEROES[caster.heroId].passive;
     if (p && p.sealBonus) mult += p.sealBonus;
-    const card = TAROT[this.S.run.gate && this.S.run.gate.card];
-    if (card && card.sealBonus) mult += card.sealBonus;
-    if (tgt.captureType === 'beast' && this.S.run.bait) mult += 0.15;
+    const mod = GATE_MODIFIERS.find(m => m.id === (this.S.run.gate && this.S.run.gate.modifier)) || {};
+    if (mod.sealBonus) mult += mod.sealBonus;
+    if (this.S.run.omen && this.S.run.omen.sealBonus) mult += this.S.run.omen.sealBonus;
+    if (tgt.captureType === 'beast') {
+      if (this.S.run.bait) mult += 0.15;
+      if (mod.beastSeal) mult += mod.beastSeal;
+      if (leaderInCells(this.S, 'lodge')) mult += 0.1;
+    }
     chance *= mult;
     if (this.hasStatus(tgt, 'pinned') || this.hasStatus(tgt, 'bound')) chance += 0.15;
     if (this.hasStatus(caster, 'drained')) chance *= 0.7;
@@ -126,9 +135,10 @@ export class Combat {
 
   resolveSeal(u, cmd, ev) {
     const tgt = this.unit(cmd.target);
-    const free = this.S.flags && this.S.flags.free_seal && !this.freeSealUsed;
+    const broken = tgt && (tgt.broken || (tgt.noKill && tgt.will <= 0));
+    const free = !broken && this.S.flags && this.S.flags.free_seal && !this.freeSealUsed;
     if (free) this.freeSealUsed = true;
-    else u.mp = Math.max(0, u.mp - SEAL_MP);
+    else if (!broken) u.mp = Math.max(0, u.mp - SEAL_MP);
     ev.push({ t: 'skill', uid: u.uid, skillId: 'seal', name: 'Binding Seal', targets: tgt ? [tgt.uid] : [], anim: 'cast' });
     if (!tgt || tgt.hp <= 0) return;
     const chance = this.sealChance(u, tgt);
@@ -301,9 +311,19 @@ export class Combat {
       if (!def) continue;
       if (def.dot) {
         const dmg = Math.max(1, Math.round(u.maxHp * def.dot));
-        u.hp = Math.max(0, u.hp - dmg);
+        // broken leaders and the tutorial envoy can't bleed out; a leader
+        // brought down by a lingering wound breaks instead of dying
+        u.hp = Math.max(u.broken || u.noKill ? 1 : 0, u.hp - dmg);
+        if (u.hp <= 0 && u.leaderBreak && !u.broken) {
+          u.hp = 1; u.will = 0; u.broken = true; u.sealResist *= 0.5;
+          u.statuses = u.statuses.filter(st2 => !(STATUSES[st2.id] && STATUSES[st2.id].dot));
+          this.addStatus(u, 'pinned', 3, ev);
+          ev.push({ t: 'will', uid: u.uid, will: 0, maxWill: u.maxWill });
+          ev.push({ t: 'log', text: `${u.name} falls to their knees, broken. Seal them — or strike once more and end it.` });
+          ev.push({ t: 'broken', uid: u.uid });
+        }
         ev.push({ t: 'dot', uid: u.uid, dmg, id: st.id, hpAfter: u.hp });
-        if (u.hp <= 0 && !this.tryFavor(u, ev)) { ev.push({ t: 'die', uid: u.uid }); }
+        if (u.hp <= 0 && !this.tryFavor(u, ev)) { ev.push({ t: 'die', uid: u.uid }); if (u.side === 'enemy') recordKill(this.S, u); }
       }
       if (def.hot) {
         const amt = Math.max(1, Math.round(u.maxHp * def.hot));
@@ -387,7 +407,8 @@ export class Combat {
       return sk && u.skills.includes(id) && (sk.mp || 0) <= u.mp
         && !(sk.cooldown && u.cds[id] > 0) && !(sk.freeAction && u.freeUsed);
     };
-    const foes = this.alive('enemy');
+    // auto never executes a broken leader — that choice stays with the player
+    const foes = this.alive('enemy').filter(f => !f.broken);
     const allies = this.alive('party');
     const foeTarget = () => {
       const marked = foes.find(f => this.hasStatus(f, 'mark'));
@@ -398,11 +419,10 @@ export class Combat {
     // the warlock seals anything that's ready to be bound
     if (u.heroId === 'player') {
       const free = this.S.flags && this.S.flags.free_seal && !this.freeSealUsed;
-      if (free || u.mp >= SEAL_MP) {
-        const best = foes.map(t => ({ t, c: this.sealChance(u, t) })).sort((a, b) => b.c - a.c)[0];
-        if (best && best.c >= 0.6) return { kind: 'seal', target: best.t.uid };
-      }
+      const best = this.alive('enemy').map(t => ({ t, c: this.sealChance(u, t) })).sort((a, b) => b.c - a.c)[0];
+      if (best && best.c >= 0.6 && (free || u.mp >= SEAL_MP || best.t.broken || best.t.noKill)) return { kind: 'seal', target: best.t.uid };
     }
+    if (!foes.length) return { kind: 'guard' };
     // a healer patches up anyone badly hurt before anything else
     if (!preferredId || SKILLS[preferredId].type !== 'heal') {
       const healId = u.skills.find(id => SKILLS[id] && SKILLS[id].type === 'heal' && SKILLS[id].target === 'ally' && canUse(id));
@@ -560,6 +580,8 @@ export class Combat {
   }
 
   dealDamage(u, tgt, sk, ev) {
+    // a broken leader kneels out of the fight: sweeping attacks pass over them
+    if (tgt.broken && sk.target === 'all_enemies') return;
     // dodge passives (Yuki's Lucky Lamb, Vex's Hollow Step)
     const dodge = (tgt.side === 'party' && HEROES[tgt.heroId] && HEROES[tgt.heroId].passive.dodge) || 0;
     if (dodge && Math.random() < dodge) {
@@ -612,14 +634,19 @@ export class Combat {
 
     const hpBefore = tgt.hp;
     tgt.hp = Math.max(0, tgt.hp - dmg);
-    // the tutorial envoy can't be killed: she collapses, Will broken, waiting for a seal
-    if (tgt.hp <= 0 && tgt.noKill) {
+    // The tutorial envoy can't be killed, and faction leaders break before
+    // they die: they collapse, Will shattered, and the warlock decides —
+    // seal them, or strike again to end it.
+    if (tgt.hp <= 0 && (tgt.noKill || (tgt.leaderBreak && !tgt.broken))) {
       tgt.hp = 1; dmg = hpBefore - 1;
       tgt.will = 0;
+      if (tgt.leaderBreak) { tgt.broken = true; tgt.sealResist *= 0.5; }
       this.addStatus(tgt, 'pinned', 3, ev);
       ev.push({ t: 'hit', uid: tgt.uid, dmg, crit, kind: sk.type, hpAfter: tgt.hp, shieldAfter });
       ev.push({ t: 'will', uid: tgt.uid, will: 0, maxWill: tgt.maxWill });
-      ev.push({ t: 'log', text: `${tgt.name} collapses to her knees, Will shattered. Seal her!` });
+      ev.push({ t: 'log', text: tgt.noKill ? `${tgt.name} collapses to her knees, Will shattered. Seal her!`
+        : `${tgt.name} falls to their knees, broken. Seal them — or strike once more and end it.` });
+      ev.push({ t: 'broken', uid: tgt.uid });
       return;
     }
     if (tgt.hp <= 0 && this.tryFavor(tgt, ev)) dmg = hpBefore - 1;
@@ -630,6 +657,7 @@ export class Combat {
     if (tgt.yieldAt && tgt.hp > 0 && tgt.hp / tgt.maxHp <= tgt.yieldAt) {
       tgt.yielded = true;
       tgt.hp = 0;
+      recordYield(this.S, tgt);
       tgt.statuses = [];
       this.S.flags[(tgt.defId === 'isolde_duel' ? 'isolde' : tgt.defId) + '_yielded'] = true;
       ev.push({ t: 'yield', uid: tgt.uid });
@@ -665,6 +693,7 @@ export class Combat {
     if (tgt.hp <= 0) {
       tgt.statuses = [];
       ev.push({ t: 'die', uid: tgt.uid });
+      if (tgt.side === 'enemy') recordKill(this.S, tgt);
       this.log(ev, `${tgt.name} falls!`, tgt.side === 'enemy' ? pickGrim(tgt.name) : `${tgt.name} goes down hard, blood in the dust.`);
       // killing what you could have sealed stains you
       if (tgt.side === 'enemy' && tgt.captureType === 'humanoid' && tgt.will / tgt.maxWill <= 0.25 && u.side === 'party') {
@@ -694,6 +723,8 @@ export class Combat {
       this.drainWill(tgt, tgt.maxWill * it.throwWill, ev);
       ev.push({ t: 'log', text: `The draught shatters over ${tgt.name}. Their Will sags.` });
     }
+    if (it.throwStatus && tgt.side === 'enemy') this.addStatus(tgt, it.throwStatus, 2, ev);
+    if (it.partyShield) for (const p of this.alive('party')) { const amt = Math.round(p.maxHp * it.partyShield); this.addStatus(p, 'shield', 3, ev, amt); ev.push({ t: 'shield', uid: p.uid, amount: amt }); }
     if (it.buff) this.addStatus(tgt, it.buff, 3, ev);
     if (it.corruption) { addCorruption(S, it.corruption); ev.push({ t: 'log', text: `Black blood burns down your throat. (+${it.corruption} Corruption)` }); }
     if (it.heal) {
@@ -718,7 +749,8 @@ export class Combat {
       for (const u of this.units.filter(x => x.side === 'party')) {
         const cur = this.S.run.party[u.heroId];
         if (!cur) continue;
-        cur.hp = u.hp > 0 ? u.hp : Math.max(1, Math.round(u.maxHp * 0.2));
+        const mend = (this.S.run.omen && this.S.run.omen.mend) || 0;
+        cur.hp = u.hp > 0 ? Math.min(u.maxHp, Math.round(u.hp + u.maxHp * mend)) : Math.max(1, Math.round(u.maxHp * 0.2));
         cur.mp = u.mp;
       }
       const xp = this.units.filter(x => x.side === 'enemy').reduce((a, b) => a + b.xp, 0);
@@ -756,8 +788,9 @@ export class Combat {
       .filter(([id, n]) => n > 0 && ITEMS[id] && !ITEMS[id].noCombat)
       .map(([id, n]) => ({ id, n, name: ITEMS[id].name, desc: ITEMS[id].desc, revive: !!ITEMS[id].revive, onEnemy: !!ITEMS[id].throwWill }));
     const free = this.S.flags && this.S.flags.free_seal && !this.freeSealUsed;
+    const brokenFoe = this.alive('enemy').some(t => t.broken || (t.noKill && t.will <= 0));
     const seal = u.heroId === 'player'
-      ? { mp: free ? 0 : SEAL_MP, usable: free || u.mp >= SEAL_MP,
+      ? { mp: free ? 0 : SEAL_MP, usable: free || u.mp >= SEAL_MP || brokenFoe,
           targets: this.alive('enemy').map(t => ({ uid: t.uid, chance: this.sealChance(u, t), captureType: t.captureType })) }
       : null;
     return { skills, items, seal };

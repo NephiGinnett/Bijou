@@ -1,5 +1,5 @@
 // ============================================================
-// CODEXBOUND — story & dialogue
+// BINDING CODEX — story & dialogue
 // Step format:
 //   { s:'vesper', t:'line' }                       spoken line
 //   { s:'narr', t:'...' }                          narration
@@ -535,9 +535,9 @@ E.rue_romance = {
 E.isolde_hunter = {
   id: 'isolde_hunter', where: 'auto', once: true, priority: 90,
   steps: [
-    { s: 'narr', t: 'The card is Justice, and the rift behind it smells of rain and candle-smoke and old iron.' },
-    { s: 'vesper', t: '(very still) Justice reversed would have been better. That\'s a Vigil card. The Order of the Last Vigil — they\'ve hunted warlocks for six hundred years.' },
-    { s: 'narr', t: 'Inside, the rift is a ruined chapel. And at its broken altar, waiting, a tall woman in dark weathered plate stands with her longsword point-down against the stone. Short ash-blonde hair. A small scar through one eyebrow. Three faint violet runes carved into her breastplate.' },
+    { s: 'narr', t: 'The Border Chapel\'s bells are ringing as you arrive. The air smells of rain and candle-smoke and old iron.' },
+    { s: 'vesper', t: '(very still) Vigil ground. The Order of the Last Vigil — they\'ve hunted warlocks for six hundred years. They\'ve been expecting you.' },
+    { s: 'narr', t: 'Inside, the chapel is half ruined. And at its broken altar, waiting, a tall woman in dark weathered plate stands with her longsword point-down against the stone. Short ash-blonde hair. A small scar through one eyebrow. Three faint violet runes carved into her breastplate.' },
     { s: 'isolde', t: 'Warlock. I am Dame Isolde Varr of the Last Vigil.' },
     { s: 'isolde', t: 'The stars foretold a storm. I was sent to end it.' },
     { s: 'narr', t: 'She lifts the sword. Her hand is perfectly steady. Her eyes, for one half-second, are not.' },
@@ -869,6 +869,122 @@ E.recruit_intro_seris = petition('seris', [
 ]);
 
 // ------------------------------------------------------------
+// CONQUEST — rival factions crack, fall, and kneel
+// ------------------------------------------------------------
+
+const fate = (fid, f) => S => S.factions && S.factions[fid] && S.factions[fid].fate === f;
+
+const lairOpen = (fid, lines) => ({ id: 'lair_open_' + fid, where: 'auto', once: true, priority: 70, steps: lines });
+E.lair_open_coven = lairOpen('coven', [
+  { s: 'narr', t: 'The Coven\'s brands are going dark across the city, one by one. Acolytes are deserting. The forges have stopped ringing at night.' },
+  { s: 'vesper', t: 'She\'s exposed. Mother Cinder. The way down to the Ashen Heart is open — once you\'re strong enough to walk it. (quietly) I know the way. I used to live there.' },
+]);
+E.lair_open_college = lairOpen('college', [
+  { s: 'narr', t: 'A College seal arrives, broken on purpose. Inside, a single line in a hand trained never to tremble, trembling: THE ARCHON WILL RECEIVE YOU.' },
+  { s: 'vesper', t: 'Sorn is out of agents to send. Which means he\'ll come himself, or let you come to him. He\'d rather it look like his idea.' },
+]);
+E.lair_open_vigil = lairOpen('vigil', [
+  { s: 'narr', t: 'The Vigil\'s bells stop. Not one chapel on the north road is ringing.' },
+  { s: 'isolde', cond: S => has(S, 'isolde'), t: 'They have pulled back to the Citadel. Aldric will be in the old chapel. (a long pause) Where I took my vows. He will wait for me there.' },
+  { s: 'vesper', cond: S => !has(S, 'isolde'), t: 'The Order\'s pulled back to its Citadel. Lord-Commander Aldric is waiting for you.' },
+]);
+E.lair_open_market = lairOpen('market', [
+  { s: 'narr', t: 'Half the Bazaar\'s stalls are shuttered. The ones still open quote prices in whispers.' },
+  { s: 'rue', cond: S => has(S, 'rue'), t: '(very casually, not casual at all) So. The Velvet Vault\'s unguarded. The Proprietor\'s in there. I, uh. Might know them. A bit. They might have a contract with my handwriting on it.', brand: true },
+  { s: 'vesper', cond: S => !has(S, 'rue'), t: 'The Velvet Vault is open. Whoever owns the Market is in there, counting what\'s left.' },
+]);
+E.lair_open_lodge = lairOpen('lodge', [
+  { s: 'narr', t: 'The Lodge has stopped posting bounties on you. Instead, a single invitation, gilt-edged: GUILDMASTER HALE REQUESTS THE PLEASURE OF A HUNT.' },
+  { s: 'vesper', t: 'He wants you in his trophy hall. I think he still has a plinth with your name on it.' },
+]);
+
+const dominate = (fid, lines) => ({ id: 'dominate_' + fid, where: 'auto', once: true, priority: 80, steps: lines });
+E.dominate_coven = dominate('coven', [
+  { s: 'narr', cond: fate('coven', 'subjugated'), t: 'Mother Cinder is dragged down through the Heart\'s floor in chains of your sigil, still burning, still cursing. Across the city, every Coven brand flickers — and stays lit, waiting to see what you\'ll do with her.' },
+  { s: 'vesper', cond: fate('coven', 'subjugated'), t: '(watching the empty throne) She taught me everything. Now she\'s two floors under my reading table. (a shaky laugh) I don\'t know what I feel. Ask me in a week.' },
+  { s: 'narr', cond: fate('coven', 'shattered'), t: 'Mother Cinder dies on her throne of brands. Every Coven brand in the city gutters out at once. Her people scatter — leaderless, terrified, and very, very willing to pay tribute to whoever did that.' },
+  { s: 'codex', t: '[ THE ASHEN COVEN — DOMINATED. Tribute will come nightly. ]' },
+]);
+E.dominate_college = dominate('college', [
+  { s: 'narr', cond: fate('college', 'humbled'), t: 'Archon Sorn yields. He does it precisely: sets down his staff, removes his signet, and signs a writ in his own blood granting the warlock of the drowned quarter full access to the Obsidian archives. Then he sits down, very carefully, and does not get up for a long time.' },
+  { s: 'narr', cond: fate('college', 'shattered'), t: 'Archon Sorn falls in his own sanctum. The College\'s adepts don\'t flee. They just stop, look at each other, and start asking who\'s in charge now. The answer, it turns out, is you.' },
+  { s: 'codex', t: '[ THE OBSIDIAN COLLEGE — DOMINATED. Its archives are yours. ]' },
+]);
+E.dominate_vigil = dominate('vigil', [
+  { s: 'narr', cond: fate('vigil', 'subjugated'), t: 'Aldric kneels in the chapel where Isolde swore her first oath. When your sigil closes around him, he doesn\'t resist. He looks only at her.' },
+  { s: 'isolde', cond: S => fate('vigil', 'subjugated')(S) && has(S, 'isolde'), t: '(very quietly) You taught me to carve the first rune. I will be the one who sits outside your cell.' },
+  { s: 'narr', cond: fate('vigil', 'shattered'), t: 'The Lord-Commander falls. The Order\'s knights lay their swords down one by one around his body, and the oldest of them asks, formally, what the warlock requires of them.' },
+  { s: 'isolde', cond: S => fate('vigil', 'shattered')(S) && has(S, 'isolde'), t: '(she closes his eyes) ...He believed I could be saved. He was right. Just not in the way he meant.' },
+  { s: 'codex', t: '[ THE ORDER OF THE LAST VIGIL — DOMINATED. The hunt is over. ]' },
+]);
+E.dominate_market = dominate('market', [
+  { s: 'narr', cond: fate('market', 'subjugated'), t: 'The Proprietor is sealed mid-sentence — mid-counteroffer, actually. The Vault\'s ledgers burst into flames, all at once, and every debt in them comes due to you.' },
+  { s: 'rue', cond: S => fate('market', 'subjugated')(S) && has(S, 'rue'), t: '(staring at a smoldering contract with her name on it) ...It burned. My contract burned. (her brand flickers, and doesn\'t flare) I didn\'t even have to steal it.' },
+  { s: 'narr', cond: fate('market', 'shattered'), t: 'The Proprietor dies, and for one strange moment the whole Market goes quiet. Then the stall-keepers start bowing to you, one by one, the way they used to bow to whoever owned them.' },
+  { s: 'codex', t: '[ THE DEMON MARKET — DOMINATED. Its coin flows to the Codex. ]' },
+]);
+E.dominate_lodge = dominate('lodge', [
+  { s: 'narr', cond: fate('lodge', 'subjugated'), t: 'Guildmaster Hale goes down in his own trophy hall, under his own antlers, in front of the plinth he built for you. You put the plinth in the Undercroft. You put him beside it.' },
+  { s: 'narr', cond: fate('lodge', 'shattered'), t: 'Hale falls. The Lodge\'s hunters take down his trophies themselves, quietly, and send their contracts to the drowned library instead.' },
+  { s: 'erin', cond: S => has(S, 'erin'), t: '(staring at the empty hall) ...We used to drink here. On Hale\'s tab. (a long breath) Okay. Okay! New tab. Your tab.' },
+  { s: 'codex', t: '[ THE HUNTERS\' LODGE — DOMINATED. Its contracts flow to you. ]' },
+]);
+
+// Leaders in the cells. Grim, never intimate.
+E.cell_cinder_intro = {
+  id: 'cell_cinder_intro', where: 'cell', captive: 'cinder', once: true, priority: 50,
+  steps: [
+    { s: 'narr', t: 'Mother Cinder sits in the deepest cell like it\'s a throne. The brand on her throat is the biggest you\'ve seen — not a hand. A whole burning palm, pressed over her heart.' },
+    { s: 'cinder', t: 'So you\'re the storm. (she looks past you, up the stair) And she\'s the one who sent you down. My Vesper. My best. My stolen thing.' },
+    { s: 'cinder', t: 'Burn me out, warlock. You\'ll find there\'s nothing underneath. I made sure of that a long time ago.' },
+  ],
+};
+E.cell_aldric_intro = {
+  id: 'cell_aldric_intro', where: 'cell', captive: 'aldric', once: true, priority: 50,
+  steps: [
+    { s: 'narr', t: 'Aldric has knelt in his cell every hour since he arrived. Not praying. Waiting.' },
+    { s: 'aldric', t: 'Is she well? (he doesn\'t wait for an answer) I taught her to carve the first rune. I told her the seventh would be carved by a hand she trusted more than her own. I thought I meant God.' },
+    { s: 'isolde', cond: S => has(S, 'isolde'), t: '(from the stair, not coming closer) I am well, Lord-Commander.' },
+    { s: 'aldric', cond: S => has(S, 'isolde'), t: '(he closes his eyes) ...Good. Good.' },
+  ],
+};
+E.cell_proprietor_intro = {
+  id: 'cell_proprietor_intro', where: 'cell', captive: 'proprietor', once: true, priority: 50,
+  steps: [
+    { s: 'narr', t: 'The Proprietor has rearranged the cell. You don\'t know how. There is a small table now. There is tea.' },
+    { s: 'narr', t: 'They smile with far too many teeth.' },
+    { s: 'captive', t: 'Let\'s not be uncivilized about this. Everyone has a price. I\'d simply like to know yours before you learn mine.' },
+    { s: 'rue', cond: S => has(S, 'rue'), t: '(from the stair, arms crossed) Don\'t drink the tea.' },
+  ],
+};
+E.cell_hale_intro = {
+  id: 'cell_hale_intro', where: 'cell', captive: 'hale', once: true, priority: 50,
+  steps: [
+    { s: 'narr', t: 'Hale paces the cell like it\'s a blind he\'s waiting in. Thirty years of hunting things, and he knows exactly how this looks from the other side of the bars.' },
+    { s: 'captive', t: 'Built that plinth for your hands, warlock. Had the plaque engraved. (a dry laugh) Suppose that\'s mine now.' },
+  ],
+};
+
+// Vesper's daily reading: what she says when each card turns.
+export const READING_LINES = {
+  tower:      ['The Tower again. (she taps it twice) It\'s fond of you. Tonight, something big is waiting — and something big pays well.'],
+  moon:       ['The Moon. Someone downstairs is dreaming loudly. (she listens to her ink) There — a secret, slipping out.'],
+  lovers:     ['The Lovers. (she covers it, a beat too fast, then uncovers it) ...It\'s not about me. Don\'t look at me like that. It\'s about the household.', 'The Lovers. Someone under this roof is thinking about you very hard. (dryly) I\'m not saying who. One of them is me.'],
+  justice:    ['Justice. The city is watching what you do tonight. Make it worth the gossip.'],
+  death:      ['Death. Not yours. (she smiles) Old graves, opening. Bring a bag.'],
+  devil:      ['The Devil. The Market\'s keepers felt that card turn from here. Go shopping. They\'ll be generous out of sheer nerves.'],
+  star:       ['The Star. (softly) A good card. Whatever cuts you tonight will close by morning.'],
+  hierophant: ['The Hierophant. Old institutions, old secrets. (she\'s already writing a letter) Give me an hour and one of your rivals will be very embarrassed.'],
+  wheel:      ['Wheel of Fortune. (a coin falls out of the deck. Then another.) ...That\'s never happened before.'],
+  hanged:     ['The Hanged Man. Surrender — theirs, not yours. Your seals will bite deep tonight.'],
+  chariot:    ['The Chariot. Momentum. Whatever you learn tonight will stick.'],
+  hermit:     ['The Hermit. (she looks toward the Undercroft stair) A quiet card. Every brand down there just dimmed a little.'],
+  empress:    ['The Empress. (from below, a chorus of contented animal noises) ...I may have fed your Menagerie. Out of the household budget. You\'re welcome.'],
+  magician:   ['The Magician. (two reagents roll off the shelf and land at your feet) Show-off.'],
+  sun:        ['The Sun. (she squints at it like it\'s rude) Bright, warm, unbearably optimistic. You\'ll fight like you mean it tonight.'],
+};
+
+// ------------------------------------------------------------
 // ENDINGS — after the Ashen Heart (bond × corruption band)
 // ------------------------------------------------------------
 
@@ -1051,6 +1167,7 @@ export function pickCellEvent(S, captive) {
 // Generic release scene for unnamed captives.
 export function releaseEventFor(cap, outcome) {
   if (cap.named === 'envoy') return EVENTS.release_calla;
+  if (cap.leader && LEADER_RELEASE[cap.named]) return { id: 'release_' + cap.id, steps: LEADER_RELEASE[cap.named][outcome] || LEADER_RELEASE[cap.named].leave };
   const lines = {
     join: [
       { s: 'narr', t: 'The brand on {captive}\'s skin burns down to nothing and goes out. You open the cell.' },
@@ -1069,6 +1186,42 @@ export function releaseEventFor(cap, outcome) {
   };
   return { id: 'release_' + cap.id, steps: lines[outcome] || lines.leave };
 }
+
+const LEADER_RELEASE = {
+  cinder: {
+    join: [
+      { s: 'narr', t: 'The great brand over Mother Cinder\'s heart goes out like a candle pinched between two fingers. She stays kneeling for a long time after the chains fall away.' },
+      { s: 'cinder', t: 'There was something underneath. (she sounds furious about it) I was so sure there wasn\'t.' },
+      { s: 'cinder', t: 'I\'ll stay. Not because you won. Because she\'s up there, and I owe her a great many apologies, and I intend to make every one of them in person.' },
+    ],
+    leave: [
+      { s: 'narr', t: 'The brand goes out. Mother Cinder stands, steadies herself on the bars, and walks out of the Undercroft without a word.' },
+      { s: 'narr', t: 'Vesper finds a letter on her desk the next morning. It is four pages long. She does not read it to anyone.' },
+    ],
+    relapse: [
+      { s: 'narr', t: 'The brand dims — and then, slowly, impossibly, rekindles. Mother Cinder smiles at you through it.' },
+      { s: 'cinder', t: 'You bought my obedience, warlock. You never once earned it. (she walks out) The Coven will remember that I came back.' },
+    ],
+  },
+  aldric: {
+    join: [
+      { s: 'narr', t: 'Aldric stands when the chains fall. He bows — to you, and then, deeper, to Isolde.' },
+      { s: 'aldric', t: 'I swore to the stars once. (he holds out his sword, hilt-first) Let me swear to something that answers.' },
+    ],
+    leave: [{ s: 'aldric', t: 'I cannot serve you. But I will not hunt you, or her, ever again. (he walks north, alone) That much I can promise.' }],
+    relapse: [{ s: 'narr', t: 'Aldric leaves without a word. Within the week, the Vigil\'s bells are ringing again on the north road.' }],
+  },
+  proprietor: {
+    join: [{ s: 'captive', t: '(examining the open door) No contract? No terms? (a long pause, and then a smile with only a reasonable number of teeth) ...How refreshing. I accept.' }],
+    leave: [{ s: 'captive', t: 'A pleasure doing business. (they bow) I\'ll be in touch. Everyone always is.' }],
+    relapse: [{ s: 'narr', t: 'The Proprietor walks out humming. By morning, three new stalls are open in the Bazaar under a familiar velvet sign.' }],
+  },
+  hale: {
+    join: [{ s: 'captive', t: '(looking at the plinth, then at you) Never had a hunt end like this. (he holds out a hand) Fine. Show me what a warlock hunts.' }],
+    leave: [{ s: 'captive', t: 'I\'m done hunting. You, anything. (he takes the plaque off the plinth on his way out) Keeping this, though.' }],
+    relapse: [{ s: 'narr', t: 'Hale walks out a free man. Two days later, the Lodge reopens under new management. His.' }],
+  },
+};
 
 // Ending: highest bond × corruption band. The secret ending wins if
 // Mother Cinder was captured and reclaimed.
@@ -1099,6 +1252,6 @@ export function checkIntimacyGates() {
     if (stepsHaveSpice(ev.steps) && !(ev.cond && ev.cond.__allies && ev.cond.__allies.length)) bad.push(ev.id);
     if (ev.where === 'cell' && stepsHaveSpice(ev.steps)) bad.push(ev.id + ' (cell scene)');
   }
-  if (bad.length) console.warn('[Codexbound] Events with spice lines lack an allies-only cond:', bad);
+  if (bad.length) console.warn('[Binding Codex] Events with spice lines lack an allies-only cond:', bad);
   return bad;
 }

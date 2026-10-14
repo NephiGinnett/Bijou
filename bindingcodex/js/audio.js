@@ -1,5 +1,5 @@
 // ============================================================
-// CODEXBOUND — WebAudio synth sfx + generative ambient music.
+// BINDING CODEX — WebAudio synth sfx + generative ambient music.
 // No audio assets; everything is synthesized.
 // ============================================================
 

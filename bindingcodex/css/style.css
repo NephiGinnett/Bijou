@@ -1,5 +1,5 @@
 /* ============================================================
-   CODEXBOUND — ash-black + ember gold, with Codex-violet ink
+   BINDING CODEX — ash-black + ember gold, with Codex-violet ink
    ============================================================ */
 
 :root {
@@ -581,7 +581,7 @@ button.ticker-btn.notify em { font-style: normal; color: var(--gold); animation:
 
 
 /* ============================================================
-   CODEXBOUND additions
+   BINDING CODEX additions
    ============================================================ */
 :root { --will: #b06cff; --brand: #ff7a3a; --regard: #e88ac0; --resolve: #c8ccd8; --corrupt: #d84a6a; --ember: #ff8a4a; }
 
@@ -659,3 +659,16 @@ button.ticker-btn.notify em { font-style: normal; color: var(--gold); animation:
 .pron-row .btn.on { border-color: var(--gold); color: var(--gold); }
 .day-log { font-size: 12px; color: var(--muted); border-left: 2px solid var(--border-dim); padding-left: 8px; margin: 6px 0; }
 .result-caps { color: var(--will); }
+
+/* conquest */
+.faction-section { margin-bottom: 14px; }
+.faction-section h3 { margin: 6px 0; }
+.power-row { display: flex; align-items: center; gap: 6px; min-width: 180px; }
+.power-row .bar-outer { width: 120px; }
+.bar-outer.power .bar-inner { background: linear-gradient(90deg, #6a1a2a, #e8823a); }
+.power-num { font-size: 12px; color: var(--muted); min-width: 24px; }
+.fate-tag { font-weight: 700; letter-spacing: .06em; font-size: 12px; }
+.loc-card.locked { opacity: .55; }
+.loc-card.lair { border-color: var(--gold); box-shadow: 0 0 14px rgba(224,168,96,.35); }
+.modal.reading { text-align: center; }
+.modal.reading .tarot-card { cursor: pointer; }

@@ -1,13 +1,13 @@
 // ============================================================
-// CODEXBOUND — UI screens & game flow orchestration
+// BINDING CODEX — UI screens & game flow orchestration
 // ============================================================
 
 import { RANKS, RANK_STYLE, HEROES, SKILLS, STATUSES, ITEMS, BIOMES, GATE_MODIFIERS, AFFIXES, xpToNext, heroStatsAt, gearScore, shopStock, GATE_GP, recruitOffers, reforgeCost, reforgeGear, ROLE_INFO, heroDesc,
-  TAROT, CAPTIVE_TRAITS, BEAST_FAMILIES, BEAST_TRAITS, REAGENTS, RECIPES, PACTS, WARDEN_STYLES } from './data.js';
+  TAROT, FACTIONS, LOCATIONS, LAIR_POWER, ENEMIES, GATE_ROOMS, CAPTIVE_TRAITS, BEAST_FAMILIES, BEAST_TRAITS, REAGENTS, RECIPES, PACTS, WARDEN_STYLES } from './data.js';
 import * as ST from './state.js';
 import { Combat, SEAL_MP } from './combat.js';
 import { Stage, makePortrait } from './scene3d.js';
-import { EVENTS, SPEAKERS, DUNGEON_EVENTS, BARGAIN_EVENTS, VISIT_LINES, TAUNT_LINES, pickGuildEvent, pickCampEvent, pickCellEvent, endingFor, pickRumorEvent, rumorLine, releaseEventFor, checkIntimacyGates } from './story.js';
+import { EVENTS, SPEAKERS, DUNGEON_EVENTS, BARGAIN_EVENTS, VISIT_LINES, TAUNT_LINES, READING_LINES, pickGuildEvent, pickCampEvent, pickCellEvent, endingFor, pickRumorEvent, rumorLine, releaseEventFor, checkIntimacyGates } from './story.js';
 import { registerAlias, ACTOR_ACCENTS } from './actors3d.js';
 import * as AU from './audio.js';
 
@@ -87,14 +87,14 @@ function affixChip(g) {
 }
 function heroName(id) { return id === 'player' ? S.name : (HEROES[id] ? HEROES[id].name : id); }
 function heroColor(id) { return (SPEAKERS[id] && SPEAKERS[id].color) || (HEROES[id] && HEROES[id].color) || '#fff'; }
-function heroVariant(id) { return id === 'player' && S ? S.pronouns : null; }
+function heroVariant(id) { return id === 'player' && S ? S.pronouns + (S.flags.scarred ? '_scar' : '') : null; }
 function bar(cls, pct, title = '') {
   return `<div class="bar-outer ${cls} sm" title="${esc(title)}"><div class="bar-inner" style="width:${Math.max(0, Math.min(100, pct))}%"></div></div>`;
 }
 
 // Regenerate 2D portraits (player look follows pronoun choice; converts appear).
 async function refreshPortraits(force = false) {
-  const key = (S ? S.pronouns : 'she') + '|' + (S ? Object.keys(S.converts || {}).length : 0);
+  const key = (S ? heroVariant('player') : 'she') + '|' + (S ? Object.keys(S.converts || {}).length : 0);
   if (!force && PORTRAITS.__key === key) return;
   PORTRAITS.__key = key;
   await Promise.all(Object.keys(HEROES).map(async id => {
@@ -289,7 +289,7 @@ async function title(hasSave) {
     <div class="title-wrap">
       <div class="title-logo">
         <div class="title-top">THE WARLOCK'S CODEX presents</div>
-        <h1>CODEX<span>BOUND</span></h1>
+        <h1>BINDING <span>CODEX</span></h1>
         <div class="title-sub">The Codex remembers every pact. Now it's writing yours.</div>
       </div>
       <div class="title-menu">
@@ -331,7 +331,7 @@ function namePrompt(hasSave) {
         <button class="btn primary" id="bt-start">Begin</button>
         <button class="btn ghost" id="bt-back">Back</button>
       </div>
-      ${hasSave ? '<p class="warn">Starting a new game overwrites the existing Codexbound save. (Gatebound saves are separate and untouched.)</p>' : ''}
+      ${hasSave ? '<p class="warn">Starting a new game overwrites the existing Binding Codex save. (Gatebound saves are separate and untouched.)</p>' : ''}
     </div>
   `, 'center');
   document.querySelectorAll('.pron-row .btn').forEach(b => b.onclick = () => {
@@ -430,7 +430,9 @@ async function hub() {
         ${dayLog.length ? `<div class="day-log">${dayLog.map(l => esc(l)).join('<br>')}</div>` : ''}
         ${stories.length ? `<div class="row gap wrap" style="margin-bottom:8px">${stories.map(o => `<button class="btn primary story-rift" data-id="${o.id}">${o.label}<small>${esc(o.sub)}</small></button>`).join('')}</div>` : ''}
         <div class="menu-grid">
-          <button class="btn big primary" id="g-map">🂠 Tarot Board<small>draw tonight's rift</small></button>
+          <button class="btn big primary" id="g-map">⌖ Expedition<small>raid a rival or roam the wild</small></button>
+          ${ST.isAlly(S, 'vesper') ? `<button class="btn big ${ST.canRead(S) ? 'notify' : ''}" id="g-read">🂠 Vesper's Reading${ST.canRead(S) ? '<em>!</em>' : ''}<small>${S.omen && S.omen.day === S.day ? TAROT[S.omen.card].icon + ' ' + TAROT[S.omen.card].name : 'a free card, every day'}</small></button>` : ''}
+          ${S.flags.vesper_joined ? `<button class="btn big" id="g-rivals">⚔ Rivals<small>${Object.values(S.factions).filter(f => f.fate).length}/5 dominated</small></button>` : ''}
           <button class="btn big" id="g-party">✦ Allies<small>stats, skills & gear</small></button>
           ${S.flags.undercroft_open ? `<button class="btn big ${releaseReady || unwarded ? 'notify' : ''}" id="g-under">⛓ Undercroft${releaseReady || unwarded ? '<em>!</em>' : ''}<small>${S.captives.length} captive${S.captives.length === 1 ? '' : 's'}${unwarded ? ` · ${unwarded} unwarded` : ''}</small></button>` : ''}
           ${S.menagerie.length || S.eggs.length || S.stats.captures ? `<button class="btn big ${hungry ? 'notify' : ''}" id="g-men">🐾 Menagerie${hungry ? '<em>!</em>' : ''}<small>${S.menagerie.length}/${S.pens} pens${hungry ? ` · ${hungry} hungry` : ''}</small></button>` : ''}
@@ -465,7 +467,9 @@ async function hub() {
   `);
 
   const on = (id, fn) => { const b = $('#' + id); if (b) b.onclick = fn; };
-  on('g-map', () => { AU.sfx('confirm'); tarotBoard(); });
+  on('g-map', () => { AU.sfx('confirm'); worldMap(); });
+  on('g-read', () => { AU.sfx('confirm'); vesperReading(); });
+  on('g-rivals', () => { AU.sfx('ui'); rivals(); });
   on('g-party', () => { AU.sfx('ui'); party(); });
   on('g-under', () => { AU.sfx('ui'); undercroft(); });
   on('g-men', () => { AU.sfx('ui'); menagerie(); });
@@ -570,7 +574,7 @@ async function newcomers() {
 
 function dispatchBoard() {
   const reports = S.dispatchReports.slice().reverse();
-  const gates = S.tarotHand.filter(g => !g.story && !g.recursion);
+  const gates = Object.keys(LOCATIONS).filter(id => !LOCATIONS[id].lair && ST.locationOpen(S, id).ok).map(id => ST.makeExpedition(S, id));
   const missionRows = S.dispatch.length ? S.dispatch.map(m => `
     <div class="shop-row">
       <div><b>${rankBadge(m.gate.rank)} ${esc(m.gate.name)}</b>
@@ -589,14 +593,14 @@ function dispatchBoard() {
   screen(`
     <div class="panel map-panel">
       <div class="row spread"><h2>✈ Dispatch</h2><button class="btn ghost" id="dp-back">← Codex</button></div>
-      <p class="muted">Send allies into one of today's rifts on their own — they return after the next day. Balanced teams travel safer: ${Object.values(ROLE_INFO).map(r => `${r.icon} ${r.name}`).join(' · ')}. (Dispatched teams don't seal anything.)</p>
+      <p class="muted">Send allies to raid a holding on their own (it drains the owner's Power too) — they return after the next day. Balanced teams travel safer: ${Object.values(ROLE_INFO).map(r => `${r.icon} ${r.name}`).join(' · ')}. (Dispatched teams don't seal anything.)</p>
       <div class="shop-cols">
         <div>
           <h3>Today's cards</h3>
           ${gates.length ? gates.map(g => `
             <div class="shop-row">
-              <div><b>${rankBadge(g.rank)} ${esc(g.name)}</b> <small class="muted">${TAROT[g.card]?.name || ''} · ${BIOMES[g.biome].name}</small></div>
-              <button class="btn send-to" data-i="${S.tarotHand.indexOf(g)}">assemble team</button>
+              <div><b>${rankBadge(g.rank)} ${esc(g.name)}</b> <small class="muted">${g.faction ? FACTIONS[g.faction].icon + ' ' : ''}${BIOMES[g.biome].name}</small></div>
+              <button class="btn send-to" data-loc="${g.loc}">assemble team</button>
             </div>`).join('') : '<p class="muted">No rifts to send anyone into today.</p>'}
           <h3>In the field</h3>${missionRows}
         </div>
@@ -607,7 +611,7 @@ function dispatchBoard() {
   for (const r of S.dispatchReports) r.seen = true;
   ST.save(S);
   $('#dp-back').onclick = () => hub();
-  document.querySelectorAll('.send-to').forEach(b => b.onclick = () => { AU.sfx('ui'); dispatchTeamPick(S.tarotHand[Number(b.dataset.i)]); });
+  document.querySelectorAll('.send-to').forEach(b => b.onclick = () => { AU.sfx('ui'); dispatchTeamPick(ST.makeExpedition(S, b.dataset.loc)); });
 }
 
 function dispatchTeamPick(gate) {
@@ -662,73 +666,147 @@ function dispatchTeamPick(gate) {
 }
 
 // ------------------------------------------------------------------
-// the tarot board — three face-down cards, one turn per day
+// the world map — holdings of the rival factions, and the wild
 // ------------------------------------------------------------------
 
-function tarotBoard() {
-  const hand = S.tarotHand;
-  const cards = hand.map((g, i) => {
-    const card = TAROT[g.card] || TAROT.tower;
-    const mod = GATE_MODIFIERS.find(m => m.id === g.modifier);
-    const rs = RANK_STYLE[g.rank];
-    const locked = !g.flipped && S.flippedToday;
-    const label = g.story ? 'Answer it' : g.id === 'heart' ? 'Descend to the Heart' : 'Descend';
-    return `
-      <div class="tarot-card ${g.flipped ? 'flipped' : ''} ${locked ? 'locked' : ''} ${g.story || g.id === 'heart' ? 'story' : ''}" data-i="${i}" style="--rc:${rs.color};--rg:${rs.glow}">
-        <div class="tarot-face tarot-back">
-          <div class="sigil">✶</div>
-          <div class="back-circle">${rankBadge(g.rank)}</div>
-          <small class="muted">${locked ? 'the Codex allows one card a day' : 'tap to turn'}</small>
-        </div>
-        <div class="tarot-face tarot-front">
-          <div class="numeral">${card.numeral}</div>
-          <div class="arcana">${card.icon}</div>
-          <div class="card-name">${g.id === 'heart' ? 'The Ashen Heart' : card.name}</div>
-          <div class="rift-name"><b>${esc(g.name)}</b><br><small class="muted">${BIOMES[g.biome].name} · ${g.rooms} chambers + boss</small></div>
-          ${rankBadge(g.rank)}
-          ${mod && mod.name ? `<div class="gate-mod" title="${esc(mod.desc)}">◆ ${mod.name}</div>` : ''}
-          <small class="muted">${esc(card.desc)}</small>
-          <div class="gate-gp muted">clear: +${GATE_GP[g.rank]} Infamy</div>
-          <button class="btn primary enter-rift" data-i="${i}">${label}</button>
-        </div>
-      </div>`;
+function factionBar(fid) {
+  const f = S.factions[fid];
+  const F = FACTIONS[fid];
+  if (f.fate) return `<span class="fate-tag" style="color:${F.color}">${F.icon} ${f.fate.toUpperCase()}</span>`;
+  return `<div class="power-row" title="${esc(F.name)} Power — at ${LAIR_POWER} or below, ${esc(F.leaderName)}'s lair opens">
+    <span style="color:${F.color}">${F.icon}</span>${bar('power', f.power)}<span class="power-num">${f.power}</span></div>`;
+}
+
+function worldMap() {
+  const ids = Object.keys(LOCATIONS);
+  const groups = [{ id: null, name: 'The Wild', icon: '🌑', color: '#a89cb8' }, ...Object.entries(FACTIONS).map(([id, F]) => ({ id, ...F }))];
+  const card = (locId) => {
+    const L = LOCATIONS[locId];
+    const open = ST.locationOpen(S, locId);
+    const rIdx = Math.max(L.circle, S.circleIdx);
+    const mod = GATE_MODIFIERS.find(m => m.id === L.modifier);
+    const lt = ST.pendingLieutenant(S, locId);
+    const visits = S.visits[locId] || 0;
+    const dom = L.faction && ST.dominated(S, L.faction);
+    return `<div class="gate-card loc-card ${L.lair ? 'lair' : ''} ${open.ok ? '' : 'locked'}" style="--rc:${RANK_STYLE[RANKS[rIdx]].color};--rg:${RANK_STYLE[RANKS[rIdx]].glow}">
+      <div class="gate-head">${rankBadge(RANKS[Math.min(rIdx, 5)])}<b>${L.lair ? '♛ ' : ''}${esc(L.name)}</b></div>
+      <div class="gate-meta">${BIOMES[L.biome].name} · ${L.rooms || GATE_ROOMS[RANKS[rIdx]]} chambers + ${L.lair ? 'leader' : 'boss'}${visits ? ` · cleared ×${visits}` : ''}</div>
+      <p class="muted sm-text">${esc(L.desc)}</p>
+      ${mod && mod.name ? `<div class="gate-mod" title="${esc(mod.desc)}">◆ ${mod.name}</div>` : ''}
+      ${lt ? `<div class="gate-mod rescue">★ ${esc(ENEMIES[lt].name)} holds this place</div>` : ''}
+      ${dom && !L.lair ? '<div class="gate-mod none">dominated — patrol for spoils</div>' : ''}
+      ${open.ok ? `<button class="btn primary raid" data-id="${locId}">${L.lair ? 'Storm the lair' : L.faction && !dom ? 'Raid' : 'Explore'}</button>`
+        : `<button class="btn disabled">${esc(open.why)}</button>`}
+    </div>`;
+  };
+  const sections = groups.map(gr => {
+    const locs = ids.filter(id => LOCATIONS[id].faction === gr.id && (!LOCATIONS[id].lair || !ST.locationOpen(S, id).done));
+    if (!locs.length) return '';
+    return `<div class="faction-section">
+      <div class="row spread"><h3 style="color:${gr.color}">${gr.icon} ${esc(gr.name)}</h3>${gr.id ? factionBar(gr.id) : ''}</div>
+      <div class="gate-grid">${locs.map(card).join('')}</div>
+    </div>`;
   }).join('');
+  const echo = S.cleared ? `<div class="faction-section"><h3>☠ Beyond the Heart</h3><div class="gate-grid"><div class="gate-card lair"><div class="gate-head"><b>Echoes of the Heart</b></div><p class="muted sm-text">The Heart remembers. Deeper every time.</p><button class="btn primary" id="echo-go">Descend</button></div></div></div>` : '';
+  const om = S.omen && S.omen.day === S.day ? TAROT[S.omen.card] : null;
 
   screen(`
     <div class="panel map-panel">
       <div class="row spread">
-        <h2>🂠 The Tarot Board — Day ${S.day}</h2>
+        <h2>⌖ The Dead City & Beyond — Day ${S.day}</h2>
         <button class="btn ghost" id="m-back">← Codex</button>
       </div>
-      <p class="muted">Vesper deals three cards face-down. Their backs show the Circle of the rift behind them; turn one, and that's tonight's descent. ${S.flippedToday ? '<b>You have turned your card for today.</b>' : ''}</p>
-      <div class="tarot-row">${cards}</div>
+      <p class="muted">Raid a rival's holdings to drain its Power; seal its people to drain it faster. At ${LAIR_POWER} Power or less, its leader's lair opens. One expedition a night. ${om ? `<b class="gold">Tonight's card: ${om.icon} ${om.name} — ${esc(om.boon)}</b>` : ST.canRead(S) ? '<b>Vesper hasn\'t read the cards yet today.</b>' : ''}</p>
+      <div class="scroll-list">${echo}${sections}</div>
     </div>
   `);
   $('#m-back').onclick = () => hub();
-  document.querySelectorAll('.tarot-card').forEach(c => c.onclick = (e) => {
-    if (e.target.closest('.enter-rift')) return;
-    const i = Number(c.dataset.i);
-    if (ST.flipCard(S, i)) {
-      AU.sfx('magic');
-      c.classList.add('flipped');
-      ST.save(S);
-      setTimeout(tarotBoard, 820);
-    } else if (!S.tarotHand[i].flipped) {
-      toast('The Codex allows one turned card a day.');
-    }
-  });
-  document.querySelectorAll('.enter-rift').forEach(b => b.onclick = async (e) => {
-    e.stopPropagation();
-    const g = S.tarotHand[Number(b.dataset.i)];
+  const eg = $('#echo-go'); if (eg) eg.onclick = () => { AU.sfx('ui'); partySelect(ST.makeEchoRift(S)); };
+  document.querySelectorAll('.raid').forEach(b => b.onclick = async () => {
+    const locId = b.dataset.id;
     AU.sfx('ui');
-    if (g.story === 'isolde_hunter') {
+    // Isolde's arc begins at the Border Chapel
+    if (locId === 'border_chapel' && S.flags.vesper_joined && !S.flags.isolde_met && !S.seen.isolde_hunter) {
       screen('', '');
       await playEvent(EVENTS.isolde_hunter);
       partySelect(ST.storyRift('kneeling_sword', S));
       return;
     }
-    partySelect(g);
+    const intro = EVENTS['visit_' + locId];
+    if (intro && !S.seen[intro.id]) { screen('', ''); await playEvent(intro); }
+    partySelect(ST.makeExpedition(S, locId));
   });
+}
+
+// ------------------------------------------------------------------
+// rivals — faction status, perks, leaders
+// ------------------------------------------------------------------
+
+function rivals() {
+  const rows = Object.entries(FACTIONS).map(([fid, F]) => {
+    const f = S.factions[fid];
+    const perkOn = ST.perk(S, fid);
+    const cell = ST.leaderInCells(S, fid);
+    const lair = LOCATIONS[F.lair];
+    return `<div class="cell-card">
+      <div class="row spread"><h3 style="color:${F.color}">${F.icon} ${esc(F.name)}</h3>${factionBar(fid)}</div>
+      <p class="muted sm-text">${esc(F.desc)}</p>
+      <div class="sm-text">Leader: <b>${esc(F.leaderName)}</b> — ${f.fate ? `<b>${f.fate}</b>` : f.power <= LAIR_POWER ? `lair open: ${esc(lair.name)}` : `hidden in ${esc(lair.name)}`}</div>
+      <div class="sm-text ${perkOn ? 'gold' : 'muted'}">When dominated: ${esc(F.perk)}${f.fate === 'shattered' ? ' (shattered: tribute only, halved)' : ''}</div>
+      <div class="sm-text ${cell ? 'gold' : 'muted'}">${esc(F.cellPerk)}</div>
+    </div>`;
+  }).join('');
+  const lts = Object.entries(S.lieutenants).map(([id, fate]) => `${esc(ENEMIES[id] ? ENEMIES[id].name : id)} — ${fate}`).join(' · ');
+  screen(`
+    <div class="panel map-panel">
+      <div class="row spread"><h2>⚔ Rivals</h2><button class="btn ghost" id="rv-back">← Codex</button></div>
+      <p class="muted">Every holding you clear, every member you seal or kill, drains a faction's Power. Factions recover a little each night unless they're beaten. Bind a leader in the Undercroft and the whole faction kneels — and their leader's presence in your cells is a weapon of its own.</p>
+      <div class="cells">${rows}</div>
+      ${lts ? `<p class="muted sm-text">Lieutenants: ${lts}</p>` : ''}
+    </div>
+  `);
+  $('#rv-back').onclick = () => hub();
+}
+
+// ------------------------------------------------------------------
+// Vesper's reading — a free card every day
+// ------------------------------------------------------------------
+
+async function vesperReading() {
+  const r = ST.dailyReading(S);
+  if (!r) { toast('Vesper has already read the cards today.'); return; }
+  const T = TAROT[r.card];
+  AU.sfx('magic');
+  const modal = el(`<div class="modal-layer"><div class="panel modal reading">
+    <h3>🂠 Vesper's Reading</h3>
+    <div class="tarot-row"><div class="tarot-card" id="rd-card">
+      <div class="tarot-face tarot-back"><div class="sigil">✶</div><small class="muted">tap to turn</small></div>
+      <div class="tarot-face tarot-front">
+        <div class="numeral">${T.numeral}</div><div class="arcana">${T.icon}</div>
+        <div class="card-name">${T.name}</div>
+        <small class="muted">${esc(T.boon)}</small>
+      </div>
+    </div></div>
+    <button class="btn primary" id="rd-ok" style="visibility:hidden">Thank her</button>
+  </div></div>`);
+  document.body.appendChild(modal);
+  await new Promise(res => {
+    modal.querySelector('#rd-card').onclick = () => {
+      modal.querySelector('#rd-card').classList.add('flipped');
+      AU.sfx('promo');
+      setTimeout(() => { modal.querySelector('#rd-ok').style.visibility = 'visible'; }, 800);
+    };
+    modal.querySelector('#rd-ok').onclick = () => { modal.remove(); res(); };
+  });
+  const lines = READING_LINES[r.card] || [''];
+  const steps = [{ s: 'vesper', t: lines[Math.floor(Math.random() * lines.length)] }];
+  for (const t of r.text) steps.push({ s: 'narr', t });
+  if (r.bond) steps.push({ s: 'narr', t: `${heroName(r.bond)} catches your eye across the reading room and doesn't look away for a long moment. (+1 bond)` });
+  if (r.gold) steps.push({ s: 'narr', t: `+${r.gold} gold.` });
+  screen('', '');
+  await playEvent({ id: 'reading', steps });
+  ST.save(S);
+  hub();
 }
 
 function beginRun(gate, selectedIds) {
@@ -806,7 +884,7 @@ const DOOR_LABELS = {
   rest:     { name: 'The Still Door',  desc: 'Dry stone and clean air. A place to catch your breath.', icon: '▲' },
 };
 function doorInfo(opt) { return opt.elite ? DOOR_LABELS.elite : DOOR_LABELS[opt.type] || DOOR_LABELS.event; }
-function eventPool(gate) { return gate.card === 'devil' ? DUNGEON_EVENTS.concat(BARGAIN_EVENTS) : DUNGEON_EVENTS; }
+function eventPool(gate) { return gate.modifier === 'bargain' ? DUNGEON_EVENTS.concat(BARGAIN_EVENTS) : DUNGEON_EVENTS; }
 function riftEvent(gate, node) { const pool = eventPool(gate); return pool[Math.floor(node.roll * pool.length)]; }
 
 function pathBar() {
@@ -864,7 +942,7 @@ function dungeonScreen() {
     <div class="panel dungeon-panel">
       <div class="row spread">
         <h2>${rankBadge(gate.rank)} ${esc(gate.name)}</h2>
-        <span class="muted">${TAROT[gate.card] ? TAROT[gate.card].icon + ' ' + TAROT[gate.card].name + ' · ' : ''}chamber ${Math.min(run.nodeIdx + 1, run.nodes.length)}/${run.nodes.length}</span>
+        <span class="muted">${gate.faction ? FACTIONS[gate.faction].icon + ' ' + FACTIONS[gate.faction].name + ' · ' : ''}chamber ${Math.min(run.nodeIdx + 1, run.nodes.length)}/${run.nodes.length}</span>
       </div>
       ${pathBar()}
       <div class="dungeon-body">${body}</div>
@@ -1093,7 +1171,7 @@ async function battle(node) {
 
   stage.battleCamera();
   await stage.layoutBattle(
-    c.units.filter(u => u.side === 'party').map(u => ({ uid: u.uid, model: u.model, variant: u.uid === 'player' ? S.pronouns : u.variant })),
+    c.units.filter(u => u.side === 'party').map(u => ({ uid: u.uid, model: u.model, variant: u.uid === 'player' ? heroVariant('player') : u.variant })),
     c.units.filter(u => u.side === 'enemy').map(u => ({ uid: u.uid, model: u.model, variant: u.variant, boss: u.boss })),
   );
   AU.music('battle');
@@ -1298,6 +1376,8 @@ async function results(result) {
         <div><small>Captured</small><b>${result.captured.length}</b></div>
       </div>
       ${capHtml}${freedHtml}
+      ${result.fates.length ? `<div class="result-caps">${result.fates.map(f => `♛ ${esc(ENEMIES[f.id] ? ENEMIES[f.id].name : f.id)} — ${f.fate}`).join('<br>')}</div>` : ''}
+      ${result.power.length ? `<div class="muted sm-text">${result.power.map(esc).join('<br>')}</div>` : ''}
       ${result.partySize && result.partySize < 4 ? `<div class="muted sm-text">Small party of ${result.partySize} — bonus XP applied.</div>` : ''}
       ${gearHtml}${itemsHtml}
       <div class="ups">${upHtml}</div>
@@ -1309,8 +1389,7 @@ async function results(result) {
     AU.sfx('confirm');
     if (result.outcome === 'clear' && !result.gate.story) {
       const ev = pickCampEvent(S, Math.random);
-      const lovers = result.gate.card === 'lovers';
-      if (ev && (ev.id !== 'banter' || Math.random() < (lovers ? 0.9 : 0.6))) {
+      if (ev && (ev.id !== 'banter' || Math.random() < (result.campScene ? 0.95 : 0.6))) {
         screen('', '');
         await playEvent(ev);
       }
@@ -1585,7 +1664,7 @@ function altar() {
     if (ST.swearPact(S, id, opts)) {
       AU.sfx('gate');
       toast(`The altar drinks. ${p.name} is sworn.`, 'gold');
-      if (p.cost === 'scar') toast('The Codex has carved a scar into your portrait. (ZOE: ComfyUI scar variant)', '');
+      if (p.cost === 'scar') { toast('The Codex carves a burning scar across your face.', ''); await refreshPortraits(true); }
       ST.save(S);
       await drainQueue();
       altar();
@@ -1741,13 +1820,13 @@ function gearPicker(heroId, slot) {
 // ------------------------------------------------------------------
 
 function shop() {
-  const stock = shopStock(S.rankIdx);
+  const stock = shopStock(S.circleIdx, ST.perk(S, 'college'));
   const rows = stock.map(id => {
     const it = ITEMS[id];
     const owned = S.inventory[id] || 0;
     return `<div class="shop-row">
       <div><b>${it.name}</b> <small class="muted">×${owned} owned</small><p class="muted">${it.desc}</p></div>
-      <button class="btn ${S.gold >= it.price ? '' : 'disabled'}" data-id="${id}">◈ ${it.price}g</button>
+      <button class="btn ${S.gold >= ST.priceOf(S, it.price) ? '' : 'disabled'}" data-id="${id}">◈ ${ST.priceOf(S, it.price)}g</button>
     </div>`;
   }).join('');
   const penRow = `<div class="shop-row"><div><b>Menagerie pen</b> <small class="muted">${S.pens} built</small><p class="muted">Room for one more captured beast.</p></div>
@@ -1772,8 +1851,9 @@ function shop() {
   $('#buy-pen').onclick = () => { if (ST.buyPen(S)) { AU.sfx('promo'); ST.save(S); shop(); } };
   document.querySelectorAll('.shop-row button[data-id]:not(.sell):not(.forge)').forEach(b => b.onclick = () => {
     const it = ITEMS[b.dataset.id];
-    if (S.gold < it.price) return;
-    S.gold -= it.price;
+    const price = ST.priceOf(S, it.price);
+    if (S.gold < price) return;
+    S.gold -= price;
     S.inventory[b.dataset.id] = (S.inventory[b.dataset.id] || 0) + 1;
     AU.sfx('coin');
     ST.save(S);

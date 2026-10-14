@@ -1,4 +1,4 @@
-# CODEXBOUND
+# BINDING CODEX
 
 *The Codex remembers every pact. Now it's writing yours.*
 
@@ -26,7 +26,7 @@ run alongside Gatebound on 8000).
 Or from a terminal:
 
 ```bash
-cd codexbound
+cd bindingcodex
 python -m http.server 8001    # "python" on Windows, "python3" on Mac/Linux
 # open http://localhost:8001
 ```
@@ -113,5 +113,5 @@ models/               drop .glb files here (see models/README.md)
 vendor/               three.js r170 (MIT)
 ```
 
-Saves go to localStorage under `codexbound_save` (export/import codes in
+Saves go to localStorage under `bindingcodex_save` (export/import codes in
 Settings). Balance lives in `js/data.js` and the top of `js/state.js`.
