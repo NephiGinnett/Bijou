@@ -27,7 +27,7 @@ export const XP_MULT = { Ash: 1, Ember: 1.9, Hex: 3.4, Thorn: 5.8, Crown: 9.5, A
 
 // Enemy stat scaling per Circle. Softer than XP_MULT early on: the warlock
 // starts nearly alone, not with three veterans like Gatebound did.
-export const ENEMY_TIER = { Ash: 0.62, Ember: 1.3, Hex: 2.7, Thorn: 5.0, Crown: 8.6, Abyss: 14 };
+export const ENEMY_TIER = { Ash: 0.52, Ember: 1.3, Hex: 2.7, Thorn: 5.0, Crown: 8.6, Abyss: 14 };
 
 export function xpToNext(level) {
   return Math.round(50 * Math.pow(level, 1.45));
