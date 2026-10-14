@@ -15,13 +15,13 @@ const has = (S, id) => (S.allies || []).includes(id);
 
 export const looks = {
   valdra:    { skin: 0x5a6a8a, hair: 0xe8e8f0, hairstyle: 'long', outfit: 0x1a1430, outfitStyle: 'robe', frill: 0xff5a2a, eyeColor: 0xff4a2a, eyeGlow: true, elf: true, chest: 2, crown: true, crownColor: 0xff7a3a, weapon: 'staff', accent: 0xff7a3a },
-  nyxe:      { skin: 0x8a5ab8, hair: 0x1a0a2a, hairstyle: 'straight', outfit: 0x1a0a14, sleeve: 0x2a1424, legColor: 0x1a0a14, eyeColor: 0xff4ad8, eyeGlow: true, horns: true, hornColor: 0x0a0a0a, tail: true, tailColor: 0x8a5ab8, wings: true, wingColor: 0x2a0a2a, chest: 1, build: 'slim' },
+  nyxe:      { skin: 0x8a5ab8, hair: 0x1a0a2a, hairstyle: 'straight', outfit: 0x1a0a14, sleeve: 0x2a1424, legColor: 0x1a0a14, eyeColor: 0xff4ad8, eyeGlow: true, horns: true, hornStyle: 'swept', hornColor: 0x0a0a0a, tail: 'devil', tailColor: 0x8a5ab8, wings: true, wingColor: 0x2a0a2a, chest: 1, build: 'slim' },
   mira_vane: { skin: 0xf0dcc8, hair: 0x2a1a3a, hairstyle: 'long', outfit: 0x3a2a4a, outfitStyle: 'robe', frill: 0xff7a3a, eyeColor: 0x8a5ad8, chest: 2, markings: true, markingColor: 0xff7a3a, weapon: 'book' },
-  rhea:      { skin: 0xe8c8a8, hair: 0xe85a2a, hairstyle: 'braided', outfit: 0x5a1a14, outfitStyle: 'armor', sleeve: 0x5a1a14, legColor: 0x3a1410, eyeColor: 0xffb02a, eyeGlow: true, chest: 2, horns: true, hornColor: 0xffb02a, scaled: true, weapon: 'sword', build: 'broad' },
+  rhea:      { skin: 0xe8c8a8, hair: 0xe85a2a, hairstyle: 'braided', outfit: 0x5a1a14, outfitStyle: 'armor', sleeve: 0x5a1a14, legColor: 0x3a1410, eyeColor: 0xffb02a, eyeGlow: true, chest: 2, horns: true, hornSize: 'large', hornColor: 0xffb02a, scaled: true, scaleColor: 0xc85a2a, tail: 'dragon', tailColor: 0xc85a2a, weapon: 'sword', build: 'broad' },
   aelindra:  { skin: 0xf4e4c8, hair: 0xf0d870, hairstyle: 'straight', outfit: 0xd8b04a, outfitStyle: 'armor', sleeve: 0xe8e0c8, legColor: 0x8a7a4a, eyeColor: 0x6ab84a, elf: true, chest: 1, weapon: 'sword' },
   aurelia:   { skin: 0xd8b494, hair: 0x2a1a14, hairstyle: 'short', outfit: 0x8a1a1a, outfitStyle: 'armor', sleeve: 0x8a8a8a, legColor: 0x5a1a1a, eyeColor: 0x4a3a2a, chest: 2, cape: true, capeColor: 0x8a1a1a, weapon: 'shield', build: 'broad' },
-  brynn:     { skin: 0xf0d8c0, hair: 0xd8d8c8, hairstyle: 'curly', outfit: 0x4a5a3a, outfitStyle: 'dress', frill: 0x8a6a4a, eyeColor: 0x6a8a9a, chest: 2, freckles: true, weapon: 'staff', accent: 0x8ad8b0 },
-  sera:      { skin: 0xf4e0d0, hair: 0xb87a3a, hairstyle: 'braided', outfit: 0x6a2a2a, outfitStyle: 'dress', frill: 0xd8b04a, eyeColor: 0x4a6a8a, chest: 2, collar: true, collarColor: 0xd8b04a },
+  brynn:     { skin: 0xf0d8c0, hair: 0xd8d8c8, hairstyle: 'curly', outfit: 0x4a5a3a, outfitStyle: 'dress', frill: 0x8a6a4a, eyeColor: 0x6a8a9a, chest: 2, freckles: true, weapon: 'staff', accent: 0x8ad8b0, ladle: true },
+  sera:      { skin: 0xf4e0d0, hair: 0xb87a3a, hairstyle: 'braided', outfit: 0x6a2a2a, outfitStyle: 'dress', frill: 0xd8b04a, eyeColor: 0x4a6a8a, chest: 2, collar: true, collarColor: 0xd8b04a, furMantle: 0xe8e0d0 },
 };
 
 export const heroes = {

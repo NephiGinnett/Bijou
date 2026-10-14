@@ -1,6 +1,6 @@
 # Unbound Writing Guide
 
-Everything Zoe needs to fill the **Unbound** intimacy tier in Binding Codex (43 stubs across 30 scenes).
+Everything Zoe needs to fill the **Unbound** intimacy tier in Binding Codex (46 stubs across 33 scenes).
 
 ## How the tiers work
 
@@ -94,6 +94,9 @@ All partners here are **sapient adults speaking for themselves**. Menagerie beas
 | `lysandre_romance` | 2 · "Her drake-shape" | monster forms | Heat and strength, careful claws, wings around you both. A flier learning to hold still, then not. |
 | `lysandre_romance` | 3 · "Her serpent-shape" | monster forms | Coil by gleaming coil, her whole body one embrace that tightens with each shared breath. |
 | `rue_mantle` | "Find out." | monster forms, demon | Rue meets the mantled warlock tail-to-tail and horn-to-horn. Two infernal things burn hotter than one: smoke off the sheets, her brand blazing and not one word a lie. |
+| `envoy_night_aerie` | "Go up to the high branch with her." | monster (harpy), repeatable | Kestra's repeatable Bower evening (every 3+ days after the rite). Keep it shorter than the rite, and familiar: the high branch, her wings against the wind, the moon. |
+| `envoy_night_coil` | "Go down to the brood-pools with her." | monster (naga), repeatable | Sythra's Bower evening in the warm brood-pools. Unhurried as the tide. |
+| `envoy_night_clutch` | "Go to the hatchery with her." | monster (drake-kin), repeatable | Vharra's Bower evening by the hatchery fires. A duel she means to lose, again. |
 | `nyxe_mantle` | "Then come down here and explode." | monster forms, abyssal | Nyxe faces something more monstrous than herself and is speechless for the first time, then very loud. Wings everywhere. |
 
 ## Voice cheat-sheet

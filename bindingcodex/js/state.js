@@ -57,7 +57,7 @@ export function newGame(playerName, pronouns = 'she') {
     gearBag: [],
     factions: Object.fromEntries(Object.keys(FACTIONS).map(id => [id, { power: 100, fate: null }])),
     lieutenants: {},                 // lieutenant id → captured | yielded | slain
-    tribes: Object.fromEntries(Object.keys(TRIBES).map(id => [id, { status: null, gifts: 0, rite: false }])),
+    tribes: Object.fromEntries(Object.keys(TRIBES).map(id => [id, { status: null, gifts: 0, rite: false, favor: 0, talkDay: 0, tradeDay: 0, nightDay: -9 }])),
     visits: {},                      // location id → clears
     omen: null,                      // Vesper's card for today
     readingDay: 0,
@@ -107,7 +107,10 @@ export function ensureShape(S) {
   for (const k of Object.keys(d.stats)) if (S.stats[k] === undefined) S.stats[k] = d.stats[k];
   for (const k of Object.keys(d.bond)) if (S.bond[k] === undefined) S.bond[k] = 0;
   for (const k of Object.keys(d.factions)) if (!S.factions[k]) S.factions[k] = { power: 100, fate: null };
-  for (const k of Object.keys(d.tribes)) if (!S.tribes[k]) S.tribes[k] = d.tribes[k];
+  for (const k of Object.keys(d.tribes)) {
+    if (!S.tribes[k]) S.tribes[k] = d.tribes[k];
+    for (const f of ['favor', 'talkDay', 'tradeDay', 'nightDay']) if (S.tribes[k][f] == null) S.tribes[k][f] = d.tribes[k][f];
+  }
   if (S.stats.reagentsProduced == null) S.stats.reagentsProduced = 0;
   if (!S.settings.packs) S.settings.packs = d.settings.packs;
   if (!S.allies.includes('player')) S.allies.unshift('player');
@@ -425,6 +428,55 @@ export function giveTribeGift(S, tid) {
   if (t.gifts >= TRIBES[tid].gifts.length) { t.status = 'sworn'; S.queue.push(`tribe_${tid}_sworn`); addChronicle(S, `${TRIBES[tid].name} swore fealty.`); }
   else { t.status = 'friendly'; S.queue.push(`tribe_${tid}_friendly`); }
   return true;
+}
+
+// --- the Envoys' Bower: visiting envoys in the Menagerie -----------------------------
+
+export function envoyHere(S, tid) { const t = S.tribes[tid]; return !!(t && t.status && packOn(S, 'wildkin')); }
+
+// Talk: once a day, warms her to you. Favor 10 max.
+export function envoyTalk(S, tid) {
+  const t = S.tribes[tid];
+  if (!envoyHere(S, tid) || t.talkDay === S.day) return null;
+  t.talkDay = S.day;
+  t.favor = Math.min(10, t.favor + 1);
+  // at favor milestones she brings something from home
+  const gift = t.favor % 3 === 0 ? Object.keys(TRIBES[tid].tribute)[0] : null;
+  if (gift) S.reagents[gift] = (S.reagents[gift] || 0) + 2;
+  return { favor: t.favor, gift };
+}
+
+// Trade: once a day, 2 of any of your reagents for her tribe's goods.
+// What she trades you: her tribe's first good, or its second if you're offering the first.
+export function envoyTradeGood(tid, give) {
+  const goods = Object.keys(TRIBES[tid].tribute);
+  return give === goods[0] && goods[1] ? goods[1] : goods[0];
+}
+export function envoyTradeRate(S, tid) { return 2 + Math.floor((S.tribes[tid].favor || 0) / 3) + (tribeSworn(S, tid) ? 1 : 0); }
+export function envoyTrade(S, tid, give) {
+  const t = S.tribes[tid];
+  if (!envoyHere(S, tid) || t.tradeDay === S.day || (S.reagents[give] || 0) < 2) return null;
+  const want = envoyTradeGood(tid, give);
+  const n = envoyTradeRate(S, tid);
+  S.reagents[give] -= 2;
+  S.reagents[want] = (S.reagents[want] || 0) + n;
+  t.tradeDay = S.day;
+  return { want, n };
+}
+
+// A night together: only after she asked for the rite, and she has to want company.
+export function envoyNightOpen(S, tid) {
+  const t = S.tribes[tid];
+  return envoyHere(S, tid) && tribeSworn(S, tid) && !!S.flags[`rite_${tid}`] && t.favor >= 3 && S.day - t.nightDay >= 3;
+}
+export function envoyNight(S, tid) {
+  if (!envoyNightOpen(S, tid)) return null;
+  const t = S.tribes[tid];
+  t.nightDay = S.day;
+  t.favor = Math.min(10, t.favor + 1);
+  const r = Object.keys(TRIBES[tid].tribute)[0];
+  S.reagents[r] = (S.reagents[r] || 0) + 3;
+  return { reagent: r };
 }
 
 // --- the map: holdings you can raid ------------------------------------------------

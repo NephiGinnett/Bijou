@@ -12,10 +12,10 @@ const has = (S, id) => (S.allies || []).includes(id);
 
 export const looks = {
   elara:        { skin: 0xf8f0e8, hair: 0xe8f0f8, hairstyle: 'long', outfit: 0x8ab8d8, outfitStyle: 'dress', frill: 0xe8e8f8, eyeColor: 0x8ad8f8, eyeGlow: true, elf: true, chest: 2, halo: true, weapon: 'staff', accent: 0xd8f0ff },
-  seraphine:    { skin: 0xf4e0d0, hair: 0x2a1a14, hairstyle: 'long', outfit: 0x4a1a3a, outfitStyle: 'dress', frill: 0xd8b04a, eyeColor: 0x6a3a2a, chest: 2, crown: true, crownColor: 0xd8b04a, collar: true, collarColor: 0xd8b04a },
-  elspeth:      { skin: 0xf8e8d8, hair: 0xe8d8a0, hairstyle: 'curly', outfit: 0x8ab0d8, outfitStyle: 'dress', frill: 0xf0e8d8, eyeColor: 0x4a6aa8, chest: 1 },
-  sister_maren: { skin: 0xf0dcc8, hair: 0x6a4a2a, hairstyle: 'straight', outfit: 0xe8e4dc, outfitStyle: 'robe', frill: 0x8a1a1a, eyeColor: 0x5a6a4a, chest: 2, weapon: 'book' },
-  kira:         { skin: 0xe0b890, hair: 0x1a1a1a, hairstyle: 'braided', outfit: 0x2a4a3a, sleeve: 0xe8dcc8, legColor: 0x2a2a2a, eyeColor: 0x8a5a2a, chest: 2, piercings: true },
+  seraphine:    { skin: 0xf4e0d0, hair: 0x2a1a14, hairstyle: 'long', outfit: 0x4a1a3a, outfitStyle: 'dress', frill: 0xd8b04a, eyeColor: 0x6a3a2a, chest: 2, crown: true, crownColor: 0xd8b04a, collar: true, collarColor: 0xd8b04a, fan: true, fanColor: 0xd8b04a },
+  elspeth:      { skin: 0xf8e8d8, hair: 0xe8d8a0, hairstyle: 'curly', outfit: 0x8ab0d8, outfitStyle: 'dress', frill: 0xf0e8d8, eyeColor: 0x4a6aa8, chest: 1, ribbons: 0x4a7ad8 },
+  sister_maren: { skin: 0xf0dcc8, hair: 0x6a4a2a, hairstyle: 'straight', outfit: 0xe8e4dc, outfitStyle: 'robe', frill: 0x8a1a1a, eyeColor: 0x5a6a4a, chest: 2, weapon: 'book', wimple: 0xf4f0e8 },
+  kira:         { skin: 0xe0b890, hair: 0x1a1a1a, hairstyle: 'braided', outfit: 0x2a4a3a, sleeve: 0xe8dcc8, legColor: 0x2a2a2a, eyeColor: 0x8a5a2a, chest: 2, piercings: true, apron: 0xe8dcc8, bottle: true },
 };
 
 export const heroes = {

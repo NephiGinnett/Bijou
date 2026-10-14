@@ -10,6 +10,7 @@ import { Stage, makePortrait } from './scene3d.js';
 import { EVENTS, SPEAKERS, DUNGEON_EVENTS, BARGAIN_EVENTS, VISIT_LINES, TAUNT_LINES, READING_LINES, pickGuildEvent, pickCampEvent, pickCellEvent, endingFor, pickRumorEvent, rumorLine, releaseEventFor, checkIntimacyGates } from './story.js';
 import { registerAlias, registerCustomActor, ACTOR_ACCENTS } from './actors3d.js';
 import { installPacks, PACKS, LOOKS } from './packs/index.js';
+import { BOWER_TALK } from './packs/wildkin.js';
 
 // Character packs merge into the game tables before anything reads them.
 installPacks();
@@ -53,6 +54,11 @@ export async function boot() {
 }
 
 // Reclaimed captives render with their faction's model.
+// Heroes whose look borrows another builder (reclaimed leaders) need an alias.
+for (const [id, def] of Object.entries(HEROES)) {
+  if (def.model && def.model !== id && !LOOKS[id]) registerAlias(id, def.model, def.variant || null);
+}
+
 function syncConverts(state) {
   for (const id of Object.keys(state.converts || {})) {
     const def = HEROES[id];
@@ -447,7 +453,7 @@ async function hub() {
           ${S.flags.vesper_joined ? `<button class="btn big" id="g-rivals">⚔ Rivals<small>${Object.values(S.factions).filter(f => f.fate).length}/5 dominated</small></button>` : ''}
           <button class="btn big" id="g-party">✦ Allies<small>stats, skills & gear</small></button>
           ${S.flags.undercroft_open ? `<button class="btn big ${releaseReady || unwarded ? 'notify' : ''}" id="g-under">⛓ Undercroft${releaseReady || unwarded ? '<em>!</em>' : ''}<small>${S.captives.length} captive${S.captives.length === 1 ? '' : 's'}${unwarded ? ` · ${unwarded} unwarded` : ''}</small></button>` : ''}
-          ${S.menagerie.length || S.eggs.length || S.stats.captures ? `<button class="btn big ${hungry ? 'notify' : ''}" id="g-men">🐾 Menagerie${hungry ? '<em>!</em>' : ''}<small>${S.menagerie.length}/${S.pens} pens${hungry ? ` · ${hungry} hungry` : ''}</small></button>` : ''}
+          ${S.menagerie.length || S.eggs.length || S.stats.captures || Object.keys(TRIBES).some(t => ST.envoyHere(S, t)) ? `<button class="btn big ${hungry ? 'notify' : ''}" id="g-men">🐾 Menagerie${hungry ? '<em>!</em>' : ''}<small>${S.menagerie.length}/${S.pens} pens${hungry ? ` · ${hungry} hungry` : ''}${Object.keys(TRIBES).some(t => ST.envoyHere(S, t)) ? ' · envoys visiting' : ''}</small></button>` : ''}
           ${Object.values(S.reagents).some(n => n > 0) || S.recipes.length || S.menagerie.length ? '<button class="btn big" id="g-alch">⚗ Alchemy<small>the cauldron</small></button>' : ''}
           ${S.flags.altar_open ? '<button class="btn big" id="g-altar">☩ Pact Altar<small>power, for a price</small></button>' : ''}
           <button class="btn big" id="g-shop">◈ Market<small>potions, gear & pens</small></button>
@@ -1589,9 +1595,11 @@ function menagerie() {
         <button class="btn ${S.gold >= ST.penCost(S) ? '' : 'disabled'}" id="mn-pen">Build a pen (◈${ST.penCost(S)}g)</button>
       </div>
       ${S.menagerie.length ? `<div class="cells scroll-list">${beasts}</div>` : '<p class="muted">The pens are empty. Seal a beast (🐾) in a rift.</p>'}
+      ${bowerHtml()}
     </div>
   `);
   $('#mn-back').onclick = () => { breedPick = null; hub(); };
+  bindBower();
   $('#mn-feedall').onclick = () => { let n = 0; for (const b of S.menagerie) if (ST.feedBeast(S, b.id)) n++; if (n) { AU.sfx('coin'); toast(`Fed ${n}.`); } ST.save(S); menagerie(); };
   $('#mn-pen').onclick = () => { if (ST.buyPen(S)) { AU.sfx('promo'); toast('A new pen.'); ST.save(S); menagerie(); } };
   document.querySelectorAll('.feed:not(.disabled)').forEach(b => b.onclick = () => { if (ST.feedBeast(S, b.dataset.id)) { AU.sfx('coin'); ST.save(S); menagerie(); } });
@@ -1614,6 +1622,60 @@ function menagerie() {
     breedPick = null;
     ST.save(S);
     menagerie();
+  });
+}
+
+// The Envoys' Bower: visiting tribe envoys keep a corner of the Menagerie.
+function bowerHtml() {
+  const here = Object.keys(TRIBES).filter(tid => ST.envoyHere(S, tid));
+  if (!here.length) return '';
+  const own = Object.entries(S.reagents).filter(([, n]) => n >= 2).map(([r]) => r);
+  return `<h3 style="margin-top:12px">🪶 The Envoys' Bower</h3>
+    <p class="muted sm-text">A warm corner of the Menagerie kept for visiting envoys. Talk with them, trade with them; once one has asked for the rite, she may invite you to spend the night.</p>
+    <div class="cells">${here.map(tid => {
+      const T = TRIBES[tid], t = S.tribes[tid];
+      const nightOpen = ST.envoyNightOpen(S, tid);
+      return `<div class="cell-card">
+        <div class="recruit-head">${portraitImg(T.envoy)}<div><b style="color:${T.color}">${esc(SPEAKERS[T.envoy].name)}</b><br><small class="muted">${esc(T.race)} · ${t.status}</small></div></div>
+        <div class="meter"><span>Favor</span>${bar('regard', t.favor * 10)}<span>${t.favor}/10</span></div>
+        <div class="visit-row">
+          <button class="btn bw-talk ${t.talkDay === S.day ? 'disabled' : ''}" data-t="${tid}">❝ Talk</button>
+          <select class="bw-give" data-t="${tid}">${own.length ? own.map(r => `<option value="${r}">give 2× ${REAGENTS[r].name}</option>`).join('') : '<option value="">nothing to trade</option>'}</select>
+          <button class="btn bw-trade ${t.tradeDay === S.day || !own.length ? 'disabled' : ''}" data-t="${tid}">⚖ Trade (→ ${ST.envoyTradeRate(S, tid)}× ${REAGENTS[ST.envoyTradeGood(tid, own[0])].name})</button>
+          ${S.flags['rite_' + tid] ? `<button class="btn bw-night ${nightOpen ? '' : 'disabled'}" data-t="${tid}" title="${nightOpen ? '' : 'She\'ll invite you again in a few days (favor 3+).'}">☾ Evening</button>` : ''}
+        </div>
+      </div>`;
+    }).join('')}</div>`;
+}
+
+function bindBower() {
+  document.querySelectorAll('.bw-talk:not(.disabled)').forEach(b => b.onclick = async () => {
+    const tid = b.dataset.t, T = TRIBES[tid];
+    const r = ST.envoyTalk(S, tid);
+    if (!r) return;
+    const lines = BOWER_TALK[T.envoy] || ['…'];
+    screen('', '');
+    await playEvent({ id: 'bower_talk', steps: [{ s: T.envoy, t: lines[(S.day + r.favor) % lines.length] }, ...(r.gift ? [{ s: 'narr', t: `She leaves you a gift from home: 2× ${REAGENTS[r.gift].name}.` }] : [])] });
+    ST.save(S); menagerie();
+  });
+  document.querySelectorAll('.bw-give').forEach(sel => sel.onchange = () => {
+    const tid = sel.dataset.t, btn = document.querySelector(`.bw-trade[data-t="${tid}"]`);
+    if (btn && sel.value) btn.textContent = `⚖ Trade (→ ${ST.envoyTradeRate(S, tid)}× ${REAGENTS[ST.envoyTradeGood(tid, sel.value)].name})`;
+  });
+  document.querySelectorAll('.bw-trade:not(.disabled)').forEach(b => b.onclick = () => {
+    const tid = b.dataset.t;
+    const give = document.querySelector(`.bw-give[data-t="${tid}"]`).value;
+    const r = ST.envoyTrade(S, tid, give);
+    if (r) { AU.sfx('coin'); toast(`Traded: +${r.n}× ${REAGENTS[r.want].name}`, 'gold'); ST.save(S); menagerie(); }
+  });
+  document.querySelectorAll('.bw-night:not(.disabled)').forEach(b => b.onclick = async () => {
+    const tid = b.dataset.t;
+    const ev = EVENTS['envoy_night_' + tid];
+    screen('', '');
+    // her invitation; your choice decides — a night together, or just talk
+    await playEvent(ev);
+    if (ST.envoyNight(S, tid)) toast(`She sends you home with a gift from the tribe.`, 'gold');
+    ST.save(S); menagerie();
   });
 }
 

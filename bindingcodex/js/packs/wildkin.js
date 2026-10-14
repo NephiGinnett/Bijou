@@ -26,10 +26,10 @@ export function tribeFree(tid, who, extra = null) {
 }
 
 export const looks = {
-  kestra:   { skin: 0xe8c8a0, hair: 0x8a5a3a, hairstyle: 'long', outfit: 0x6a4a2a, sleeve: 0x8a6a4a, legColor: 0x5a4a2a, eyeColor: 0xe8a82a, eyeGlow: true, wings: true, wingColor: 0xb8885a, feathers: true, lowerBody: 'hooves', chest: 2 },
-  sythra:   { skin: 0x9ac8a8, hair: 0x1a3a2a, hairstyle: 'straight', outfit: 0x2a4a3a, outfitStyle: 'robe', frill: 0xd8b04a, eyeColor: 0xe8d84a, eyeGlow: true, lowerBody: 'serpent', tailColor: 0x3a8a5a, scaled: true, chest: 2, crown: true, crownColor: 0xd8b04a },
-  vharra:   { skin: 0xd8946a, hair: 0x2a1a14, hairstyle: 'braided', outfit: 0x5a2a1a, outfitStyle: 'armor', sleeve: 0x5a2a1a, legColor: 0x3a1a10, eyeColor: 0xffb02a, eyeGlow: true, horns: true, hornColor: 0x3a2a1a, tail: true, tailColor: 0xb85a2a, wings: true, wingColor: 0x8a3a1a, scaled: true, chest: 2, build: 'broad', weapon: 'sword' },
-  lysandre: { skin: 0xe0d0e8, hair: 0x2a6a5a, hairstyle: 'long', outfit: 0x2a2a3a, sleeve: 0x3a3a4a, legColor: 0x1a1a2a, eyeColor: 0x8ad8a8, eyeGlow: true, horns: true, hornColor: 0x4a3a5a, tail: true, tailColor: 0x2a6a5a, scaled: true, chest: 2, markings: true, markingColor: 0x8ad8a8 },
+  kestra:   { skin: 0xe8c8a0, hair: 0x8a5a3a, hairstyle: 'long', outfit: 0x6a4a2a, sleeve: 0xb8885a, legColor: 0x8a6a3a, eyeColor: 0xe8a82a, eyeGlow: true, armWings: true, wingColor: 0xb8885a, wingTip: 0x4a2a1a, feathers: true, talons: true, chest: 2 },
+  sythra:   { skin: 0x9ac8a8, hair: 0x1a3a2a, hairstyle: 'straight', outfit: 0x2a4a3a, outfitStyle: 'robe', frill: 0xd8b04a, eyeColor: 0xe8d84a, eyeGlow: true, lowerBody: 'serpent', tailColor: 0x3a8a5a, scaled: true, scaleColor: 0x3a8a5a, earFins: true, finColor: 0xd8b04a, chest: 2, crown: true, crownColor: 0xd8b04a },
+  vharra:   { skin: 0xd8946a, hair: 0x2a1a14, hairstyle: 'braided', outfit: 0x5a2a1a, outfitStyle: 'armor', sleeve: 0x5a2a1a, legColor: 0x3a1a10, eyeColor: 0xffb02a, eyeGlow: true, horns: true, hornStyle: 'swept', hornSize: 'large', hornColor: 0x3a2a1a, tail: 'dragon', tailColor: 0xb85a2a, wings: true, wingSize: 0.6, wingColor: 0x8a3a1a, scaled: true, scaleColor: 0xb85a2a, chest: 2, build: 'broad', weapon: 'sword' },
+  lysandre: { skin: 0xe0d0e8, hair: 0x2a6a5a, hairstyle: 'long', outfit: 0x2a2a3a, sleeve: 0x3a3a4a, legColor: 0x1a1a2a, eyeColor: 0x8ad8a8, eyeColor2: 0xd8a84a, eyeGlow: true, horns: true, hornStyle: 'swept', hornSize: 'small', hornColor: 0x4a3a5a, tail: 'dragon', tailColor: 0x2a6a5a, earFins: true, finColor: 0x4ab89a, changeArm: true, scaled: true, scaleColor: 0x2a8a6a, chest: 2, markings: true, markingColor: 0x8ad8a8 },
 };
 
 export const speakers = {
@@ -64,6 +64,7 @@ function rite(tid, who, o) {
 }
 
 export function events(E) {
+  for (const ev of Object.values(BOWER_NIGHTS)) E[ev.id] = ev;
   // ===================== THE SKYREND AERIE — harpies =====================
   E.tribe_aerie_arrive = { id: 'tribe_aerie_arrive', where: 'auto', once: true, priority: 72, steps: [
     { s: 'narr', t: 'A shadow crosses the library\'s broken skylight. Then another. Then a woman drops through it in a storm of tawny feathers and lands on the reading table in a crouch, talons gouging the wood.' },
@@ -217,6 +218,77 @@ export function events(E) {
     ],
   };
 }
+
+// The Envoys' Bower: talk lines, and nights together (the envoy's own invitation).
+export const BOWER_TALK = {
+  kestra: [
+    'The nest-mothers ask after you. I told them you feed your beasts before yourself. They approved, loudly.',
+    '(preening a wing over the rail) Your shrikes are ugly. I like them. Ugly things fight hardest.',
+    'Do you know what the Pale Wood looks like from above at dawn? No. You should. I could carry you. Probably.',
+    'I left a feather on your pillow. Aerie custom. It means — well. You\'ll find out.',
+    'Rue tried to pluck me. I bit her. We are friends now, I think? It\'s hard to tell with demons.',
+  ],
+  sythra: [
+    'Mmm. Your drakes sleep coiled now. They learned it from watching me. (a slow smile) Clever beasts.',
+    'The brood-pools are warm this season. I think of you when I lie in them. Is that forward? It\'s meant to be.',
+    'Naga don\'t hurry. You\'ll notice I keep coming back anyway.',
+    '(her coils loosely around the bench you\'re sitting on) Comfortable? Good. I\'ll stay.',
+    'Vesper asked to measure me. I let her. She lost count at the eleventh coil and had to start again.',
+  ],
+  vharra: [
+    'The Clutch\'s hatchery is the warmest place in the Ashreach. You should see it in a blizzard. It\'s glorious.',
+    'Isolde and I sparred this morning. She won. (a fanged grin) I\'m going to marry that woman\'s sword arm.',
+    'Your hoard grows. I\'ve been counting. Drake-kin always count.',
+    '(warming her hands at her own breath) Cold down here. Lucky I run hot.',
+    'If anyone threatens this Menagerie, the Clutch burns them. I just wanted you to hear it from me.',
+  ],
+};
+
+function nightEvent(tid, who, o) {
+  return {
+    id: `envoy_night_${tid}`, where: 'bower', once: false,
+    cond: tribeFree(tid, who, S => !!S.flags[`rite_${tid}`]),
+    tags: ['monster', 'sapient partner', 'breeding'],
+    steps: [
+      { s: who, t: o.invite },
+      { choice: [
+        { t: o.yes, r: [
+          { s: 'narr', cond: mantled, t: o.mantle },
+          { s: 'narr', t: o.gentle, spice: 'gentle' },
+          { s: 'narr', t: o.steamy, spice: 'steamy' },
+          { s: 'narr', t: '', spice: 'unbound', stub: `envoy_night_${tid}` }, // ZOE: unbound
+        ] },
+        { t: '"Just stay and talk tonight."', r: [{ s: who, t: o.talk }] },
+      ] },
+    ],
+  };
+}
+export const BOWER_NIGHTS = {
+  aerie: nightEvent('aerie', 'kestra', {
+    invite: '(landing on the Menagerie rail, wings half-spread) The moon\'s good tonight. The high branch is empty. (she tilts her head) Come up with me?',
+    yes: 'Go up to the high branch with her.',
+    mantle: 'She makes you spread your Mantle\'s wings beside hers, and laughs in delight at how they look together against the moon.',
+    gentle: 'Wind, feathers, her laughter in your ear, and the whole Pale Wood silver beneath you until dawn.',
+    steamy: 'On the highest branch, wrapped in her wings against the wind, Kestra courts you again the Aerie way — fierce, playful, unashamed — and the moon is the only witness.',
+    talk: 'Then talk to me. (she settles onto the rail, feathers fluffed) I like your voice. Tell me about the city before it drowned.',
+  }),
+  coil: nightEvent('coil', 'sythra', {
+    invite: '(rising from the Menagerie\'s cistern, water streaming off her coils) The brood-pools are warm. I\'ve been warming them. For you. (mmm) Come?',
+    yes: 'Go down to the brood-pools with her.',
+    mantle: 'She traces your Mantle\'s scales with one claw and hisses, pleased, as though you\'ve finally learned to dress properly.',
+    gentle: 'Warm water, warmer coils, and the slow lullaby hiss of a naga holding you close all night.',
+    steamy: 'In the warm dark of the brood-pools, Sythra wraps you coil by gleaming coil, unhurried as the tide, until there is nothing but her heat and the soft hiss of your name.',
+    talk: '(she drapes herself around the cistern rim) Talking is good too. Tell me something no one else knows. I collect those.',
+  }),
+  clutch: nightEvent('clutch', 'vharra', {
+    invite: '(leaning on the Menagerie gate, wings folded, tail swaying) Hatchery\'s lit and nobody\'s in it. I\'m not going to ask twice. (she asks with her eyes)',
+    yes: 'Go to the hatchery with her.',
+    mantle: '"Kin," she says again, softer this time, horns touching yours.',
+    gentle: 'Forge-heat, her strong careful arms, and the crackle of the hatchery fires until morning.',
+    steamy: 'By the hatchery fires the blade of the Clutch courts you like a duel she means to lose, wings snapping wide, all heat and hunger and fierce drake-kin pride.',
+    talk: '(she sits on the gate, swinging her tail) Fine. Then tell me about the strongest thing you\'ve ever beaten. Slowly. I like the details.',
+  }),
+};
 
 export function nightly(S, log) {
   for (const tid of Object.keys(TRIBES)) {

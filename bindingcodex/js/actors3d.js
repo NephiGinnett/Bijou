@@ -235,7 +235,7 @@ const HERO_BUILDERS = {
   rue() {
     // demon of the Ninth Ember: obsidian horns, crimson mess, tattered corset jacket, tail
     const g = chibi({ skin: 0xf2c8b0, hair: 0xb8202a, hairstyle: 'curly', outfit: 0x1a1214, sleeve: 0x2a1a1c, legColor: 0x1a1214, eyeColor: 0xff8a2a, eyeGlow: true, build: 'slim' });
-    horns(g, 0x15121a, 1.46, 0.16, 0.22);
+    horns(g, 0x15121a, 1.52, 0.17, 0.28);
     add(g, Box(0.12, 0.03, 0.02), mat(0xff7a2a, { emissive: 0xff7a2a, ei: 1.6 }), 0.08, 0.92, 0.22);          // debt brand
     const tail = new THREE.Group();
     add(tail, Cap(0.025, 0.5, 4, 6), mat(0xb8202a), 0, 0, 0, 0, 0, 0.9);
@@ -774,8 +774,52 @@ function customChibi(spec) {
     }
   }
 
-  if (spec.horns) horns(g, spec.hornColor ?? 0xe8dcc8, 1.42, 0.16, 0.28);
-  if (spec.wings) wings(g, spec.wingColor ?? 0xe8e4da, 1.0, 0.5);
+  // horns ride above the hairline so they read in every shot
+  if (spec.horns) {
+    const len = spec.hornSize === 'large' ? 0.42 : spec.hornSize === 'small' ? 0.22 : 0.32;
+    if (spec.hornStyle === 'swept') {
+      const hm = mat(spec.hornColor ?? 0xe8dcc8, { rough: 0.5 });
+      for (const sx of [-1, 1]) { add(g, Cone(0.06, len, 6), hm, sx * 0.17, 1.52, -0.08, -0.9, 0, sx * 0.35); add(g, Cone(0.035, len * 0.55, 5), hm, sx * 0.2, 1.62, -0.26, -1.6, 0, sx * 0.25); }
+    } else horns(g, spec.hornColor ?? 0xe8dcc8, 1.5, 0.17, len);
+  }
+  if (spec.wings) wings(g, spec.wingColor ?? 0xe8e4da, 1.0, spec.wingSize ?? 0.5);
+  // harpy wing-arms: feathered vanes along both arms, plus talons
+  if (spec.armWings) {
+    const fm = mat(spec.wingColor ?? 0xb8885a, { rough: 0.9, flat: true });
+    const tip = mat(spec.wingTip ?? 0x5a3a2a, { rough: 0.9, flat: true });
+    for (const sx of [-1, 1]) {
+      for (let i = 0; i < 4; i++) add(g, Box(0.05, 0.34 - i * 0.04, 0.02), i === 3 ? tip : fm, sx * (0.36 + i * 0.07), 0.66 - i * 0.03, -0.04, 0, 0, sx * (0.5 + i * 0.12));
+      add(g, Box(0.38, 0.06, 0.02), fm, sx * 0.48, 0.86, -0.05, 0, 0, sx * -0.25);
+    }
+  }
+  if (spec.talons) {
+    const tm = mat(0x2a2218, { rough: 0.4 });
+    for (const sx of [-1, 1]) for (let i = -1; i <= 1; i++) add(g, Cone(0.02, 0.1, 4), tm, sx * 0.11 + i * 0.035, 0.03, 0.08, Math.PI / 2.4, 0, 0);
+  }
+  // fins (ear-fins for aquatic/changeling looks)
+  if (spec.earFins) {
+    const fm = mat(spec.finColor ?? spec.tailColor ?? 0x4aa0c0, { rough: 0.4, flat: true, opacity: 0.9 });
+    for (const sx of [-1, 1]) add(g, Cone(0.12, 0.26, 3), fm, sx * 0.33, 1.26, -0.02, 0, 0, sx * 1.25);
+  }
+  // shapeshifter: one arm mid-change — scaled, clawed
+  if (spec.changeArm) {
+    const cm = mat(spec.tailColor ?? 0x2a6a5a, { rough: 0.5, flat: true });
+    add(g, Cap(0.08, 0.3, 4, 8), cm, 0.31, 0.75, 0, 0, 0, -0.35);
+    for (let i = -1; i <= 1; i++) add(g, Cone(0.02, 0.12, 4), mat(0xe8e4da), 0.41 + i * 0.03, 0.5, 0.06, 0.3, 0, 0);
+  }
+  // signature props for city folk
+  if (spec.apron) add(g, Box(0.3, 0.4, 0.02), mat(spec.apron), 0, 0.5, 0.24, 0.1);
+  if (spec.mug) { add(g, Cyl(0.06, 0.06, 0.12, 10), mat(0xd8b04a, { metal: 0.4 }), 0.42, 0.62, 0.08); add(g, S(0.05, 8, 8), mat(0xf4efe6), 0.42, 0.69, 0.08); }
+  if (spec.bottle) { add(g, Cyl(0.04, 0.05, 0.18, 8), mat(0x3a6a3a, { opacity: 0.85 }), 0.42, 0.64, 0.08); add(g, Cyl(0.015, 0.015, 0.06, 6), mat(0x6a4a2a), 0.42, 0.76, 0.08); }
+  if (spec.fan) { const fm = mat(spec.fanColor ?? 0xd8b04a); for (let i = 0; i < 5; i++) add(g, Box(0.03, 0.2, 0.01), fm, 0.42 + (i - 2) * 0.025, 0.7, 0.1, 0, 0, (i - 2) * 0.25); }
+  if (spec.veil) add(g, Cone(0.36, 0.7, 12, 1, true), mat(spec.veil, { opacity: 0.45 }), 0, 1.15, -0.04);
+  if (spec.wimple) { add(g, S(0.34, 14, 12, 0, Math.PI * 2, 0, Math.PI / 1.7), mat(spec.wimple), 0, 1.22, -0.03); add(g, Tor(0.22, 0.05, 6, 16), mat(spec.wimple), 0, 1.0, 0.02, Math.PI / 2.3); }
+  if (spec.helm) { add(g, S(0.33, 12, 10, 0, Math.PI * 2, 0, Math.PI / 2.2), mat(spec.helm, { metal: 0.6, rough: 0.35 }), 0, 1.26, 0); add(g, Box(0.05, 0.12, 0.05), mat(spec.helm, { metal: 0.6 }), 0, 1.3, 0.31); }
+  if (spec.furMantle) { add(g, Tor(0.25, 0.09, 6, 16), mat(spec.furMantle, { rough: 1 }), 0, 0.98, 0, Math.PI / 2); }
+  if (spec.ribbons) { const rm = mat(spec.ribbons); for (const sx of [-1, 1]) add(g, Box(0.04, 0.22, 0.01), rm, sx * 0.28, 1.36, -0.04, 0, 0, sx * 0.5); add(g, Tor(0.045, 0.012, 6, 10), rm, -0.39, 0.62, 0, Math.PI / 2); }
+  if (spec.ladle) { add(g, Cyl(0.015, 0.015, 0.5, 6), mat(0x6a4a2a), 0.42, 0.5, 0.08, 0, 0, -0.15); add(g, S(0.06, 8, 8, 0, Math.PI * 2, Math.PI / 2, Math.PI / 2), mat(0x8a8a8a, { metal: 0.6 }), 0.46, 0.26, 0.08); }
+  // heterochromia
+  if (spec.eyeColor2 != null) add(g, S(0.04, 8, 8), mat(spec.eyeColor2, { emissive: spec.eyeColor2, ei: 1.4 }), 0.11, 1.21, 0.262);
   if (spec.halo) add(g, Tor(0.16, 0.02, 6, 16), mat(0xffe28a, { emissive: 0xffd24a, ei: 1.4 }), 0, 1.62, -0.02, Math.PI / 2.2);
 
   // tail (skip if the lower body is already a snake)
@@ -796,7 +840,9 @@ function customChibi(spec) {
     } else if (spec.tail === 'cat') {
       add(g, Cap(0.03, 0.42, 4, 6), mat(spec.tailColor ?? spec.hair ?? spec.skin, { rough: 0.85 }), 0, 0.4, -0.28, 1.25);
     } else if (spec.tail) {
-      add(g, Cap(0.045, 0.36, 4, 6), mat(spec.tailColor ?? spec.skin, { rough: 0.85 }), 0, 0.4, -0.3, 1.1);
+      const tm = mat(spec.tailColor ?? spec.skin, { rough: 0.85 });
+      add(g, Cap(0.045, 0.4, 4, 6), tm, 0, 0.4, -0.3, 1.1);
+      add(g, Cone(0.06, 0.12, 4), tm, 0, 0.2, -0.5, 1.6);
     }
   }
 
@@ -812,9 +858,10 @@ function customChibi(spec) {
   // scaled skin: a few plates on cheeks and chest
   if (spec.scaled) {
     const sm = mat(spec.skin ?? 0x6a9a5a, { rough: 0.5, flat: true });
-    for (const [x, y, z] of [[-0.2, 1.14, 0.22], [0.2, 1.14, 0.22], [0, 0.7, 0.22], [-0.12, 0.55, 0.2], [0.12, 0.55, 0.2]]) {
-      add(g, Ico(0.05, 0), sm, x, y, z);
-    }
+    const plate = mat(spec.scaleColor ?? spec.tailColor ?? spec.skin ?? 0x6a9a5a, { rough: 0.45, flat: true, metal: 0.2 });
+    for (const [x, y, z] of [[-0.22, 1.14, 0.2], [0.22, 1.14, 0.2], [-0.25, 1.08, 0.17], [0.25, 1.08, 0.17]]) add(g, Ico(0.035, 0), plate, x, y, z);       // cheek scales
+    for (const sx of [-1, 1]) for (let i = 0; i < 3; i++) add(g, Ico(0.045, 0), plate, sx * (0.26 + i * 0.03), 0.92 - i * 0.07, 0.06);              // shoulder plates
+    void sm;
   }
 
   // crown / circlet (reuse the helper)

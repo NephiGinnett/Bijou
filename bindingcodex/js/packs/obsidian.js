@@ -12,11 +12,11 @@ const P = 'obsidian';
 const has = (S, id) => (S.allies || []).includes(id);
 
 export const looks = {
-  auren_voss:     { skin: 0xf2dcc8, hair: 0x6a3a2a, hairstyle: 'long', outfit: 0x2a1a2e, outfitStyle: 'dress', frill: 0xd8b04a, eyeColor: 0x4a6a3a, chest: 2, collar: true, collarColor: 0xd8b04a, weapon: 'book' },
+  auren_voss:     { skin: 0xf2dcc8, hair: 0x6a3a2a, hairstyle: 'long', outfit: 0x2a1a2e, outfitStyle: 'dress', frill: 0xd8b04a, eyeColor: 0x4a6a3a, chest: 2, collar: true, collarColor: 0xd8b04a, weapon: 'book', veil: 0x6a3a6a },
   revenant_bride: { skin: 0xe8eef2, hair: 0xf0f0f4, hairstyle: 'long', outfit: 0xf4f4f8, outfitStyle: 'dress', frill: 0xd8d8e8, eyeColor: 0x8ab8d8, eyeGlow: true, ghost: true, chest: 1, crown: true, crownColor: 0xe8e8f0 },
-  mira_ashveil:   { skin: 0xe8c8a8, hair: 0xb84a2a, hairstyle: 'curly', outfit: 0x5a3a2a, sleeve: 0xe8dcc8, legColor: 0x3a2a1a, eyeColor: 0x3a6a3a, chest: 2, freckles: true },
+  mira_ashveil:   { skin: 0xe8c8a8, hair: 0xb84a2a, hairstyle: 'curly', outfit: 0x5a3a2a, sleeve: 0xe8dcc8, legColor: 0x3a2a1a, eyeColor: 0x3a6a3a, chest: 2, freckles: true, apron: 0xe8dcc8, mug: true },
   maren_soleil:   { skin: 0xf0d8c0, hair: 0xe8c86a, hairstyle: 'braided', outfit: 0x14121a, outfitStyle: 'robe', frill: 0xd8b04a, eyeColor: 0x3a5a8a, chest: 1, weapon: 'book' },
-  cole_ashmer:    { skin: 0xd8b494, hair: 0x3a2a1a, hairstyle: 'short', outfit: 0x2a3a4a, outfitStyle: 'armor', sleeve: 0x2a3a4a, legColor: 0x1a2430, eyeColor: 0x4a3a2a, facialHair: true, weapon: 'sword' },
+  cole_ashmer:    { skin: 0xd8b494, hair: 0x3a2a1a, hairstyle: 'short', outfit: 0x2a3a4a, outfitStyle: 'armor', sleeve: 0x2a3a4a, legColor: 0x1a2430, eyeColor: 0x4a3a2a, facialHair: true, weapon: 'sword', helm: 0x8a929c },
   seris_duel:     null, // uses the seris hero model
 };
 
