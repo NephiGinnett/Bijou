@@ -81,6 +81,10 @@ Abyss — by earning **Infamy**.
   drake-kin of the Ashreach Clutch. Meet their envoys' requests and they
   swear fealty (tribute + a perk); a sworn tribe's envoy may ask, for
   herself, for a breeding rite (declining never breaks the oath).
+- **The Envoys' Bower** (in the Menagerie): visiting envoys can be talked
+  with daily (favor, plus gifts every few visits), traded with (tribute
+  reagents; better rates with favor), and, once she has asked for the rite,
+  invite you to spend an evening every few days, or just stay and talk.
 - **Lysandre**, a shapeshifter, arrives when your first hybrid hatches.
 - **The Wyrm's Mantle** (pact): horns, wings and tail on your model, a
   monstrous battle form, and scenes with the allies who'd love it.
