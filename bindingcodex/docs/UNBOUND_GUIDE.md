@@ -1,6 +1,6 @@
 # Unbound Writing Guide
 
-Everything Zoe needs to fill the **Unbound** intimacy tier in Binding Codex (46 stubs across 33 scenes).
+Everything Zoe needs to fill the **Unbound** intimacy tier in Binding Codex (49 stubs across 36 scenes).
 
 ## How the tiers work
 
@@ -97,6 +97,9 @@ All partners here are **sapient adults speaking for themselves**. Menagerie beas
 | `envoy_night_aerie` | "Go up to the high branch with her." | monster (harpy), repeatable | Kestra's repeatable Bower evening (every 3+ days after the rite). Keep it shorter than the rite, and familiar: the high branch, her wings against the wind, the moon. |
 | `envoy_night_coil` | "Go down to the brood-pools with her." | monster (naga), repeatable | Sythra's Bower evening in the warm brood-pools. Unhurried as the tide. |
 | `envoy_night_clutch` | "Go to the hatchery with her." | monster (drake-kin), repeatable | Vharra's Bower evening by the hatchery fires. A duel she means to lose, again. |
+| `kin_rite_aerie` | "Accept her." | breeding, monster (harpy), repeatable, `{kin}` | Another harpy of the Aerie who came to ask for herself (`{kin}` = her name, `{kinWho}` = e.g. "a storm-scout of the Aerie"; 12 possible). Set on the library roof among the Aerie's new nests. Write it so it works for any of them: her own eagerness, wings, feathers, talons. She chose you over the storms. |
+| `kin_rite_coil` | "Accept her." | breeding, monster (naga), repeatable, `{kin}` | A naga of the Coil, in the warm cistern under the library. Coils, patience, warm water. She chose you over the far pools. |
+| `kin_rite_clutch` | "Accept her." | breeding, monster (drake-kin), repeatable, `{kin}` | A drake-kin of the Clutch, by the hatchery fires. Pride, heat, a duel she means to lose. She chose you over the snowline. |
 | `nyxe_mantle` | "Then come down here and explode." | monster forms, abyssal | Nyxe faces something more monstrous than herself and is speechless for the first time, then very loud. Wings everywhere. |
 
 ## Voice cheat-sheet

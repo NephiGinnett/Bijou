@@ -1080,17 +1080,40 @@ export const TRIBES = {
     gifts: [ { reagents: { moth_dust: 2 }, gold: 80, ask: 'two pinches of moth dust and a purse of coin, for the nest-mothers' },
              { reagents: { antler_velvet: 2, cinder_ash: 2 }, gold: 0, ask: 'antler velvet and cinder ash, to line the high nests' } ],
     tribute: { moth_dust: 1, antler_velvet: 1 },
-    perk: 'Harpy scouts fly ahead of you: Fog-Veiled holdings no longer hide their enemies.' },
+    perk: 'Harpy scouts fly ahead of you: Fog-Veiled holdings no longer hide their enemies.',
+    envoyName: 'Kestra',
+    kin: [['Ysra', 'a storm-scout of the Aerie'], ['Tiel', 'a nest-mother\'s eldest daughter'], ['Merrow', 'the Aerie\'s best hunter'], ['Skerry', 'a singer of the dawn spiral'],
+          ['Anwe', 'a feather-weaver'], ['Corra', 'a cliff-runner with a mended wing'], ['Halcy', 'a sentry of the high branches'], ['Wren', 'a carrier of messages'],
+          ['Fenna', 'a quiet egg-warden'], ['Larkspur', 'a loud, cheerful scavenger'], ['Sorrel', 'a wind-reader'], ['Kittiwake', 'a teacher of fledglings']] },
   coil: { name: 'The Coil of the Black Mire', race: 'Naga', icon: '🐍', color: '#6ab88a', home: 'black_mire', envoy: 'sythra',
     draw: 30,
     gifts: [ { reagents: { silk_venom: 3 }, gold: 120, ask: 'three draughts of silk venom and coin for the brood-pools' },
              { reagents: { drake_scale: 2, brimstone_salt: 2 }, gold: 0, ask: 'drake scale and brimstone salt, to warm the eggs' } ],
     tribute: { silk_venom: 1, drake_scale: 1 },
-    perk: 'Naga venom-binders teach your seals to coil: Binding Seals on beasts +10%.' },
+    perk: 'Naga venom-binders teach your seals to coil: Binding Seals on beasts +10%.',
+    envoyName: 'Sythra',
+    kin: [['Isseth', 'a venom-binder'], ['Vaska', 'a keeper of the brood-pools'], ['Nimue', 'a mire-guide'], ['Thessaly', 'a pearl-diver'],
+          ['Ossa', 'a song-keeper of the Coil'], ['Sileth', 'a reed-hunter'], ['Murren', 'an elder\'s apprentice'], ['Quell', 'a lantern-bearer of the deep water'],
+          ['Zahra', 'a dancer of the tide rite'], ['Ashai', 'a teller of riddles'], ['Venna', 'a healer of the Coil'], ['Lirael', 'a silent watcher of the shallows']] },
   clutch: { name: 'The Ashreach Clutch', race: 'Drake-kin', icon: '🐲', color: '#d87a4a', home: 'ashreach_temple', envoy: 'vharra',
     draw: 55,
     gifts: [ { reagents: { wyrm_frost: 2 }, gold: 150, ask: 'wyrm frost and coin, for the clutch-hoard' },
              { reagents: { cinder_ash: 3, drake_scale: 2 }, gold: 0, ask: 'cinder ash and drake scale, to keep the hatchery burning' } ],
     tribute: { wyrm_frost: 1, cinder_ash: 1 },
-    perk: 'Drake-kin flame-wardens stand with you: your party ignores Burning Floors.' },
+    perk: 'Drake-kin flame-wardens stand with you: your party ignores Burning Floors.',
+    envoyName: 'Vharra',
+    kin: [['Cindra', 'a flame-warden'], ['Torva', 'a hoard-keeper'], ['Brannagh', 'a hatchery smith'], ['Skaldi', 'a duelist of the Clutch'],
+          ['Reka', 'a scout of the snowline'], ['Ashka', 'a forge-singer'], ['Myrrhine', 'a scale-polisher with opinions'], ['Halda', 'a veteran of the Ashreach wars'],
+          ['Vesska', 'a newly blooded blade'], ['Oriel', 'a keeper of the old fires'], ['Drusa', 'a wing-captain'], ['Kaelith', 'the hatchery\'s gentle giant']] },
 };
+
+// Kinship: how many of a sworn tribe have chosen you for the rite. Each
+// one asks for herself. As the tribe comes to rely on you, more of them
+// come, and more often (every = days between suitors).
+export const KIN_STAGES = [
+  { at: 0,  name: 'Sworn',        every: 0, desc: 'The tribe is sworn to you.' },
+  { at: 1,  name: 'Blood-bound',  every: 6, desc: 'The envoy carried your blood home. Others are curious.' },
+  { at: 3,  name: 'Nesting Near', every: 4, desc: 'They\'ve moved their nests closer and hunt the far wilds less.' },
+  { at: 6,  name: 'Devoted',      every: 3, desc: 'Nobody looks to the wild for a mate anymore. They come to you.' },
+  { at: 10, name: 'Your Tribe',   every: 2, desc: 'The whole tribe is yours. They hunt for you now (+30 gold nightly).' },
+];

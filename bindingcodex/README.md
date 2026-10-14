@@ -85,6 +85,12 @@ Abyss — by earning **Infamy**.
   with daily (favor, plus gifts every few visits), traded with (tribute
   reagents; better rates with favor), and, once she has asked for the rite,
   invite you to spend an evening every few days, or just stay and talk.
+- **Kinship.** After the envoy's rite, others of her tribe come to the
+  Bower to ask for you themselves (accept, decline kindly, or "not
+  tonight"). The Wild Tribes screen tracks who has chosen you and how many
+  rites you've shared. As kin grows the tribe relies on you more than the
+  wild: Blood-bound → Nesting Near → Devoted → Your Tribe. Tribute scales
+  up, suitors come more often, and at the top they hunt for you (+gold).
 - **Lysandre**, a shapeshifter, arrives when your first hybrid hatches.
 - **The Wyrm's Mantle** (pact): horns, wings and tail on your model, a
   monstrous battle form, and scenes with the allies who'd love it.

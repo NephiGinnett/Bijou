@@ -672,3 +672,8 @@ button.ticker-btn.notify em { font-style: normal; color: var(--gold); animation:
 .loc-card.lair { border-color: var(--gold); box-shadow: 0 0 14px rgba(224,168,96,.35); }
 .modal.reading { text-align: center; }
 .modal.reading .tarot-card { cursor: pointer; }
+
+/* kinship tracker */
+.kin-box { margin-top: 8px; padding: 6px 8px; border: 1px solid rgba(216,176,74,.25); border-radius: 6px; background: rgba(216,176,74,.05); }
+.kin-name { color: var(--gold, #d8b04a); }
+.recruit-head.suitor { margin-top: 6px; padding-top: 6px; border-top: 1px dashed rgba(255,255,255,.12); }

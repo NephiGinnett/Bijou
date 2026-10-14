@@ -6,7 +6,7 @@
 import {
   RANKS, RANK_UP_GP, GATE_GP, XP_MULT, ENEMY_TIER, HEROES, heroStatsAt, heroSkillsAt,
   xpToNext, BIOMES, GATE_ROOMS, TAROT, ENEMIES, makeGear, AFFIXES,
-  FACTIONS, LOCATIONS, LAIR_POWER, POWER, GATE_MODIFIERS, TRIBES,
+  FACTIONS, LOCATIONS, LAIR_POWER, POWER, GATE_MODIFIERS, TRIBES, KIN_STAGES,
   ELITES, ELITE_XP_MULT, ELITE_GOLD_MULT, eliteChance, ROLE_INFO, DISPATCH_BENCHMARK,
   CAPTIVE_TRAITS, CAPTIVE_NAMES, SECRETS, WARDEN_STYLES, BEAST_FAMILIES, BEAST_TRAITS,
   REAGENTS, RECIPES, RECIPE_DISCOVERY, recipeFor, ITEMS, PACTS, SLOT_VI,
@@ -57,7 +57,7 @@ export function newGame(playerName, pronouns = 'she') {
     gearBag: [],
     factions: Object.fromEntries(Object.keys(FACTIONS).map(id => [id, { power: 100, fate: null }])),
     lieutenants: {},                 // lieutenant id → captured | yielded | slain
-    tribes: Object.fromEntries(Object.keys(TRIBES).map(id => [id, { status: null, gifts: 0, rite: false, favor: 0, talkDay: 0, tradeDay: 0, nightDay: -9 }])),
+    tribes: Object.fromEntries(Object.keys(TRIBES).map(id => [id, { status: null, gifts: 0, rite: false, favor: 0, talkDay: 0, tradeDay: 0, nightDay: -9, kin: [], rites: 0, suitor: null, suitorDay: null, stageSeen: 0, met: [] }])),
     visits: {},                      // location id → clears
     omen: null,                      // Vesper's card for today
     readingDay: 0,
@@ -109,7 +109,7 @@ export function ensureShape(S) {
   for (const k of Object.keys(d.factions)) if (!S.factions[k]) S.factions[k] = { power: 100, fate: null };
   for (const k of Object.keys(d.tribes)) {
     if (!S.tribes[k]) S.tribes[k] = d.tribes[k];
-    for (const f of ['favor', 'talkDay', 'tradeDay', 'nightDay']) if (S.tribes[k][f] == null) S.tribes[k][f] = d.tribes[k][f];
+    for (const f of ['favor', 'talkDay', 'tradeDay', 'nightDay', 'kin', 'rites', 'stageSeen', 'met']) if (S.tribes[k][f] == null) S.tribes[k][f] = d.tribes[k][f];
   }
   if (S.stats.reagentsProduced == null) S.stats.reagentsProduced = 0;
   if (!S.settings.packs) S.settings.packs = d.settings.packs;
@@ -403,11 +403,68 @@ function tribeNight(S, log) {
       log.push(`${T.race} have been seen circling the Menagerie.`);
     }
     if (t.status === 'sworn') {
-      const mult = t.rite ? 2 : 1;
+      syncKin(S, tid);
+      const st = kinStage(S, tid);
+      const mult = 1 + st;
       for (const [r, n] of Object.entries(T.tribute)) S.reagents[r] = (S.reagents[r] || 0) + n * mult;
+      if (st >= 4) S.gold += 30; // they hunt for you now
+      if (st > t.stageSeen) {
+        if (t.stageSeen >= 1) { S.queue.push(`kin_stage_${tid}_${st}`); log.push(`${T.name}: ${KIN_STAGES[st].name}. ${KIN_STAGES[st].desc}`); }
+        t.stageSeen = st;
+      }
+      // another of the tribe comes to the Bower to ask for herself
+      const every = KIN_STAGES[st].every;
+      if (every && !t.suitor && S.day - (t.suitorDay ?? S.day) >= every) {
+        const pool = T.kin.filter(([n]) => !t.met.includes(n));
+        if (pool.length) {
+          const [name, who] = pool[Math.floor(Math.random() * pool.length)];
+          t.suitor = { name, who, look: Math.floor(Math.random() * 4) };
+          t.met.push(name);
+          log.push(`${name}, ${who}, has come to the Envoys' Bower to ask for you herself.`);
+        }
+      }
     }
   }
 }
+
+// --- kinship: how many of the tribe have chosen you ---------------------------------
+
+// The envoy's own rite makes her the first of the tribe's kin.
+function syncKin(S, tid) {
+  const t = S.tribes[tid];
+  if (S.flags[`rite_${tid}`] && !t.kin.some(k => k.envoy)) {
+    t.kin.unshift({ name: TRIBES[tid].envoyName, envoy: true, day: S.day });
+    t.rites = (t.rites || 0) + 1;
+    t.suitorDay = S.day;
+  }
+}
+export function kinStage(S, tid) {
+  const n = (S.tribes[tid].kin || []).length;
+  let i = 0;
+  KIN_STAGES.forEach((st, k) => { if (n >= st.at) i = k; });
+  return i;
+}
+export function kinInfo(S, tid) {
+  syncKin(S, tid);
+  const t = S.tribes[tid], st = kinStage(S, tid), next = KIN_STAGES[st + 1];
+  return { stage: st, ...KIN_STAGES[st], count: t.kin.length, rites: t.rites || 0, next: next ? next.at : null, nextName: next ? next.name : null, mult: 1 + st };
+}
+export function kinTotal(S) { return Object.keys(TRIBES).reduce((a, tid) => a + ((S.tribes[tid] && S.tribes[tid].kin) || []).length, 0); }
+// She asked; you answer. 'later' leaves her waiting in the Bower.
+export function kinAnswer(S, tid, ans) {
+  const t = S.tribes[tid], s = t.suitor;
+  if (!s || ans === 'later') return;
+  t.suitor = null;
+  t.suitorDay = S.day;
+  if (ans === 'yes') {
+    t.kin.push({ name: s.name, who: s.who, look: s.look, day: S.day });
+    t.rites = (t.rites || 0) + 1;
+    t.favor = Math.min(10, t.favor + 1);
+    addChronicle(S, `${s.name}, ${s.who}, chose you, and carried your blood home to ${TRIBES[tid].name}.`);
+  } else t.met = t.met.filter(n => n !== s.name); // she may ask again someday
+}
+// A Bower evening with the envoy that went past talking.
+export function kinNight(S, tid) { S.tribes[tid].rites = (S.tribes[tid].rites || 0) + 1; }
 
 // What the tribe wants next, and whether you can give it.
 export function tribeRequest(S, tid) {

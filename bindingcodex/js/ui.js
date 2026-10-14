@@ -139,7 +139,9 @@ function subName(text) {
     .replaceAll('{theirs}', p.theirs).replaceAll('{themself}', p.themself)
     .replaceAll('{s}', p.s).replaceAll('{is}', p.is).replaceAll('{has}', p.has).replaceAll('{was}', p.was)
     .replaceAll('{captive}', TOKEN_CTX.captive || 'the captive')
-    .replaceAll('{ally}', TOKEN_CTX.ally || 'your ally');
+    .replaceAll('{ally}', TOKEN_CTX.ally || 'your ally')
+    .replaceAll('{kinWho}', TOKEN_CTX.kinWho || 'one of the tribe')
+    .replaceAll('{kin}', TOKEN_CTX.kin || 'a tribeswoman');
 }
 
 // Intimacy tiers stack: Gentle shows gentle lines; Steamy shows steamy
@@ -210,7 +212,8 @@ export function playEvent(ev) {
     };
 
     const renderLine = (st) => {
-      const sp = SPEAKERS[st.s] || SPEAKERS.narr;
+      const sid = st.s === 'kin' ? TOKEN_CTX.kinId : st.s; // whichever of the tribe is asking
+      const sp = SPEAKERS[sid] || SPEAKERS.narr;
       const box = layer.querySelector('.dialogue-box');
       box.classList.toggle('narr', st.s === 'narr');
       box.classList.toggle('sysline', st.s === 'codex' || st.s === 'sys');
@@ -220,8 +223,8 @@ export function playEvent(ev) {
       layer.querySelector('.d-name').innerHTML = esc(subName(sp.name)) + (st.brand ? '<span class="brand-tag">🔥 the brand flares</span>' : '');
       layer.querySelector('.d-name').style.color = sp.color;
       const pEl = layer.querySelector('.d-portrait');
-      pEl.innerHTML = PORTRAITS[st.s] ? portraitImg(st.s) : '';
-      pEl.style.display = PORTRAITS[st.s] ? '' : 'none';
+      pEl.innerHTML = PORTRAITS[sid] ? portraitImg(sid) : '';
+      pEl.style.display = PORTRAITS[sid] ? '' : 'none';
       layer.querySelector('.d-choices').innerHTML = '';
 
       const textEl = layer.querySelector('.d-text');
@@ -423,6 +426,7 @@ async function hub() {
   const releaseReady = S.captives.some(c => c.releasePending);
   const unwarded = S.captives.filter(c => !S.wardens[c.id]).length;
   const hungry = S.menagerie.filter(b => !b.fed).length;
+  const suitors = Object.keys(TRIBES).filter(t => S.tribes[t] && S.tribes[t].suitor && ST.envoyHere(S, t)).length;
   const dayLog = (S.dayLog || []).slice(0, 4);
 
   screen(`
@@ -453,7 +457,7 @@ async function hub() {
           ${S.flags.vesper_joined ? `<button class="btn big" id="g-rivals">⚔ Rivals<small>${Object.values(S.factions).filter(f => f.fate).length}/5 dominated</small></button>` : ''}
           <button class="btn big" id="g-party">✦ Allies<small>stats, skills & gear</small></button>
           ${S.flags.undercroft_open ? `<button class="btn big ${releaseReady || unwarded ? 'notify' : ''}" id="g-under">⛓ Undercroft${releaseReady || unwarded ? '<em>!</em>' : ''}<small>${S.captives.length} captive${S.captives.length === 1 ? '' : 's'}${unwarded ? ` · ${unwarded} unwarded` : ''}</small></button>` : ''}
-          ${S.menagerie.length || S.eggs.length || S.stats.captures || Object.keys(TRIBES).some(t => ST.envoyHere(S, t)) ? `<button class="btn big ${hungry ? 'notify' : ''}" id="g-men">🐾 Menagerie${hungry ? '<em>!</em>' : ''}<small>${S.menagerie.length}/${S.pens} pens${hungry ? ` · ${hungry} hungry` : ''}${Object.keys(TRIBES).some(t => ST.envoyHere(S, t)) ? ' · envoys visiting' : ''}</small></button>` : ''}
+          ${S.menagerie.length || S.eggs.length || S.stats.captures || Object.keys(TRIBES).some(t => ST.envoyHere(S, t)) ? `<button class="btn big ${hungry || suitors ? 'notify' : ''}" id="g-men">🐾 Menagerie${hungry || suitors ? '<em>!</em>' : ''}<small>${S.menagerie.length}/${S.pens} pens${hungry ? ` · ${hungry} hungry` : ''}${suitors ? ` · ${suitors} waiting in the Bower` : Object.keys(TRIBES).some(t => ST.envoyHere(S, t)) ? ' · envoys visiting' : ''}</small></button>` : ''}
           ${Object.values(S.reagents).some(n => n > 0) || S.recipes.length || S.menagerie.length ? '<button class="btn big" id="g-alch">⚗ Alchemy<small>the cauldron</small></button>' : ''}
           ${S.flags.altar_open ? '<button class="btn big" id="g-altar">☩ Pact Altar<small>power, for a price</small></button>' : ''}
           <button class="btn big" id="g-shop">◈ Market<small>potions, gear & pens</small></button>
@@ -798,16 +802,19 @@ function tribes() {
     return `<div class="cell-card">
       <div class="row spread"><h3 style="color:${T.color}">${T.icon} ${esc(T.name)}</h3><span class="fate-tag" style="color:${T.color}">${t.status.toUpperCase()}${t.rite ? ' · BLOOD-BOUND' : ''}</span></div>
       <div class="recruit-head">${portraitImg(T.envoy)}<div><b style="color:${T.color}">${esc(SPEAKERS[T.envoy].name)}</b><br><small class="muted">${esc(T.race)} · ${esc(LOCATIONS[T.home].name)}</small></div></div>
-      <div class="sm-text ${t.status === 'sworn' ? 'gold' : 'muted'}">Sworn perk: ${esc(T.perk)} Nightly tribute: ${Object.entries(T.tribute).map(([r, n]) => `${n}× ${REAGENTS[r].name}`).join(', ')}${t.rite ? ' (doubled)' : ''}.</div>
+      <div class="sm-text ${t.status === 'sworn' ? 'gold' : 'muted'}">Sworn perk: ${esc(T.perk)} Nightly tribute: ${Object.entries(T.tribute).map(([r, n]) => `${n}× ${REAGENTS[r].name}`).join(', ')}${t.status === 'sworn' && ST.kinInfo(S, id).mult > 1 ? ` (×${ST.kinInfo(S, id).mult})` : ''}.</div>
+      ${t.status === 'sworn' ? kinHtml(id) : ''}
       ${req ? `<div class="sm-text">They ask for ${esc(req.ask)}: ${Object.entries(req.reagents).map(([r, n]) => `${n}× ${REAGENTS[r].name} (have ${S.reagents[r] || 0})`).join(', ')}${req.gold ? ` + ${req.gold}g` : ''}</div>
         <button class="btn sm gift ${req.ok ? '' : 'disabled'}" data-id="${id}">Give the gift</button>` : ''}
     </div>`;
   }).join('');
   const next = Object.entries(TRIBES).filter(([id]) => !S.tribes[id].status).sort((a, b) => a[1].draw - b[1].draw)[0];
+  const total = ST.kinTotal(S);
   screen(`
     <div class="panel map-panel">
       <div class="row spread"><h2>🪶 Wild Tribes</h2><button class="btn ghost" id="tb-back">← Codex</button></div>
       <p class="muted">Sapient monster-folk, drawn by a Menagerie that thrives. Meet their requests and they swear fealty: tribute, perks, and — if one of them asks you herself — a breeding rite. Saying no never breaks an oath. ${next ? `Your Menagerie has produced <b>${S.stats.reagentsProduced || 0}</b> reagents; something else is watching from far off.` : ''}</p>
+      ${total ? `<p class="gold">🥚 ${total} of the tribes' people ${total === 1 ? 'has' : 'have'} chosen you for the rite.</p>` : ''}
       <div class="cells">${rows || '<p class="muted">No tribe has come yet.</p>'}</div>
     </div>
   `);
@@ -1625,6 +1632,20 @@ function menagerie() {
   });
 }
 
+// Kinship tracker: who of the tribe has chosen you, and how close they've come.
+function kinHtml(tid) {
+  const k = ST.kinInfo(S, tid), t = S.tribes[tid], T = TRIBES[tid];
+  if (!k.count) return `<div class="sm-text muted">Kinship: none yet. If ${esc(T.envoyName)} asks you for the rite herself, others of the tribe may follow.</div>`;
+  const pct = k.next ? Math.round(100 * k.count / k.next) : 100;
+  return `<div class="kin-box">
+    <div class="row spread"><b style="color:${T.color}">Kinship: ${esc(k.name)}</b><small class="muted">${k.count} kin · ${k.rites} rite${k.rites === 1 ? '' : 's'} shared</small></div>
+    ${bar('regard', pct)}
+    <div class="sm-text muted">${k.next ? `${k.count}/${k.next} kin → ${esc(k.nextName)}` : 'Kinship complete.'}</div>
+    <div class="sm-text muted">${esc(k.desc)}${k.every ? ` A new suitor comes about every ${k.every} days.` : ''}</div>
+    <div class="sm-text">${t.kin.map(x => `<span class="kin-name" title="${esc(x.who || 'envoy')}">${esc(x.name)}</span>`).join(' · ')}</div>
+  </div>`;
+}
+
 // The Envoys' Bower: visiting tribe envoys keep a corner of the Menagerie.
 function bowerHtml() {
   const here = Object.keys(TRIBES).filter(tid => ST.envoyHere(S, tid));
@@ -1638,6 +1659,8 @@ function bowerHtml() {
       return `<div class="cell-card">
         <div class="recruit-head">${portraitImg(T.envoy)}<div><b style="color:${T.color}">${esc(SPEAKERS[T.envoy].name)}</b><br><small class="muted">${esc(T.race)} · ${t.status}</small></div></div>
         <div class="meter"><span>Favor</span>${bar('regard', t.favor * 10)}<span>${t.favor}/10</span></div>
+        ${t.status === 'sworn' && t.kin && t.kin.length ? `<div class="sm-text gold">Kinship: ${esc(ST.kinInfo(S, tid).name)} · ${t.kin.length} kin</div>` : ''}
+        ${t.suitor ? `<div class="recruit-head suitor">${portraitImg(`${tid}_kin${t.suitor.look}`)}<div><b style="color:${T.color}">${esc(t.suitor.name)}</b><br><small class="muted">${esc(t.suitor.who)} — has come to ask for you herself.</small><br><button class="btn sm bw-suitor" data-t="${tid}">Meet her</button></div></div>` : ''}
         <div class="visit-row">
           <button class="btn bw-talk ${t.talkDay === S.day ? 'disabled' : ''}" data-t="${tid}">❝ Talk</button>
           <select class="bw-give" data-t="${tid}">${own.length ? own.map(r => `<option value="${r}">give 2× ${REAGENTS[r].name}</option>`).join('') : '<option value="">nothing to trade</option>'}</select>
@@ -1668,12 +1691,24 @@ function bindBower() {
     const r = ST.envoyTrade(S, tid, give);
     if (r) { AU.sfx('coin'); toast(`Traded: +${r.n}× ${REAGENTS[r.want].name}`, 'gold'); ST.save(S); menagerie(); }
   });
+  document.querySelectorAll('.bw-suitor').forEach(b => b.onclick = async () => {
+    const tid = b.dataset.t, su = S.tribes[tid].suitor;
+    Object.assign(TOKEN_CTX, { kin: su.name, kinWho: su.who, kinId: `${tid}_kin${su.look}` });
+    screen('', '');
+    await playEvent(EVENTS['kin_rite_' + tid]);
+    const ans = S.flags['kin_yes_' + tid] ? 'yes' : S.flags['kin_no_' + tid] ? 'no' : 'later';
+    delete S.flags['kin_yes_' + tid]; delete S.flags['kin_no_' + tid];
+    ST.kinAnswer(S, tid, ans);
+    if (ans === 'yes') { AU.sfx('promo'); toast(`${su.name} carries your blood home. Kinship: ${ST.kinInfo(S, tid).name}.`, 'gold'); }
+    ST.save(S); menagerie();
+  });
   document.querySelectorAll('.bw-night:not(.disabled)').forEach(b => b.onclick = async () => {
     const tid = b.dataset.t;
     const ev = EVENTS['envoy_night_' + tid];
     screen('', '');
     // her invitation; your choice decides — a night together, or just talk
     await playEvent(ev);
+    if (S.flags['night_yes_' + tid]) { delete S.flags['night_yes_' + tid]; ST.kinNight(S, tid); }
     if (ST.envoyNight(S, tid)) toast(`She sends you home with a gift from the tribe.`, 'gold');
     ST.save(S); menagerie();
   });

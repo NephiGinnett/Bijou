@@ -32,11 +32,31 @@ export const looks = {
   lysandre: { skin: 0xe0d0e8, hair: 0x2a6a5a, hairstyle: 'long', outfit: 0x2a2a3a, sleeve: 0x3a3a4a, legColor: 0x1a1a2a, eyeColor: 0x8ad8a8, eyeColor2: 0xd8a84a, eyeGlow: true, horns: true, hornStyle: 'swept', hornSize: 'small', hornColor: 0x4a3a5a, tail: 'dragon', tailColor: 0x2a6a5a, earFins: true, finColor: 0x4ab89a, changeArm: true, scaled: true, scaleColor: 0x2a8a6a, chest: 2, markings: true, markingColor: 0x8ad8a8 },
 };
 
+// Four looks per tribe for the kin who come to the Bower (variations on the envoy).
+const KIN_LOOKS = {
+  aerie:  [{ hair: 0xd8c8a8, wingColor: 0xd8c8b0, wingTip: 0x6a5a4a, sleeve: 0xd8c8b0, eyeColor: 0x8ac8e8 },
+           { hair: 0x3a2a1a, wingColor: 0x5a4a3a, wingTip: 0x1a1410, sleeve: 0x5a4a3a, skin: 0xc89a78, hairstyle: 'short' },
+           { hair: 0xb85a2a, wingColor: 0xc87a4a, wingTip: 0xf0e0c8, sleeve: 0xc87a4a, hairstyle: 'braided' },
+           { hair: 0x8a8a9a, wingColor: 0x9a9aaa, wingTip: 0x2a2a3a, sleeve: 0x9a9aaa, skin: 0xf0d8c0, hairstyle: 'curly' }],
+  coil:   [{ tailColor: 0x2a5a8a, scaleColor: 0x2a5a8a, finColor: 0x8ac8e8, hair: 0x0a1a2a, crown: false },
+           { tailColor: 0x8a6a2a, scaleColor: 0x8a6a2a, finColor: 0xe8c86a, skin: 0xc8b088, hair: 0x3a2a10, crown: false, hairstyle: 'braided' },
+           { tailColor: 0x6a2a5a, scaleColor: 0x6a2a5a, finColor: 0xd88ac8, skin: 0xb8a8c8, hair: 0x2a1a2a, crown: false, hairstyle: 'long' },
+           { tailColor: 0x5a8a3a, scaleColor: 0x5a8a3a, finColor: 0xc8e88a, hair: 0x5a6a2a, crown: false, hairstyle: 'short' }],
+  clutch: [{ tailColor: 0x8a2a2a, scaleColor: 0x8a2a2a, wingColor: 0x5a1a1a, hair: 0xd8d0c8, hairstyle: 'short', weapon: 'claw' },
+           { tailColor: 0x2a2a2a, scaleColor: 0x3a3a3a, wingColor: 0x1a1a1a, hair: 0xb83a1a, skin: 0xc88a6a, weapon: 'sword' },
+           { tailColor: 0xd8a83a, scaleColor: 0xd8a83a, wingColor: 0xa8782a, hair: 0x5a3a1a, skin: 0xe0a880, hairstyle: 'curly', weapon: 'shield' },
+           { tailColor: 0x3a6a8a, scaleColor: 0x3a6a8a, wingColor: 0x2a4a6a, hair: 0xe8e8f0, build: 'slim', weapon: 'sword' }],
+};
+const ENVOY_OF = { aerie: 'kestra', coil: 'sythra', clutch: 'vharra' };
+const KIN_COLOR = { aerie: '#c8a87a', coil: '#6ab88a', clutch: '#d87a4a' };
+for (const [tid, list] of Object.entries(KIN_LOOKS)) list.forEach((o, i) => { looks[`${tid}_kin${i}`] = { ...looks[ENVOY_OF[tid]], ...o }; });
+
 export const speakers = {
   kestra: { name: 'Kestra of the Aerie', color: '#c8a87a' },
   sythra: { name: 'Sythra of the Coil', color: '#6ab88a' },
   vharra: { name: 'Vharra of the Clutch', color: '#d87a4a' },
   lysandre: { name: 'Lysandre', color: '#8ad8a8' },
+  ...Object.fromEntries(Object.keys(KIN_LOOKS).flatMap(tid => [0, 1, 2, 3].map(i => [`${tid}_kin${i}`, { name: '{kin}', color: KIN_COLOR[tid] }]))),
 };
 
 // The rite: the envoy asks for herself; accept, decline, or not yet.
@@ -65,6 +85,8 @@ function rite(tid, who, o) {
 
 export function events(E) {
   for (const ev of Object.values(BOWER_NIGHTS)) E[ev.id] = ev;
+  for (const ev of Object.values(KIN_RITES)) E[ev.id] = ev;
+  for (const ev of KIN_STAGE_EVENTS) E[ev.id] = ev;
   // ===================== THE SKYREND AERIE — harpies =====================
   E.tribe_aerie_arrive = { id: 'tribe_aerie_arrive', where: 'auto', once: true, priority: 72, steps: [
     { s: 'narr', t: 'A shadow crosses the library\'s broken skylight. Then another. Then a woman drops through it in a storm of tawny feathers and lands on the reading table in a crouch, talons gouging the wood.' },
@@ -252,7 +274,7 @@ function nightEvent(tid, who, o) {
     steps: [
       { s: who, t: o.invite },
       { choice: [
-        { t: o.yes, r: [
+        { t: o.yes, flag: `night_yes_${tid}`, r: [
           { s: 'narr', cond: mantled, t: o.mantle },
           { s: 'narr', t: o.gentle, spice: 'gentle' },
           { s: 'narr', t: o.steamy, spice: 'steamy' },
@@ -295,3 +317,125 @@ export function nightly(S, log) {
     if (S.flags[`rite_${tid}`] && S.tribes[tid] && !S.tribes[tid].rite) S.tribes[tid].rite = true; // tribute doubles
   }
 }
+
+// ============================================================
+// KINSHIP — after the envoy's rite, others of the tribe come to the
+// Bower to ask for you themselves, more often as the tribe comes to rely
+// on you. Speaker 'kin' is whichever of the tribe is asking ({kin}).
+// ============================================================
+
+const kinN = tid => S => ((S.tribes[tid] && S.tribes[tid].kin) || []).length;
+function kinRite(tid, o) {
+  const n = kinN(tid);
+  return {
+    id: `kin_rite_${tid}`, where: 'bower', once: false,
+    cond: tribeFree(tid, `${tid}_kin`, S => !!(S.tribes[tid] && S.tribes[tid].suitor)),
+    tags: ['breeding', 'monster', 'sapient partner'],
+    steps: [
+      { s: 'narr', t: o.arrive },
+      { s: 'kin', cond: S => n(S) < 3, t: o.early },
+      { s: 'kin', cond: S => n(S) >= 3 && n(S) < 6, t: o.mid },
+      { s: 'kin', cond: S => n(S) >= 6, t: o.late },
+      { s: 'kin', t: o.oath },
+      { choice: [
+        { t: 'Accept her.', flag: `kin_yes_${tid}`, r: [
+          { s: 'narr', cond: mantled, t: o.mantle },
+          { s: 'narr', t: o.gentle, spice: 'gentle' },
+          { s: 'narr', t: o.steamy, spice: 'steamy' },
+          { s: 'narr', t: '', spice: 'unbound', stub: `kin_rite_${tid}` }, // ZOE: unbound
+        ] },
+        { t: 'Decline, kindly.', flag: `kin_no_${tid}`, r: [{ s: 'kin', t: o.no }] },
+        { t: '"Not tonight. Stay a while?"', r: [{ s: 'kin', t: o.later }] },
+      ] },
+    ],
+  };
+}
+
+export const KIN_RITES = {
+  aerie: kinRite('aerie', {
+    arrive: 'A harpy you haven\'t met is perched on the Bower rail, feathers fluffed against the damp: {kin}, {kinWho}.',
+    early: 'Kestra came back from the high branch glowing. The whole nest saw. (she fidgets with a loose feather) I want to choose too. For me, not for the nest-mothers. Will you have me?',
+    mid: 'Half the Aerie roosts on your roof now. We don\'t fly the far woods looking for strong blood anymore — why would we? (she hops down, close) I\'m asking you myself.',
+    late: 'Nobody hunts the storms for a mate anymore. The nest-mothers stopped pretending we might. We come to you. (a shy, crooked smile) So. I came.',
+    oath: 'And if you say no, I\'ll still fly for you tomorrow. That\'s what sworn means.',
+    mantle: 'She gasps at your Mantle\'s wings, then spreads her own beside them to compare, delighted.',
+    gentle: 'She takes you up to the library roof, where the Aerie\'s new nests are woven into the broken skylight, and the night is wind and soft feathers and her laughter.',
+    steamy: 'Up on the roof among the new nests, wings mantled around you both, {kin} courts you the Aerie way — fierce, playful, all feathers and heat — and the nest hears every bit of it.',
+    no: '(she ruffles, then settles) Alright. You\'re still ours, and we\'re still yours. (she bumps her head against your shoulder and flies off)',
+    later: 'Then I\'ll stay. (she tucks her head under a wing on the rail) I like it here anyway.',
+  }),
+  coil: kinRite('coil', {
+    arrive: 'A naga you don\'t know is coiled in the Bower\'s cistern, chin on the rim, watching you: {kin}, {kinWho}.',
+    early: 'Sythra came up from the brood-pools humming. She never hums. (her tongue flickers) I want what she found. I\'m asking for myself, warlock.',
+    mid: 'The Coil hardly leaves the Drowned Stacks now. The deep mire is cold, and the old matings were cold too. (a coil slides, slow, around the cistern) You are warm. I\'m asking.',
+    late: 'The elders stopped sending us to the far pools to choose. Everyone already knows who we choose. (she smiles, all fangs and patience) Me too.',
+    oath: 'Say no, and the Coil still holds you. Our oaths don\'t unwind.',
+    mantle: 'She traces a claw along your Mantle\'s scales, very slowly, and hisses something fond in the Coil\'s tongue.',
+    gentle: 'Down in the warm cistern she holds you in her coils, close and slow, telling you riddles until you both fall asleep in the water.',
+    steamy: 'In the warm dark of the cistern {kin} wraps you coil by gleaming coil, unhurried as the tide, until the world is nothing but her heat and the soft hiss of your name.',
+    no: '(her coils loosen, unbothered) Then I\'ll enjoy wanting you. The Coil is patient.',
+    later: 'I\'ll wait. (she sinks to her nose in the cistern) Naga are very good at waiting.',
+  }),
+  clutch: kinRite('clutch', {
+    arrive: 'A drake-kin you haven\'t met is leaning on the Bower gate, wings folded, tail lashing once: {kin}, {kinWho}.',
+    early: 'Vharra came back from the hatchery grinning like she\'d won a war. (she squares her shoulders) I want to win one too. I\'m asking you myself.',
+    mid: 'The Clutch barely hunts the snowline anymore. Why fight wyrms for strong blood when the strongest is here? (a flash of fangs) So — I\'m asking.',
+    late: 'There\'s no more duelling in the hatchery over who gets to choose a mate from the wild. We just come to you. (she laughs, short and fierce) I came.',
+    oath: 'Refuse me and the Clutch still burns for you. We don\'t break oaths over a no.',
+    mantle: '"Kin," she breathes at the sight of your Mantle, and touches her horns to yours.',
+    gentle: 'She takes you to the warm hatchery and holds you by the fires with a strength that is careful, and proud.',
+    steamy: 'By the hatchery fires {kin} courts you like a duel she has every intention of losing — wings snapping wide, all heat and hunger and drake-kin pride.',
+    no: '(a respectful nod, blade to blade) Strength is in refusing too. I\'ll still burn for you.',
+    later: 'Fine. I\'ll wait by the fire. (she settles on the gate, tail swaying) Don\'t take too long.',
+  }),
+};
+
+// Stage scenes: the tribe coming to rely on you instead of the wild.
+const stageEv = (tid, st, steps) => ({ id: `kin_stage_${tid}_${st}`, where: 'auto', once: true, priority: 70, steps });
+export const KIN_STAGE_EVENTS = [
+  stageEv('aerie', 2, [
+    { s: 'narr', t: 'At dawn you find nests woven into the library\'s broken skylight — a dozen of them, lined with moth dust and antler velvet.' },
+    { s: 'kestra', t: 'The nest-mothers moved half the Aerie. The far woods are cold, and the hunting\'s thin. (she shrugs, smug) Here, there\'s you.' },
+    { s: 'codex', t: '[ THE SKYREND AERIE — NESTING NEAR. Tribute ×3; suitors come more often. ]' },
+  ]),
+  stageEv('aerie', 3, [
+    { s: 'narr', t: 'The Aerie\'s hunting parties no longer fly to the Pale Wood\'s far edges. They bring their catch to your Menagerie first, and drop the best of it at your feet.' },
+    { s: 'kestra', t: 'We used to look for strength in the storms. Now the young ones look for it here. (she preens one wing) I told them they would.' },
+    { s: 'codex', t: '[ THE SKYREND AERIE — DEVOTED. Tribute ×4; a suitor every few days. ]' },
+  ]),
+  stageEv('aerie', 4, [
+    { s: 'narr', t: 'Every harpy of the Skyrend Aerie circles the drowned library at once, a spiral so wide it blots out the moon, and sings the old oath-song again — this time with your name in it.' },
+    { s: 'kestra', t: 'The nest-mothers met. There is no more choosing between the wild and the warlock. Every clutch, every nest. We are yours.' },
+    { s: 'codex', t: '[ THE SKYREND AERIE — YOUR TRIBE. Tribute ×5; they hunt for you now (+30 gold nightly). ]' },
+  ]),
+  stageEv('coil', 2, [
+    { s: 'narr', t: 'The Drowned Stacks\' black water has more coils in it every morning. The Coil has started laying its brood-pools under your library.' },
+    { s: 'sythra', t: 'The deep mire is cold. The Coil likes warm. (her tongue flickers) You are warm.' },
+    { s: 'codex', t: '[ THE COIL OF THE BLACK MIRE — NESTING NEAR. Tribute ×3; suitors come more often. ]' },
+  ]),
+  stageEv('coil', 3, [
+    { s: 'narr', t: 'The Coil\'s elders have stopped sending their young to the far pools to choose mates. You hear it from three different naga, each very pleased to be the one to tell you.' },
+    { s: 'sythra', t: 'They used to go looking. Now they know where to look. (she coils, satisfied) I take full credit.' },
+    { s: 'codex', t: '[ THE COIL OF THE BLACK MIRE — DEVOTED. Tribute ×4; a suitor every few days. ]' },
+  ]),
+  stageEv('coil', 4, [
+    { s: 'narr', t: 'The whole Coil rises from the black water at once, and every one of them wraps the library\'s drowned pillars, slowly, and lets go. Held, and released. The oath, from all of them.' },
+    { s: 'sythra', t: 'The Mire was ours. Now it is yours, and so are we. The Coil hunts for you now.' },
+    { s: 'codex', t: '[ THE COIL OF THE BLACK MIRE — YOUR TRIBE. Tribute ×5; they hunt for you now (+30 gold nightly). ]' },
+  ]),
+  stageEv('clutch', 2, [
+    { s: 'narr', t: 'The drowned stair is warm every morning now. The Clutch has lit a second hatchery-fire just beyond your Menagerie gate.' },
+    { s: 'vharra', t: 'Snowline\'s cold. Wyrms are rude. (a fanged grin) Your stair is better.' },
+    { s: 'codex', t: '[ THE ASHREACH CLUTCH — NESTING NEAR. Tribute ×3; suitors come more often. ]' },
+  ]),
+  stageEv('clutch', 3, [
+    { s: 'narr', t: 'The Clutch no longer duels on the snowline to win the right to go looking for strong blood in the wild. Vharra says it was getting embarrassing, how fast everyone wanted to lose.' },
+    { s: 'vharra', t: 'The hoard\'s here. The strength\'s here. (she taps your chest) Nobody\'s looking anywhere else.' },
+    { s: 'codex', t: '[ THE ASHREACH CLUTCH — DEVOTED. Tribute ×4; a suitor every few days. ]' },
+  ]),
+  stageEv('clutch', 4, [
+    { s: 'narr', t: 'Thirty drake-kin breathe fire into the sky over the dead city again — and then, one by one, every one of them kneels on the warm stair and lays her blade at your feet.' },
+    { s: 'vharra', t: 'You\'re not our hoard anymore. You\'re our Clutch. The whole of it. We hunt for you now.' },
+    { s: 'codex', t: '[ THE ASHREACH CLUTCH — YOUR TRIBE. Tribute ×5; they hunt for you now (+30 gold nightly). ]' },
+  ]),
+];
