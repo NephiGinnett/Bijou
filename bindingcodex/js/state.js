@@ -845,14 +845,15 @@ const BEAST_NAMES = ['Soot', 'Bramble', 'Morrow', 'Tallow', 'Wick', 'Ember', 'Gl
 
 function makeBeast(S, c, traitsOverride = null) {
   const fam = c.family || 'ember_hound';
-  const traitIds = Object.keys(BEAST_TRAITS);
+  const traitIds = Object.keys(BEAST_TRAITS).filter(t => !BEAST_TRAITS[t].imbued);
   if (c.named === 'pale_stag') traitsOverride = ['lustrous', 'hardy'];
   const traits = traitsOverride || (c.elite ? [pick(traitIds), pick(traitIds)].filter((t, i, a) => a.indexOf(t) === i) : [pick(traitIds)]);
   return { id: uid('bst_'), defId: c.defId, family: fam, named: c.named || null,
     name: c.named === 'pale_stag' ? 'The Pale Stag' : c.named === 'vex' ? 'The Watcher' : pick(BEAST_NAMES),
     kind: ENEMIES[c.defId]?.name || BEAST_FAMILIES[fam].name,
     // new arrivals come in fed (on whatever they were caught chewing) so the first night is safe
-    tame: c.elite ? 15 : 25, hunger: 20, traits, yieldId: BEAST_FAMILIES[fam].reagent, fed: true, born: S.day };
+    tame: c.elite ? 15 : 25, hunger: 20, traits, yieldId: BEAST_FAMILIES[fam].reagent, fed: true, born: S.day,
+    family2: c.family2 || null, yieldId2: c.family2 ? BEAST_FAMILIES[c.family2].reagent : null };
 }
 
 // --- the Undercroft ------------------------------------------------------------
@@ -1146,9 +1147,10 @@ export function tendMenagerie(S) {
       if (handler === 'nessa' && fam.plant) n *= 2;
       S.reagents[b.yieldId] = (S.reagents[b.yieldId] || 0) + n;
       log.push(`${b.name} the ${b.kind.toLowerCase()} yields ${n} ${REAGENTS[b.yieldId].name.toLowerCase()}.`);
+      if (b.yieldId2) { S.reagents[b.yieldId2] = (S.reagents[b.yieldId2] || 0) + 1; log.push(`…and 1 ${REAGENTS[b.yieldId2].name.toLowerCase()}, from its other bloodline.`); }
     } else {
       b.hunger = Math.min(100, b.hunger + Math.round(35 * beastTrait(b, 'hungerMult')));
-      b.tame = Math.max(0, b.tame - (docile ? 3 : 8));
+      if (!b.traits.includes('codex_touched')) b.tame = Math.max(0, b.tame - (docile ? 3 : 8));
       if (b.tame < 10 && b.hunger >= 70 && !docile && !b.traits.includes('hardy') && Math.random() < 0.4) {
         S.menagerie = S.menagerie.filter(x => x !== b);
         delete S.handlers[b.id];
@@ -1169,7 +1171,8 @@ export function tendMenagerie(S) {
     if (S.day >= egg.hatchDay) {
       S.eggs = S.eggs.filter(e => e !== egg);
       if (S.menagerie.length >= S.pens) { log.push(`An egg hatched — but there was no free pen, and the little thing wandered off.`); continue; }
-      const b = makeBeast(S, { family: egg.family, defId: egg.defId }, egg.traits);
+      const b = makeBeast(S, { family: egg.family, family2: egg.family2, defId: egg.defId }, egg.traits);
+      if (egg.family2) b.kind = egg.variant;
       b.name = egg.name || b.name;
       b.tame = 40;
       S.menagerie.push(b);
@@ -1182,18 +1185,39 @@ export function tendMenagerie(S) {
 // Two tame beasts of one family produce a variant egg with a mixed trait.
 export function canBreed(S, aId, bId) {
   const a = S.menagerie.find(x => x.id === aId), b = S.menagerie.find(x => x.id === bId);
-  return !!(a && b && a !== b && a.family === b.family && a.tame >= 60 && b.tame >= 60 && !a.bredDay && !b.bredDay
+  const cross = a && b && (a.traits.includes('crossblooded') || b.traits.includes('crossblooded'));
+  return !!(a && b && a !== b && (a.family === b.family || cross) && a.tame >= 60 && b.tame >= 60 && !a.bredDay && !b.bredDay
     && S.menagerie.length + S.eggs.length < S.pens + 1);
 }
 export function breed(S, aId, bId) {
   if (!canBreed(S, aId, bId)) return null;
   const a = S.menagerie.find(x => x.id === aId), b = S.menagerie.find(x => x.id === bId);
-  const traits = [pick(a.traits), pick(b.traits)].filter((t, i, arr) => arr.indexOf(t) === i);
-  const variant = traits.map(t => BEAST_TRAITS[t].name).join('-');
-  const egg = { family: a.family, defId: a.defId, traits, variant, hatchDay: S.day + 3 };
+  // imbued (Codex-Touched) blood is passed on as Crossblooded, never as the imbuing itself
+  const inherit = t => (BEAST_TRAITS[t].imbued ? 'crossblooded' : t);
+  const traits = [inherit(pick(a.traits)), inherit(pick(b.traits))].filter((t, i, arr) => arr.indexOf(t) === i);
+  const hybrid = a.family !== b.family;
+  if (hybrid && !traits.includes('crossblooded')) traits.push('crossblooded'); // hybrids carry the mixing blood on
+  const variant = hybrid ? `${BEAST_FAMILIES[a.family].name} × ${BEAST_FAMILIES[b.family].name.toLowerCase()}` : traits.map(t => BEAST_TRAITS[t].name).join('-');
+  const egg = { family: a.family, family2: hybrid ? b.family : null, defId: a.defId, traits, variant, hatchDay: S.day + 3 };
   S.eggs.push(egg);
   a.bredDay = b.bredDay = S.day;
   return egg;
+}
+
+// Imbue a tame beast with your mark: Codex-Touched and Crossblooded.
+export function imbueCost(S) { return 40 * (S.circleIdx + 1); }
+export function canImbue(S, beastId) {
+  const b = S.menagerie.find(x => x.id === beastId);
+  return !!(b && b.tame >= 80 && !b.traits.includes('codex_touched') && S.gold >= imbueCost(S));
+}
+export function imbueBeast(S, beastId) {
+  if (!canImbue(S, beastId)) return false;
+  const b = S.menagerie.find(x => x.id === beastId);
+  S.gold -= imbueCost(S);
+  b.traits = b.traits.filter(t => t !== 'crossblooded').concat(['codex_touched', 'crossblooded']);
+  addCorruption(S, 1);
+  addChronicle(S, `${b.name} was imbued with the warlock's mark.`);
+  return true;
 }
 
 export function buyPen(S) {

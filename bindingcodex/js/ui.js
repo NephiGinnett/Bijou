@@ -1534,11 +1534,12 @@ function menagerie() {
       <div class="traits">${b.traits.map(t => `<span class="trait" title="${esc(BEAST_TRAITS[t].desc)}">${BEAST_TRAITS[t].name}</span>`).join('')}${b.tame >= 100 ? '<span class="trait" title="Its handler can summon it in battle.">★ trained</span>' : ''}</div>
       <div class="meter"><span>Tame</span>${bar('tame', b.tame)}<span>${b.tame}</span></div>
       <div class="meter"><span>Hunger</span>${bar('hunger', b.hunger)}<span>${b.hunger}</span></div>
-      <div class="sm-text muted">Yields ${REAGENTS[b.yieldId].icon} ${REAGENTS[b.yieldId].name} when fed${fam.plant ? ' · plant (Nessa doubles)' : ''}${fam.infernal ? ' · infernal (Rue calms)' : ''}</div>
+      <div class="sm-text muted">Yields ${REAGENTS[b.yieldId].icon} ${REAGENTS[b.yieldId].name}${b.yieldId2 ? ` + ${REAGENTS[b.yieldId2].icon} ${REAGENTS[b.yieldId2].name}` : ''} when fed${fam.plant ? ' · plant (Nessa doubles)' : ''}${fam.infernal ? ' · infernal (Rue calms)' : ''}</div>
       <div class="sm-text muted">Handler: <select class="handler-sel" data-id="${b.id}"><option value="">— none —</option>${handlerPool.map(id => `<option value="${id}" ${handler === id ? 'selected' : ''}>${esc(heroName(id))}</option>`).join('')}</select> <small>(+50% yield${b.tame >= 100 ? '; summons it in battle' : ''})</small></div>
       <div class="row gap">
         <button class="btn sm feed ${b.fed || S.gold < cost ? 'disabled' : ''}" data-id="${b.id}">${b.fed ? 'fed today' : `feed ◈${cost}g`}</button>
-        <button class="btn sm breed" data-id="${b.id}" title="Pick two tame (60+) beasts of the same family.">${breedPick === b.id ? 'cancel' : '♥ breed'}</button>
+        <button class="btn sm breed" data-id="${b.id}" title="Pick two tame (60+) beasts of the same family — or any family, if one is Crossblooded.">${breedPick === b.id ? 'cancel' : '♥ breed'}</button>
+        ${b.traits.includes('codex_touched') ? '' : `<button class="btn sm imbue ${ST.canImbue(S, b.id) ? '' : 'disabled'}" data-id="${b.id}" title="Pour your mark into it (needs tame 80): Codex-Touched + Crossblooded. +1 Corruption.">✦ imbue ◈${ST.imbueCost(S)}g</button>`}
       </div>
     </div>`;
   }).join('');
@@ -1548,7 +1549,7 @@ function menagerie() {
   screen(`
     <div class="panel map-panel">
       <div class="row spread"><h2>🐾 The Menagerie</h2><div class="row gap"><span class="gold">◈ ${S.gold}g</span><button class="btn ghost" id="mn-back">← Codex</button></div></div>
-      <p class="muted">Pens: <b>${S.menagerie.length}/${S.pens}</b>. Fed beasts tame up and produce reagents each night; hungry ones sour, and below 10 tame they may bolt. Tame 100 and a beast's handler can summon it in battle. ${eggs ? '<br>' + eggs : ''}</p>
+      <p class="muted">Pens: <b>${S.menagerie.length}/${S.pens}</b>. Fed beasts tame up and produce reagents each night; hungry ones sour, and below 10 tame they may bolt. Tame 100 and a beast's handler can summon it in battle. At tame 80 you can <b>imbue</b> a beast with your mark — it becomes Crossblooded and can breed across families into hybrids that yield both parents' reagents. ${eggs ? '<br>' + eggs : ''}</p>
       <div class="row gap">
         <button class="btn ${unfed && S.gold >= cost * unfed ? '' : 'disabled'}" id="mn-feedall">Feed all (◈${cost * unfed}g)</button>
         <button class="btn ${S.gold >= ST.penCost(S) ? '' : 'disabled'}" id="mn-pen">Build a pen (◈${ST.penCost(S)}g)</button>
@@ -1566,12 +1567,16 @@ function menagerie() {
     const nm = prompt('Name this beast:', beast.name);
     if (nm && nm.trim()) { beast.name = nm.trim().slice(0, 16); ST.save(S); menagerie(); }
   });
+  document.querySelectorAll('.imbue:not(.disabled)').forEach(b => b.onclick = () => {
+    if (!confirm('Imbue this beast with your mark? (+1 Corruption)')) return;
+    if (ST.imbueBeast(S, b.dataset.id)) { AU.sfx('promo'); toast('Violet light floods its veins. Codex-Touched, and Crossblooded.', 'gold'); ST.save(S); menagerie(); }
+  });
   document.querySelectorAll('.breed').forEach(b => b.onclick = () => {
     const id = b.dataset.id;
     if (!breedPick || breedPick === id) { breedPick = breedPick === id ? null : id; menagerie(); return; }
     const egg = ST.breed(S, breedPick, id);
     if (egg) { AU.sfx('promo'); toast(`An egg! A ${egg.variant} variant, due on day ${egg.hatchDay}.`, 'gold'); }
-    else toast('They need to be the same family, both tame 60+, not bred before, with a pen free.');
+    else toast('They need to share a family (or one must be Crossblooded), both tame 60+, not bred before, with a pen free.');
     breedPick = null;
     ST.save(S);
     menagerie();

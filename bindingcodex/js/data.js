@@ -992,6 +992,8 @@ export const BEAST_TRAITS = {
   glutton:  { name: 'Glutton',  desc: 'Gets hungry twice as fast.', hungerMult: 2 },
   hardy:    { name: 'Hardy',    desc: 'Never escapes.', noEscape: true },
   lustrous: { name: 'Lustrous', desc: 'Its reagents sell for double.', sellMult: 2 },
+  crossblooded:  { name: 'Crossblooded', desc: 'Can breed with a beast of a different family. Hybrid young yield both parents\' reagents.', cross: true },
+  codex_touched: { name: 'Codex-Touched', desc: 'Imbued with your mark: tames twice as fast, +50% yield, and never sours when hungry.', tameMult: 2, yieldBonus: 0.5, noSour: true, imbued: true },
 };
 
 export const REAGENTS = {
