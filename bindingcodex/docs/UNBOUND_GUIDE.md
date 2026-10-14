@@ -4,16 +4,17 @@ Everything Zoe needs to fill the **Unbound** intimacy tier in Binding Codex (56 
 
 ## How the tiers work
 
-- Every intimate beat comes in three versions, and the game shows **exactly one** of them, chosen by **Settings → Intimacy**:
-  - `spice: 'gentle'`: fade-to-warm. Written.
-  - `spice: 'steamy'`: sensual, implicit, nothing graphic. Written.
-  - `spice: 'unbound'`: yours. Each one is a stub that looks like:
+- Every intimate beat has a Gentle, a Steamy and an Unbound version, chosen by **Settings → Intimacy**:
+  - `spice: 'gentle'`: fade-to-warm. Written. Shows on Gentle only.
+  - `spice: 'steamy'`: sensual, implicit, nothing graphic. Written. Shows on Steamy **and** Unbound.
+  - `spice: 'unbound'`: yours. Shows on Unbound only. Each one is a stub that looks like:
     ```js
     { s: 'narr', t: '', spice: 'unbound' }, // ZOE: unbound
     ```
-- Unbound **replaces** the steamy line rather than following it. A player on Unbound never sees the steamy text, so each stub has to carry the whole beat on its own: the lead-in, the scene, and the landing. Read the steamy line next to the stub first, then write the full version.
+- **Unbound follows Steamy.** On Unbound the player sees the steamy line first, then your lines. The steamy line sets the scene; you pick up where it leaves off and carry the beat to its landing. You don't need to repeat the setting.
 - A stub can grow into several lines. Copy the stub line as many times as you need, and give each copy `spice: 'unbound'`. Dialogue works too: `{ s: 'vesper', t: '…', spice: 'unbound' }`.
-- An empty stub (`t: ''`) is skipped automatically, so an unfilled stub just means the scene ends a beat early on Unbound.
+- An empty stub (`t: ''`) is skipped automatically, so an unfilled stub just reads as the Steamy version.
+- **Need more context?** `docs/UNBOUND_CONTEXT.md` prints every stub's whole scene in reading order: what leads up to it, the choice the player made, the Gentle and Steamy lines, and the tokens you can use. Regenerate it after changing scenes with `node tools/stub_context.mjs` (run from `bindingcodex/`).
 - **Never add intimacy to a captive.** Every event with spice lines is gated by `free(...)`, so it can only fire once the character is a free ally. On load, the game logs a console warning if any spice line could be reached otherwise.
 
 ## Consent framing you can rely on

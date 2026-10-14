@@ -139,9 +139,12 @@ scenes).
   and six endings (Redeemed · Damned Together · The Long Night · The
   Ascended Warlock · The Codex Keeps You · secret: The Coven Unmade).
 
-Intimacy lines carry `spice: 'gentle' | 'steamy' | 'unbound'` and only the
-setting's tier shows. **Unbound** lines are stubs marked `// ZOE: unbound`
-— see **docs/UNBOUND_GUIDE.md** for every stub and what it should cover.
+Intimacy lines carry `spice: 'gentle' | 'steamy' | 'unbound'`. Gentle and
+Steamy show only on their own setting; **Unbound** plays the Steamy line
+first and then continues with the Unbound lines. Unbound lines are stubs
+marked `// ZOE: unbound`. See **docs/UNBOUND_GUIDE.md** for every stub and
+what it should cover, and **docs/UNBOUND_CONTEXT.md** for each stub's whole
+scene in reading order (regenerate with `node tools/stub_context.mjs`).
 Characters whose story began in chains (Calla, Mira Vane, Aelindra,
 Elspeth) can later ask, as free allies, to revisit that dynamic — always
 through a negotiation scene first, with their own limits and stop word.

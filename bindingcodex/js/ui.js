@@ -144,11 +144,14 @@ function subName(text) {
     .replaceAll('{kin}', TOKEN_CTX.kin || 'a tribeswoman');
 }
 
-// Intimacy tiers stack: Gentle shows gentle lines; Steamy shows steamy
-// lines; Unbound shows unbound lines. Exactly one tier per beat.
+// Intimacy tiers: Gentle shows gentle lines; Steamy shows steamy lines;
+// Unbound plays the steamy line first, then continues with the unbound
+// lines (an unwritten Unbound stub simply reads as Steamy).
 function spiceVisible(st) {
   if (!st.spice) return true;
-  return st.spice === (S.settings.spice || 'gentle');
+  const tier = S.settings.spice || 'gentle';
+  if (tier === 'unbound') return st.spice === 'steamy' || st.spice === 'unbound';
+  return st.spice === tier;
 }
 function goreVisible(st) {
   if (!st.gore) return true;
