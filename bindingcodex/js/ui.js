@@ -3,7 +3,7 @@
 // ============================================================
 
 import { RANKS, RANK_STYLE, HEROES, SKILLS, STATUSES, ITEMS, BIOMES, GATE_MODIFIERS, AFFIXES, xpToNext, heroStatsAt, gearScore, shopStock, GATE_GP, recruitOffers, reforgeCost, reforgeGear, ROLE_INFO, heroDesc,
-  TAROT, FACTIONS, LOCATIONS, LAIR_POWER, ENEMIES, GATE_ROOMS, CAPTIVE_TRAITS, BEAST_FAMILIES, BEAST_TRAITS, REAGENTS, RECIPES, PACTS, WARDEN_STYLES } from './data.js';
+  TAROT, TRIBES, FACTIONS, LOCATIONS, LAIR_POWER, ENEMIES, GATE_ROOMS, CAPTIVE_TRAITS, BEAST_FAMILIES, BEAST_TRAITS, REAGENTS, RECIPES, PACTS, WARDEN_STYLES } from './data.js';
 import * as ST from './state.js';
 import { Combat, SEAL_MP } from './combat.js';
 import { Stage, makePortrait } from './scene3d.js';
@@ -95,7 +95,7 @@ function affixChip(g) {
 }
 function heroName(id) { return id === 'player' ? S.name : (HEROES[id] ? HEROES[id].name : id); }
 function heroColor(id) { return (SPEAKERS[id] && SPEAKERS[id].color) || (HEROES[id] && HEROES[id].color) || '#fff'; }
-function heroVariant(id) { return id === 'player' && S ? S.pronouns + (S.flags.scarred ? '_scar' : '') : null; }
+function heroVariant(id) { return id === 'player' && S ? S.pronouns + (S.flags.pact_wyrm_mantle ? '_mantle' : '') + (S.flags.scarred ? '_scar' : '') : null; }
 function bar(cls, pct, title = '') {
   return `<div class="bar-outer ${cls} sm" title="${esc(title)}"><div class="bar-inner" style="width:${Math.max(0, Math.min(100, pct))}%"></div></div>`;
 }
@@ -105,7 +105,9 @@ async function refreshPortraits(force = false) {
   const key = (S ? heroVariant('player') : 'she') + '|' + (S ? Object.keys(S.converts || {}).length : 0);
   if (!force && PORTRAITS.__key === key) return;
   PORTRAITS.__key = key;
-  await Promise.all(Object.keys(HEROES).map(async id => {
+  // heroes, plus pack characters who aren't party members (tribe envoys)
+  const ids = [...new Set([...Object.keys(HEROES), ...Object.keys(LOOKS)])];
+  await Promise.all(ids.map(async id => {
     PORTRAITS[id] = await makePortrait(id, heroVariant(id));
   }));
   document.querySelectorAll('img[data-portrait]').forEach(img => {
@@ -151,7 +153,7 @@ export function playEvent(ev) {
     if (ev.once && S.seen[ev.id]) return resolve();
     if (ev.id && ev.id !== 'banter') S.seen[ev.id] = true;
     // romance guard: spice lines never show for someone who isn't a free ally
-    const romanceOk = !ev.cond || !ev.cond.__allies || ev.cond.__allies.every(id => ST.isAlly(S, id));
+    const romanceOk = !ev.cond || ev.cond.__tribe ? (!ev.cond || ev.cond(S)) : (!ev.cond.__allies || ev.cond.__allies.every(id => ST.isAlly(S, id)));
 
     const layer = el(`<div class="dialogue-layer">
       <div class="dialogue-box">
@@ -441,6 +443,7 @@ async function hub() {
         <div class="menu-grid">
           <button class="btn big primary" id="g-map">⌖ Expedition<small>raid a rival or roam the wild</small></button>
           ${ST.isAlly(S, 'vesper') ? `<button class="btn big ${ST.canRead(S) ? 'notify' : ''}" id="g-read">🂠 Vesper's Reading${ST.canRead(S) ? '<em>!</em>' : ''}<small>${S.omen && S.omen.day === S.day ? TAROT[S.omen.card].icon + ' ' + TAROT[S.omen.card].name : 'a free card, every day'}</small></button>` : ''}
+          ${Object.values(S.tribes || {}).some(t => t.status) ? `<button class="btn big ${Object.keys(S.tribes).some(id => ST.tribeRequest(S, id)?.ok) ? 'notify' : ''}" id="g-tribes">🪶 Wild Tribes<small>${Object.values(S.tribes).filter(t => t.status === 'sworn').length} sworn</small></button>` : ''}
           ${S.flags.vesper_joined ? `<button class="btn big" id="g-rivals">⚔ Rivals<small>${Object.values(S.factions).filter(f => f.fate).length}/5 dominated</small></button>` : ''}
           <button class="btn big" id="g-party">✦ Allies<small>stats, skills & gear</small></button>
           ${S.flags.undercroft_open ? `<button class="btn big ${releaseReady || unwarded ? 'notify' : ''}" id="g-under">⛓ Undercroft${releaseReady || unwarded ? '<em>!</em>' : ''}<small>${S.captives.length} captive${S.captives.length === 1 ? '' : 's'}${unwarded ? ` · ${unwarded} unwarded` : ''}</small></button>` : ''}
@@ -479,6 +482,7 @@ async function hub() {
   on('g-map', () => { AU.sfx('confirm'); worldMap(); });
   on('g-read', () => { AU.sfx('confirm'); vesperReading(); });
   on('g-rivals', () => { AU.sfx('ui'); rivals(); });
+  on('g-tribes', () => { AU.sfx('ui'); tribes(); });
   on('g-party', () => { AU.sfx('ui'); party(); });
   on('g-under', () => { AU.sfx('ui'); undercroft(); });
   on('g-men', () => { AU.sfx('ui'); menagerie(); });
@@ -778,6 +782,36 @@ function rivals() {
 }
 
 // ------------------------------------------------------------------
+// wild tribes — drawn by your Menagerie, sworn by your gifts
+// ------------------------------------------------------------------
+
+function tribes() {
+  const rows = Object.entries(TRIBES).filter(([id]) => S.tribes[id].status).map(([id, T]) => {
+    const t = S.tribes[id];
+    const req = ST.tribeRequest(S, id);
+    return `<div class="cell-card">
+      <div class="row spread"><h3 style="color:${T.color}">${T.icon} ${esc(T.name)}</h3><span class="fate-tag" style="color:${T.color}">${t.status.toUpperCase()}${t.rite ? ' · BLOOD-BOUND' : ''}</span></div>
+      <div class="recruit-head">${portraitImg(T.envoy)}<div><b style="color:${T.color}">${esc(SPEAKERS[T.envoy].name)}</b><br><small class="muted">${esc(T.race)} · ${esc(LOCATIONS[T.home].name)}</small></div></div>
+      <div class="sm-text ${t.status === 'sworn' ? 'gold' : 'muted'}">Sworn perk: ${esc(T.perk)} Nightly tribute: ${Object.entries(T.tribute).map(([r, n]) => `${n}× ${REAGENTS[r].name}`).join(', ')}${t.rite ? ' (doubled)' : ''}.</div>
+      ${req ? `<div class="sm-text">They ask for ${esc(req.ask)}: ${Object.entries(req.reagents).map(([r, n]) => `${n}× ${REAGENTS[r].name} (have ${S.reagents[r] || 0})`).join(', ')}${req.gold ? ` + ${req.gold}g` : ''}</div>
+        <button class="btn sm gift ${req.ok ? '' : 'disabled'}" data-id="${id}">Give the gift</button>` : ''}
+    </div>`;
+  }).join('');
+  const next = Object.entries(TRIBES).filter(([id]) => !S.tribes[id].status).sort((a, b) => a[1].draw - b[1].draw)[0];
+  screen(`
+    <div class="panel map-panel">
+      <div class="row spread"><h2>🪶 Wild Tribes</h2><button class="btn ghost" id="tb-back">← Codex</button></div>
+      <p class="muted">Sapient monster-folk, drawn by a Menagerie that thrives. Meet their requests and they swear fealty: tribute, perks, and — if one of them asks you herself — a breeding rite. Saying no never breaks an oath. ${next ? `Your Menagerie has produced <b>${S.stats.reagentsProduced || 0}</b> reagents; something else is watching from far off.` : ''}</p>
+      <div class="cells">${rows || '<p class="muted">No tribe has come yet.</p>'}</div>
+    </div>
+  `);
+  $('#tb-back').onclick = () => hub();
+  document.querySelectorAll('.gift:not(.disabled)').forEach(b => b.onclick = async () => {
+    if (ST.giveTribeGift(S, b.dataset.id)) { AU.sfx('promo'); ST.save(S); await drainQueue(); tribes(); }
+  });
+}
+
+// ------------------------------------------------------------------
 // Vesper's reading — a free card every day
 // ------------------------------------------------------------------
 
@@ -915,7 +949,7 @@ function dungeonScreen() {
       return `<button class="btn ${opt.elite ? 'danger-door' : ''} d-door" data-i="${i}">${d.icon} ${d.name}<small>${d.desc}</small></button>`;
     }).join('');
   } else if (node.type === 'fight' || node.type === 'boss') {
-    const hidden = gate.modifier === 'hidden' && node.type !== 'boss';
+    const hidden = gate.modifier === 'hidden' && node.type !== 'boss' && !ST.tribeSworn(S, 'aerie');
     const names = {};
     node.group.forEach(e => names[e.name] = (names[e.name] || 0) + 1);
     const hasElite = node.group.some(e => e.elite);

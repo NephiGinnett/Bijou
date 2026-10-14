@@ -197,6 +197,8 @@ const HERO_BUILDERS = {
     // the warlock: hooded ash-black coat, violet-lined, sigil-mark aglow
     const scar = !!v && v.endsWith('_scar');
     if (scar) v = v.slice(0, -5);
+    const mantle = !!v && v.endsWith('_mantle');
+    if (mantle) v = v.slice(0, -7);
     const fem = v === 'she';
     const g = chibi({ skin: 0xead2bc, hair: 0x1e1a22, hairstyle: fem ? 'long' : v === 'they' ? 'straight' : 'short', outfit: 0x221c2a, sleeve: 0x221c2a, legColor: 0x17131c, eyeColor: 0x8a5ad8, chest: fem ? 1 : 0 });
     add(g, Cone(0.4, 0.62, 9, 1, true), mat(0x17131c), 0, 0.82, -0.06);                                   // long coat
@@ -205,6 +207,14 @@ const HERO_BUILDERS = {
     add(g, Tor(0.07, 0.02, 6, 10), mat(0xc86cff, { emissive: 0xc86cff, ei: 1.6 }), -0.39, 0.62, 0.02, Math.PI / 2); // the mark
     const orb = add(g, S(0.07, 10, 10), mat(0xc86cff, { emissive: 0xc86cff, ei: 2 }), 0.44, 0.72, 0.08);    // hex-light in hand
     orb.name = 'orb';
+    if (mantle) { // the Wyrm's Mantle: horns, wings, tail
+      horns(g, 0x2a1a34, 1.48, 0.15, 0.3);
+      wings(g, 0x2a1a3a, 1.0, 0.62);
+      const tail = new THREE.Group();
+      add(tail, Cap(0.04, 0.55, 4, 6), mat(0x221c2a), 0, 0, 0, 0, 0, 0.9);
+      add(tail, Cone(0.08, 0.14, 4), mat(0xc86cff, { emissive: 0xc86cff, ei: 1.2 }), -0.3, -0.2, 0, 0, 0, 2.4);
+      tail.position.set(0, 0.42, -0.3); tail.rotation.x = 0.5; g.add(tail);
+    }
     if (scar) { // the Scar Rite: a glowing ember scar across the face
       const sm = mat(0xff5a3a, { emissive: 0xff5a3a, ei: 1.8 });
       add(g, Box(0.03, 0.26, 0.012), sm, 0.08, 1.2, 0.3, 0.1, 0, -0.5);
@@ -483,9 +493,10 @@ const MONSTER_BUILDERS = {
     if (master) { horns(g, 0xe8dcc8, 1.5, 0.2, 0.3); g.scale.setScalar(1.12); } // antler crown
     return g;
   },
-  moth() {
+  moth(v) {
     const g = new THREE.Group();
-    const bm = mat(0x6a6070, { rough: 1, flat: true });
+    const bm = mat(v === 'shrike' ? 0x3a2a2a : 0x6a6070, { rough: 1, flat: true });
+    if (v === 'shrike') add(g, Cone(0.05, 0.22, 4), mat(0xd8c84a), 0, 1.0, 0.24, Math.PI / 2); // hooked beak
     add(g, Cap(0.12, 0.4, 4, 8), bm, 0, 0.9, 0);
     for (const sx of [-1, 1]) {
       const w = add(g, Box(0.6, 0.45, 0.02), mat(0x8a8090, { rough: 1, opacity: 0.9 }), sx * 0.36, 1.0, -0.05, 0, 0, sx * 0.3);

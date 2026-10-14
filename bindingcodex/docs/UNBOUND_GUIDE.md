@@ -1,6 +1,6 @@
 # Unbound Writing Guide
 
-Everything Zoe needs to fill the **Unbound** intimacy tier in Binding Codex.
+Everything Zoe needs to fill the **Unbound** intimacy tier in Binding Codex (40 stubs across 32 scenes).
 
 ## How the tiers work
 
@@ -81,6 +81,21 @@ File: `js/story.js` (base cast) or `js/packs/<pack>.js` (pack cast). Search for 
 | `sister_maren_romance` | 2 · "Take the sash from her hands." | same | The red sash and ten years of discipline let go together. |
 | `kira_romance` | "Break it with her." | rule-breaking | "No sleeping with regulars." Laughing, loud, the back room of the Drowned Rose, bottles rattling. |
 
+### Wildkin (`js/packs/wildkin.js`)
+
+All partners here are **sapient adults speaking for themselves**. Menagerie beasts are animals and are never partners. In a tribe rite, the envoy asks for herself and declining never costs the tribe's fealty. If the warlock has sworn **the Wyrm's Mantle** (`S.flags.pact_wyrm_mantle`), a `mantled` line plays before your stub. You can branch your own Unbound lines the same way with `cond: S => !!S.flags.pact_wyrm_mantle`.
+
+| Event | Choice | Tags | What to write |
+| --- | --- | --- | --- |
+| `tribe_aerie_rite` | "Accept her." | breeding, monster (harpy) | Kestra, wing-sister of the Skyrend Aerie, asked to carry your blood to the high nests. Set it in the Pale Wood's highest branch under the full moon: wings mantled around you both like a living tent, fierce and playful, feathers and heat, harpy courtship. Talons, a hawk's cry. |
+| `tribe_coil_rite` | "Accept her." | breeding, monster (naga) | Sythra, voice of the Coil, in the warm brood-pools under the Black Mire. Coil after coil, slow and deliberate, impossibly patient, the hiss of your name. Naga oaths are "held, and released," so echo that. |
+| `tribe_clutch_rite` | "Accept her." | breeding, monster (drake-kin) | Vharra, blade of the Clutch, in the forge-warm hatchery of the Ashreach. A courtship like a duel she means to lose: fierce, hot-blooded, wings snapping wide, drake-kin pride. If mantled: "Kin." |
+| `lysandre_romance` | 1 · "As she truly is" | shapeshifting, breeding | Every shape falls away. Being wanted exactly as she is undoes her more than any transformation. |
+| `lysandre_romance` | 2 · "Her drake-shape" | monster forms | Heat and strength, careful claws, wings around you both. A flier learning to hold still, then not. |
+| `lysandre_romance` | 3 · "Her serpent-shape" | monster forms | Coil by gleaming coil, her whole body one embrace that tightens with each shared breath. |
+| `rue_mantle` | "Find out." | monster forms, demon | Rue meets the mantled warlock tail-to-tail and horn-to-horn. Two infernal things burn hotter than one: smoke off the sheets, her brand blazing and not one word a lie. |
+| `nyxe_mantle` | "Then come down here and explode." | monster forms, abyssal | Nyxe faces something more monstrous than herself and is speechless for the first time, then very loud. Wings everywhere. |
+
 ## Voice cheat-sheet
 
 - **Vesper**: dry, teasing, bookish. Hides devotion in wit until it breaks through.
@@ -91,3 +106,7 @@ File: `js/story.js` (base cast) or `js/packs/<pack>.js` (pack cast). Search for 
 - **Nyxe**: a brat, gleefully, with no shame about it. Pure mischief.
 - **Valdra**: ancient, liturgical, dignified.
 - **Mira Vane, Aelindra, Elspeth**: give them agency first. The negotiated terms are part of their voice.
+- **Kestra** (harpy): bright, birdlike, quick, proud of her flock.
+- **Sythra** (naga): languid, teasing, patient. Says "mmm."
+- **Vharra** (drake-kin): blunt and fierce. Honors strength, including the strength to refuse.
+- **Lysandre**: wistful, shape-shifting mid-sentence, longs to be chosen.

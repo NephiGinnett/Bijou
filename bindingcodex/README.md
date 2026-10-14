@@ -71,6 +71,23 @@ Add `?fast=1` to the URL for instant text and 3× animation speed.
 Climb the six **Circles of the Codex** — Ash, Ember, Hex, Thorn, Crown,
 Abyss — by earning **Infamy**.
 
+## Wild tribes, hybrids & the Wyrm's Mantle
+
+- **Imbue** a tame Menagerie beast with your mark: Codex-Touched (faster
+  taming, +50% yield, never sours) and **Crossblooded** — it can breed
+  across families into hybrids that yield both parents' reagents.
+- A thriving Menagerie draws **wild tribes** of sapient monster-folk — the
+  harpies of the Skyrend Aerie, the naga of the Black Mire's Coil, the
+  drake-kin of the Ashreach Clutch. Meet their envoys' requests and they
+  swear fealty (tribute + a perk); a sworn tribe's envoy may ask, for
+  herself, for a breeding rite (declining never breaks the oath).
+- **Lysandre**, a shapeshifter, arrives when your first hybrid hatches.
+- **The Wyrm's Mantle** (pact): horns, wings and tail on your model, a
+  monstrous battle form, and scenes with the allies who'd love it.
+
+Menagerie beasts are animals and never romance partners; every partner
+in the game is a sapient adult who is free and chooses it.
+
 ## Character packs
 
 Built from the Character Packs GDD (Settings → Character packs toggles
@@ -80,7 +97,8 @@ Ashveil, Maren Soleil, Cole Ashmer, the Pale Stag, Seris's duels, Vex
 through the Menagerie), **Northern Reach** (Valdra, Nyxe, Mira Vane, Rhea,
 Aelindra, Legate Aurelia, Brynn, Sera — and the Mira Vane → Rhea → Valdra
 testimony chain), **Classic Fantasy** (Elara Moonwhisper, Lady Seraphine,
-Elspeth, Sister Maren, Kira).
+Elspeth, Sister Maren, Kira), **Wildkin** (the tribes, Lysandre, Mantle
+scenes).
 
 ## Story
 

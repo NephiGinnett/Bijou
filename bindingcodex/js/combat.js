@@ -9,7 +9,7 @@
 // ============================================================
 
 import { SKILLS, STATUSES, HEROES, ITEMS, ELITES, ENEMIES, GATE_MODIFIERS } from './data.js';
-import { heroStats, heroSkills, heroLoadout, masteryRank, bumpMastery, MASTERY_POWER, MASTERY_MP_DISCOUNT, recordCapture, recordKill, recordYield, addCorruption, leaderInCells } from './state.js';
+import { heroStats, heroSkills, heroLoadout, masteryRank, bumpMastery, MASTERY_POWER, MASTERY_MP_DISCOUNT, recordCapture, recordKill, recordYield, addCorruption, leaderInCells, tribeSworn } from './state.js';
 
 export const SEAL_MP = 10;
 const WILL_REGEN = 0.06;      // Will an enemy recovers each of its turns
@@ -82,7 +82,8 @@ export class Combat {
     }
     // Tower rifts: the floor is on fire, for everyone.
     if (S.run.gate && S.run.gate.modifier === 'burning') {
-      for (const u of this.units) u.statuses.push({ id: 'burn', turns: 2, power: 0 });
+      // sworn drake-kin flame-wardens shield the party from burning floors
+      for (const u of this.units) if (u.side === 'enemy' || !tribeSworn(S, 'clutch')) u.statuses.push({ id: 'burn', turns: 2, power: 0 });
     }
     // Ashreach cold: everyone moves slower
     if (S.run.gate && S.run.gate.modifier === 'frozen') {
@@ -120,6 +121,7 @@ export class Combat {
       if (this.S.run.bait) mult += 0.15;
       if (mod.beastSeal) mult += mod.beastSeal;
       if (leaderInCells(this.S, 'lodge')) mult += 0.1;
+      if (tribeSworn(this.S, 'coil')) mult += 0.1;
     }
     chance *= mult;
     if (this.hasStatus(tgt, 'pinned') || this.hasStatus(tgt, 'bound')) chance += 0.15;

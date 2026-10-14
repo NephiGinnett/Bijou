@@ -216,6 +216,20 @@ export const HEROES = {
   },
 };
 
+// ---- Lysandre, the Many-Shaped (arrives after your first hybrid hatches) ----
+HEROES.lysandre = {
+  id: 'lysandre', recruit: true, arrive: { flag: 'lysandre_arrives' },
+  name: 'Lysandre', epithet: 'the Many-Shaped', cls: 'Shapeshifter',
+  desc: 'A changeling from the Pale Wood, born of two bloodlines that were never supposed to meet. She has been every shape and belonged to none. Your Menagerie, where mixed blood is honored, is the first place that has ever felt like home.',
+  startLevel: 10,
+  base:   { hp: 110, mp: 40, atk: 14, mag: 12, def: 10, res: 10, agi: 14, luk: 11 },
+  growth: { hp: 9.5, mp: 3.5, atk: 2.0, mag: 1.6, def: 1.4, res: 1.3, agi: 1.6, luk: 1.1 },
+  skills: { 1: 'feral_strike_ls', 2: 'shift_drake', 4: 'shift_coil', 8: 'coil_crush', 14: 'drake_breath', 24: 'hellmouth' },
+  passive: { id: 'many_shaped', name: 'Many-Shaped', desc: 'Her shifts last longer than they should. Handles Crossblooded beasts best: +1 yield from any hybrid she handles.' },
+  role: 'striker', color: '#8ad8a8', model: 'lysandre',
+  contentTags: ['shapeshifting', 'monster forms', 'breeding'],
+};
+
 // ---- Reclaimed leaders (join only from the Undercroft) ----
 Object.assign(HEROES, {
   aldric: { id: 'aldric', convertOnly: true, name: 'Aldric', epithet: 'Lord-Commander, Unsworn', cls: 'Vigil Commander',
@@ -313,6 +327,9 @@ export const STATUSES = {
   drained:   { name: 'Drained',    icon: '◌', kind: 'debuff', mods: { mag: -0.25, res: -0.15 } },
   omen:      { name: 'Omen',       icon: '☾', kind: 'buff',   mods: { mag: 0.2, luk: 0.3, agi: 0.1 } },
   read:      { name: 'Read',       icon: '◉', kind: 'debuff', takenUp: 0.1 },
+  mantle:    { name: 'Wyrm\'s Mantle', icon: '🜂', kind: 'buff', mods: { atk: 0.3, mag: 0.3, def: 0.1, agi: 0.15 } },
+  form_drake:{ name: 'Drake Form', icon: '🐉', kind: 'buff', mods: { atk: 0.35, def: 0.25, agi: -0.1 } },
+  form_coil: { name: 'Coil Form',  icon: '〰', kind: 'buff', mods: { agi: 0.4, mag: 0.2, res: 0.15 } },
 };
 
 // ------------------------------------------------------------
@@ -429,6 +446,14 @@ export const SKILLS = {
   summon_wyrm:   { name: 'Call the Wyrm', type: 'mag', power: 1.4, mp: 16, target: 'enemy', anim: 'cast', apply: { to: 'target', id: 'agi_down', turns: 2 }, desc: 'Breath like the Ashreach in winter.' },
   summon_imp:    { name: 'Call the Imp', type: 'mag', power: 1.2, mp: 10, target: 'enemy', anim: 'cast', apply: { to: 'target', id: 'atk_down', turns: 2, chance: 0.7 }, desc: 'Your imp shrieks rude things. Weakens.' },
 
+  // The Wyrm's Mantle (pact) & Lysandre's shapes
+  feral_strike_ls:{ name: 'Changeling Claw', type: 'phys', power: 1.1, mp: 0, target: 'enemy', anim: 'melee', apply: { to: 'target', id: 'bleed', turns: 2, chance: 0.35 }, desc: 'Whatever her hand is today, it has claws.' },
+  monstrous_form:{ name: 'Wyrm\'s Mantle', type: 'support', mp: 12, target: 'self', anim: 'buff', freeAction: true, apply: { to: 'target', id: 'mantle', turns: 3 }, desc: 'Horns, wings, claws: your monstrous form. +30% ATK/MAG, +10% DEF, +15% AGI. Free action.' },
+  shift_drake:   { name: 'Drake Shape', type: 'support', mp: 10, target: 'self', anim: 'buff', apply: [{ to: 'target', id: 'form_drake', turns: 4 }, { to: 'target', id: 'taunt', turns: 2 }], desc: 'Scales and wings. +35% ATK, +25% DEF; draws enemy attacks.' },
+  shift_coil:    { name: 'Coil Shape', type: 'support', mp: 10, target: 'self', anim: 'buff', apply: { to: 'target', id: 'form_coil', turns: 4 }, desc: 'A serpent\'s grace. +40% AGI, +20% MAG.' },
+  coil_crush:    { name: 'Coil Crush', type: 'phys', power: 0.8, mp: 12, target: 'enemy', anim: 'melee', subdue: 40, grapple: true, apply: { to: 'target', id: 'pinned', turns: 1, chance: 0.75 }, desc: 'Wraps a foe and squeezes. Heavy Will drain; likely Pins.' },
+  drake_breath:  { name: 'Drake Breath', type: 'mag', power: 1.2, mp: 18, target: 'all_enemies', anim: 'cast', apply: { to: 'target', id: 'burn', turns: 2, chance: 0.7 }, desc: 'Fire from a borrowed throat.' },
+
   // Enemies
   e_bite:        { name: 'Bite', type: 'phys', power: 1.0, mp: 0, target: 'enemy', anim: 'melee' },
   e_smash:       { name: 'Crushing Smash', type: 'phys', power: 1.7, mp: 0, target: 'enemy', anim: 'melee', cooldown: 3 },
@@ -529,7 +554,7 @@ export const ENEMIES = {
   hunting_hound: { name: 'Lodge Bloodhound', model: 'wolf', variant: 'hunt', captureType: 'beast', family: 'ember_hound', sealResist: 0.05, base: { hp: 58, atk: 14, mag: 4, def: 7, res: 5, agi: 15 }, skills: ['e_bite', 'e_howl'], xp: 12, gold: 7 },
   // ---- Wild monsters ----
   gloom_moth:    { name: 'Gloom Moth',     model: 'moth', captureType: 'beast', family: 'gloom_moth', sealResist: 0.05, base: { hp: 40, atk: 7, mag: 14, def: 4, res: 10, agi: 17 }, skills: ['e_shriek', 'e_drain'], xp: 12, gold: 7 },
-  harpy:         { name: 'Gallows Harpy',  model: 'harpy', captureType: 'beast', family: 'gloom_moth', sealResist: 0.15, base: { hp: 56, atk: 14, mag: 9, def: 6, res: 8, agi: 16 }, skills: ['e_pounce', 'e_shriek', 'e_rend'], xp: 14, gold: 10 },
+  harpy:         { name: 'Gallows Shrike', model: 'moth', variant: 'shrike', captureType: 'beast', family: 'gloom_moth', sealResist: 0.15, base: { hp: 56, atk: 14, mag: 9, def: 6, res: 8, agi: 16 }, skills: ['e_pounce', 'e_shriek', 'e_rend'], xp: 14, gold: 10 },
   basilisk:      { name: 'Mire Basilisk',  model: 'drake', variant: 'basilisk', captureType: 'beast', family: 'mire_drake', sealResist: 0.2, will: 1.3, base: { hp: 86, atk: 14, mag: 12, def: 12, res: 10, agi: 7 }, skills: ['e_bite', 'e_frost', 'e_venom'], xp: 17, gold: 11 },
   mire_troll:    { name: 'Mire Troll',     model: 'yeti', variant: 'troll', captureType: 'beast', family: 'mire_drake', sealResist: 0.2, will: 1.4, base: { hp: 110, atk: 17, mag: 4, def: 11, res: 7, agi: 6 }, skills: ['strike', 'e_smash', 'e_heal'], xp: 19, gold: 12 },
   chimera:       { name: 'Ash Chimera',    model: 'wolf', variant: 'chimera', captureType: 'beast', family: 'ember_hound', sealResist: 0.3, will: 1.4, base: { hp: 92, atk: 17, mag: 13, def: 9, res: 9, agi: 13 }, skills: ['e_bite', 'e_ember', 'e_venom', 'e_aoe_phys'], xp: 20, gold: 14 },
@@ -1002,7 +1027,7 @@ export const REAGENTS = {
   drake_scale:    { name: 'Drake scale',    icon: '◆', price: 18, desc: 'Mire-green and harder than iron. From mire drakes.' },
   antler_velvet:  { name: 'Antler velvet',  icon: '❦', price: 16, desc: 'Moss-soft, faintly luminous. From hollow stags.' },
   brimstone_salt: { name: 'Brimstone salt', icon: '⛬', price: 15, desc: 'Yellow crystals that hiss in water. From lesser imps.' },
-  moth_dust:      { name: 'Moth dust',      icon: '❋', price: 15, desc: 'Grey powder that makes you yawn just looking at it. From gloom moths and harpies.' },
+  moth_dust:      { name: 'Moth dust',      icon: '❋', price: 15, desc: 'Grey powder that makes you yawn just looking at it. From gloom moths and gallows shrikes.' },
   wyrm_frost:     { name: 'Wyrm frost',     icon: '❄', price: 20, desc: 'A rime that never melts. From Ashreach wyrms.' },
 };
 
@@ -1036,8 +1061,36 @@ export const PACTS = {
   blood_surge: { name: 'Blood Surge',   cost: 'trust', corruption: 8,  desc: 'An ally\'s stats surge +12% forever. You pay with their trust (−2 bond).' },
   scar_rite:   { name: 'The Scar Rite', cost: 'scar',  corruption: 10, desc: 'Learn the forbidden hex Cinder Unmaking. The Codex carves a scar into your portrait.' },
   memory_toll: { name: 'Memory Toll',   cost: 'memory', corruption: 6, desc: 'Binding Seals +10% stronger. A past scene is crossed out of the Chronicle.' },
+  wyrm_mantle: { name: 'The Wyrm\'s Mantle', cost: 'form', corruption: 8, desc: 'Your body remembers being a storm: horns, wings, a tail, and a monstrous battle form. The wild tribes adore it.' },
   ember_debt:  { name: 'Ember Debt',    cost: 'gold',  corruption: 4,  gold: 300, desc: 'The altar takes coin, too. +1 seal attempt per fight costs no MP.' },
 };
 
 // Forbidden "Slot VI" spells unlocked at 50+ Corruption.
 export const SLOT_VI = ['name_eater', 'cinder_unmaking'];
+
+// ============================================================
+// Wild tribes — sapient monster-folk drawn to a thriving Menagerie.
+// Not party members: sworn tribes pay tribute and grant a perk, and
+// their people may ask (for themselves) for a breeding rite.
+// ============================================================
+
+export const TRIBES = {
+  aerie: { name: 'The Skyrend Aerie', race: 'Harpies', icon: '🪶', color: '#c8a87a', home: 'pale_wood', envoy: 'kestra',
+    draw: 12, // total reagents your Menagerie has produced before they come
+    gifts: [ { reagents: { moth_dust: 2 }, gold: 80, ask: 'two pinches of moth dust and a purse of coin, for the nest-mothers' },
+             { reagents: { antler_velvet: 2, cinder_ash: 2 }, gold: 0, ask: 'antler velvet and cinder ash, to line the high nests' } ],
+    tribute: { moth_dust: 1, antler_velvet: 1 },
+    perk: 'Harpy scouts fly ahead of you: Fog-Veiled holdings no longer hide their enemies.' },
+  coil: { name: 'The Coil of the Black Mire', race: 'Naga', icon: '🐍', color: '#6ab88a', home: 'black_mire', envoy: 'sythra',
+    draw: 30,
+    gifts: [ { reagents: { silk_venom: 3 }, gold: 120, ask: 'three draughts of silk venom and coin for the brood-pools' },
+             { reagents: { drake_scale: 2, brimstone_salt: 2 }, gold: 0, ask: 'drake scale and brimstone salt, to warm the eggs' } ],
+    tribute: { silk_venom: 1, drake_scale: 1 },
+    perk: 'Naga venom-binders teach your seals to coil: Binding Seals on beasts +10%.' },
+  clutch: { name: 'The Ashreach Clutch', race: 'Drake-kin', icon: '🐲', color: '#d87a4a', home: 'ashreach_temple', envoy: 'vharra',
+    draw: 55,
+    gifts: [ { reagents: { wyrm_frost: 2 }, gold: 150, ask: 'wyrm frost and coin, for the clutch-hoard' },
+             { reagents: { cinder_ash: 3, drake_scale: 2 }, gold: 0, ask: 'cinder ash and drake scale, to keep the hatchery burning' } ],
+    tribute: { wyrm_frost: 1, cinder_ash: 1 },
+    perk: 'Drake-kin flame-wardens stand with you: your party ignores Burning Floors.' },
+};

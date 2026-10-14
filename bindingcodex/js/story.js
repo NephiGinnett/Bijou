@@ -1249,7 +1249,8 @@ function stepsHaveSpice(steps) {
 export function checkIntimacyGates() {
   const bad = [];
   for (const ev of Object.values(EVENTS)) {
-    if (stepsHaveSpice(ev.steps) && !(ev.cond && ev.cond.__allies && ev.cond.__allies.length)) bad.push(ev.id);
+    const gated = ev.cond && ((ev.cond.__allies && ev.cond.__allies.length) || ev.cond.__tribe);
+    if (stepsHaveSpice(ev.steps) && !gated) bad.push(ev.id);
     if (ev.where === 'cell' && stepsHaveSpice(ev.steps)) bad.push(ev.id + ' (cell scene)');
   }
   if (bad.length) console.warn('[Binding Codex] Events with spice lines lack an allies-only cond:', bad);

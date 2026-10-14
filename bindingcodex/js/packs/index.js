@@ -13,11 +13,13 @@ import { negotiation } from './common.js';
 import * as obsidian from './obsidian.js';
 import * as northern from './northern.js';
 import * as classic from './classic.js';
+import * as wildkin from './wildkin.js';
 
 export const PACKS = {
   obsidian: { name: 'Obsidian College', mod: obsidian, desc: 'Lady Auren Voss, the Revenant Bride, Mira Ashveil, Maren Soleil, Cole Ashmer, the Pale Stag; Seris\'s duels; Vex in the Menagerie.' },
   northern: { name: 'Northern Reach', mod: northern, desc: 'Valdra, Nyxe, Mira Vane, Rhea, Aelindra, Legate Aurelia, Brynn, Sera; the Ashreach testimony chain.' },
   classic:  { name: 'Classic Fantasy', mod: classic, desc: 'Elara Moonwhisper, Lady Seraphine, Elspeth, Sister Maren, Kira.' },
+  wildkin:  { name: 'Wildkin', mod: wildkin, desc: 'Harpy, naga and drake-kin tribes drawn to your Menagerie; Lysandre the shapeshifter; Wyrm\'s Mantle scenes.' },
 };
 
 let installed = false;
@@ -43,6 +45,7 @@ export function installPacks() {
       const orig = ev.cond;
       const wrapped = S => packOn(S, pid) && (!orig || orig(S));
       if (orig && orig.__allies) wrapped.__allies = orig.__allies;
+      if (orig && orig.__tribe) wrapped.__tribe = orig.__tribe;
       ev.cond = wrapped;
     }
     if (m.nightly) registerNightly(pid, m.nightly);

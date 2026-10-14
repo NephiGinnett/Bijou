@@ -6,7 +6,7 @@
 import {
   RANKS, RANK_UP_GP, GATE_GP, XP_MULT, ENEMY_TIER, HEROES, heroStatsAt, heroSkillsAt,
   xpToNext, BIOMES, GATE_ROOMS, TAROT, ENEMIES, makeGear, AFFIXES,
-  FACTIONS, LOCATIONS, LAIR_POWER, POWER, GATE_MODIFIERS,
+  FACTIONS, LOCATIONS, LAIR_POWER, POWER, GATE_MODIFIERS, TRIBES,
   ELITES, ELITE_XP_MULT, ELITE_GOLD_MULT, eliteChance, ROLE_INFO, DISPATCH_BENCHMARK,
   CAPTIVE_TRAITS, CAPTIVE_NAMES, SECRETS, WARDEN_STYLES, BEAST_FAMILIES, BEAST_TRAITS,
   REAGENTS, RECIPES, RECIPE_DISCOVERY, recipeFor, ITEMS, PACTS, SLOT_VI,
@@ -57,11 +57,12 @@ export function newGame(playerName, pronouns = 'she') {
     gearBag: [],
     factions: Object.fromEntries(Object.keys(FACTIONS).map(id => [id, { power: 100, fate: null }])),
     lieutenants: {},                 // lieutenant id → captured | yielded | slain
+    tribes: Object.fromEntries(Object.keys(TRIBES).map(id => [id, { status: null, gifts: 0, rite: false }])),
     visits: {},                      // location id → clears
     omen: null,                      // Vesper's card for today
     readingDay: 0,
     run: null,
-    stats: { clears: 0, kills: 0, captures: 0, retreats: 0, wipes: 0, tone: {} },
+    stats: { clears: 0, kills: 0, captures: 0, retreats: 0, wipes: 0, tone: {}, reagentsProduced: 0 },
     legacy: { cycle: 0, xpBoost: 0 },
     cleared: false,
     clearedDay: 0,
@@ -86,7 +87,7 @@ export function newGame(playerName, pronouns = 'she') {
     reagents: {},
     recipes: [],
     chronicle: [],                   // { day, text, ev, crossed }
-    settings: { volume: 0.6, music: true, textFast: false, spice: 'gentle', gore: 'gentle', outfit: 'adventure', autoBattle: false, packs: { obsidian: true, northern: true, classic: true } },
+    settings: { volume: 0.6, music: true, textFast: false, spice: 'gentle', gore: 'gentle', outfit: 'adventure', autoBattle: false, packs: { obsidian: true, northern: true, classic: true, wildkin: true } },
   };
   S.heroes.player = { level: 1, xp: 0, gear: { weapon: null, armor: null, charm: null } };
   return S;
@@ -106,6 +107,8 @@ export function ensureShape(S) {
   for (const k of Object.keys(d.stats)) if (S.stats[k] === undefined) S.stats[k] = d.stats[k];
   for (const k of Object.keys(d.bond)) if (S.bond[k] === undefined) S.bond[k] = 0;
   for (const k of Object.keys(d.factions)) if (!S.factions[k]) S.factions[k] = { power: 100, fate: null };
+  for (const k of Object.keys(d.tribes)) if (!S.tribes[k]) S.tribes[k] = d.tribes[k];
+  if (S.stats.reagentsProduced == null) S.stats.reagentsProduced = 0;
   if (!S.settings.packs) S.settings.packs = d.settings.packs;
   if (!S.allies.includes('player')) S.allies.unshift('player');
   if (!PRONOUNS[S.pronouns]) S.pronouns = 'she';
@@ -208,6 +211,7 @@ export function heroSkills(S, id) {
   if (id === 'player') {
     if ((S.corruption || 0) >= 50) for (const sk of SLOT_VI) if (!out.includes(sk)) out.push(sk);
     if (S.flags && S.flags.pact_scar_rite && !out.includes('cinder_unmaking')) out.push('cinder_unmaking');
+    if (S.flags && S.flags.pact_wyrm_mantle && !out.includes('monstrous_form')) out.push('monstrous_form');
   }
   const beast = trainedBeastFor(S, id);
   if (beast) out.push(BEAST_FAMILIES[beast.family].summon);
@@ -380,6 +384,47 @@ function factionNight(S, log) {
     if (fid === 'market') { const g = Math.round(60 * mult); S.gold += g; log.push(`Market tribute: ${g} gold.`); }
     if (fid === 'lodge') addInfamy(S, Math.round(5 * mult));
   }
+}
+
+// --- wild tribes ---------------------------------------------------------------------
+
+export function tribeSworn(S, tid) { return !!(S.tribes && S.tribes[tid] && S.tribes[tid].status === 'sworn'); }
+
+function tribeNight(S, log) {
+  for (const [tid, T] of Object.entries(TRIBES)) {
+    const t = S.tribes[tid];
+    if (!packOn(S, 'wildkin')) continue;
+    if (!t.status && (S.stats.reagentsProduced || 0) >= T.draw) {
+      t.status = 'curious';
+      S.queue.push(`tribe_${tid}_arrive`);
+      log.push(`${T.race} have been seen circling the Menagerie.`);
+    }
+    if (t.status === 'sworn') {
+      const mult = t.rite ? 2 : 1;
+      for (const [r, n] of Object.entries(T.tribute)) S.reagents[r] = (S.reagents[r] || 0) + n * mult;
+    }
+  }
+}
+
+// What the tribe wants next, and whether you can give it.
+export function tribeRequest(S, tid) {
+  const t = S.tribes[tid];
+  if (!t || !t.status || t.status === 'sworn') return null;
+  const g = TRIBES[tid].gifts[t.gifts];
+  if (!g) return null;
+  const ok = S.gold >= (g.gold || 0) && Object.entries(g.reagents).every(([r, n]) => (S.reagents[r] || 0) >= n);
+  return { ...g, ok };
+}
+export function giveTribeGift(S, tid) {
+  const req = tribeRequest(S, tid);
+  if (!req || !req.ok) return false;
+  S.gold -= req.gold || 0;
+  for (const [r, n] of Object.entries(req.reagents)) S.reagents[r] -= n;
+  const t = S.tribes[tid];
+  t.gifts++;
+  if (t.gifts >= TRIBES[tid].gifts.length) { t.status = 'sworn'; S.queue.push(`tribe_${tid}_sworn`); addChronicle(S, `${TRIBES[tid].name} swore fealty.`); }
+  else { t.status = 'friendly'; S.queue.push(`tribe_${tid}_friendly`); }
+  return true;
 }
 
 // --- the map: holdings you can raid ------------------------------------------------
@@ -764,6 +809,7 @@ export function advanceDay(S) {
   log.push(...advanceReclamation(S));
   log.push(...tendMenagerie(S));
   factionNight(S, log);
+  tribeNight(S, log);
   S.dayLog = log;
   return log;
 }
@@ -1145,7 +1191,9 @@ export function tendMenagerie(S) {
       if (handler) extra += 0.5;
       while (extra > 0) { if (Math.random() < Math.min(1, extra)) n++; extra -= 1; }
       if (handler === 'nessa' && fam.plant) n *= 2;
+      if (handler === 'lysandre' && b.family2) n += 1;
       S.reagents[b.yieldId] = (S.reagents[b.yieldId] || 0) + n;
+      S.stats.reagentsProduced = (S.stats.reagentsProduced || 0) + n + (b.yieldId2 ? 1 : 0);
       log.push(`${b.name} the ${b.kind.toLowerCase()} yields ${n} ${REAGENTS[b.yieldId].name.toLowerCase()}.`);
       if (b.yieldId2) { S.reagents[b.yieldId2] = (S.reagents[b.yieldId2] || 0) + 1; log.push(`…and 1 ${REAGENTS[b.yieldId2].name.toLowerCase()}, from its other bloodline.`); }
     } else {
@@ -1172,7 +1220,10 @@ export function tendMenagerie(S) {
       S.eggs = S.eggs.filter(e => e !== egg);
       if (S.menagerie.length >= S.pens) { log.push(`An egg hatched — but there was no free pen, and the little thing wandered off.`); continue; }
       const b = makeBeast(S, { family: egg.family, family2: egg.family2, defId: egg.defId }, egg.traits);
-      if (egg.family2) b.kind = egg.variant;
+      if (egg.family2) {
+        b.kind = egg.variant;
+        if (!S.flags.first_hybrid) { S.flags.first_hybrid = true; S.queue.push('lysandre_arrives'); }
+      }
       b.name = egg.name || b.name;
       b.tame = 40;
       S.menagerie.push(b);
@@ -1276,6 +1327,7 @@ export function canPact(S, pactId) {
   const p = PACTS[pactId];
   if (!p) return false;
   if (S.pacts.includes(pactId) && pactId !== 'blood_surge' && pactId !== 'memory_toll') return false;
+  if (pactId === 'wyrm_mantle' && S.circleIdx < 2) return false;
   if (p.cost === 'gold' && S.gold < p.gold) return false;
   if (p.cost === 'memory' && !S.chronicle.some(c => !c.crossed)) return false;
   return true;
@@ -1298,6 +1350,8 @@ export function swearPact(S, pactId, opts = {}) {
     const [entry] = live.find(([, i]) => i === opts.entry) || live[live.length - 1];
     entry.crossed = true;
     S.sealPower += 0.10;
+  } else if (p.cost === 'form') {
+    S.flags.pact_wyrm_mantle = true;
   } else if (p.cost === 'gold') {
     S.gold -= p.gold;
     S.flags.free_seal = true;
