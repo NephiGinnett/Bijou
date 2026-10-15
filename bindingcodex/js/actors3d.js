@@ -249,8 +249,8 @@ function toonVesper(variant) {
   const P = parseToon(variant);
   return toonFigure(dressed({
     build: 'slim', bust: 1.15, gear: P.gear,
-    colors: { skin: 0xf2e2da, hair: 0x141018, main: 0x221c36, deep: 0x342a52, trim: 0xc8a050 },
-    face: { eye: 0x9a88c8, brow: 0x2a2030, blush: 0xf08aa8, lashes: 0x141018 },
+    colors: { skin: 0xf6ecee, hair: 0x0e0a12, main: 0x16121e, deep: 0x2a1e3a, trim: 0xb8b8c8 },
+    face: { eye: 0x8a6ac8, brow: 0x16101a, blush: 0xd89ab0, lashes: 0x0a080c, shadow: 0x3a2050, lip: 0x4a1a34 },
     top: { style: 'coat', keyhole: true, cut: 1.15, buttons: 4, corset: true }, skirt: { style: 'long', hem: 0.16 },
     legs: { style: 'pants', color: 0x18142a, boots: 0x18142a, bootHeight: 0.4 },
     sleeves: 'long', hair: 'straight',
@@ -265,7 +265,7 @@ function toonVesper(variant) {
     },
   }, {
     formal: { colors: { main: 0x1a1226, deep: 0x2a1e3e, trim: 0xc8c8d8, glove: 0x1a1226 }, top: { style: 'corset', cut: 1.12 }, skirt: { style: 'long', hem: 0.05 }, sleeves: 'bare', legs: { style: 'pants', color: 0x1a1226, boots: 0x1a1226 } },
-    offduty: { colors: { main: 0x4a3a6a, deep: 0x342a52, glove: 0xf2e2da }, top: { style: 'corset', cut: 1.05, corset: false }, skirt: { style: 'long', hem: 0.36 }, sleeves: 'bare', legs: { style: 'bare', boots: 0x2a2030, bootHeight: 0.15 } },
+    offduty: { colors: { main: 0x2a1e3a, deep: 0x16121e, trim: 0xb8b8c8, glove: 0xf6ecee }, top: { style: 'corset', cut: 1.05, corset: false }, skirt: { style: 'long', hem: 0.36 }, sleeves: 'bare', legs: { style: 'bare', boots: 0x2a2030, bootHeight: 0.15 } },
   }, P.outfit));
 }
 
@@ -275,8 +275,8 @@ function toonRue(variant) {
   const P = parseToon(variant);
   return toonFigure(dressed({
     build: 'slim', bust: 1.05, gear: P.gear,
-    colors: { skin: 0xf4cdb6, hair: 0xb8202a, main: 0x1a1214, deep: 0x3a1418, trim: 0xc02a3a, glove: 0x1a1214 },
-    face: { eye: 0xff8a2a, brow: 0x7a1a1a, blush: 0xff7a8a, mouth: 'smirk' },
+    colors: { skin: 0x9a6446, hair: 0xb8202a, main: 0x1a1214, deep: 0x3a1418, trim: 0xc02a3a, glove: 0x1a1214 },
+    face: { eye: 0xffa040, brow: 0x5a1414, blush: 0xc8505a, lip: 0x5a1e24, mouth: 'smirk' },
     top: { style: 'corset', cut: 1.0 }, skirt: { style: 'tattered', hem: 0.66 },
     legs: { style: 'stockings', color: 0x1a1214, boots: 0x1a1214, band: 0xc02a3a, bootHeight: 0.35 },
     sleeves: 'bare', hair: 'curly',
@@ -287,7 +287,7 @@ function toonRue(variant) {
     },
   }, {
     formal: { colors: { main: 0x8a1420, deep: 0x1a1214, trim: 0x1a1214, glove: 0x1a1214 }, top: { style: 'corset', cut: 0.98 }, skirt: { style: 'long', hem: 0.05 }, sleeves: 'bare', legs: { style: 'pants', color: 0x1a1214, boots: 0x1a1214 } },
-    offduty: { colors: { main: 0x2a1a1c, glove: 0xf4cdb6 }, top: { style: 'corset', cut: 0.95, corset: false }, skirt: { style: 'tattered', hem: 0.72, color: 0x3a1418 }, sleeves: 'bare', legs: { style: 'bare', boots: 0x1a1214, bootHeight: 0.5 } },
+    offduty: { colors: { main: 0x2a1a1c, glove: 0x9a6446 }, top: { style: 'corset', cut: 0.95, corset: false }, skirt: { style: 'tattered', hem: 0.72, color: 0x3a1418 }, sleeves: 'bare', legs: { style: 'bare', boots: 0x1a1214, bootHeight: 0.5 } },
   }, P.outfit));
 }
 

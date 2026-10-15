@@ -67,7 +67,7 @@ export function outline(group, width = 0.016) {
 
 // A canvas texture wrapped over the front of the head: big glossy anime
 // eyes with lashes and highlights, soft brows, blush and a small smile.
-export function faceTexture({ eye = 0x8a5ad8, brow = 0x8a6a3a, blush = 0xff8aa0, lashes = 0x2a1a22, mouth = 'smile', closed = false } = {}) {
+export function faceTexture({ eye = 0x8a5ad8, brow = 0x8a6a3a, blush = 0xff8aa0, lashes = 0x2a1a22, mouth = 'smile', closed = false, lip = 0x8a3a4a, shadow = null } = {}) {
   const W = 512, H = 256;
   const cv = document.createElement('canvas'); cv.width = W; cv.height = H;
   const c = cv.getContext('2d');
@@ -76,6 +76,12 @@ export function faceTexture({ eye = 0x8a5ad8, brow = 0x8a6a3a, blush = 0xff8aa0,
   const lift = (n, f) => '#' + new THREE.Color(n).lerp(new THREE.Color(0xffffff), f).getHexString();
   for (const side of [-1, 1]) {
     const cx = W / 2 + side * 78, cy = 118, rx = 30, ry = 42;
+    if (shadow != null) {
+      // eyeshadow: a soft smoky wash over the lid, flicked out at the corner
+      const sh = c.createRadialGradient(cx + side * 22, cy + 8, 6, cx + side * 22, cy + 8, 64);
+      sh.addColorStop(0, hex(shadow) + 'dd'); sh.addColorStop(0.55, hex(shadow) + '77'); sh.addColorStop(1, hex(shadow) + '00');
+      c.fillStyle = sh; c.beginPath(); c.ellipse(cx + side * 20, cy + 6, rx + 34, ry + 16, side * 0.35, 0, Math.PI * 2); c.fill();
+    }
     if (closed) {
       c.strokeStyle = hex(lashes); c.lineCap = 'round'; c.lineWidth = 8;
       c.beginPath(); c.ellipse(cx, cy + 10, rx + 6, 14, 0, Math.PI * 0.05, Math.PI * 0.95); c.stroke();
@@ -102,8 +108,9 @@ export function faceTexture({ eye = 0x8a5ad8, brow = 0x8a6a3a, blush = 0xff8aa0,
     c.strokeStyle = hex(lashes); c.lineCap = 'round'; c.lineWidth = 9;
     c.beginPath(); c.ellipse(cx, cy + 6, rx + 8, ry + 2, 0, Math.PI * 1.08, Math.PI * 1.92); c.stroke();
     c.lineWidth = 6; c.beginPath(); c.moveTo(cx + side * (rx + 6), cy - 18); c.lineTo(cx + side * (rx + 18), cy - 30); c.stroke();
+    if (shadow != null) { c.lineWidth = 7; c.beginPath(); c.moveTo(cx + side * (rx + 4), cy + 2); c.quadraticCurveTo(cx + side * (rx + 20), cy - 6, cx + side * (rx + 34), cy - 22); c.stroke(); }
     // a soft lower lash
-    c.lineWidth = 3; c.globalAlpha = 0.6; c.beginPath(); c.ellipse(cx, cy + 4, rx + 4, ry, 0, Math.PI * 0.2, Math.PI * 0.8); c.stroke(); c.globalAlpha = 1;
+    c.lineWidth = shadow != null ? 5 : 3; c.globalAlpha = shadow != null ? 0.9 : 0.6; c.beginPath(); c.ellipse(cx, cy + 4, rx + 4, ry, 0, Math.PI * 0.2, Math.PI * 0.8); c.stroke(); c.globalAlpha = 1;
     // brow
     c.strokeStyle = hex(brow); c.lineWidth = 6;
     c.beginPath(); c.moveTo(cx - side * 26, cy - ry - 22); c.quadraticCurveTo(cx + side * 4, cy - ry - 34, cx + side * 30, cy - ry - 24); c.stroke();
@@ -113,7 +120,7 @@ export function faceTexture({ eye = 0x8a5ad8, brow = 0x8a6a3a, blush = 0xff8aa0,
     c.fillStyle = b; c.beginPath(); c.ellipse(cx + side * 34, cy + 66, 40, 22, 0, 0, Math.PI * 2); c.fill();
   }
   // mouth
-  c.strokeStyle = '#8a3a4a'; c.lineWidth = 5; c.lineCap = 'round';
+  c.strokeStyle = hex(lip); c.lineWidth = lip === 0x8a3a4a ? 5 : 7; c.lineCap = 'round';
   c.beginPath();
   if (mouth === 'smile') { c.moveTo(W / 2 - 16, 214); c.quadraticCurveTo(W / 2, 226, W / 2 + 16, 214); c.stroke(); }
   else if (mouth === 'open' || mouth === 'mid') {
