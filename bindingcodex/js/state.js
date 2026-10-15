@@ -68,7 +68,7 @@ export function newGame(playerName, pronouns = 'she') {
     clearedDay: 0,
     ngPlus: 0,
     mastery: {},
-    hangouts: {}, family: [], expecting: {}, seenDay: {}, eveningDay: -1, guests: {}, wardrobe: {}, town: {},
+    hangouts: {}, family: [], expecting: {}, seenDay: {}, eveningDay: -1, guests: {}, wardrobe: {}, town: {}, bossesBeaten: {},
     autoSkill: {},
     dispatch: [],
     dispatchReports: [],
@@ -358,6 +358,7 @@ export function newGamePlus(S) {
   }
   const N = newGame(S.name, S.pronouns);
   N.gearBag = carried;
+  N.bossesBeaten = { ...(S.bossesBeaten || {}) }; // you've already faced them once
   N.mastery = S.mastery || {};
   N.autoSkill = S.autoSkill || {};
   N.settings = S.settings;
@@ -1652,6 +1653,15 @@ export function rollTreasure(S, gate, rng) {
     return { kind: 'item', item };
   }
 }
+
+// Bosses you've beaten by hand can be auto-cleared afterward; the first time, you fight.
+export function bossKey(node) {
+  const g = node.group || [];
+  const bosses = g.filter(u => u.boss);
+  return (bosses.length ? bosses : g).map(u => u.defId).sort().join('+');
+}
+export function bossBeaten(S, node) { return !!(S.bossesBeaten && S.bossesBeaten[bossKey(node)]); }
+export function markBossBeaten(S, node) { (S.bossesBeaten ||= {})[bossKey(node)] = true; }
 
 export function rollBossDrop(S, gate) {
   if (Math.random() < 0.75) {

@@ -490,15 +490,17 @@ async function hub() {
       <div class="panel bar">
         <span class="day">Day ${S.day}${S.legacy && S.legacy.cycle ? ` · Cycle ${S.legacy.cycle + 1}` : ''}</span>
         <span class="lic">Circle ${rankBadge(rank)}</span>
-        <div class="gp-wrap" title="Infamy toward your next inscription">
+        <div class="gp-wrap" title="Infamy: earned by clearing rifts. Fill it to rise to the next Circle.">
+          <span class="hud-label">Infamy</span>
           <div class="bar-outer gp"><div class="bar-inner" style="width:${need ? Math.min(100, S.infamy / need * 100) : 100}%"></div></div>
-          <span class="gp-num">${need ? `${S.infamy}/${need} Infamy` : 'ABYSS'}</span>
+          <span class="gp-num">${need ? `${S.infamy}/${need}` : 'ABYSS'}</span>
         </div>
         <div class="corrupt-wrap" title="Corruption: pacts, Blackblood, killing what you could have sealed. 50+ opens Slot VI; 80+ and captives fear you.">
-          ${bar('corrupt', S.corruption)}<span class="corrupt-num">☩ ${S.corruption}</span>
+          <span class="hud-label">Corruption</span>${bar('corrupt', S.corruption)}<span class="corrupt-num">☩ ${S.corruption}</span>
         </div>
         <span class="gold">◈ ${S.gold}g</span>
       </div>
+      ${standingStrip()}
     </div>
     <div class="guild-layout">
       <div class="panel guild-main">
@@ -1066,7 +1068,8 @@ function dungeonScreen() {
       <div class="dungeon-body">${body}</div>
       ${caps}
       <div class="row gap wrap">${actions}
-        <button class="btn ghost" id="d-auto" title="Let the party push through the rest of the rift on its own (each ally's auto-skill; the warlock seals anything ready to be bound).">⏩ Auto-clear</button>
+        ${(() => { const boss = run.nodes.slice(run.nodeIdx).find(n => n.type === 'boss'); const stop = boss && !ST.bossBeaten(S, boss);
+          return `<button class="btn ghost" id="d-auto" title="Let the party push through the rest of the rift on its own (each ally's auto-skill; the warlock seals anything ready to be bound).${stop ? ' It stops at the boss: the first time, you fight it yourself.' : ''}">⏩ ${stop ? 'Auto-clear to the boss' : 'Auto-clear'}</button>`; })()}
         <button class="btn ghost" id="d-retreat">Retreat</button>
       </div>
       <div class="mini-party">${hpRows}</div>
@@ -1139,6 +1142,13 @@ async function autoResolveDungeon() {
   while (S.run && run.nodeIdx < run.nodes.length && guard++ < 200) {
     const node = run.nodes[run.nodeIdx];
     if (node.type === 'branch') { run.nodes[run.nodeIdx] = node.options.find(o => !o.elite) || node.options[0]; continue; }
+    if (node.type === 'boss' && !ST.bossBeaten(S, node)) {
+      // a boss you've never beaten: the party stops at the door and you fight it yourself
+      overlay.remove();
+      ST.save(S);
+      toast('The party halts at the heart of the rift. This one you face yourself.', 'gold');
+      return dungeonScreen();
+    }
     if (node.type === 'fight' || node.type === 'boss') {
       tick(node.type === 'boss' ? 'The heart of the rift.' : `Chamber ${run.nodeIdx + 1}…`);
       await stage.wait(window.__FAST ? 60 : 220);
@@ -1148,7 +1158,8 @@ async function autoResolveDungeon() {
       fights++;
       if (r.outcome === 'wipe' || !r.outcome) { overlay.remove(); AU.sfx('wipe'); return results(ST.endRun(S, 'wipe')); }
       if (r.outcome === 'retreat') { overlay.remove(); return results(ST.endRun(S, 'retreat')); }
-      if (node.type === 'boss') {
+      if (node.type === 'boss') ST.markBossBeaten(S, node);
+      if (node.type === 'boss' && run.nodeIdx >= run.nodes.length - 1) {
         ST.rollBossDrop(S, gate);
         overlay.remove();
         AU.sfx('victory');
@@ -1360,6 +1371,7 @@ async function battle(node) {
     const endEv = res.events.find(e => e.t === 'end');
     toast(`Victory! +${endEv?.xp || 0} XP, +${endEv?.gold || 0}g`, 'gold');
     await stage.wait(600);
+    if (node.type === 'boss') ST.markBossBeaten(S, node);
     if (node.type === 'boss' && S.run.nodeIdx >= S.run.nodes.length - 1) {
       const drop = ST.rollBossDrop(S, gate);
       if (drop) toast(`Spoils: ${drop.name}`, 'gold');
@@ -2262,6 +2274,19 @@ function townNews() {
 }
 function townScene(id) {
   return Object.values(EVENTS).find(ev => ev.where === 'town' && ev.once && ev.id.startsWith(id + '_') && !S.seen[ev.id] && (!ev.cond || ev.cond(S))) || null;
+}
+// Your standing at a glance: each rival's Power (or its fate), and each tribe's favor.
+function standingStrip() {
+  const rivals = Object.entries(FACTIONS).filter(([, F]) => !F.pack || ST.packOn(S, F.pack)).map(([fid, F]) => {
+    const f = S.factions[fid]; if (!f) return '';
+    const short = F.name.replace(/^The (Order of the )?/, '');
+    return `<span class="stand-chip ${f.fate ? 'won' : ''}" style="--fc:${F.color}" title="${esc(F.name)}: ${f.fate ? `dominated (${f.fate})` : `Power ${f.power}/100. Raid its holdings to drain it; at 35 or less, ${esc(F.leaderName)}'s lair opens.`}">${F.icon} ${esc(short)} <b>${f.fate ? '✓' : f.power}</b></span>`;
+  }).join('');
+  const tribes = Object.entries(TRIBES).filter(([tid]) => S.tribes && S.tribes[tid] && S.tribes[tid].status).map(([tid, T]) => {
+    const t = S.tribes[tid];
+    return `<span class="stand-chip tribe" style="--fc:${T.color || '#c8a87a'}" title="${esc(T.name)}: ${esc(t.status)}, favor ${t.favor}/10">🪶 ${esc(T.name.replace(/^The /, '').split(' ')[0])} <b>${t.favor}</b></span>`;
+  }).join('');
+  return `<div class="stand-strip"><span class="hud-label">Rivals</span>${rivals}${tribes ? `<span class="hud-label">Tribes</span>${tribes}` : ''}</div>`;
 }
 function stake(lvl) { return '◆'.repeat(lvl) + '◇'.repeat(3 - lvl); }
 
