@@ -14,12 +14,14 @@ import * as obsidian from './obsidian.js';
 import * as northern from './northern.js';
 import * as classic from './classic.js';
 import * as wildkin from './wildkin.js';
+import * as hearts from './hearts.js';
 
 export const PACKS = {
   obsidian: { name: 'Obsidian College', mod: obsidian, desc: 'Lady Auren Voss, the Revenant Bride, Mira Ashveil, Maren Soleil, Cole Ashmer, the Pale Stag; Seris\'s duels; Vex in the Menagerie.' },
   northern: { name: 'Northern Reach', mod: northern, desc: 'Valdra, Nyxe, Mira Vane, Rhea, Aelindra, Legate Aurelia, Brynn, Sera; the Ashreach testimony chain.' },
   classic:  { name: 'Classic Fantasy', mod: classic, desc: 'Elara Moonwhisper, Lady Seraphine, Elspeth, Sister Maren, Kira.' },
   wildkin:  { name: 'Wildkin', mod: wildkin, desc: 'Harpy, naga, drake-kin and cheetah-folk tribes drawn to your Menagerie; Lysandre the shapeshifter; Wyrm\'s Mantle scenes.' },
+  hearts:   { name: 'Hearts & Hearth', mod: hearts, desc: 'Group scenes for connected lovers (the Inner Circle, the Dawnward Company, and more), pregnancy and family, and a hearth after the ending.' },
 };
 
 let installed = false;

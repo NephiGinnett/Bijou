@@ -100,6 +100,14 @@ Abyss — by earning **Infamy**.
   your kin by name from the Bower every other day; sometimes she's busy.
 - Every tribeswoman has her own model, rolled from her name: skin, hair,
   eyes, chest, build, height and her tribe's colors.
+- **Guests under your protection.** Once a tribe is sworn and your favor
+  with it is high (7+), the beast-folk it hunts send an envoy to ask you,
+  as its friend, for a truce: Bramble of the Hollow Warren (bunny-folk, via
+  the Aerie), Ren of the Ember Den (fox-folk, via the Pride), Elio of the
+  Snowline Herd (fawn-folk, via the Clutch) and Tallow of the Lantern Court
+  (moth-folk, via the Coil). You broker the truce with both envoys in the
+  room; he then stays in the Bower: talks, a romance once he trusts you,
+  evenings, and later a shared night with his tribe's envoy.
 - **Lysandre**, a shapeshifter, arrives when your first hybrid hatches.
 - **The Wyrm's Mantle** (pact): horns, wings and tail on your model, a
   monstrous battle form, and scenes with the allies who'd love it.
@@ -139,9 +147,35 @@ scenes).
   and six endings (Redeemed · Damned Together · The Long Night · The
   Ascended Warlock · The Codex Keeps You · secret: The Coven Unmade).
 
-Intimacy lines carry `spice: 'gentle' | 'steamy' | 'unbound'` and only the
-setting's tier shows. **Unbound** lines are stubs marked `// ZOE: unbound`
-— see **docs/UNBOUND_GUIDE.md** for every stub and what it should cover.
+## Companions, shared hearts & family
+
+- **Spend time with anyone.** Click an ally on the hub to open their
+  Companion page: Talk, Train together or Walk, once a day each. Every 3
+  visits is +1 bond, so every romance can be reached by simply being with
+  someone. The page shows when one of their scenes is waiting.
+- **Evenings.** Once a romance has happened, a repeatable Evening keeps it
+  going (one a night, every other night per partner): a night together or
+  just talking. The Dawnward Company now has romances of their own.
+- **Memories.** Replay any intimate scene you've seen, from the Chronicle or
+  a Companion page, with no effect on the save.
+- **Hearts & Hearth** (pack, toggle in Settings):
+  - Group scenes for connected lovers:
+    - the Inner Circle (Vesper, Rue and Isolde, later Lysandre),
+    - the Dawnward Company,
+    - two brats (Rue and Nyxe),
+    - two altars (Rhea and Valdra),
+    - the Envoys' Council.
+  - After a few nights together, a partner may tell you she's carrying your child. Births follow, then a possible second child.
+  - Each envoy shows you her first clutch.
+  - A hearth epilogue plays after the ending.
+  - Children appear in the Chronicle's Hearth.
+
+Intimacy lines carry `spice: 'gentle' | 'steamy' | 'unbound'`. Gentle and
+Steamy show only on their own setting; **Unbound** plays the Steamy line
+first and then continues with the Unbound lines. Unbound lines are stubs
+marked `// ZOE: unbound`. See **docs/UNBOUND_GUIDE.md** for every stub and
+what it should cover, and **docs/UNBOUND_CONTEXT.md** for each stub's whole
+scene in reading order (regenerate with `node tools/stub_context.mjs`).
 Characters whose story began in chains (Calla, Mira Vane, Aelindra,
 Elspeth) can later ask, as free allies, to revisit that dynamic — always
 through a negotiation scene first, with their own limits and stop word.

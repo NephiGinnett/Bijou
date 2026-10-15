@@ -11,6 +11,7 @@
 import { petition, bondBeat, romance } from './common.js';
 import { free } from '../story.js';
 import { TRIBES } from '../data.js';
+import * as guests from './guests.js';
 
 const P = 'wildkin';
 const has = (S, id) => (S.allies || []).includes(id);
@@ -81,7 +82,10 @@ for (const [tid, T] of Object.entries(TRIBES)) {
   }
 }
 
+Object.assign(looks, guests.looks);
+
 export const speakers = {
+  ...guests.speakers,
   kestra: { name: 'Kestra of the Aerie', color: '#c8a87a' },
   sythra: { name: 'Sythra of the Coil', color: '#6ab88a' },
   vharra: { name: 'Vharra of the Clutch', color: '#d87a4a' },
@@ -115,6 +119,7 @@ function rite(tid, who, o) {
 }
 
 export function events(E) {
+  guests.events(E);
   for (const ev of Object.values(BOWER_NIGHTS)) E[ev.id] = ev;
   for (const ev of Object.values(KIN_RITES)) E[ev.id] = ev;
   for (const ev of KIN_STAGE_EVENTS) E[ev.id] = ev;
@@ -388,6 +393,7 @@ export const BOWER_NIGHTS = {
 };
 
 export function nightly(S, log) {
+  guests.nightly(S, log);
   for (const tid of Object.keys(TRIBES)) {
     if (S.flags[`rite_${tid}`] && S.tribes[tid] && !S.tribes[tid].rite) S.tribes[tid].rite = true; // tribute doubles
   }

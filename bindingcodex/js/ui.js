@@ -11,9 +11,13 @@ import { EVENTS, SPEAKERS, DUNGEON_EVENTS, BARGAIN_EVENTS, VISIT_LINES, TAUNT_LI
 import { registerAlias, registerCustomActor, ACTOR_ACCENTS } from './actors3d.js';
 import { installPacks, PACKS, LOOKS } from './packs/index.js';
 import { BOWER_TALK } from './packs/wildkin.js';
+import { GUESTS, GUEST_TALK } from './packs/guests.js';
+import { install as installCompanions, hangoutSteps } from './companions.js';
+import { UNBOUND, WHEN } from './unbound_lines.js';
 
 // Character packs merge into the game tables before anything reads them.
 installPacks();
+installCompanions(EVENTS);
 for (const [id, spec] of Object.entries(LOOKS)) {
   registerCustomActor(id, spec);
   ACTOR_ACCENTS[id] = parseInt(((HEROES[id] && HEROES[id].color) || '#c86cff').slice(1), 16);
@@ -101,14 +105,14 @@ function affixChip(g) {
 }
 function heroName(id) { return id === 'player' ? S.name : (HEROES[id] ? HEROES[id].name : id); }
 function heroColor(id) { return (SPEAKERS[id] && SPEAKERS[id].color) || (HEROES[id] && HEROES[id].color) || '#fff'; }
-function heroVariant(id) { return id === 'player' && S ? S.pronouns + (S.flags.pact_wyrm_mantle ? '_mantle' : '') + (S.flags.scarred ? '_scar' : '') : null; }
+function heroVariant(id) { if (id === 'yuki' && S && S.flags && S.flags.yuki_femme) return 'fem'; return id === 'player' && S ? S.pronouns + (S.flags.pact_wyrm_mantle ? '_mantle' : '') + (S.flags.scarred ? '_scar' : '') : null; }
 function bar(cls, pct, title = '') {
   return `<div class="bar-outer ${cls} sm" title="${esc(title)}"><div class="bar-inner" style="width:${Math.max(0, Math.min(100, pct))}%"></div></div>`;
 }
 
 // Regenerate 2D portraits (player look follows pronoun choice; converts appear).
 async function refreshPortraits(force = false) {
-  const key = (S ? heroVariant('player') : 'she') + '|' + (S ? Object.keys(S.converts || {}).length : 0);
+  const key = (S ? heroVariant('player') : 'she') + '|' + (S ? Object.keys(S.converts || {}).length : 0) + '|' + (S && S.flags && S.flags.yuki_femme ? 'yf' : '');
   if (!force && PORTRAITS.__key === key) return;
   PORTRAITS.__key = key;
   // heroes, plus pack characters who aren't party members (tribe envoys)
@@ -141,25 +145,35 @@ function subName(text) {
     .replaceAll('{captive}', TOKEN_CTX.captive || 'the captive')
     .replaceAll('{ally}', TOKEN_CTX.ally || 'your ally')
     .replaceAll('{kinWho}', TOKEN_CTX.kinWho || 'one of the tribe')
-    .replaceAll('{kin}', TOKEN_CTX.kin || 'a tribeswoman');
+    .replaceAll('{kin}', TOKEN_CTX.kin || 'a tribeswoman')
+    // {Y:they|she}: Yuki's pronouns, before and after Yuki's request
+    .replace(/\{Y:([^|}]*)\|([^}]*)\}/g, (_, a, b) => (S && S.flags && S.flags.yuki_femme ? b : a));
 }
 
-// Intimacy tiers stack: Gentle shows gentle lines; Steamy shows steamy
-// lines; Unbound shows unbound lines. Exactly one tier per beat.
+// Intimacy tiers: Gentle shows gentle lines; Steamy shows steamy lines;
+// Unbound plays the steamy line first, then continues with the unbound
+// lines (an unwritten Unbound stub simply reads as Steamy).
 function spiceVisible(st) {
   if (!st.spice) return true;
-  return st.spice === (S.settings.spice || 'gentle');
+  const tier = S.settings.spice || 'gentle';
+  if (tier === 'unbound') return st.spice === 'steamy' || st.spice === 'unbound';
+  return st.spice === tier;
 }
 function goreVisible(st) {
   if (!st.gore) return true;
   return st.gore === (S.settings.gore || 'gentle');
 }
 
-export function playEvent(ev) {
+// opts.replay: a Memory — replays a seen scene with no side effects at all.
+export function playEvent(ev, opts = {}) {
+  const replay = !!opts.replay;
   return new Promise(async resolve => {
     if (!ev) return resolve();
-    if (ev.once && S.seen[ev.id]) return resolve();
-    if (ev.id && ev.id !== 'banter') S.seen[ev.id] = true;
+    if (!replay && ev.once && S.seen[ev.id]) return resolve();
+    if (!replay && ev.id && ev.id !== 'banter') {
+      S.seen[ev.id] = true;
+      if (S.seenDay && S.seenDay[ev.id] == null) S.seenDay[ev.id] = S.day;
+    }
     // romance guard: spice lines never show for someone who isn't a free ally
     const romanceOk = !ev.cond || ev.cond.__tribe ? (!ev.cond || ev.cond(S)) : (!ev.cond.__allies || ev.cond.__allies.every(id => ST.isAlly(S, id)));
 
@@ -185,7 +199,9 @@ export function playEvent(ev) {
         if (st.spice && (!romanceOk || !spiceVisible(st))) { idx++; continue; }
         if (!goreVisible(st)) { idx++; continue; }
         if (st.cond && !st.cond(S)) { idx++; continue; }
+        if (replay && (st.flag || st.join || st.chronicle || st.capture || st.give || st.do)) { idx++; continue; }
         if (st.flag) { S.flags[st.flag] = true; idx++; continue; }
+        if (st.do) { st.do(S); idx++; continue; }
         if (st.join) {
           if (!ST.isAlly(S, st.join)) { ST.joinAlly(S, st.join); toast(`${heroName(st.join)} joins you.`, 'gold'); AU.sfx('promo'); }
           idx++; continue;
@@ -197,7 +213,14 @@ export function playEvent(ev) {
           if (st.give.item) { S.inventory[st.give.item] = (S.inventory[st.give.item] || 0) + 1; }
           idx++; continue;
         }
+        // a written Unbound stub: swap in Zoe's lines (docs/UNBOUND_GUIDE.md)
+        if (st.spice === 'unbound' && !st.t && UNBOUND[st.stub || ev.id]) {
+          const lines = UNBOUND[st.stub || ev.id].filter(l => typeof l === 'string' || !l.when || (WHEN[l.when] && WHEN[l.when](S)));
+          steps.splice(idx, 1, ...lines.map(l => ({ s: st.s || 'narr', t: typeof l === 'string' ? l : l.t, spice: 'unbound' })));
+          continue;
+        }
         if (st.t === '' && !st.choice) { idx++; continue; } // unwritten stub
+        if (typeof st.t === 'function') { const t = st.t(S); if (!t) { idx++; continue; } steps[idx] = { ...st, t }; }
         if (st.choice) { renderChoice(st); return; }
         renderLine(st); return;
       }
@@ -207,7 +230,7 @@ export function playEvent(ev) {
     const cleanup = () => {
       advanceHandler = null;
       layer.remove();
-      ST.save(S);
+      if (!replay) ST.save(S);
       resolve();
     };
 
@@ -222,6 +245,8 @@ export function playEvent(ev) {
       if (st.brand) { void box.offsetWidth; box.classList.add('brand-flash'); AU.sfx('crit'); }
       layer.querySelector('.d-name').innerHTML = esc(subName(sp.name)) + (st.brand ? '<span class="brand-tag">🔥 the brand flares</span>' : '');
       layer.querySelector('.d-name').style.color = sp.color;
+      // whoever is speaking moves their mouth (rigged characters)
+      if (stage && stage.speak && sid && sid !== 'narr') stage.speak(sid, Math.min(4, 0.6 + subName(st.t).length / 45));
       const pEl = layer.querySelector('.d-portrait');
       pEl.innerHTML = PORTRAITS[sid] ? portraitImg(sid) : '';
       pEl.style.display = PORTRAITS[sid] ? '' : 'none';
@@ -259,6 +284,8 @@ export function playEvent(ev) {
         b.onclick = (e) => {
           e.stopPropagation();
           AU.sfx('confirm');
+          // the choice is replaced by its responses (none: it is simply removed, and the next step moves up)
+          if (replay) { steps.splice(idx, 1, ...(c.r || [])); showStep(); return; }
           if (c.bond) for (const [g, n] of Object.entries(c.bond)) {
             if (!(g in S.bond)) continue;
             ST.addBond(S, g, n);
@@ -267,9 +294,7 @@ export function playEvent(ev) {
           if (c.flag) S.flags[c.flag] = true;
           if (c.tone) { S.stats.tone = S.stats.tone || {}; S.stats.tone[c.tone] = (S.stats.tone[c.tone] || 0) + 1; }
           if (c.reopen && ev.id) delete S.seen[ev.id]; // rejections stay retryable
-          const responses = c.r || [];
-          steps.splice(idx, 1, ...responses);
-          if (!responses.length) idx++;
+          steps.splice(idx, 1, ...(c.r || []));
           showStep();
         };
         box.appendChild(b);
@@ -403,7 +428,7 @@ async function hub() {
   AU.music('guild');
   stage.setBiome(null);
   stage.battleCamera();
-  stage.showcase(ST.roster(S).slice(0, 5), heroVariant);
+  stage.showcase(ST.roster(S).slice(0, 5), heroVariant).then(() => { if (!hub.waved) { hub.waved = true; setTimeout(() => stage.wave('player'), 600); } });
   stage.camBase.set(0, 2.0, 6.2);
 
   await drainQueue();
@@ -414,6 +439,8 @@ async function hub() {
     S.seen.__ending = true;
     await playEvent(endingFor(S));
   }
+  // The hearth: after the ending, if there's family to come home to.
+  if (S.seen.__ending && EVENTS.hearth_epilogue && !S.seen.hearth_epilogue && EVENTS.hearth_epilogue.cond(S)) await playEvent(EVENTS.hearth_epilogue);
   ST.save(S);
 
   const rank = RANKS[S.circleIdx];
@@ -476,11 +503,12 @@ async function hub() {
       </div>
       <div class="panel party-strip">
         ${ST.roster(S).map(id => `
-          <div class="pcard ${away.has(id) ? 'away' : ''}">
+          <div class="pcard ${away.has(id) ? 'away' : ''} ${id !== 'player' ? 'pcard-click' : ''}" data-id="${id}" ${id !== 'player' ? `title="Spend time with ${esc(heroName(id))}"` : ''}>
             ${portraitImg(id)}
             <div class="pinfo">
               <b style="color:${heroColor(id)}">${esc(heroName(id))}</b>
               <span class="muted">Lv ${S.heroes[id].level} ${heroDesc(S, id).cls}${away.has(id) ? ' · <b class="gold">away</b>' : ''}</span>
+              ${id !== 'player' && ST.hangoutOpen(S, id) && !away.has(id) ? '<span class="pc-free">♡ free today</span>' : ''}
               ${id === 'player' ? `<span class="sys-tag">THE MARK · +${Math.round((0.1 + (S.legacy?.xpBoost || 0)) * 100)}% XP</span>` : id in S.bond ? heartsFor(id) : `<span class="muted sm-text">${heroDesc(S, id).epithet}</span>`}
             </div>
           </div>`).join('')}
@@ -489,6 +517,7 @@ async function hub() {
   `);
 
   const on = (id, fn) => { const b = $('#' + id); if (b) b.onclick = fn; };
+  document.querySelectorAll('.pcard-click').forEach(c => c.onclick = () => { AU.sfx('ui'); companion(c.dataset.id); });
   on('g-map', () => { AU.sfx('confirm'); worldMap(); });
   on('g-read', () => { AU.sfx('confirm'); vesperReading(); });
   on('g-rivals', () => { AU.sfx('ui'); rivals(); });
@@ -1229,7 +1258,7 @@ async function battle(node) {
 
   stage.battleCamera();
   await stage.layoutBattle(
-    c.units.filter(u => u.side === 'party').map(u => ({ uid: u.uid, model: u.model, variant: u.uid === 'player' ? heroVariant('player') : u.variant })),
+    c.units.filter(u => u.side === 'party').map(u => ({ uid: u.uid, model: u.model, variant: heroVariant(u.uid) || u.variant })),
     c.units.filter(u => u.side === 'enemy').map(u => ({ uid: u.uid, model: u.model, variant: u.variant, boss: u.boss })),
   );
   AU.music('battle');
@@ -1665,9 +1694,28 @@ function broodHtml(tid) {
 }
 
 // The Envoys' Bower: visiting tribe envoys keep a corner of the Menagerie.
+function guestHtml() {
+  const here = Object.keys(GUESTS).filter(id => ST.guestHere(S, id));
+  if (!here.length) return '';
+  return `<h3 style="margin-top:12px">🕊 Guests under your protection</h3>
+    <div class="cells">${here.map(id => {
+      const G = GUESTS[id], g = S.guests[id], T = TRIBES[G.tribe];
+      const rom = ST.guestRomanceOpen(S, id), eve = ST.guestEveningOpen(S, id), romanced = !!S.seen[`${id}_romance`];
+      return `<div class="cell-card">
+        <div class="recruit-head">${portraitImg(id)}<div><b style="color:${G.color}">${esc(G.name)}</b> <small class="muted">of ${esc(G.of.replace(/^the /, 'the '))}</small><br><small class="muted">${esc(G.race)} · ${g.truce ? `truce with ${esc(T.envoyName)}` : 'waiting for a truce'}</small></div></div>
+        ${g.truce ? `<div class="meter"><span>Favor</span>${bar('regard', g.favor * 10)}<span>${g.favor}/10</span></div>
+        <div class="visit-row">
+          <button class="btn gw-talk ${g.talkDay === S.day ? 'disabled' : ''}" data-g="${id}">❝ Talk</button>
+          ${rom ? `<button class="btn gw-rom notify" data-g="${id}">♡ He has something to ask you</button>` : ''}
+          ${romanced ? `<button class="btn gw-eve ${eve ? '' : 'disabled'}" data-g="${id}" title="${eve ? '' : 'One evening a night; every third night with him.'}">☾ Evening</button>` : ''}
+        </div>` : `<p class="sm-text gold">He asked you to negotiate with ${esc(T.envoyName)} for ${esc(G.of)}. Use Talk at the hub to broker the truce.</p>`}
+      </div>`;
+    }).join('')}</div>`;
+}
+
 function bowerHtml() {
   const here = Object.keys(TRIBES).filter(tid => ST.envoyHere(S, tid));
-  if (!here.length) return '';
+  if (!here.length) return guestHtml();
   const own = Object.entries(S.reagents).filter(([, n]) => n >= 2).map(([r]) => r);
   return `<h3 style="margin-top:12px">🪶 The Envoys' Bower</h3>
     <p class="muted sm-text">A warm corner of the Menagerie kept for visiting envoys. Talk with them, trade with them; once one has asked for the rite, she may invite you to spend the night.</p>
@@ -1690,10 +1738,28 @@ function bowerHtml() {
           ${S.flags['rite_' + tid] ? `<button class="btn bw-night ${nightOpen ? '' : 'disabled'}" data-t="${tid}" title="${nightOpen ? '' : 'She\'ll invite you again in a few days (favor 3+).'}">☾ Evening</button>` : ''}
         </div>
       </div>`;
-    }).join('')}</div>`;
+    }).join('')}</div>${guestHtml()}`;
 }
 
 function bindBower() {
+  document.querySelectorAll('.gw-talk:not(.disabled)').forEach(b => b.onclick = async () => {
+    const id = b.dataset.g, fav = ST.guestTalk(S, id);
+    if (fav == null) return;
+    const lines = GUEST_TALK[id];
+    screen('', '');
+    await playEvent({ id: 'banter', steps: [{ s: id, t: lines[(S.day + fav) % lines.length] }] });
+    ST.save(S); menagerie();
+  });
+  document.querySelectorAll('.gw-rom').forEach(b => b.onclick = async () => {
+    const id = b.dataset.g;
+    screen('', ''); await playEvent(EVENTS[id + '_romance']);
+    if (S.seen[id + '_romance']) { S.guests[id].nightDay = S.day; S.eveningDay = S.day; } // tonight was the first night
+    ST.save(S); menagerie();
+  });
+  document.querySelectorAll('.gw-eve:not(.disabled)').forEach(b => b.onclick = async () => {
+    const id = b.dataset.g;
+    screen('', ''); await playEvent(EVENTS[id + '_evening']); ST.guestEvening(S, id); ST.save(S); menagerie();
+  });
   document.querySelectorAll('.bw-talk:not(.disabled)').forEach(b => b.onclick = async () => {
     const tid = b.dataset.t, T = TRIBES[tid];
     const r = ST.envoyTalk(S, tid);
@@ -1863,14 +1929,102 @@ function altar() {
 
 function chronicle() {
   const entries = S.chronicle.slice().reverse();
+  const mem = memories();
   screen(`
     <div class="panel shop-panel">
       <div class="row spread"><h2>📖 The Chronicle</h2><button class="btn ghost" id="ch-back">← Codex</button></div>
       <p class="muted">A living book that writes itself after significant moments — in a hand neither of you recognizes. Pages sold at the altar are crossed out, but never quite gone.</p>
+      ${hearthHtml()}
+      ${mem.length ? `<details class="memories"><summary><b>✦ Memories</b> <small class="muted">${mem.length} scene${mem.length === 1 ? '' : 's'} to revisit</small></summary>
+        <div class="mem-list">${mem.map(ev => `<button class="btn sm mem" data-ev="${ev.id}">${esc(memoryLabel(ev))}</button>`).join('')}</div></details>` : ''}
       <div class="scroll-list">${entries.length ? entries.map(e => `<div class="chron-entry ${e.crossed ? 'crossed' : ''}"><span class="chron-day">Day ${e.day}</span>${esc(e.text)}</div>`).join('') : '<p class="muted">The pages are still blank.</p>'}</div>
     </div>
   `);
   $('#ch-back').onclick = () => hub();
+  bindMemories(chronicle);
+}
+
+// --- the hearth, memories, and spending time ---------------------------------------
+
+function hearthHtml(only = null) {
+  const kids = (S.family || []).filter(c => !only || c.parent === only);
+  const due = Object.entries(S.expecting || {}).filter(([id]) => !only || id === only);
+  if (!kids.length && !due.length) return '';
+  return `<div class="hearth"><b>🏠 Hearth</b>
+    ${kids.map(c => `<div class="sm-text">${esc(c.name)} <span class="muted">— with ${esc(heroName(c.parent))}, born day ${c.day}</span></div>`).join('')}
+    ${due.map(([id, d]) => `<div class="sm-text gold">${esc(heroName(id))} is expecting <span class="muted">— due in ${Math.max(0, d - S.day)} day${d - S.day === 1 ? '' : 's'}</span></div>`).join('')}
+  </div>`;
+}
+
+const hasSpice = steps => (steps || []).some(st => st.spice || (st.choice && st.choice.some(c => hasSpice(c.r))));
+// Seen, once-only intimate scenes, optionally just the ones a given character is in.
+function memories(who = null) {
+  return Object.values(EVENTS).filter(ev => ev.once && S.seen[ev.id] && hasSpice(ev.steps)
+    && (!who || ev.id.startsWith(who + '_') || (ev.cond && ev.cond.__allies && ev.cond.__allies.includes(who))));
+}
+function memoryLabel(ev) {
+  const ids = (ev.cond && ev.cond.__allies) || [];
+  const solo = ids.length === 1 && ev.id.startsWith(ids[0] + '_');
+  const what = (solo ? ev.id.slice(ids[0].length + 1) : ev.id).replace(/_/g, ' ').replace(/^\w/, c => c.toUpperCase());
+  return ids.length ? `${ids.map(heroName).join(', ')}: ${what}` : what;
+}
+function bindMemories(back) {
+  document.querySelectorAll('.mem').forEach(b => b.onclick = async () => {
+    screen('', '');
+    await playEvent(EVENTS[b.dataset.ev], { replay: true });
+    back();
+  });
+}
+
+// A companion's own page: time together, evenings, family, memories.
+function companion(id) {
+  const away = ST.dispatchedIds(S).has(id);
+  const open = ST.hangoutOpen(S, id) && !away;
+  const romanced = ST.romanced(S, id);
+  const evOk = romanced && ST.eveningOpen(S, id) && !away;
+  const evEvent = EVENTS[`${id}_evening`];
+  const close = ST.closeness(S, id);
+  const waiting = Object.values(EVENTS).find(ev => (ev.where === 'camp' || ev.where === 'guild') && ev.id.startsWith(id + '_') && !(ev.once && S.seen[ev.id]) && (!ev.cond || ev.cond(S)));
+  const mem = memories(id);
+  const where = away ? 'away on a dispatch' : 'at the Codex';
+  screen(`
+    <div class="panel shop-panel companion">
+      <div class="row spread"><h2 style="color:${heroColor(id)}">${esc(heroName(id))}</h2><button class="btn ghost" id="cp-back">← Codex</button></div>
+      <div class="recruit-head">${portraitImg(id)}<div>
+        <b>${esc(heroDesc(S, id).epithet || '')}</b><br><small class="muted">${esc(heroDesc(S, id).cls || '')} · ${where}</small><br>${heartsFor(id)} <small class="muted">bond ${S.bond[id] ?? 0}/10</small>
+      </div></div>
+      <div class="meter"><span>Closeness</span>${bar('regard', 100 * close / ST.CLOSE_PER_BOND)}<span>${close}/${ST.CLOSE_PER_BOND}</span></div>
+      <p class="muted sm-text">Spend time together once a day. Every ${ST.CLOSE_PER_BOND} visits deepens your bond.${romanced && evEvent ? ' Evenings together count too, and you can share one every other night.' : ''}</p>
+      <div class="visit-row">
+        <button class="btn cp-act ${open ? '' : 'disabled'}" data-k="talk">❝ Talk</button>
+        <button class="btn cp-act ${open ? '' : 'disabled'}" data-k="train">⚔ Train together</button>
+        <button class="btn cp-act ${open ? '' : 'disabled'}" data-k="walk">☘ Walk</button>
+        ${romanced && evEvent ? `<button class="btn cp-eve ${evOk ? '' : 'disabled'}" title="${evOk ? '' : 'One evening a night, and every other night with the same partner.'}">☾ Evening</button>` : ''}
+      </div>
+      ${away ? '<p class="sm-text muted">They\'re away on a dispatch. Spend time together when they\'re back.</p>' : !open ? '<p class="sm-text muted">You\'ve already spent time together today. Come back tomorrow.</p>' : ''}
+      ${waiting ? `<p class="sm-text gold">✦ A scene with ${esc(heroName(id))} is waiting ${waiting.where === 'camp' ? 'at camp on your next expedition' : 'in Talk at the hub'}.</p>` : ''}
+      ${hearthHtml(id)}
+      ${mem.length ? `<h3 style="margin-top:10px">✦ Memories</h3><div class="mem-list">${mem.map(ev => `<button class="btn sm mem" data-ev="${ev.id}">${esc(memoryLabel(ev))}</button>`).join('')}</div>` : ''}
+    </div>
+  `);
+  $('#cp-back').onclick = () => hub();
+  document.querySelectorAll('.cp-act:not(.disabled)').forEach(b => b.onclick = async () => {
+    screen('', '');
+    await playEvent({ id: 'banter', steps: hangoutSteps(id, b.dataset.k, heroName(id), S) });
+    const r = ST.hangout(S, id);
+    if (r.up) { AU.sfx('promo'); toast(`${heroName(id)} bond +1 ♥`, 'bond'); }
+    ST.save(S); await drainQueue(); companion(id);
+  });
+  const eve = document.querySelector('.cp-eve:not(.disabled)');
+  if (eve) eve.onclick = async () => {
+    screen('', '');
+    await playEvent(evEvent);
+    const together = !!S.flags.evening_yes;
+    delete S.flags.evening_yes;
+    ST.recordEvening(S, id, together);
+    ST.save(S); companion(id);
+  };
+  bindMemories(() => companion(id));
 }
 
 // Human-readable mastery progression for a skill on a hero.

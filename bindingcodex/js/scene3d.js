@@ -244,6 +244,15 @@ export class Stage {
     return a;
   }
 
+  // Rig helpers: find an actor by character id (hub showcase uses 'sc_' + id).
+  rigOf(id) {
+    const a = this.actors.get(id) || this.actors.get('sc_' + id);
+    return a && a.group.children[0] && a.group.children[0].userData.rig;
+  }
+  speak(id, seconds) { const r = this.rigOf(id); if (r) r.talk(seconds); }
+  wave(id) { const r = this.rigOf(id); if (r) r.wave(); }
+  kneel(id, on = true) { const r = this.rigOf(id); if (r) r.kneel(on); }
+
   // party: [{uid, model, variant}], enemies: [{uid, model, variant, boss}]
   async layoutBattle(party, enemies) {
     this.clearActors();
@@ -308,6 +317,11 @@ export class Stage {
         : Math.abs(Math.sin(this.t * 2.6 + a.bobPhase)) * 0.045;
       a.group.position.y = a.home.y + bob;
       a.group.rotation.y = a.face + Math.sin(this.t * 0.9 + a.bobPhase) * 0.045;
+    }
+    // rigged (toon) actors: blink, talk, wave, kneel, breathe
+    for (const a of this.actors.values()) {
+      const rig = a.group.children[0] && a.group.children[0].userData.rig;
+      if (rig && !a.dead) rig.update(dt, a.group.position.y);
     }
     // dust drift
     if (this.dust) {

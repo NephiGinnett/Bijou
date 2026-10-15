@@ -8,6 +8,8 @@
 
 import * as THREE from 'three';
 import { GLTFLoader } from '../vendor/GLTFLoader.js';
+import { tmat, tadd, SS, SC, ST } from './toon.js';
+import { toonFigure, toonHorns, toonTail } from './toonfig.js';
 
 const gltfLoader = new GLTFLoader();
 let manifestPromise = null;
@@ -192,15 +194,108 @@ function chibi(o = {}) {
 // hero builders
 // ---------------------------------------------------------------
 
+// ---------------------------------------------------------------
+// soft-toon Zoe: blonde, dark green coat-dress, gold accents
+// ---------------------------------------------------------------
+// Figures: where the body's landmarks sit. 'curvy' keeps chibi proportions;
+// 'tall' is a semi-chibi with a smaller head and longer legs.
+// ---------------------------------------------------------------
+// soft-toon main cast (see toonfig.js for the shared recipe)
+// ---------------------------------------------------------------
+const glow = c => tmat(c, { emissive: c, ei: 1.8 });
+
+// Zoe: blonde, a dark green corset dress with gold, a short cape.
+function toonPlayer(v) {
+  const scar = !!v && v.endsWith('_scar'); if (scar) v = v.slice(0, -5);
+  const mantle = !!v && v.endsWith('_mantle'); if (mantle) v = v.slice(0, -7);
+  const fem = v === 'she' || v == null;
+  return toonFigure({
+    fem, build: fem ? 'curvy' : 'average', bust: 0.92,
+    colors: { skin: 0xf6dcc8, hair: 0xf2d27a, main: 0x1f4a34, deep: 0x143224, trim: 0xd8b45a },
+    face: { eye: 0x8a5ad8, brow: 0xc8a050, blush: 0xff8aa0 },
+    top: { style: 'corset', cut: 1.1 }, skirt: { style: 'pleated' },
+    legs: { style: fem ? 'stockings' : 'pants', color: 0x1b2620, boots: 0x2a1e18 },
+    sleeves: 'detached', cape: 0x143224,
+    hair: fem ? 'long' : 'short',
+    extras: c => {
+      tadd(c.arms.L, ST(0.06, 0.016), glow(0xc86cff), 0, -c.armLen * 0.88, 0.02, Math.PI / 2);                    // the mark
+      tadd(c.arms.R, SS(0.06), glow(0xc86cff), 0.05, -c.armLen * 0.98, 0.07).name = 'orb';                         // hex-light
+      if (mantle) { toonHorns(c.body, c, 0x2a1a34, 1.1); wings(c.body, 0x1a2a22, c.shoulderY + 0.05, 0.62); toonTail(c.body, c, 0x143224, 0xc86cff); }
+      if (scar) tadd(c.body, new THREE.BoxGeometry(0.03, 0.24 * c.k, 0.012), glow(0xff5a3a), 0.1 * c.k, c.hy, c.hr + 0.005, 0.1, 0, -0.5);
+    },
+  });
+}
+
+// Vesper: willowy archivist, black hair, a high-collared indigo coat with a
+// keyhole, brass buttons, a long skirt, quill and grimoire.
+function toonVesper() {
+  return toonFigure({
+    build: 'slim', bust: 1.15,
+    colors: { skin: 0xf2e2da, hair: 0x141018, main: 0x221c36, deep: 0x342a52, trim: 0xc8a050 },
+    face: { eye: 0x9a88c8, brow: 0x2a2030, blush: 0xf08aa8, lashes: 0x141018 },
+    top: { style: 'coat', keyhole: true, cut: 1.15, buttons: 4, corset: true }, skirt: { style: 'long', hem: 0.16 },
+    legs: { style: 'pants', color: 0x18142a, boots: 0x18142a, bootHeight: 0.4 },
+    sleeves: 'long', hair: 'straight',
+    extras: c => {
+      tadd(c.body, new THREE.CylinderGeometry(0.008, 0.008, 0.34, 6), tmat(0xe8e0d0), 0.14 * c.k, c.hy + 0.28 * c.k, -0.06, 0.3, 0, -0.6); // quill
+      tadd(c.arms.L, ST(0.06, 0.014), glow(0xb08cff), 0, -c.armLen * 0.86, 0.02, Math.PI / 2);                                 // the Binding sigil
+      const book = new THREE.Group(); book.position.set(0.05, -c.armLen * 0.95, 0.1); book.rotation.set(0.2, -0.5, 0); c.arms.R.add(book);
+      tadd(book, new THREE.BoxGeometry(0.22, 0.29, 0.07), tmat(0x2a1f3e));
+      tadd(book, new THREE.BoxGeometry(0.2, 0.27, 0.075), tmat(0xe8e0d0, { noOutline: true }), 0.006, 0, 0);
+    },
+  });
+}
+
+// Rue: demon brat; crimson mane, obsidian horns, a black corset and a
+// tattered skirt, bare arms in gloves, a spade-tipped tail, the debt brand.
+function toonRue() {
+  return toonFigure({
+    build: 'slim', bust: 1.05,
+    colors: { skin: 0xf4cdb6, hair: 0xb8202a, main: 0x1a1214, deep: 0x3a1418, trim: 0xc02a3a, glove: 0x1a1214 },
+    face: { eye: 0xff8a2a, brow: 0x7a1a1a, blush: 0xff7a8a, mouth: 'smirk' },
+    top: { style: 'corset', cut: 1.0 }, skirt: { style: 'tattered', hem: 0.66 },
+    legs: { style: 'stockings', color: 0x1a1214, boots: 0x1a1214, band: 0xc02a3a, bootHeight: 0.35 },
+    sleeves: 'bare', hair: 'curly',
+    extras: c => {
+      toonHorns(c.body, c, 0x15121a, 1.3);
+      toonTail(c.body, c, 0x2a1418, 0xc02a3a);
+      tadd(c.body, new THREE.BoxGeometry(0.11, 0.022, 0.01), glow(0xff7a2a), 0.07, c.shoulderY - 0.05, 0.14, 0, 0, 0.2); // the debt brand
+    },
+  });
+}
+
+// Isolde: oathbreaker knight, broad and strong; silver plate over a deep
+// blue tabard, plated tassets, short pale hair, a sword.
+function toonIsolde() {
+  return toonFigure({
+    build: 'broad', bust: 1.05, armRest: 0.26,
+    colors: { skin: 0xecd4c0, hair: 0xd8d0b8, main: 0x2a3a5a, deep: 0x1e2a44, trim: 0xd8b45a, metal: 0xaab2bc },
+    face: { eye: 0x7a8aa0, brow: 0xa89880, blush: 0xf09a9a, mouth: 'flat' },
+    top: { style: 'armor', collar: false, corset: false }, skirt: { style: 'tasset', hem: 0.6, color: 0xaab2bc },
+    legs: { style: 'pants', color: 0x2a2c32, boots: 0x8a929c, bootHeight: 0.5, bootTrim: 0xd8b45a },
+    sleeves: 'armor', hair: 'short',
+    extras: c => {
+      // tabard panel over the plate, and a sword in the right hand
+      tadd(c.body, new THREE.BoxGeometry(0.16, 0.42, 0.02), tmat(0x2a3a5a), 0, c.waistY - 0.2, c.hipR * 0.95 + 0.01);
+      tadd(c.body, new THREE.BoxGeometry(0.17, 0.02, 0.025), tmat(0xd8b45a), 0, c.waistY - 0.41, c.hipR * 0.95 + 0.012);
+      const sw = sword(0xdde4ea, 0.6); sw.position.set(0.04, -c.armLen * 0.98, 0.06); sw.rotation.z = -0.35; c.arms.R.add(sw);
+    },
+  });
+}
+
 const HERO_BUILDERS = {
-  player(v) {
+  player: toonPlayer,
+  vesper: toonVesper,
+  rue: toonRue,
+  isolde: toonIsolde,
+  player_classic(v) {
     // the warlock: hooded ash-black coat, violet-lined, sigil-mark aglow
     const scar = !!v && v.endsWith('_scar');
     if (scar) v = v.slice(0, -5);
     const mantle = !!v && v.endsWith('_mantle');
     if (mantle) v = v.slice(0, -7);
     const fem = v === 'she';
-    const g = chibi({ skin: 0xead2bc, hair: 0x1e1a22, hairstyle: fem ? 'long' : v === 'they' ? 'straight' : 'short', outfit: 0x221c2a, sleeve: 0x221c2a, legColor: 0x17131c, eyeColor: 0x8a5ad8, chest: fem ? 1 : 0 });
+    const g = chibi({ skin: 0xead2bc, hair: 0xf2d27a, hairstyle: fem ? 'long' : v === 'they' ? 'straight' : 'short', outfit: 0x1f4a34, sleeve: 0x1f4a34, legColor: 0x17131c, eyeColor: 0x8a5ad8, chest: fem ? 1 : 0 });
     add(g, Cone(0.4, 0.62, 9, 1, true), mat(0x17131c), 0, 0.82, -0.06);                                   // long coat
     add(g, Cone(0.2, 0.26, 8), mat(0x17131c), 0, 1.45, -0.1, 0.3);                                         // hood
     add(g, Tor(0.2, 0.03, 6, 14), mat(0xb06cff, { emissive: 0xb06cff, ei: 0.9 }), 0, 1.02, 0, Math.PI / 2.4); // violet collar
@@ -222,7 +317,7 @@ const HERO_BUILDERS = {
     }
     return g;
   },
-  vesper() {
+  vesper_classic() {
     // Keeper of the Codex: high-collared archivist coat, brass buttons, quill in her hair
     const g = chibi({ skin: 0xf0e0d8, hair: 0x141018, hairstyle: 'long', outfit: 0x1e1a2e, outfitStyle: 'robe', frill: 0x3a2e4e, eyeColor: 0x8a8a96, chest: 1 });
     add(g, Cyl(0.2, 0.24, 0.16, 12), mat(0x1e1a2e), 0, 1.0, 0);                                            // high collar
@@ -232,7 +327,7 @@ const HERO_BUILDERS = {
     const b = grimoire(); b.position.set(0.4, 0.66, 0.12); b.rotation.y = -0.5; g.add(b);
     return g;
   },
-  rue() {
+  rue_classic() {
     // demon of the Ninth Ember: obsidian horns, crimson mess, tattered corset jacket, tail
     const g = chibi({ skin: 0xf2c8b0, hair: 0xb8202a, hairstyle: 'curly', outfit: 0x1a1214, sleeve: 0x2a1a1c, legColor: 0x1a1214, eyeColor: 0xff8a2a, eyeGlow: true, build: 'slim' });
     horns(g, 0x15121a, 1.52, 0.17, 0.28);
@@ -244,7 +339,7 @@ const HERO_BUILDERS = {
     g.add(tail);
     return g;
   },
-  isolde() {
+  isolde_classic() {
     // last knight of the Vigil: dark weathered plate, violet runes, tattered black cloak
     const g = chibi({ skin: 0xe8d0bc, hair: 0xc8c0a8, hairstyle: 'short', outfit: 0x3a3c44, outfitStyle: 'armor', sleeve: 0x3a3c44, legColor: 0x2a2c32, eyeColor: 0x7a8088, build: 'broad' });
     add(g, Cone(0.4, 0.7, 9, 1, true), mat(0x101014, { opacity: 0.9 }), 0, 0.72, -0.1);                     // cloak
@@ -832,7 +927,10 @@ function customChibi(spec) {
 
   // tail (skip if the lower body is already a snake)
   if (!spec.lowerBody || spec.lowerBody === 'hooves') {
-    if (spec.tail === 'fox') {
+    if (spec.tail === 'puff') {
+      // rabbit: a round cottontail
+      add(g, S(0.09, 10, 8), mat(spec.tailColor ?? spec.hair ?? 0xf4efe6, { rough: 1 }), 0, 0.42, -0.26);
+    } else if (spec.tail === 'fox') {
       add(g, Cap(0.11, 0.34, 4, 8), mat(spec.hair ?? 0xd87c3a, { rough: 0.85 }), 0, 0.42, -0.3, 0.9);
       add(g, S(0.09, 8, 8), mat(0xf4efe6), 0, 0.62, -0.44);
     } else if (spec.tail === 'dragon') {
