@@ -24,6 +24,7 @@ for (const [id, spec] of Object.entries(LOOKS)) {
   ACTOR_ACCENTS[id] = parseInt(((HEROES[id] && HEROES[id].color) || '#c86cff').slice(1), 16);
 }
 import * as AU from './audio.js';
+import { buildCells, buildPens, RESTRAINTS } from './keep3d.js';
 
 let S = null;
 let stage = null;
@@ -768,7 +769,7 @@ function worldMap() {
   const card = (locId) => {
     const L = LOCATIONS[locId];
     const open = ST.locationOpen(S, locId);
-    const rIdx = Math.max(L.circle, S.circleIdx);
+    const rIdx = ST.expeditionRank(S, locId);
     const mod = GATE_MODIFIERS.find(m => m.id === L.modifier);
     const lt = ST.pendingLieutenant(S, locId);
     const visits = S.visits[locId] || 0;
@@ -1592,7 +1593,7 @@ function undercroft() {
 
   screen(`
     <div class="panel map-panel">
-      <div class="row spread"><h2>⛓ The Undercroft</h2><button class="btn ghost" id="u-back">← Codex</button></div>
+      <div class="row spread"><h2>⛓ The Undercroft</h2><div class="row gap">${caps.length ? '<button class="btn" id="u-walk" title="Go down among the cells and see everyone.">👁 Walk the cells</button>' : ''}<button class="btn ghost" id="u-back">← Codex</button></div></div>
       <p class="muted">Old cells beneath the library. Wardens burn the brand down a little every day; without one it creeps back, and defiant captives look for a way out. Visit each captive once a day. At brand 0 they're released — and choose. ${fear ? '<b class="danger">Your Corruption terrifies them: resolve breaks faster, regard falls harder.</b>' : ''}</p>
       ${caps.some(c => c.visitedDay !== S.day && !c.releasePending) ? `<div class="visit-row all-visit">
         <b class="sm-text">Visit everyone:</b>
@@ -1604,6 +1605,7 @@ function undercroft() {
     </div>
   `);
   $('#u-back').onclick = () => hub();
+  if ($('#u-walk')) $('#u-walk').onclick = () => cellsView();
   document.querySelectorAll('.warden-sel').forEach(sel => sel.onchange = () => {
     ST.assignWarden(S, sel.dataset.cap, sel.value || null);
     AU.sfx('confirm');
@@ -1653,7 +1655,7 @@ function pickLine(pool) {
   return ok[Math.floor(Math.random() * ok.length)];
 }
 
-async function visitFlow(capId, kind) {
+async function visitFlow(capId, kind, back = undercroft) {
   const cap = S.captives.find(c => c.id === capId);
   if (!cap) return;
   AU.sfx('ui');
@@ -1665,7 +1667,7 @@ async function visitFlow(capId, kind) {
   const truth = !!document.querySelector(`.truth[data-cap="${capId}"]:checked`);
   const before = { brand: cap.brand, resolve: cap.resolve, regard: cap.regard };
   const res = ST.visitCaptive(S, capId, kind, { truth });
-  if (!res.ok) { toast(esc(res.text[0] || 'Nothing happens.')); undercroft(); return; }
+  if (!res.ok) { toast(esc(res.text[0] || 'Nothing happens.')); back(); return; }
   if (res.witness) TOKEN_CTX.ally = heroName(res.witness);
   const steps = [{ s: 'narr', t: pickLine(VISIT_LINES[kind]).t }];
   if (kind === 'bargain' && ST.isAlly(S, 'rue')) steps.push({ s: 'narr', t: pickLine(VISIT_LINES.rue_fine_print).t });
@@ -1685,7 +1687,122 @@ async function visitFlow(capId, kind) {
   if (res.cost) toast(`−${res.cost} gold`, 'gold');
   ST.save(S);
   if (cap.releasePending) toast(`${cap.name}'s brand is gone — head back to the Codex to release them.`, 'gold');
-  undercroft();
+  back();
+}
+
+// ------------------------------------------------------------------
+// Walking the cells and the pens: the same places, in 3D
+// ------------------------------------------------------------------
+
+function hubStage() {
+  stage.setBiome(null);
+  stage.battleCamera();
+  stage.showcase(ST.roster(S).slice(0, 5), heroVariant);
+  stage.camBase.set(0, 2.0, 6.2);
+}
+const playerLook = () => ({ model: 'player', variant: heroVariant('player') });
+const dayPick = (arr, salt) => arr[(S.day + salt.length) % arr.length];
+
+function cellMood(cap) {
+  const n = esc(cap.name), k = cap.restraint || 'bars';
+  if (cap.releasePending) return `${n}'s brand is gone. They're waiting to see what you'll do.`;
+  if (cap.regard >= 40) return dayPick([`${n} is already at the front of the cell when you come down the stair.`, `${n} says your name like it's a relief to hear it out loud.`, `${n} has saved you a story from the night. It's a long one.`], cap.id);
+  if (cap.regard >= 15) return `${n} watches you come, and doesn't look away.`;
+  if (cap.resolve >= 70) return { bars: `${n} rattles the bars, just so you know they're still here.`, chains: `${n} hauls on the chains until the wall rings creak.`, stocks: `${n} glares up at you from the stocks, chin high.` }[k];
+  if (cap.regard <= -30) return dayPick([`${n} won't look at you.`, `${n} turns their face to the wall.`], cap.id);
+  if (cap.resolve <= 25) return `${n} has stopped testing the ${k === 'bars' ? 'bars' : k === 'chains' ? 'chains' : 'boards'}.`;
+  return `${n} keeps very still and listens to your footsteps.`;
+}
+
+async function cellsView(sel = null) {
+  AU.sfx('ui');
+  const caps = S.captives;
+  if (!caps.length) { hubStage(); undercroft(); return; }
+  screen(`
+    <div class="panel slim viewer-bar">
+      <b>⛓ The cells</b><span class="muted sm-text">Tap someone to walk over · drag to look around</span>
+      <div class="row gap"><button class="btn sm" id="cv-prev" title="Previous cell">◀</button><button class="btn sm" id="cv-next" title="Next cell">▶</button><button class="btn sm ghost" id="cv-list">☰ List</button></div>
+    </div>
+    <div id="cv-card"></div>`, 'viewer');
+  const view = await buildCells(stage, caps, playerLook());
+  let cur = -1;
+  const card = () => {
+    const box = $('#cv-card'); if (!box) return;
+    const cap = caps[cur];
+    if (!cap) { box.innerHTML = ''; return; }
+    const visited = cap.visitedDay === S.day, witness = ST.testimonyWitness(S, cap);
+    const held = view.cells[cur].kind;
+    box.innerHTML = `<div class="panel viewer-card">
+      <div class="row spread"><h3>${esc(cap.name)}</h3><small class="muted">${esc(cap.title || '')} · day ${cap.days}</small></div>
+      <p class="sm-text"><i>${cellMood(cap)}</i></p>
+      <div class="row gap sm-text"><span>Brand <b>${cap.brand}</b></span><span>Resolve <b>${cap.resolve}</b></span><span>Regard <b>${cap.regard > 0 ? '+' : ''}${cap.regard}</b></span></div>
+      <div class="row gap sm-text">Keep them: ${Object.entries(RESTRAINTS).map(([k, r]) => `<button class="btn sm ${held === k ? 'primary' : ''} cv-hold" data-k="${k}">${r.icon} ${r.name}</button>`).join('')}</div>
+      ${cap.releasePending ? '<b class="gold sm-text">The brand is gone. Release them from the Codex hub.</b>' : `
+      <div class="visit-row">${Object.entries(ST.VISITS).map(([k, v]) => {
+        const dis = visited || (k === 'testimony' && !witness) || (k === 'bargain' && S.gold < ST.bargainCost(S));
+        const extra = k === 'bargain' ? ` (${ST.bargainCost(S)}g)` : k === 'testimony' && witness ? ` (${heroName(witness)})` : '';
+        return `<button class="btn visit ${dis ? 'disabled' : ''}" data-k="${k}" title="${esc(v.desc)}">${v.icon} ${v.name}${extra}</button>`;
+      }).join('')}</div>
+      <div class="row gap sm-text">
+        ${S.inventory.truth_draught ? `<label><input type="checkbox" class="truth" data-cap="${cap.id}"> use Truth Draught (×${S.inventory.truth_draught})</label>` : ''}
+        ${visited ? '<span class="muted">visited today</span>' : ''}
+      </div>`}
+    </div>`;
+    box.querySelectorAll('.cv-hold').forEach(b => b.onclick = () => { cap.restraint = b.dataset.k; AU.sfx('confirm'); ST.save(S); cellsView(cap.id); });
+    box.querySelectorAll('.visit:not(.disabled)').forEach(b => b.onclick = () => visitFlow(cap.id, b.dataset.k, () => cellsView(cap.id)));
+  };
+  const show = i => { cur = (i + caps.length) % caps.length; AU.sfx('ui'); card(); view.visit(cur); };
+  stage.onPick = uid => { const i = view.cells.findIndex(c => c.a.uid === uid); if (i >= 0) show(i); };
+  $('#cv-prev').onclick = () => show(cur < 0 ? caps.length - 1 : cur - 1);
+  $('#cv-next').onclick = () => show(cur + 1);
+  $('#cv-list').onclick = () => { hubStage(); undercroft(); };
+  const i = sel ? caps.findIndex(c => c.id === sel) : -1;
+  if (i >= 0) show(i);
+}
+
+async function pensView(sel = null) {
+  AU.sfx('ui');
+  const beasts = S.menagerie;
+  screen(`
+    <div class="panel slim viewer-bar">
+      <b>🐾 The pens</b><span class="muted sm-text">Tap a beast to walk over · drag to look around</span>
+      <div class="row gap"><button class="btn sm" id="pv-prev" title="Previous pen">◀</button><button class="btn sm" id="pv-next" title="Next pen">▶</button><button class="btn sm ghost" id="pv-list">☰ List</button></div>
+    </div>
+    <div id="pv-card"></div>`, 'viewer');
+  const view = await buildPens(stage, beasts, S.pens, S.eggs, playerLook());
+  let cur = -1;
+  const cost = ST.feedCost(S);
+  const card = (note = '') => {
+    const box = $('#pv-card'); if (!box) return;
+    const b = beasts[cur];
+    if (!b) { box.innerHTML = ''; return; }
+    const mood = b.tame >= 100 ? `${esc(b.name)} trots to the gate the moment it sees you.` : b.tame >= 50 ? `${esc(b.name)} comes over to sniff your hand.` : b.tame < 25 ? `${esc(b.name)} keeps to the far corner and watches.` : `${esc(b.name)} pretends not to be interested.`;
+    const hungry = !b.fed && b.hunger >= 50 ? ' It keeps nosing the empty trough.' : '';
+    box.innerHTML = `<div class="panel viewer-card">
+      <div class="row spread"><h3>${esc(b.name)}</h3><small class="muted">${esc(b.kind)}</small></div>
+      <p class="sm-text"><i>${note || mood + hungry}</i></p>
+      <div class="row gap sm-text"><span>Tame <b>${b.tame}</b></span><span>Hunger <b>${b.hunger}</b></span><span>${b.fed ? 'fed today' : 'not fed yet'}</span>${S.handlers[b.id] ? `<span>Handler: ${esc(heroName(S.handlers[b.id]))}</span>` : ''}</div>
+      <div class="row gap">
+        <button class="btn sm ${b.fed || S.gold < cost ? 'disabled' : ''}" id="pv-feed">${b.fed ? 'fed today' : `feed ◈${cost}g`}</button>
+        <button class="btn sm ${b.pettedDay === S.day ? 'disabled' : ''}" id="pv-pet" title="Once a day. Tame beasts like it (+2 tame); wild ones don't.">${b.pettedDay === S.day ? 'petted today' : '♡ pet'}</button>
+      </div>
+    </div>`;
+    const feed = $('#pv-feed'); if (feed && !feed.classList.contains('disabled')) feed.onclick = () => { if (ST.feedBeast(S, b.id)) { AU.sfx('coin'); ST.save(S); pensView(b.id); } };
+    const pet = $('#pv-pet'); if (pet && !pet.classList.contains('disabled')) pet.onclick = () => {
+      const r = ST.petBeast(S, b.id); if (!r) return;
+      view.pet(cur, r.ok);
+      AU.sfx(r.ok ? 'heal' : 'ui');
+      ST.save(S);
+      card(r.ok ? (b.tame >= 100 ? `${esc(b.name)} flops over for belly scratches.` : `${esc(b.name)} leans into your hand. (+2 tame)`) : `${esc(b.name)} snaps at your fingers. Not yet.`);
+    };
+  };
+  const show = i => { if (!beasts.length) return; cur = (i + beasts.length) % beasts.length; AU.sfx('ui'); card(); view.visit(cur); };
+  stage.onPick = uid => { const i = view.items.findIndex(it => it.a.uid === uid); if (i >= 0) show(i); };
+  $('#pv-prev').onclick = () => show(cur < 0 ? beasts.length - 1 : cur - 1);
+  $('#pv-next').onclick = () => show(cur + 1);
+  $('#pv-list').onclick = () => { hubStage(); menagerie(); };
+  const i = sel ? beasts.findIndex(b => b.id === sel) : -1;
+  if (i >= 0) show(i);
 }
 
 // ------------------------------------------------------------------
@@ -1724,12 +1841,14 @@ function menagerie() {
       <div class="row gap">
         <button class="btn ${unfed && S.gold >= cost * unfed ? '' : 'disabled'}" id="mn-feedall">Feed all (◈${cost * unfed}g)</button>
         <button class="btn ${S.gold >= ST.penCost(S) ? '' : 'disabled'}" id="mn-pen">Build a pen (◈${ST.penCost(S)}g)</button>
+        ${S.menagerie.length || S.eggs.length ? '<button class="btn" id="mn-walk" title="Walk among the pens and watch them roam.">👁 Walk the pens</button>' : ''}
       </div>
       ${S.menagerie.length ? `<div class="cells scroll-list">${beasts}</div>` : '<p class="muted">The pens are empty. Seal a beast (🐾) in a rift.</p>'}
       ${bowerHtml()}
     </div>
   `);
   $('#mn-back').onclick = () => { breedPick = null; hub(); };
+  if ($('#mn-walk')) $('#mn-walk').onclick = () => { breedPick = null; pensView(); };
   bindBower();
   $('#mn-feedall').onclick = () => { let n = 0; for (const b of S.menagerie) if (ST.feedBeast(S, b.id)) n++; if (n) { AU.sfx('coin'); toast(`Fed ${n}.`); } ST.save(S); menagerie(); };
   $('#mn-pen').onclick = () => { if (ST.buyPen(S)) { AU.sfx('promo'); toast('A new pen.'); ST.save(S); menagerie(); } };

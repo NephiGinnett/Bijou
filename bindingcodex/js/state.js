@@ -406,6 +406,7 @@ export function hitFaction(S, fid, amount, log) {
   const f = S.factions[fid];
   const before = f.power;
   f.power = clamp(f.power - amount, 0, 100);
+  if (amount > 0) f.lastHit = S.day;
   if (before > LAIR_POWER && f.power <= LAIR_POWER) {
     S.queue.push('lair_open_' + fid);
     if (log) log.push(`${FACTIONS[fid].name} is reeling. ${FACTIONS[fid].leaderName}'s lair is exposed.`);
@@ -420,7 +421,13 @@ function factionNight(S, log) {
   for (const [pid, fn] of Object.entries(NIGHTLY)) if (packOn(S, pid)) fn(S, log);
   for (const [fid, f] of Object.entries(S.factions)) {
     const fate = f.fate;
-    if (!fate) { if (f.power < 100) f.power = Math.min(100, f.power + POWER.regen); continue; }
+    // A rival only recovers when left alone for a few nights, and never climbs
+    // back out of a lair you've already exposed.
+    if (!fate) {
+      const quiet = S.day - (f.lastHit ?? -99) >= POWER.quietDays;
+      if (quiet && f.power > LAIR_POWER && f.power < 100) f.power = Math.min(100, f.power + POWER.regen);
+      continue;
+    }
     const mult = fate === 'shattered' ? 0.5 : fate === 'sworn' ? 1.5 : 1;
     if (fid === 'coven') {
       S.reagents.cinder_ash = (S.reagents.cinder_ash || 0) + Math.max(1, Math.round(mult));
@@ -662,10 +669,18 @@ export function locationOpen(S, locId) {
   return { ok: true };
 }
 
-// Build a raid on a holding. Difficulty follows your Circle (never below the holding's own).
+// How hard a holding is for you now: it follows your Circle, never below the holding's
+// own, and never more than two Circles above it, so the early holdings stay a place
+// to regroup and train when the frontier gets rough.
+export function expeditionRank(S, locId) {
+  const L = LOCATIONS[locId];
+  if (L.lair) return L.circle;   // a leader's lair is a fixed fight: outlevel it if you need to
+  return Math.max(L.circle, Math.min(S.circleIdx, L.circle + 2, RANKS.length - 1));
+}
+// Build a raid on a holding.
 export function makeExpedition(S, locId) {
   const L = LOCATIONS[locId];
-  const rIdx = Math.max(L.circle, Math.min(S.circleIdx, RANKS.length - 1));
+  const rIdx = expeditionRank(S, locId);
   const rank = RANKS[rIdx];
   return {
     id: 'exp_' + locId + '_' + S.day, loc: locId,
@@ -1120,6 +1135,16 @@ function makeBeast(S, c, traitsOverride = null) {
     // new arrivals come in fed (on whatever they were caught chewing) so the first night is safe
     tame: c.elite ? 15 : 25, hunger: 20, traits, yieldId: BEAST_FAMILIES[fam].reagent, fed: true, born: S.day,
     family2: c.family2 || null, yieldId2: c.family2 ? BEAST_FAMILIES[c.family2].reagent : null };
+}
+
+// Once a day you can give a beast some attention: the tame ones like it.
+export function petBeast(S, id) {
+  const b = S.menagerie.find(x => x.id === id);
+  if (!b || b.pettedDay === S.day) return null;
+  b.pettedDay = S.day;
+  if (b.tame < 20) return { ok: false };
+  b.tame = Math.min(100, b.tame + 2);
+  return { ok: true };
 }
 
 // --- the Undercroft ------------------------------------------------------------

@@ -63,9 +63,14 @@ export class Stage {
     this.turnRing = this.makeTurnRing();
     this.scene.add(this.turnRing);
 
+    this.hooks = new Set();     // per-frame callbacks for the Undercroft / pens views
+    this.onPick = null;         // (uid) => void: a tap (not a drag) on an actor
+    this._ray = new THREE.Raycaster();
+
     this.resize();
     addEventListener('resize', () => this.resize());
     this._initOrbitInput();
+    this._initPick();
   }
 
   resize() {
@@ -83,6 +88,38 @@ export class Stage {
   nudgeYaw(d) { this.orbitEnabled = true; this.userYaw += d; }
   nudgeZoom(f) { this.orbitEnabled = true; this._zoomMul(f); }
   resetView() { this.userYaw = 0; this.userPitch = 0; this.userZoom = 1; }
+
+  // A tap that didn't drag picks the actor under it.
+  _initPick() {
+    const c = this.canvas;
+    if (!c) return;
+    let down = null;
+    c.addEventListener('pointerdown', e => { down = { x: e.clientX, y: e.clientY }; });
+    c.addEventListener('pointerup', e => {
+      if (!down || !this.onPick) return;
+      const moved = Math.hypot(e.clientX - down.x, e.clientY - down.y); down = null;
+      if (moved > 8) return;
+      const r = c.getBoundingClientRect();
+      const ndc = new THREE.Vector2(((e.clientX - r.left) / r.width) * 2 - 1, -((e.clientY - r.top) / r.height) * 2 + 1);
+      this._ray.setFromCamera(ndc, this.camera);
+      const hits = this._ray.intersectObjects(this.actorGroup.children, true);
+      for (const h of hits) {
+        let o = h.object;
+        while (o && o.parent !== this.actorGroup) o = o.parent;
+        if (!o) continue;
+        for (const [uid, a] of this.actors) if (a.group === o) { this.onPick(uid); return; }
+      }
+    });
+  }
+  // Glide the camera to a new framing.
+  focus(base, target, halfW = this.viewHalfW, ms = 650) {
+    const b0 = this.camBase.clone(), t0 = this.camTarget.clone(), w0 = this.viewHalfW;
+    return this.tween(ms, p => {
+      this.camBase.lerpVectors(b0, base, p);
+      this.camTarget.lerpVectors(t0, target, p);
+      this.viewHalfW = w0 + (halfW - w0) * p;
+    });
+  }
 
   _initOrbitInput() {
     const c = this.canvas;
@@ -220,6 +257,8 @@ export class Stage {
   // ---------- actors ----------
 
   clearActors() {
+    this.hooks.clear();
+    this.onPick = null;
     for (const a of this.actors.values()) this.actorGroup.remove(a.group);
     this.actors.clear();
     this.turnRing.visible = false;
@@ -250,6 +289,9 @@ export class Stage {
     return a && a.group.children[0] && a.group.children[0].userData.rig;
   }
   speak(id, seconds) { const r = this.rigOf(id); if (r) r.talk(seconds); }
+  // a battle actor's rig (toon figures only), or null for monsters and chibis
+  rigFor(a) { return a && a.group.children[0] && a.group.children[0].userData.rig || null; }
+  act(a, name, ms) { const r = this.rigFor(a); if (r) r.act(name, (ms * FAST()) / 1000); return !!r; }
   wave(id) { const r = this.rigOf(id); if (r) r.wave(); }
   kneel(id, on = true) { const r = this.rigOf(id); if (r) r.kneel(on); }
 
@@ -321,8 +363,9 @@ export class Stage {
     // rigged (toon) actors: blink, talk, wave, kneel, breathe
     for (const a of this.actors.values()) {
       const rig = a.group.children[0] && a.group.children[0].userData.rig;
-      if (rig && !a.dead) rig.update(dt, a.group.position.y);
+      if (rig && (!a.dead || a.group.visible)) rig.update(dt, a.group.position.y);
     }
+    for (const fn of this.hooks) fn(dt, this.t);
     // dust drift
     if (this.dust) {
       const p = this.dust.geometry.attributes.position;
@@ -501,7 +544,8 @@ export class Stage {
           a.dead = false;
           a.group.visible = true;
           this.setActorOpacity(a, 1);
-          a.group.rotation.z = 0;
+          a.group.rotation.z = 0; a.group.rotation.x = 0;
+          { const r = this.rigFor(a); if (r) { r.kneel(false); r.act('cheer', 0.8); } }
           this.burst(a.group.position.clone().add(new THREE.Vector3(0, 1, 0)), 0xffd166, 20, 3);
           this.flashAt(a.group.position, 0xffd166, 40);
         }
@@ -583,6 +627,7 @@ export class Stage {
         if (e.outcome === 'victory') {
           this.turnRing.visible = false;
           const winners = [...this.actors.values()].filter(x => !x.dead && x.home.x < 0);
+          winners.forEach((w, i) => { const r = this.rigFor(w); if (!r) return; if (i % 2) r.wave(1.6); else r.act('cheer', 1.3 * FAST()); });
           for (let k = 0; k < 2; k++) {
             await Promise.all(winners.map(w =>
               this.tween(240, t => { w.group.position.y = w.home.y + Math.sin(t * Math.PI) * 0.55; })
@@ -602,6 +647,14 @@ export class Stage {
     if (!a) return;
     a.dead = true;
     this.burst(a.group.position.clone().add(new THREE.Vector3(0, 0.9, 0)), 0x999999, 16, 2.4);
+    const rig = this.rigFor(a);
+    if (rig && a.home.x < 0) {
+      // a fallen hero drops to one knee, head bowed, and dims
+      rig.act('flinch', 0.4); rig.kneel(true);
+      const y0 = a.group.position.y;
+      await this.tween(420, t => { a.group.position.y = y0 + (a.home.y - y0) * t; a.group.rotation.x = 0.25 * t; this.setActorOpacity(a, 1 - t * 0.45); }, easeOut);
+      return;
+    }
     await this.tween(420, t => {
       a.group.rotation.z = t * Math.PI / 2 * (a.home.x > 0 ? 1 : -1);
       a.group.position.y = a.home.y * (1 - t) - t * 0.15;
@@ -643,7 +696,8 @@ export class Stage {
               this.burst(ta.group.position.clone().add(new THREE.Vector3(0, 1.1, 0)), r.kind === 'mag' ? 0xb08cff : 0xffd28a, r.crit ? 22 : 12, r.crit ? 4.2 : 2.8);
               this.flashAt(ta.group.position, r.kind === 'mag' ? 0xb08cff : 0xfff2d8, r.crit ? 55 : 30);
               if (r.crit || (r.dmg > 0 && ta.uid === 'player')) this.shake = Math.max(this.shake, r.crit ? 0.16 : 0.09);
-              // hurt jiggle
+              // hurt: a toon figure flinches; everyone jolts
+              this.act(ta, 'flinch', 420);
               const g = ta.group;
               const hx = g.position.x;
               this.tween(180, t => { g.position.x = hx + Math.sin(t * Math.PI * 3) * 0.12 * (1 - t); });
@@ -662,16 +716,20 @@ export class Stage {
       const dst = dstPos.clone().add(new THREE.Vector3(1.15 * dir, 0, 0));
       dst.y = attacker.home.y;
       await this.tween(anim === 'dash' ? 160 : 240, t => attacker.group.position.lerpVectors(src, dst, t), easeOut);
-      // swing
-      await this.tween(120, t => { attacker.group.rotation.z = Math.sin(t * Math.PI) * -0.5 * dir; });
+      // swing: a toon figure winds up and strikes with her arm; anything else tilts
+      if (this.act(attacker, anim === 'dash' ? 'thrust' : 'swing', 520)) await this.wait(250);
+      else await this.tween(120, t => { attacker.group.rotation.z = Math.sin(t * Math.PI) * -0.5 * dir; });
       await applyResults();
       await this.tween(220, t => attacker.group.position.lerpVectors(dst, src, t));
       attacker.group.rotation.z = 0;
     } else if (anim === 'cast') {
       // raise + glow
       const glowColor = skillEv.skillId === 'seal' ? 0xc86cff : skillEv.uid === 'rue' ? 0xff8a4a : skillEv.uid === 'vesper' ? 0xb8a8e8 : skillEv.uid === 'sakura' ? 0x8affb0 : skillEv.uid === 'shiro' ? 0xd8d8ff : 0xb08cff;
-      await this.tween(240, t => { attacker.group.position.y = attacker.home.y + t * 0.35; });
-      this.burst(attacker.group.position.clone().add(new THREE.Vector3(0, 1.6, 0)), glowColor, 10, 1.2);
+      const rigged = this.act(attacker, 'cast', 900);
+      const lift = rigged ? 0.12 : 0.35;
+      await this.tween(240, t => { attacker.group.position.y = attacker.home.y + t * lift; });
+      this.burst(attacker.group.position.clone().add(new THREE.Vector3(0, rigged ? 1.75 : 1.6, rigged ? 0.25 : 0)), glowColor, rigged ? 18 : 10, rigged ? 1.6 : 1.2);
+      if (rigged) this.flashAt(attacker.group.position, glowColor, 35);
       // projectiles to each target
       const tuids = (skillEv.targets || []).filter(u => this.actors.get(u));
       await Promise.all(tuids.map(async (tu, k) => {
@@ -688,9 +746,10 @@ export class Stage {
         this.fxGroup.remove(orb);
       }));
       await applyResults();
-      await this.tween(180, t => { attacker.group.position.y = attacker.home.y + 0.35 * (1 - t); });
+      await this.tween(180, t => { attacker.group.position.y = attacker.home.y + lift * (1 - t); });
     } else if (anim === 'buff' || anim === 'guard') {
       const ringColor = anim === 'guard' ? 0x9ab0c8 : 0xffe9a8;
+      this.act(attacker, anim === 'guard' ? 'guard' : 'cast', 700);
       for (const tu of (skillEv.targets || [skillEv.uid])) {
         const ta = this.actors.get(tu);
         if (ta) this.burst(ta.group.position.clone().add(new THREE.Vector3(0, 0.6, 0)), ringColor, 12, 1.5);
@@ -726,6 +785,7 @@ export class Stage {
     const user = this.actors.get(e.uid);
     const tgt = this.actors.get(e.target);
     if (user && tgt) {
+      if (this.act(user, 'toss', 520)) await this.wait(200);
       const orb = new THREE.Mesh(new THREE.SphereGeometry(0.1, 8, 8), new THREE.MeshBasicMaterial({ color: 0x7dffb0 }));
       const from = user.group.position.clone().add(new THREE.Vector3(0, 1.4, 0));
       const to = tgt.group.position.clone().add(new THREE.Vector3(0, 1.2, 0));
