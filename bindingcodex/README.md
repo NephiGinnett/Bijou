@@ -147,6 +147,12 @@ errands done, a romance and repeatable evenings. All five are free adults
 (44 to 55) and never captives. Victoria and Joanne are married and
 unfulfilled; their husbands know and approve.
 
+**Celeste** (39), a sixth neighbor with no shop, is married to Brad, who
+doesn't know. Her affair runs from a note in your coat to a crossroads:
+end it (she leaves Brad for herself, or gives him one honest chance), or
+keep going until she's carrying your child. Then she either leaves Brad
+for the Codex, or lets Brad think the baby is his.
+
 ## Story
 
 - **Vesper — The Drowned Stacks** (opening): the bleeding-ink trail, the

@@ -151,6 +151,14 @@ Five women from a suburban cul-de-sac that fell into the fen. All are adults in 
 | `moira_romance` | either choice | older woman, dark aesthetic | Moira (55), goth widow and hexwife. Black lace, silver rings, a silver streak in black curls, a voice like velvet in a crypt. Slow, deliberate, utterly sure. Her black candle has burned for you since the night you met. |
 | `moira_evening` | "Stay the night." | repeatable | Candle-light and cool hands; the candle burns down before you're done. |
 
+**Celeste: the affair.** Celeste (39), ex-dancer, married fifteen years to Brad, a realtor who is always on a call and hasn't touched her in a year. **Brad doesn't know.** This one is a real affair: the thrill is the secret, never coercion. She chooses it, and says so. The arc runs from her porch to a note, then the greenhouse, secret evenings, a close call, and a crossroads (end it, or keep going until she's pregnant).
+
+| Event | Choice | Tags | What to write |
+| --- | --- | --- | --- |
+| `celeste_romance` | 1 · Take the ring off her finger, and kiss her. | affair, married, forbidden | The first night, in Diane's greenhouse at midnight, among glowing vines. Her wedding ring sits on a potting bench. Under the tennis whites she's still a dancer: strong, flexible, and shameless once she stops thinking. A year of nothing breaking all at once. |
+| `celeste_romance` | 2 · "Then let me look at you first." | affair, married, slow | The same night, slower: nobody has looked at her in a year. Being seen undoes her before anything else does. |
+| `celeste_evening` | Stay the night. | repeatable, affair | Stolen and quick: the greenhouse, a hayloft, once the back of Margot's stall, her hand over her own mouth. After she leaves Brad it's no longer secret, so warmer and slower. Never during pregnancy (the evening is closed then). |
+
 ### Hearts & Hearth (`js/packs/hearts.js`)
 
 Group scenes. Every participant is a free ally who has had her own romance and is at bond 8+ (the Envoys' Council needs two or more envoys who've had the rite). Characters whose lines have *(only if …)* in the context doc may or may not be there; write so the scene works either way.
@@ -236,3 +244,4 @@ Group scenes. Every participant is a free ally who has had her own romance and i
 - **Diane**: earnest, outdoorsy, gently wicked once she lets herself be.
 - **Margot**: brassy, flirty, "babe." All flash on top, sharp underneath.
 - **Moira**: velvet and gallows humor. "Dear." Never hurries.
+- **Celeste**: polished, wry, lonely under it, and reckless once she lets herself be. Turns her ring when she's nervous.

@@ -104,7 +104,7 @@ function affixChip(g) {
   const a = g && g.affix ? AFFIXES[g.affix] : null;
   return a ? `<span class="affix" title="${esc(a.desc)}">◆ ${esc(a.desc)}</span>` : '';
 }
-function heroName(id) { return id === 'player' ? S.name : (HEROES[id] ? HEROES[id].name : id); }
+function heroName(id) { return id === 'player' ? S.name : (HEROES[id] ? HEROES[id].name : (SPEAKERS[id] && SPEAKERS[id].name) || id); }
 function heroColor(id) { return (SPEAKERS[id] && SPEAKERS[id].color) || (HEROES[id] && HEROES[id].color) || '#fff'; }
 const TOON_IDS = ['player', 'vesper', 'rue', 'isolde'];
 const OUTFITS = { adventure: 'Adventuring', formal: 'Formal', offduty: 'Off-duty' };
@@ -234,7 +234,7 @@ export function playEvent(ev, opts = {}) {
           if (!ST.isAlly(S, st.join)) { ST.joinAlly(S, st.join); toast(`${heroName(st.join)} joins you.`, 'gold'); AU.sfx('promo'); }
           idx++; continue;
         }
-        if (st.chronicle) { ST.addChronicle(S, st.chronicle, ev.id); idx++; continue; }
+        if (st.chronicle) { ST.addChronicle(S, typeof st.chronicle === 'function' ? st.chronicle(S) : st.chronicle, ev.id); idx++; continue; }
         if (st.capture) { const c = ST.addNamedCaptive(S, st.capture); if (c) toast(`⛓ ${esc(c.name)} is taken to the Undercroft.`, 'gold'); idx++; continue; }
         if (st.give) {
           if (st.give.gold) { S.gold += st.give.gold; toast(`+${st.give.gold} gold`, 'gold'); }
@@ -249,8 +249,9 @@ export function playEvent(ev, opts = {}) {
         }
         if (st.t === '' && !st.choice) { idx++; continue; } // unwritten stub
         if (typeof st.t === 'function') { const t = st.t(S); if (!t) { idx++; continue; } steps[idx] = { ...st, t }; }
-        if (st.choice) { renderChoice(st); return; }
-        renderLine(st); return;
+        // (a computed line was just swapped into steps[idx], so render that, not st)
+        if (steps[idx].choice) { renderChoice(steps[idx]); return; }
+        renderLine(steps[idx]); return;
       }
       cleanup();
     };
@@ -1981,7 +1982,7 @@ function hearthHtml(only = null) {
   const due = Object.entries(S.expecting || {}).filter(([id]) => !only || id === only);
   if (!kids.length && !due.length) return '';
   return `<div class="hearth"><b>🏠 Hearth</b>
-    ${kids.map(c => `<div class="sm-text">${esc(c.name)} <span class="muted">— with ${esc(heroName(c.parent))}, born day ${c.day}</span></div>`).join('')}
+    ${kids.map(c => `<div class="sm-text">${esc(c.name)} <span class="muted">— with ${esc(heroName(c.parent))}, born day ${c.day}${c.secret ? ' · Brad thinks they\'re his' : ''}</span></div>`).join('')}
     ${due.map(([id, d]) => `<div class="sm-text gold">${esc(heroName(id))} is expecting <span class="muted">— due in ${Math.max(0, d - S.day)} day${d - S.day === 1 ? '' : 's'}</span></div>`).join('')}
   </div>`;
 }
@@ -2260,8 +2261,7 @@ function townNews() {
   return TOWN.FOLK_IDS.some(id => townScene(id) || TOWN.questReady(S, id).ok);
 }
 function townScene(id) {
-  for (const k of ['story', 'romance']) { const ev = EVENTS[`${id}_${k}`]; if (ev && !S.seen[ev.id] && ev.cond(S)) return ev; }
-  return null;
+  return Object.values(EVENTS).find(ev => ev.where === 'town' && ev.once && ev.id.startsWith(id + '_') && !S.seen[ev.id] && (!ev.cond || ev.cond(S))) || null;
 }
 function stake(lvl) { return '◆'.repeat(lvl) + '◇'.repeat(3 - lvl); }
 
@@ -2272,17 +2272,17 @@ function town() {
     const scene = townScene(id), cost = TOWN.investCost(S, id);
     const eveOk = TOWN.townEveningOpen(S, id);
     return `<div class="cell-card">
-      <div class="recruit-head">${portraitImg(id)}<div><b style="color:${P.color}">${esc(P.name)}</b> <small class="muted">${esc(P.role)}</small><br><small class="muted">${esc(P.shop)}</small><br><small class="muted" title="Investment level">stake ${stake(f.level)}</small></div></div>
+      <div class="recruit-head">${portraitImg(id)}<div><b style="color:${P.color}">${esc(P.name)}</b> <small class="muted">${esc(P.role)}</small><br><small class="muted">${esc(P.shop || 'Larkspur Lane')}</small>${P.shop ? `<br><small class="muted" title="Investment level">stake ${stake(f.level)}</small>` : ''}</div></div>
       <div class="meter"><span>Favor</span>${bar('regard', f.favor * 10)}<span>${f.favor}/10</span></div>
       <p class="sm-text muted">${esc(P.perk)}</p>
-      ${scene ? `<button class="btn tw-scene notify" data-f="${id}">${scene.id.endsWith('_romance') ? '♡ She has something to ask you' : '✦ She wants to talk'}</button>` : ''}
+      ${scene ? `<button class="btn tw-scene notify" data-f="${id}">${scene.id.endsWith('_romance') ? '♡ She has something to ask you' : scene.id === 'celeste_note' ? '✉ Something in your coat pocket' : '✦ She wants to talk'}</button>` : ''}
       <div class="visit-row">
         <button class="btn tw-talk ${f.talkDay === S.day ? 'disabled' : ''}" data-f="${id}">❝ Talk</button>
-        <button class="btn tw-shop" data-f="${id}">◈ ${id === 'joanne' ? 'Supper' : 'Shop'}</button>
-        <button class="btn tw-inv ${cost != null && S.gold >= cost ? '' : 'disabled'}" data-f="${id}" title="${cost == null ? 'Fully invested.' : `Invest ${cost}g: +${TOWN.DIVIDEND[f.level + 1] - TOWN.DIVIDEND[f.level]}g a night, +1 favor, better stock.`}">⬆ ${cost == null ? 'Fully invested' : `Invest ${cost}g`}</button>
-        ${S.seen[id + '_romance'] ? `<button class="btn tw-eve ${eveOk ? '' : 'disabled'}" data-f="${id}" title="${eveOk ? '' : 'One evening a night; every third night with her.'}">☾ Evening</button>` : ''}
+        ${P.shop ? `<button class="btn tw-shop" data-f="${id}">◈ ${id === 'joanne' ? 'Supper' : 'Shop'}</button>
+        <button class="btn tw-inv ${cost != null && S.gold >= cost ? '' : 'disabled'}" data-f="${id}" title="${cost == null ? 'Fully invested.' : `Invest ${cost}g: +${TOWN.DIVIDEND[f.level + 1] - TOWN.DIVIDEND[f.level]}g a night, +1 favor, better stock.`}">⬆ ${cost == null ? 'Fully invested' : `Invest ${cost}g`}</button>` : ''}
+        ${S.seen[id + '_romance'] && !S.flags[id + '_ended'] ? `<button class="btn tw-eve ${eveOk ? '' : 'disabled'}" data-f="${id}" title="${eveOk ? '' : 'One evening a night; every third night with her.'}">☾ Evening</button>` : ''}
       </div>
-      ${q ? `<div class="quest-box"><b class="sm-text">${f.active ? '◇' : '?'} ${esc(q.title)}</b>
+      ${id === 'celeste' ? `<p class="sm-text gold">${esc(TOWN.affairNote(S))}</p>` : q ? `<div class="quest-box"><b class="sm-text">${f.active ? '◇' : '?'} ${esc(q.title)}</b>
         ${f.active ? `<div class="sm-text muted">${qr.note}</div><button class="btn sm tw-turn ${qr.ok ? 'notify' : 'disabled'}" data-f="${id}">Hand it over</button>` : `<button class="btn sm tw-ask" data-f="${id}">Ask about it</button>`}
       </div>` : `<p class="sm-text gold">✓ Every favor she asked is done.</p>`}
     </div>`;

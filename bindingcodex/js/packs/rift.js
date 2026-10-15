@@ -26,6 +26,9 @@ const FOLK = {
   moira: { name: 'Moira', color: '#a88ac8', age: 55, shop: 'The Black Candle', role: 'Hexwife',
     desc: 'Moira, 55, was the Lane\'s goth widow, the one the kids dared each other to knock on. It turns out her candles always worked; this world just admits it. Black lace, a silver streak in black curls, a voice like velvet in a crypt.',
     perk: 'Enchanted charms with a guaranteed affix, a new pair every morning.' },
+  celeste: { name: 'Celeste', color: '#e8b8a0', age: 39, shop: null, role: 'Neighbor',
+    desc: 'Celeste, 39, danced for a living until she married Brad, a realtor who has been "on a call" ever since. Now he sells swamp-adjacent opportunities to goblins through a crystal ball, and she plays tennis against the garage door. Honey-brown waves, tennis whites, sunglasses pushed up into her hair, and a wedding ring she keeps turning.',
+    perk: 'No shop. Just the most bored woman on the Lane, watching you over her sunglasses.' },
 };
 export const TOWNSFOLK = FOLK;
 export const FOLK_IDS = Object.keys(FOLK);
@@ -62,6 +65,13 @@ export const looks = {
     top: { style: 'corset', cut: 1.18, corset: false }, skirt: { style: 'long', hem: 0.58, color: 0x1a1a1a },
     legs: { style: 'bare', boots: 0xe0408a, bootHeight: 0.55 },
     sleeves: 'bare', hair: 'long', extras: 'hoops' } },
+  celeste: { toon: {
+    build: 'curvy', bust: 1.2, figure: 'tall',
+    colors: { skin: 0xf0cca8, hair: 0x8a5a34, main: 0xf6f2ea, deep: 0xd8d0c4, trim: 0xd8b04a, glove: 0xf0cca8 },
+    face: { eye: 0x5a8a6a, brow: 0x5a3a20, blush: 0xf09a9a, lip: 0xc0405a, mouth: 'smirk', fang: false, shadow: 0xb08a6a },
+    top: { style: 'corset', cut: 1.16, corset: false }, skirt: { style: 'pleated', hem: 0.62 },
+    legs: { style: 'bare', boots: 0xf6f2ea, bootHeight: 0.12 },
+    sleeves: 'bare', hair: 'long', extras: 'sunglasses,bangles' } },
   moira: { toon: {
     build: 'curvy', bust: 1.22, figure: 'tall',
     colors: { skin: 0xf2e6e8, hair: 0x141018, main: 0x141018, deep: 0x2a1a34, trim: 0xb8b8c8, glove: 0x141018 },
@@ -150,6 +160,7 @@ export const reagentSell = (S, r) => Math.round(REAGENTS[r].price * (0.6 + 0.1 *
 //       { beast: true } at least one beast in the Menagerie | { ally: id }
 // give: { favor, gold, items: [id, n], gear: slot }
 export const QUESTS = {
+  celeste: [],
   victoria: [
     { id: 'float', title: 'The Opening Float', need: { gold: 150 }, give: { favor: 2 },
       ask: "Every functioning economy begins with a float. I need a hundred and fifty in your local currency to open the Lane's ledger. You'll get a receipt. You'll get many receipts.",
@@ -257,11 +268,29 @@ export const questsDone = (S, id) => folkOf(S, id).quest >= QUESTS[id].length;
 export function supperOpen(S) { return ensureTown(S).supperDay !== S.day; }
 
 // Evening with a townswoman: one a night overall, every third night with her.
-export function townEveningOpen(S, id) { return !!S.seen[`${id}_romance`] && S.eveningDay !== S.day && S.day - folkOf(S, id).nightDay >= 3; }
+export function townEveningOpen(S, id) {
+  if (id === 'celeste' && (S.flags.celeste_ended || (S.expecting && S.expecting.celeste != null))) return false;
+  return !!S.seen[`${id}_romance`] && S.eveningDay !== S.day && S.day - folkOf(S, id).nightDay >= (id === 'celeste' ? 2 : 3);
+}
+// Where Celeste's affair stands, for her card on the Lane.
+export function affairNote(S) {
+  const f = S.flags, n = folkOf(S, 'celeste').nights || 0;
+  if (f.celeste_left) return 'She left Brad and moved into the Codex with you. No more secrets.';
+  if (f.celeste_secret) return 'Brad thinks the child is his. You both know better.';
+  if (f.celeste_ended) return f.celeste_free ? 'It\'s over. She left Brad anyway, for herself, and she\'s dancing again.' : 'It\'s over. She\'s giving Brad one honest chance.';
+  if (f.celeste_declined) return 'You let her note go unanswered. She still waves.';
+  if (S.seen.celeste_romance) return `A secret. ${n} night${n === 1 ? '' : 's'} stolen so far, and Brad hasn't noticed. Yet.`;
+  if (f.celeste_affair) return 'Midnight, behind the greenhouse. She\'ll be waiting.';
+  return 'Married, and lonely in it. Talk to her.';
+}
 export function townEvening(S, id) { folkOf(S, id).nightDay = S.day; S.eveningDay = S.day; }
 
 // --- nightly: arrival and dividends ----------------------------------------------
 export function nightly(S, log) {
+  // Celeste's child comes due here if Hearts & Hearth (which handles births) is switched off.
+  if (S.expecting && S.expecting.celeste != null && S.expecting.celeste <= S.day && S.settings.packs && S.settings.packs.hearts === false) {
+    delete S.expecting.celeste; (S.queue ||= []).push('celeste_birth');
+  }
   if (!S.flags.rift_arrived && S.day >= 3 && !(S.queue || []).includes('rift_arrival')) { (S.queue ||= []).push('rift_arrival'); return; }
   const d = dividends(S);
   if (d > 0) { S.gold += d; log.push(`Larkspur Lane pays ${d}g in dividends.`); }
@@ -269,6 +298,13 @@ export function nightly(S, log) {
 
 // --- talk lines ------------------------------------------------------------------
 export const TOWN_TALK = {
+  celeste: [
+    "Brad's on a call. Brad is always on a call. He's selling a goblin a timeshare in a bog. (she sips her wine) He's very good at it. I used to find that attractive.",
+    "I danced for nine years. Ballet, then contemporary, then a cruise ship, which I don't talk about. Then I married Brad and stopped. (a small, rueful smile) You'd be amazed what you stop.",
+    "(she's playing tennis against her garage door, badly, on purpose, so you'll watch) Oh, hi. I didn't see you there. (she absolutely did)",
+    "Do you know what Brad got me for our anniversary? A crystal ball. For his calls. He thought it was romantic. (she turns her ring around and around) It's very shiny.",
+    "(low, glancing toward her front window) You look at me like I'm the only interesting thing in the swamp. Nobody's done that in a very long time. Stop it. (she doesn't mean it) ...Don't stop it.",
+  ],
   victoria: [
     "I've drafted bylaws. Article one: no summoning anything within five hundred feet of the mailboxes. Article two: see article one.",
     "The goblins at the market tried to haggle with me. I opened a spreadsheet. They left in tears and paid full price.",
@@ -364,12 +400,13 @@ export function events(E) {
     steps: [
       { s: 'narr', t: 'At midnight the fen below the drowned library splits open with a sound like a car alarm in a cathedral. Somewhere in the Coven, someone tried to summon a demon and badly fumbled the address.' },
       { s: 'vesper', t: '(at the window, very still) Zoe. There is a street in the swamp.' },
-      { s: 'narr', t: 'There is. Five houses in a neat crescent, painted mailboxes, a basketball hoop, a minivan with its hazard lights blinking at the stars. A sign at the end reads LARKSPUR LANE — A FRIENDLY NEIGHBORHOOD. A frog is sitting on it, appalled.' },
+      { s: 'narr', t: 'There is. Six houses in a neat crescent, painted mailboxes, a basketball hoop, a minivan with its hazard lights blinking at the stars. A sign at the end reads LARKSPUR LANE — A FRIENDLY NEIGHBORHOOD. A frog is sitting on it, appalled.' },
       { s: 'narr', t: 'By the time you get down there, someone has already set up a folding table.' },
       { s: 'victoria', t: '(clipboard up, glasses down) Good. Someone in charge. I\'m Victoria, HOA president. I need to know three things: where we are, who\'s responsible, and whether this counts as an act of God for insurance purposes.' },
       { s: 'joanne', t: '(from the porch of the nearest house, waving a ladle) Vicky, let the poor girl breathe! Honey, are you hungry? You look hungry. Everyone come in, I made enough for the whole block. I always make enough for the whole block.' },
       { s: 'margot', t: '(leaning on the minivan in a hot-pink robe and full makeup at midnight) Is that a sword? Is everyone here carrying a sword? Okay. Okay. I can sell to this.' },
       { s: 'diane', t: '(crouched in the reeds, enchanted) Victoria, the moss is breathing. The moss is breathing. I\'m going to need a bigger greenhouse.' },
+      { s: 'celeste', t: '(in tennis whites on the porch of the biggest house, sunglasses down, a glass of white wine at midnight) Brad. Brad, there\'s a woman with a sword. (no answer from inside) ...Of course there is. (she lowers the sunglasses and looks at you a long moment) Hi.' },
       { s: 'moira', t: '(on the darkest porch, in the darkest dress, entirely unbothered) I told you all something like this would happen. Nobody ever listens to the widow with the candles.' },
       { s: 'vesper', t: '(under her breath, fascinated) None of them are afraid. Why aren\'t they afraid?' },
       { s: 'victoria', t: 'Because we have survived twelve years of block parties together, dear. A swamp is nothing. Now. Is there a local economy, and who do I speak to about joining it?' },
@@ -538,4 +575,170 @@ export function events(E) {
     steamy: 'Black lace and silver rings and that low, delighted laugh, and the candle burns down to nothing before either of you are done.',
     talk: 'Then sit with me and watch the flames. They\'ll tell you things, if you\'re patient. Mostly gossip.',
   });
+
+  celesteArc(E);
+}
+
+// --- Celeste: an affair, and how it ends -------------------------------------------
+// Brad doesn't know. Everything between Celeste and Zoe is between free adults who
+// choose it; the drama is the secret, never coercion. No intimacy is attached to
+// the pregnancy or the child.
+function celesteArc(E) {
+  const C = 'celeste';
+  const on = S => !!(S.town && S.town.open);
+  const n = S => folkOf(S, C).nights || 0;
+  E.celeste_story = {
+    id: 'celeste_story', where: 'town', once: true,
+    cond: S => on(S) && fav(S, C) >= 3,
+    steps: [
+      { s: 'narr', t: 'Celeste waves you up onto her porch at dusk. Inside, Brad is pacing with the crystal ball, saying "circle back" to a goblin.' },
+      { s: C, t: '(pouring you a glass without asking) Fifteen years. He was charming, once. He sold me a house and then he sold me on him, and then he just... kept selling. Other people. Never me again.' },
+      { s: C, t: 'He hasn\'t touched me in a year. I don\'t think he\'s noticed it\'s been a year. (she laughs, and it cracks in the middle) Sorry. That was a lot. It\'s the wine. It\'s not the wine.' },
+      { s: 'narr', t: 'When you stand to go, her fingers brush the back of your hand and stay there a moment too long. Neither of you mentions it.' },
+      { do: S => addFavor(S, C, 1) },
+      { chronicle: 'Celeste told you about her marriage, on her porch, while her husband took a call.' },
+    ],
+  };
+  E.celeste_note = {
+    id: 'celeste_note', where: 'town', once: true,
+    cond: S => on(S) && !!S.seen.celeste_story && fav(S, C) >= 4,
+    steps: [
+      { s: 'narr', t: 'Back at the Codex you find a folded note in your coat pocket. It smells like her perfume.' },
+      { s: 'narr', t: '"Diane\'s greenhouse. Midnight. Diane\'s at the market till dawn. Burn this. — C."' },
+      { s: 'vesper', cond: S => (S.allies || []).includes('vesper'), t: '(not looking up from her book) You\'re smiling at a piece of paper. I\'m choosing not to ask.' },
+      { choice: [
+        { t: 'Burn the note, and go.', tone: 'dom', r: [{ do: S => { S.flags.celeste_affair = true; } }, { s: 'narr', t: 'The note curls into ash in a candle-flame. At midnight, you\'re in the greenhouse.' }] },
+        { t: 'Leave it unanswered.', tone: 'kind', r: [{ do: S => { S.flags.celeste_declined = true; } }, { s: 'narr', t: 'You fold the note and put it away. The next morning, she waves to you from her porch like nothing happened, and her smile only slips a little.' }] },
+      ] },
+    ],
+  };
+  E.celeste_romance = {
+    id: 'celeste_romance', where: 'town', once: true,
+    cond: townFree(C, S => !!S.flags.celeste_affair),
+    tags: ['romance', 'affair', 'married (her husband doesn\'t know)', 'forbidden'],
+    steps: [
+      { s: 'narr', t: 'The greenhouse is warm and green and glowing, and Celeste is already there, still in her tennis whites, turning her wedding ring around and around.' },
+      { s: C, t: 'I\'ve never done this. I want you to know that. Fifteen years and I never once — (she stops) I came here anyway. I\'m choosing this. I need you to know I\'m choosing it.' },
+      { choice: [
+        { t: 'Take the ring off her finger, and kiss her.', tone: 'dom',
+          r: [{ s: C, t: '(a sharp, shaky breath as the ring comes off) Oh. Oh, God. Yes.' },
+            { s: 'narr', t: 'She kisses you like a woman who\'s been holding her breath for a year, and the ring sits on a potting bench, glinting, forgotten.', spice: 'gentle' },
+            { s: 'narr', t: 'She\'s a dancer still, under the tennis whites: strong, flexible, shameless once she stops thinking, and she climbs you among the glowing vines like she\'s making up for every night Brad slept through. Afterward she laughs into your shoulder, wild and stunned and alive.', spice: 'steamy' },
+            { s: 'narr', t: '', spice: 'unbound', stub: 'celeste_romance' }, // ZOE: unbound
+          ] },
+        { t: '"Then let me look at you first."', tone: 'kind',
+          r: [{ s: C, t: '(she flushes all the way down) Nobody\'s looked at me in a year.' },
+            { s: 'narr', t: 'You look. She lets you. And then, slowly, she lets you do a great deal more than look.', spice: 'gentle' },
+            { s: 'narr', t: 'You take her apart slowly among the night-blooming flowers, every touch something she\'d forgotten she could have, until the most polished woman on the Lane is trembling and gasping your name into the warm green dark.', spice: 'steamy' },
+            { s: 'narr', t: '', spice: 'unbound', stub: 'celeste_romance' }, // ZOE: unbound
+          ] },
+      ] },
+      { s: C, t: '(slipping her ring back on, slowly, at the greenhouse door) Same time in two nights? (she doesn\'t wait for an answer; she already knows it)' },
+      { do: S => { const f = folkOf(S, C); f.nights = 1; f.nightDay = S.day; S.eveningDay = S.day; } },
+      { chronicle: 'Celeste met you in Diane\'s greenhouse at midnight. Brad was on a call.' },
+    ],
+  };
+  E.celeste_evening = {
+    id: 'celeste_evening', where: 'town', once: false,
+    cond: townFree(C, S => !!S.seen.celeste_romance && !S.flags.celeste_ended && !(S.expecting && S.expecting.celeste != null)),
+    tags: ['repeatable', 'affair'],
+    steps: [
+      { s: C, t: S => S.flags.celeste_left ? '(barefoot in your rooms at the Codex, no ring, no Brad) Stay. Nobody\'s on a call. Nobody\'s pretending.' : S.flags.celeste_secret ? '(a glance back at the big house, where Brad is snoring) He\'s asleep. He\'s always asleep. Quick, before I think about it.' : '(a whisper, at the side gate) Brad\'s got a late call with the goblins. We have till two. Hurry.' },
+      { choice: [
+        { t: 'Stay the night.', r: [
+          { s: 'narr', t: 'Somewhere warm and secret: the greenhouse, a hayloft, once the back of Margot\'s stall. She never stops smiling.', spice: 'gentle' },
+          { s: 'narr', t: 'Quick and hungry and half-laughing, her hand over her own mouth, the thrill of it making her bolder every time.', spice: 'steamy' },
+          { s: 'narr', t: '', spice: 'unbound', stub: 'celeste_evening' }, // ZOE: unbound
+          { do: S => { folkOf(S, C).nights = n(S) + 1; } },
+        ] },
+        { t: '"Just walk with me tonight."', r: [{ s: C, t: '(she takes your arm, which is somehow more dangerous than anything else) Just a walk. Along the edge of the fen, where nobody looks.' }] },
+      ] },
+    ],
+  };
+  E.celeste_closecall = {
+    id: 'celeste_closecall', where: 'town', once: true,
+    cond: S => on(S) && n(S) >= 3 && !S.flags.celeste_ended,
+    steps: [
+      { s: 'narr', t: 'Her bedroom, for once, because Brad was supposed to be at a goblin closing until dawn. The front door opens at one in the morning.' },
+      { s: 'narr', t: '"Cel? Babe? The goblins wanted to sleep on it! Can you believe that? Sleep on it!"' },
+      { s: C, t: '(an urgent whisper, her hand pressed flat over your heart) Closet. Closet closet closet.' },
+      { choice: [
+        { t: 'Out the window. Now.', r: [{ s: 'narr', t: 'You go out the window in your shirt and very little else and land in Joanne\'s hydrangeas. Joanne, on her porch with a cup of tea, says nothing at all. She just raises it to you.' }] },
+        { t: 'Into the closet, and hold her hand through the slats.', r: [{ s: 'narr', t: 'You stand in the dark among fifteen years of Brad\'s golf shirts while he talks at her about cap rates for forty minutes. Her fingers find yours through the slats and do not let go once.' }] },
+      ] },
+      { s: 'narr', t: 'At the end of the Lane, Moira is on her porch with a single black candle lit. She doesn\'t look up. "Evening, dear."' },
+      { s: C, t: '(the next morning, laughing so hard she can barely breathe) That was the most alive I\'ve felt in fifteen years. That was insane. When can we do it again?' },
+      { chronicle: 'Brad came home early. He never noticed.' },
+    ],
+  };
+  E.celeste_crossroads = {
+    id: 'celeste_crossroads', where: 'town', once: true,
+    cond: S => on(S) && !!S.seen.celeste_closecall && n(S) >= 4,
+    steps: [
+      { s: C, t: '(on the edge of the fen at dawn, her ring in her palm instead of on her finger) I can\'t keep doing this. Or — I can, and that\'s the problem. I keep thinking it\'ll stop feeling like this, and it doesn\'t.' },
+      { s: C, t: 'So either we end it, now, while it\'s still something we can survive. Or we stop pretending it\'s nothing. (she looks at you) I\'ll take your answer. Whatever it is.' },
+      { choice: [
+        { t: '"Then we end it. Gently."', tone: 'kind', r: [
+          { s: C, t: '(her eyes fill, but she nods) Yeah. Yeah. (she kisses you once, slowly, like she\'s memorizing it) Tell me something true before I go.' },
+          { choice: [
+            { t: '"You deserve so much more than a man on a call."', r: [
+              { do: S => { S.flags.celeste_ended = true; S.flags.celeste_free = true; } },
+              { s: C, t: '(a long breath out) ...I do, don\'t I. (she puts the ring in your hand, then takes it back and throws it into the fen) I\'m leaving him. Not for you. For me. I\'m going to dance again.' },
+              { s: 'narr', t: 'A week later, a hand-painted sign goes up on the Lane: CELESTE\'S STUDIO — DANCE, ALL AGES, NO BRADS. She waves at you through the window every morning, and she\'s glowing.' },
+              { chronicle: 'You and Celeste ended it. She left Brad for herself, and opened a dance studio on the Lane.' },
+            ] },
+            { t: '"Give him one honest chance. Tell him what you need."', r: [
+              { do: S => { S.flags.celeste_ended = true; } },
+              { s: C, t: '(a wobbly laugh) One honest chance. He\'s going to need a whiteboard. (she squeezes your hand one last time) Thank you. For reminding me I\'m a person.' },
+              { s: 'narr', t: 'A week later you see Brad, crystal ball nowhere in sight, awkwardly learning to waltz on his own lawn while Celeste counts the steps. She catches your eye over his shoulder, and smiles, and it\'s only a little sad.' },
+              { chronicle: 'You and Celeste ended it. She gave Brad one honest chance.' },
+            ] },
+          ] },
+        ] },
+        { t: '"Then stop pretending. I don\'t want it to end."', tone: 'dom', r: [
+          { do: S => { S.flags.celeste_deep = true; } },
+          { s: C, t: '(she closes her hand around the ring, and doesn\'t put it back on) Okay. (shaky, then sure) Okay. God help us both.' },
+          { chronicle: 'Celeste chose you, at the edge of the fen at dawn.' },
+        ] },
+      ] },
+    ],
+  };
+  E.celeste_news = {
+    id: 'celeste_news', where: 'town', once: true,
+    cond: S => on(S) && !!S.flags.celeste_deep && n(S) >= 6 && !(S.family || []).some(c => c.parent === C),
+    tags: ['family'],
+    steps: [
+      { s: 'narr', t: 'Celeste finds you at the end of the Lane, still in her tennis whites, holding a little glass vial Diane gave her. It\'s glowing green.' },
+      { s: C, t: 'Diane says green means yes. (a breathless, terrified laugh) Brad and I haven\'t — in over a year. It\'s yours. It can only be yours.' },
+      { s: 'codex', cond: S => S.pronouns !== 'he', t: '[ The Binding carries more than power. The Codex has never concerned itself with how. ]' },
+      { s: C, t: 'So. I have to decide what happens now. And I want to decide it with you.' },
+      { choice: [
+        { t: '"Leave him. Come home to me."', tone: 'kind', r: [
+          { do: S => { S.flags.celeste_left = true; } },
+          { s: 'narr', t: 'That night she packs one suitcase. Brad is on a call when she walks past him, and on a call when she closes the door, and only looks up when the house has gone very quiet. By then she\'s halfway up the stair to the Codex, holding your hand.' },
+          { s: C, t: '(at the top, breathless, laughing, crying a little) I just left my husband for a warlock in a swamp. My mother would die. (she kisses you) I\'ve never been happier.' },
+          { chronicle: 'Celeste left Brad and came home to you, carrying your child.' },
+        ] },
+        { t: '"Let Brad think it\'s his."', tone: 'dom', r: [
+          { do: S => { S.flags.celeste_secret = true; } },
+          { s: C, t: '(very quietly) He\'ll believe it. He\'ll be thrilled. He\'ll buy a tiny golf bag. (she presses her forehead to yours) God help me. Yes. Our secret.' },
+          { s: 'narr', t: 'The next day Brad hands out cigars to three bewildered goblins and tells the whole Lane he\'s going to be a dad. Celeste stands beside him, smiling for the neighbors, and catches your eye across the street.' },
+          { chronicle: 'Celeste is carrying your child. Brad thinks it\'s his.' },
+        ] },
+      ] },
+      { do: S => { S.expecting[C] = S.day + 12; } },
+    ],
+  };
+  E.celeste_birth = {
+    id: 'celeste_birth', where: 'auto', once: true, priority: 80,
+    steps: [
+      { s: 'narr', t: S => S.flags.celeste_left
+        ? 'The baby comes at dawn in the Codex, with Joanne boiling water, Diane managing everything, and Moira in the corner with a single black candle lit. Celeste squeezes your hand hard enough to bruise.'
+        : 'The baby comes at dawn in the big house on the Lane. Brad faints. Joanne steps over him. When Celeste finally holds the baby, the first face she looks for is yours, in the doorway.' },
+      { s: C, t: S => S.flags.celeste_left ? 'Look. (barely a whisper) Look what we made.' : '(only for you, while Brad is being revived in the hallway) Look. Your eyes. (a shaky smile) He\'ll never notice. I\'ll always know.' },
+      { s: 'narr', t: 'She\'s been thinking about names.' },
+      { choice: ['Grace', 'Lark'].map(nm => ({ t: `"${nm}."`, r: [{ do: S => { (S.family ||= []).push({ parent: C, name: nm, day: S.day, secret: !!S.flags.celeste_secret }); } }, { s: C, t: `${nm}. (she says it like a promise) Hello, ${nm}.` }] })) },
+      { chronicle: S => S.flags.celeste_secret ? 'Celeste\'s child was born on the Lane. Brad is a very proud father. You know the truth.' : 'Celeste\'s child was born at the Codex.' },
+    ],
+  };
 }

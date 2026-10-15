@@ -15,7 +15,7 @@
 // No intimacy is ever attached to pregnancy, birth or children.
 // ============================================================
 
-import { free } from '../story.js';
+import { free, SPEAKERS } from '../story.js';
 import { HEROES, TRIBES } from '../data.js';
 import { romanced, nightsWith, childrenOf, addChild, expect, packOn, addChronicle } from '../state.js';
 
@@ -24,7 +24,7 @@ const has = (S, id) => (S.allies || []).includes(id);
 const bond = (S, id) => (S.bond && S.bond[id]) || 0;
 const mantled = S => !!(S.flags && S.flags.pact_wyrm_mantle);
 const close = (S, ids, n = 8) => ids.every(id => romanced(S, id) && bond(S, id) >= n);
-const name = id => (HEROES[id] && HEROES[id].name) || id;
+const name = id => (HEROES[id] && HEROES[id].name) || (SPEAKERS[id] && SPEAKERS[id].name) || id;
 
 // ============================================================
 // GROUP SCENES

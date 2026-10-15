@@ -326,6 +326,8 @@ const ACCESSORIES = {
   trowel: c => { if (c.hasWeapon) return; const t = new THREE.Group(); t.position.set(0.03, -c.armLen * 0.96, 0.05); t.rotation.set(0.3, 0, -0.2); c.arms.R.add(t); tadd(t, SC(0.016, 0.08), tmat(0x6a4a2e)); tadd(t, new THREE.ConeGeometry(0.04, 0.12, 4), tmat(0xb8bcc4), 0, -0.11, 0, Math.PI); },
   hoops: c => { const m = tmat(0xf4d04a, { noOutline: true }); for (const sx of [-1, 1]) tadd(c.body, ST(0.045 * c.k, 0.007), m, sx * c.hr * 0.98, c.hy - 0.11 * c.k, 0.01, 0, Math.PI / 2); },
   streak: c => { tadd(c.body, SC(0.04 * c.k, c.hr * 0.45), tmat(0xd8d8e0), -c.hr * 0.36, c.hy + c.hr * 0.42, c.hr * 0.8, -0.5, 0, 0.35).scale.set(1, 1, 0.55); },
+  sunglasses: c => { const m = tmat(0x1a1214); for (const sx of [-1, 1]) tadd(c.body, SS(0.06 * c.k, 14, 10), m, sx * c.hr * 0.3, c.hy + c.hr * 0.98, c.hr * 0.42, -1.1).scale.set(1.25, 0.8, 0.35); tadd(c.body, SC(0.007, 0.07 * c.k), tmat(0xd8b04a), 0, c.hy + c.hr * 1.0, c.hr * 0.46, 0, 0, Math.PI / 2); },
+  bangles: c => { const m = tmat(0xd8b04a, { noOutline: true }); for (const arm of [c.arms.L, c.arms.R]) for (let i = 0; i < 2; i++) tadd(arm, ST(0.05, 0.007), m, 0, -c.armLen * (0.76 + i * 0.04), 0, Math.PI / 2); },
   candle: c => { if (c.hasWeapon) return; const t = new THREE.Group(); t.position.set(0.03, -c.armLen * 0.95, 0.08); c.arms.R.add(t); tadd(t, new THREE.CylinderGeometry(0.02, 0.022, 0.13, 12), tmat(0x141018)); tadd(t, SS(0.016, 10, 8), tmat(0x8a4aff, { emissive: 0x6a2aff, ei: 2 }), 0, 0.09, 0).scale.set(0.8, 1.5, 0.8); },
 };
 export function toonLook(spec) {

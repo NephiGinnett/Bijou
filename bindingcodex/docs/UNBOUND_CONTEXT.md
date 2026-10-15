@@ -1,6 +1,6 @@
 # Unbound Scene Context
 
-Every Unbound stub in Binding Codex with its **whole scene**, in the order the player reads it: 105 scenes, 135 stubs.
+Every Unbound stub in Binding Codex with its **whole scene**, in the order the player reads it: 107 scenes, 138 stubs.
 
 **Written so far:** 89 stub ids (✅ in the scenes below); the rest are marked ✍️. To revise a written one, edit its lines in `js/unbound_lines.js`, or send new text and Momo will swap it in.
 
@@ -21,7 +21,7 @@ Every Unbound stub in Binding Codex with its **whole scene**, in the order the p
 - **Classic Fantasy pack (`js/packs/classic.js`):** [`elara_romance`](#elara_romance), [`seraphine_romance`](#seraphine_romance), [`elspeth_revisit`](#elspeth_revisit), [`sister_maren_romance`](#sister_maren_romance), [`kira_romance`](#kira_romance)
 - **Wildkin pack (`js/packs/wildkin.js`):** [`bramble_romance`](#bramble_romance), [`bramble_evening`](#bramble_evening), [`bramble_shared`](#bramble_shared), [`ren_romance`](#ren_romance), [`ren_evening`](#ren_evening), [`ren_shared`](#ren_shared), [`elio_romance`](#elio_romance), [`elio_evening`](#elio_evening), [`elio_shared`](#elio_shared), [`tallow_romance`](#tallow_romance), [`tallow_evening`](#tallow_evening), [`tallow_shared`](#tallow_shared), [`envoy_night_pride`](#envoy_night_pride), [`envoy_night_aerie`](#envoy_night_aerie), [`envoy_night_coil`](#envoy_night_coil), [`envoy_night_clutch`](#envoy_night_clutch), [`kin_rite_pride`](#kin_rite_pride), [`kin_rite_aerie`](#kin_rite_aerie), [`kin_rite_coil`](#kin_rite_coil), [`kin_rite_clutch`](#kin_rite_clutch), [`kin_night_aerie`](#kin_night_aerie), [`kin_night_coil`](#kin_night_coil), [`kin_night_clutch`](#kin_night_clutch), [`kin_night_pride`](#kin_night_pride), [`tribe_aerie_rite`](#tribe_aerie_rite), [`tribe_coil_rite`](#tribe_coil_rite), [`tribe_clutch_rite`](#tribe_clutch_rite), [`tribe_pride_rite`](#tribe_pride_rite), [`lysandre_romance`](#lysandre_romance), [`rue_mantle`](#rue_mantle), [`nyxe_mantle`](#nyxe_mantle)
 - **Hearts & Hearth pack (`js/packs/hearts.js`):** [`circle_pact`](#circle_pact), [`circle_night`](#circle_night), [`circle_mantle`](#circle_mantle), [`circle_lysandre`](#circle_lysandre), [`dawnward_hearts`](#dawnward_hearts), [`brats`](#brats), [`two_altars`](#two_altars), [`envoys_council`](#envoys_council)
-- **Through the Rift pack (`js/packs/rift.js`):** [`victoria_romance`](#victoria_romance), [`joanne_romance`](#joanne_romance), [`diane_romance`](#diane_romance), [`margot_romance`](#margot_romance), [`moira_romance`](#moira_romance), [`victoria_evening`](#victoria_evening), [`joanne_evening`](#joanne_evening), [`diane_evening`](#diane_evening), [`margot_evening`](#margot_evening), [`moira_evening`](#moira_evening)
+- **Through the Rift pack (`js/packs/rift.js`):** [`victoria_romance`](#victoria_romance), [`joanne_romance`](#joanne_romance), [`diane_romance`](#diane_romance), [`margot_romance`](#margot_romance), [`moira_romance`](#moira_romance), [`victoria_evening`](#victoria_evening), [`joanne_evening`](#joanne_evening), [`diane_evening`](#diane_evening), [`margot_evening`](#margot_evening), [`moira_evening`](#moira_evening), [`celeste_romance`](#celeste_romance), [`celeste_evening`](#celeste_evening)
 - **Companions (`js/companions.js`):** [`erin_romance`](#erin_romance), [`sakura_romance`](#sakura_romance), [`shiro_romance`](#shiro_romance), [`yuki_romance`](#yuki_romance), [`vesper_evening`](#vesper_evening), [`rue_evening`](#rue_evening), [`isolde_evening`](#isolde_evening), [`lysandre_evening`](#lysandre_evening), [`erin_evening`](#erin_evening), [`sakura_evening`](#sakura_evening), [`shiro_evening`](#shiro_evening), [`yuki_evening`](#yuki_evening), [`elara_evening`](#elara_evening), [`seraphine_evening`](#seraphine_evening), [`sister_maren_evening`](#sister_maren_evening), [`kira_evening`](#kira_evening), [`nyxe_evening`](#nyxe_evening), [`rhea_evening`](#rhea_evening), [`valdra_evening`](#valdra_evening), [`aurelia_evening`](#aurelia_evening), [`brynn_evening`](#brynn_evening), [`sera_evening`](#sera_evening), [`seris_evening`](#seris_evening), [`auren_voss_evening`](#auren_voss_evening), [`revenant_bride_evening`](#revenant_bride_evening), [`mira_ashveil_evening`](#mira_ashveil_evening), [`maren_soleil_evening`](#maren_soleil_evening), [`cole_ashmer_evening`](#cole_ashmer_evening), [`calla_evening`](#calla_evening), [`mira_vane_evening`](#mira_vane_evening), [`aelindra_evening`](#aelindra_evening), [`elspeth_evening`](#elspeth_evening)
 
 ## Base game (`js/story.js`)
@@ -2238,6 +2238,60 @@ Every Unbound stub in Binding Codex with its **whole scene**, in the order the p
     - ✍️ **YOUR UNBOUND LINES GO HERE** — stub `moira_evening`. They play right after the Steamy line above.
   - **"Just keep me company tonight."**
     - **Moira:** Then sit with me and watch the flames. They'll tell you things, if you're patient. Mostly gossip.
+
+---
+
+### celeste_romance
+
+**Tags:** romance, affair, married (her husband doesn't know), forbidden
+
+**What to write** (from the guide):
+
+- *1 · Take the ring off her finger, and kiss her.* · affair, married, forbidden: The first night, in Diane's greenhouse at midnight, among glowing vines. Her wedding ring sits on a potting bench. Under the tennis whites she's still a dancer: strong, flexible, and shameless once she stops thinking. A year of nothing breaking all at once.
+- *2 · "Then let me look at you first."* · affair, married, slow: The same night, slower: nobody has looked at her in a year. Being seen undoes her before anything else does.
+
+**Tokens you can use:** Pronouns for the player: `{they}` `{them}` `{their}` `{They}` `{Their}`, and verb helpers `{s}` `{is}` `{has}` `{was}`.
+
+**The scene:**
+
+- **Narration:** The greenhouse is warm and green and glowing, and Celeste is already there, still in her tennis whites, turning her wedding ring around and around.
+- **Celeste:** I've never done this. I want you to know that. Fifteen years and I never once — (she stops) I came here anyway. I'm choosing this. I need you to know I'm choosing it.
+- **▸ The player chooses:**
+  - **Take the ring off her finger, and kiss her.** ← **leads to your scene**
+    - **Celeste:** (a sharp, shaky breath as the ring comes off) Oh. Oh, God. Yes.
+    - **[Gentle only]** **Narration:** She kisses you like a woman who's been holding her breath for a year, and the ring sits on a potting bench, glinting, forgotten.
+    - **[Steamy — Unbound players see this too]** **Narration:** She's a dancer still, under the tennis whites: strong, flexible, shameless once she stops thinking, and she climbs you among the glowing vines like she's making up for every night Brad slept through. Afterward she laughs into your shoulder, wild and stunned and alive.
+    - ✍️ **YOUR UNBOUND LINES GO HERE** — stub `celeste_romance`. They play right after the Steamy line above.
+  - **"Then let me look at you first."** ← **leads to your scene**
+    - **Celeste:** (she flushes all the way down) Nobody's looked at me in a year.
+    - **[Gentle only]** **Narration:** You look. She lets you. And then, slowly, she lets you do a great deal more than look.
+    - **[Steamy — Unbound players see this too]** **Narration:** You take her apart slowly among the night-blooming flowers, every touch something she'd forgotten she could have, until the most polished woman on the Lane is trembling and gasping your name into the warm green dark.
+    - ✍️ **YOUR UNBOUND LINES GO HERE** — stub `celeste_romance`. They play right after the Steamy line above.
+- **Celeste:** (slipping her ring back on, slowly, at the greenhouse door) Same time in two nights? (she doesn't wait for an answer; she already knows it)
+- *(Chronicle entry: "Celeste met you in Diane's greenhouse at midnight. Brad was on a call.")*
+
+---
+
+### celeste_evening
+
+**Tags:** repeatable, affair
+
+**What to write** (from the guide):
+
+- *Stay the night.* · repeatable, affair: Stolen and quick: the greenhouse, a hayloft, once the back of Margot's stall, her hand over her own mouth. After she leaves Brad it's no longer secret, so warmer and slower. Never during pregnancy (the evening is closed then).
+
+**Tokens you can use:** Pronouns for the player: `{they}` `{them}` `{their}` `{They}` `{Their}`, and verb helpers `{s}` `{is}` `{has}` `{was}`.
+
+**The scene:**
+
+- **Celeste:** *(a line filled in during play, e.g. with a child's name)*
+- **▸ The player chooses:**
+  - **Stay the night.** ← **leads to your scene**
+    - **[Gentle only]** **Narration:** Somewhere warm and secret: the greenhouse, a hayloft, once the back of Margot's stall. She never stops smiling.
+    - **[Steamy — Unbound players see this too]** **Narration:** Quick and hungry and half-laughing, her hand over her own mouth, the thrill of it making her bolder every time.
+    - ✍️ **YOUR UNBOUND LINES GO HERE** — stub `celeste_evening`. They play right after the Steamy line above.
+  - **"Just walk with me tonight."**
+    - **Celeste:** (she takes your arm, which is somehow more dangerous than anything else) Just a walk. Along the edge of the fen, where nobody looks.
 
 ---
 
