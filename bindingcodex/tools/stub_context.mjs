@@ -83,7 +83,8 @@ function render(steps, depth, out, evId) {
       if (st.t) out.push(`${pad}- ${pre}**[Unbound — written]** ${speaker(st.s)}: ${quote(st.t)}`);
       else if (UNBOUND[st.stub || evId]) {
         out.push(`${pad}- ${pre}✅ **UNBOUND — written** — stub \`${st.stub || evId}\` (in \`js/unbound_lines.js\`):`);
-        for (const l of UNBOUND[st.stub || evId]) out.push(`${pad}  ${l}`);
+        const whoIs = { yuki: 'Yuki is there', aerie: 'Kestra is there', coil: 'Sythra is there', clutch: 'Vharra is there', pride: 'Tashra is there' };
+        for (const l of UNBOUND[st.stub || evId]) out.push(typeof l === 'string' ? `${pad}  ${l}` : `${pad}  *(only if ${whoIs[l.when] || l.when})* ${l.t}`);
       }
       else out.push(`${pad}- ${pre}✍️ **YOUR UNBOUND LINES GO HERE** — stub \`${st.stub || evId}\`. They play right after the Steamy line above.`);
       continue;

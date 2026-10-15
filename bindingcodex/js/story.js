@@ -334,7 +334,9 @@ E.calla_first_night = {
       { t: 'Sit beside her.', tone: 'kind', bond: { calla: 2 }, r: [
         { s: 'narr', t: 'You sit. Her shoulder finds yours by degrees, like she\'s testing whether the world will punish her for it. It doesn\'t.', spice: 'gentle' },
         { s: 'narr', t: 'You sit. She leans in by careful degrees until her head is on your shoulder and her cold fingers have found their way under your sleeve, tracing the warm edge of your mark like it\'s a hearth she\'s been allowed near. "Is this allowed?" she asks, barely a breath. You answer by turning your face into her hair. She shivers, and not from the cold.', spice: 'steamy' },
-        { s: 'narr', t: '', spice: 'unbound' }, // ZOE: unbound
+        { s: 'calla', t: '(very quietly) Is this... allowed? Sitting here. Leaning on you.' },
+        { s: 'narr', t: '"It\'s allowed," you tell her. "Anything you want is allowed now, and anything you don\'t want, you can say no to. You don\'t owe me a thing for tonight. Not ever."' },
+        { s: 'calla', t: '(a long breath that shakes a little) ...I know. That\'s why I\'m still up here. I\'m grateful, I am. But that isn\'t why I\'m sitting next to you. I\'m choosing this.' },
         { s: 'calla', t: '(eventually, mumbling) Thank you for not letting me rot.' },
       ] },
       { t: '"Come inside. You\'ll freeze." Offer her your hand.', tone: 'dom', bond: { calla: 1 }, r: [
@@ -344,6 +346,29 @@ E.calla_first_night = {
       ] },
     ] },
     { chronicle: 'Calla\'s first night outside. She found the sky again.' },
+  ],
+};
+
+// A few nights later, out in the world for a while: Calla asks, herself.
+E.calla_choice = {
+  id: 'calla_choice', where: 'camp', once: true, priority: 69,
+  cond: free('calla', S => !!S.seen.calla_first_night && S.day - ((S.seenDay && S.seenDay.calla_first_night) ?? -99) >= 3 && b(S, 'calla') >= 6),
+  tags: ['romance', 'her choice'],
+  steps: [
+    { s: 'narr', t: 'A few nights later, it\'s Calla who finds you on the roof. She sleeps in a bed now. She\'s had time to think about whose.' },
+    { s: 'calla', t: 'I\'ve been out a while. I\'ve walked the city on my own, said no to things, said yes to things. (she sits beside you, close, on purpose this time) So I know this isn\'t thanks, and it isn\'t owing. I want you. Will you have me?' },
+    { choice: [
+      { t: '"Are you sure?"', tone: 'kind', bond: { calla: 1 }, r: [
+        { s: 'calla', t: '(a steady laugh) I\'m sure. Ask me again in the morning and I\'ll still be sure.' },
+        { s: 'narr', t: 'She kisses you first, slow and certain, and you stay on the roof under the whole enormous sky until it starts to go pale.', spice: 'gentle' },
+        { s: 'narr', t: 'She kisses you first, slow and certain, and this time it\'s her hands that open your coat, her choice at every step, until the sky is the only witness and she isn\'t cold at all.', spice: 'steamy' },
+        { s: 'narr', t: '', spice: 'unbound', stub: 'calla_choice' }, // ZOE: unbound
+      ] },
+      { t: '"Not yet. Stay with me under the sky."', tone: 'kind', reopen: true, r: [
+        { s: 'calla', t: '(no hurt in it at all) Okay. Then I\'ll ask again. I like that I can.' },
+      ] },
+    ] },
+    { chronicle: 'Calla chose you, under the sky she found again.' },
   ],
 };
 

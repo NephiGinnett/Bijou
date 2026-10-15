@@ -2,7 +2,8 @@
 // UNBOUND LINES — Zoe's writing for the Unbound intimacy tier.
 // Keyed by stub id (the `stub:` of an unbound step, or its event id).
 // On Unbound, playEvent swaps each empty stub for these lines; each
-// string is one click-through line of narration. Everything here plays
+// string is one click-through line of narration; { t, when } lines
+// play only if that character is present (see WHEN below). Everything here plays
 // right after the scene's Steamy line.
 // ============================================================
 
@@ -148,85 +149,110 @@ export const UNBOUND = {
     "She drops into your wings. When you push your cock into her she is speechless, then very loud. “You’re— fuck, you’re huge like this.” You fuck her hard; she comes screaming. You follow, flooding her."
   ],
   "circle_pact_1": [
-    "The circle forms around you, four pairs of hands already on your clothes. When your cock is free the first woman—dark-haired, sharp-eyed—takes it in both hands and strokes once, slow, measuring the thickness with her thumbs. “Gods,” she breathes.",
-    "She sinks down first, gasping as she stretches around every inch, thighs trembling. You fuck up into her while the second woman (freckled, laughing) leans in to kiss her open mouth and reach down to stroke where you’re joined.",
-    "The third presses against your back, reaching around to cup your balls and murmur encouragement. The fourth waits her turn on her knees, already touching herself, eyes fixed on the way the first woman’s stomach flexes each time you thrust.",
-    "You come hard in the first, flooding her; she stays seated on you while the others help her lift off so the freckled one can take her place, still wet with your come. You fuck the second just as deep, the first now kissing her neck and telling her how full she looks.",
-    "By the time you finish in the last of them the circle is a tangle of flushed skin and shared breath, every one of them marked and claimed, the pact sealed in the heat still dripping down their thighs."
+    "They pull you down onto the bedroll between them, three pairs of hands already on your clothes. Vesper gets your cock free first and goes very still, ink-stained fingers measuring the thickness. “Oh,” she says. “The Binding did not prepare me for this.”",
+    "Isolde sinks onto you first, slow and solemn as a vow, her branded palms flat on your chest while she stretches around every inch. Rue kneels behind her, tail curling around Isolde’s thigh, reaching down to stroke where you’re joined. “Look at her,” Rue breathes. “Look at her take it.”",
+    "Vesper lies against your side and kisses you through all of it, and every time you thrust the Binding throws the feeling back into her twice over, until she’s shaking without being touched.",
+    "You come deep in Isolde and she follows with a quiet, devout cry. She stays seated until Rue all but lifts her off to take her place, sliding down onto your cock still wet with your seed. Her brand stays dark the whole time: every word she says is true, and every word is filthy.",
+    "Vesper is last. She climbs into your lap with Rue and Isolde holding her hands, and when you fill her too the Binding carries it to all three of them at once. By the end nobody is at the edge at all, just flushed skin and shared breath, the pact sealed and dripping down their thighs."
   ],
   "circle_pact_2": [
-    "They pull you into the center before the candles are even lit. The tallest takes your cock first, guiding it between her lips and down her throat until her nose brushes your stomach, eyes watering with delight at the size.",
-    "She pulls off with a wet sound and the next woman—smaller, flushed—climbs into your lap and sinks onto you in one long slide, head falling back. While you fuck her the tall one moves behind her, hands on her breasts, whispering filth.",
-    "The third woman drops to her knees beside you and takes one of your hands, guiding your fingers between her own legs so you can feel how wet she already is. The fourth straddles your face, giving you something to do with your mouth while the second rides you.",
-    "You come in the second with a groan; she stays full while the third takes her place, still slick with your seed. You fuck the third harder, the tall one now sucking marks into her neck.",
-    "The last woman waits until you have come a second time, then takes you into her mouth to clean what is left before climbing on and riding you until you fill her too. When it is over the four of them collapse together around you, every one of them marked inside and out."
+    "The three of them kneel before you, and you take your time choosing. Isolde opens her mouth when you tell her to and takes your cock down her throat with the same terrible discipline she gives every vow, eyes watering, never once pulling away until you let her.",
+    "Rue goes next, and she wants it rougher. You pull her up by the horns and bend her over the reading table, and the brat goes quiet the moment you push inside. You fuck her hard while she tells you, honestly, exactly how much she loves being put in her place. The brand never flares.",
+    "Vesper watches from her knees, flushed, the sigil at her wrist blazing because she feels every thrust you give Rue. When it’s her turn you don’t ask. You lay her back on a pile of open books and take her slowly, and for once in three hundred years the Keeper of the Codex gives up control entirely.",
+    "You fill each of them in turn: Rue first, shaking; then Vesper, sobbing with laughter as the Binding hands her everything at once; then Isolde, who has waited on her knees all this time and asks, very properly, to be last. Afterward the three of them stay kneeling around you, marked inside and out, and very pleased with themselves."
   ],
   "circle_night_1": [
-    "Night in the circle is slower, almost ceremonial. The first woman sits in your lap facing you, takes your cock in her hand, and guides it into herself with deliberate care, eyes locked on yours while she comments on how thick you feel stretching her open.",
-    "You fuck her slow while the second woman kneels behind her, arms around her waist, fingers stroking her clit in time with your thrusts. The third lies on her side watching, two fingers buried in herself, free hand reaching out to trace the place where you disappear into the first.",
-    "The fourth brings oil and pours it over the base of your cock every time you pull almost free, making the next thrust glide even deeper. When the first comes she stays on you, shaking; only then does she lift off so the second can take her place.",
-    "You fuck the second while the first kisses her and the third and fourth take turns licking the come that leaks out around your cock.",
-    "You fill the second, then the third, then the fourth in the same unhurried way, each of them given her own long turn, each of them left dripping and marked before the circle finally sleeps."
+    "Truth or truth. You make Rue go first. “What do you want?” “Your cock,” she says, and the brand stays dark. “In me. Now. Please.” You make her say please twice more before you give it to her, and she takes it with her tail wrapped tight around your wrist.",
+    "Isolde answers next, on her knees: she wants to be told. So you tell her where to put her hands, when to open her mouth, when she may climb on and ride you. She obeys every order perfectly, and when you finally let her come she does it with a soft, devout cry, still holding perfectly still.",
+    "Vesper never gets asked. She doesn’t need to be. She’s felt every second of it through the Binding, flushed and trembling against the stacks, and when you finally push into her she comes on the first stroke, laughing, ruined.",
+    "You fill all three in the order you choose. The game ends when nobody can answer anything anymore. The brand stayed dark all night."
   ],
   "circle_night_2": [
-    "They want you together from the start. The first two women lie on their backs side by side; you push into the left one while the right one holds her hand and watches every inch disappear. When you pull out the right one is already reaching for you, guiding you into herself with a hungry sound.",
-    "You alternate between them, fucking one while the other touches herself and comments on how deep you go, how much the other has to stretch.",
-    "The third woman moves behind you, pressing against your back, reaching around to stroke your cock every time it is free, keeping you wet and hard for the next thrust. The fourth sits astride the face of whichever woman you are not inside, giving them something to do with their mouths.",
-    "You come first in the left woman, flooding her while the right one watches with open hunger; then you move to the right and fuck her through her own climax before filling her too.",
-    "The third and fourth take their turns after, each of them ridden hard while the first two recover and help hold them open. By the end all four are full, the bed a wreck of limbs and come, and no one has any interest in moving."
+    "They turn the game on you. Every question is about what you want, and every true answer is something they give you. Vesper asks first, and when you answer she takes your cock into her mouth slowly, savoring it, while the Binding tells her exactly how close she’s bringing you.",
+    "Rue climbs on next and rides you hard, horns tipped back, while Isolde kneels behind you and holds you up, scarred hands on your chest. “Tell us,” Isolde murmurs. “What else.” Whatever you say, they do.",
+    "You come in Rue first, and she grinds down through it, laughing, before Isolde lifts her off and takes her place, slow and devoted, riding you until you’re hard again. Vesper strokes you between turns, keeping you wet, telling you in her driest archivist’s voice how good you look being worshipped.",
+    "By the end you’ve filled all three, and they’re still asking, softer now and sleepier, what else you want. The only answer left is to pull them close and sleep."
   ],
   "circle_mantle": [
-    "Your Mantle unfurls and the circle reacts with open hunger—wings, scales, heat. The first woman drops to her knees and takes your cock into her mouth the moment it is free, choking herself on the size while the others watch.",
-    "She pulls off only long enough to say, “Even bigger like this,” before the second woman pulls her aside and sinks onto you herself, wings half-spread for balance. You fuck the second while the first moves behind her, hands on her hips, helping her take every thrust deeper.",
-    "The third woman presses against your side, one hand on your chest scales, the other reaching down to cup your balls. The fourth waits her turn on all fours, already presenting, tail (or whatever her shape gives her) lifted.",
-    "You come in the second, flooding her; she stays seated while the third takes her place, then the fourth. Each of them is fucked under the shadow of your Mantle, each of them left full and marked, the circle claimed in a way that feels older than any ordinary pact."
+    "Your Mantle unfurls and the three of them come for you at once. Rue gets your cock free first and makes a delighted, hungry sound. “Oh, that’s not fair. You’re even bigger like this.” She takes it into her mouth anyway, choking herself on it while the others watch.",
+    "Isolde pulls her off by the horns, gently, and sinks onto you herself, astride you in the shadow of your wings, worshipping the storm she was trained to kill. Rue moves behind her, hands on her hips, helping her take every thrust deeper. Vesper presses to your side, a hand on your chest scales, feeling the Mantle through the Binding until she forgets how words work.",
+    "You come in Isolde as your wings close around all of them. She stays seated while Rue takes her place, tail twined with yours, demon meeting monster, the brand dark and her mouth very, very honest. Vesper is last, and the Binding gives her all three of you at once.",
+    "Every one of them is taken beneath your wings and left full and marked, the circle claimed in a way older than any ordinary pact."
   ],
   "circle_lysandre": [
-    "Lysandre shifts among them—sometimes matching a woman’s shape, sometimes contrasting for the sheer pleasure of it. When your cock is free she takes it first in her true form, eyes wide at the stretch, then shifts mid-thrust into something scaled and hot so the others can see the difference.",
-    "The first circle-woman moves in behind Lysandre, hands on her waist, helping her ride you while kissing the back of her neck.",
-    "The second circle-woman drops between your legs and licks the place where you and Lysandre are joined, then takes her own turn the moment Lysandre lifts off, still slick with her.",
-    "The third and fourth take their turns after, each of them fucked while Lysandre holds them open or shifts again to match them for a moment of shared sensation.",
-    "You come in Lysandre a second time, then in the last of the circle; when it is over Lysandre settles into one final shape and curls around all of you, every woman in the circle full of you and of her."
+    "Lysandre settles into the middle of them and starts to shift: sometimes matching Rue’s heat, sometimes Isolde’s steadiness, sometimes something scaled and new just for the pleasure of it. When your cock is free she takes it first in her true form, eyes wide at the stretch, then shifts mid-thrust into drake-shape so the others can see the difference.",
+    "Rue moves in behind her, hands on her waist, helping her ride you while kissing the back of her neck. Vesper kneels between your legs and licks where you and Lysandre are joined, then takes her own turn the moment Lysandre lifts off, still slick with her.",
+    "Isolde takes hers after, then Rue, and Lysandre holds each of them open for you, shifting again to share whatever they’re feeling.",
+    "You come in Lysandre a second time, then in the last of them. When it’s over Lysandre settles into one final shape and curls around all of you: five now, every one of them full of you, and of her."
   ],
   "dawnward_hearts_1": [
-    "The Dawnward knights are golden, loud, and competitive even in this. The first one—Erin, shield already discarded—takes your cock in hand, strokes it once, and grins. “Told you it was big.”",
-    "She sinks down first, thighs flexing, and rides you hard while the second knight (taller, braided hair) kneels behind her and reaches around to stroke her clit. The third knight strips fully and drops to her knees to suck on one of Erin’s breasts while watching every thrust.",
-    "The fourth waits her turn on all fours, already rocking back against nothing, muttering for you to hurry. You come in Erin with a groan; she stays full while the braided knight takes her place, then the third, then the fourth.",
-    "Each of them is fucked hard and loud, each of them comes around you, and each of them is left dripping while the others cheer. By the end the whole squad is claimed, armor scattered, and no one is quiet about it."
+    "They kneel in the warm water, and this time nobody is defeated. Erin is first, shield long gone, grinning up at you as she takes your cock in her hand. “Told the others it’d be big,” she says, smug, and then sinks onto you right there in the spring and rides you hard and loud.",
+    "Sakura kneels behind her, hat nowhere in sight, petals of stray magic drifting down onto the water, reaching around to stroke Erin where you’re joined while whispering apologies she doesn’t mean. Shiro kneels at your side, perfectly composed, and watches every thrust like she’s memorizing a winning game.",
+    {
+      "t": "Yuki kneels at the very edge of the spring out of old habit, until Erin reaches back without breaking rhythm and pulls them in close.",
+      "when": "yuki"
+    },
+    "You come in Erin with a groan; she stays full, laughing, while Sakura takes her place, shy for exactly one breath and then fearless, crying out as she stretches around you. You fill her too, and then Shiro, who rides you with slow precision until strategy breaks down entirely and she comes with a sound she will never write in any ledger.",
+    {
+      "t": "Yuki is last, and earnest about it: they take you slowly, wide-eyed at the size, and come laughing into your neck like they can’t believe they’re allowed.",
+      "when": "yuki"
+    },
+    "By the end the whole Company is claimed, armor scattered across the rocks, and no one is quiet about it. Much later somebody says, drowsy and smug: “Motion carries unanimously.”"
   ],
   "dawnward_hearts_2": [
-    "They want to lose together. The first knight drops to her knees and takes your cock into her mouth until her eyes water, the others watching and counting how much she can take. She pulls off and the second knight immediately climbs into your lap, sinking down with a sharp cry at the stretch.",
-    "You fuck her while the first one moves behind her, holding her open, telling her how good she looks taking it. The third knight presses against your back, one hand on your hip, the other reaching down to feel the wetness where you and the second are joined.",
-    "The fourth knight waits on her back, legs already spread, fingers working herself open in anticipation. You fill the second, then the third, then the fourth in order, each of them held by at least one of her sisters while you claim her.",
-    "When the last of them comes around you the squad collapses in a golden, laughing heap, every one of them thoroughly defeated and thoroughly full."
+    "They want to lose together. Shiro goes first, because Shiro has a plan: she sinks to her knees in the warm water and takes your cock into her mouth until her eyes water, while Erin counts out loud how much she can take and Sakura covers her face and watches through her fingers.",
+    "Sakura climbs into your lap next, all shyness gone, and sinks down with a sharp, delighted cry at the stretch. Erin holds her from behind, telling her how good she looks taking it; Shiro presses against your back, one hand reaching down to feel where you and Sakura are joined.",
+    {
+      "t": "Yuki waits in the water beside you, shy and certain, until Sakura reaches out mid-ride and pulls them close enough to kiss.",
+      "when": "yuki"
+    },
+    "You fill Sakura; then Erin, who takes you on her back on the warm rocks with her legs locked around you and laughs the whole way through; then Shiro, who finally stops calculating and simply wants.",
+    {
+      "t": "Yuki is last. The others hold them while you take them, and they come with a wondering, breathless laugh.",
+      "when": "yuki"
+    },
+    "When the last of them comes around you the Company collapses in a golden, laughing heap in the steam, every one of them thoroughly defeated and thoroughly full."
   ],
   "brats_1": [
-    "The brats talk until your cock is free. Then the commentary turns into gasps. The first one—Nyxe-like, wings half-spread—takes it in both hands and stares. “Okay, that’s cheating.” She is the first to sink down, still mouthy until the stretch steals her words.",
-    "You fuck her hard while the second brat (tail lashing) kneels behind her and reaches around to pinch her nipples, whispering that she looks so much better quiet. The third brat drops to her knees beside you and licks the base of your cock every time you pull almost free.",
-    "The fourth waits her turn on all fours, already presenting, muttering dares she no longer means. You come in the first; she stays full and unusually quiet while the second takes her place, then the third, then the fourth.",
-    "Each of them is put in her place in turn, each of them filled, and by the end the whole group of brats is limp, marked, and—for once—well-behaved."
+    "The brats talk until your cock is free. Then the commentary turns into gasps. Nyxe stares at it, wings half-spread. “Okay, that’s cheating.” Rue snorts, and then the brand flares, because she was about to say the same thing.",
+    "Nyxe sinks down first, mouthy right up until the stretch steals her words. You fuck her hard while Rue kneels behind her, tail lashing, pinching her nipples and whispering that she looks so much better quiet. Every time you pull almost free Rue leans down to lick the base of your cock, and Nyxe hates her for it, and loves it.",
+    "You come in Nyxe; she stays full and unusually silent while Rue takes her place on all fours, muttering dares she no longer means. You put her in her place, and fill her too.",
+    "By the end both brats are limp, marked and, for once, well-behaved. It lasts until breakfast."
   ],
   "brats_2": [
-    "They dare each other to take it first. The boldest drops to her knees, takes your cock into her mouth, and immediately gags on the size to the delight of the others.",
-    "She pulls off and the next brat climbs on, sinking down with a broken sound that the others immediately mock—until you start fucking her and the mockery turns into hungry silence.",
-    "The third brat moves behind the one you’re inside, holding her hips, forcing her to take every thrust deeper while whispering that she can take more. The fourth sits astride the face of the first, giving her something to do with her mouth while she recovers.",
-    "You work through all four, flooding each of them in turn, the earlier ones recovering just enough to hold the later ones open for you. By the end every brat is full, quiet, and thoroughly claimed, the dares forgotten."
+    "They dare each other to take it first. Nyxe wins, drops to her knees, takes your cock into her mouth and gags on the size, to Rue’s enormous delight. “Brand’s dark,” Rue crows. “That was REAL.”",
+    "Rue climbs on next and sinks down with a broken sound that Nyxe immediately mocks, until you start fucking her and the mocking turns into hungry silence. Nyxe moves behind Rue, holding her hips, making her take every thrust deeper and whispering that she can take more.",
+    "Then they switch, and Rue holds Nyxe open for you in return, and neither of them can tell anymore who’s winning. You flood them both in turn. By the end both brats are full, quiet and thoroughly claimed, the dares forgotten, the rivalry melted into something warm and loud."
   ],
   "two_altars": [
-    "Two priestesses, two altars, one cock. The first priestess kneels at her altar and takes you into her mouth with solemn attention, tasting every inch, eyes closed as if in prayer. She pulls off and guides you into the second priestess, who is already bent over her own altar, waiting.",
-    "You fuck the second while the first kneels beside her, one hand stroking her hair, the other reaching beneath to touch where you are buried. When the second comes you pull out and the first takes your place on the altar, presenting herself with the same reverence.",
-    "You push into her and fuck her just as thoroughly while the second recovers and then joins, kissing her sister-priestess’s mouth and whispering the old words that now mean something far less holy. You come in the first, flooding her; then, still hard, you take the second again and fill her too.",
-    "The two of them stay bent over their altars afterward, full of you, the rite completed in the only way that mattered."
+    "Two priestesses, two altars, one god. Valdra kneels at her altar first and takes your cock into her mouth with solemn attention, tasting every inch, eyes closed as if in prayer.",
+    "She pulls off and guides you into Rhea, who is already bent over her own altar, trembling, waiting to be filled. You fuck Rhea while Valdra kneels beside her, one hand in her hair, the other reaching beneath to touch where you’re buried.",
+    "When Rhea comes you pull out and Valdra takes her place on the altar, presenting herself with ninety years of reverence. You push into her and fuck her just as thoroughly, while Rhea recovers and then joins, kissing the old priestess’s mouth and whispering the old words that now mean something far less holy.",
+    "You come in Valdra, flooding her; then, still hard, you take Rhea again and fill her too. The two of them stay bent over their altars afterward, full of you, the rite completed in the only way that mattered."
   ],
   "envoys_council": [
-    "The four envoys of the tribes take you together under the open sky. Tashra of the Pride is first—she strokes your cock once, purrs at the thickness, and sinks down with a rolling of her hips, claws carefully sheathed.",
-    "You fuck her while Kestra of the Aerie moves behind her, wings half-spread, hands on Tashra’s breasts, murmuring that the Pride always takes more than it admits. Sythra of the Coil coils loosely around your leg, waiting her turn, tongue flicking as she watches every thrust.",
-    "Vharra of the Clutch stands with arms crossed, wings twitching, already impatient. You come in Tashra; she stays full while Kestra takes her place, riding you with fierce Aerie energy, wings beating for balance.",
-    "Sythra takes the third turn, wrapping you both in warm coils while you fuck her slow as the tide. Vharra is last—she pushes you onto your back and sinks down hard, all heat and pride, and rides you until you flood her too.",
-    "When it is over the four envoys collapse in a tangle of fur, feathers, scales, and wings, every one of them marked, the council thoroughly adjourned."
+    "The envoys take you together under the open sky, in no order but hunger.",
+    {
+      "t": "Tashra gets to you first if she can; she always does. She strokes your cock once, purrs at the thickness, and sinks down with a rolling of her hips, claws carefully sheathed, riding you quick and playful until you’re both breathless.",
+      "when": "pride"
+    },
+    {
+      "t": "Kestra takes her turn with wings half-spread for balance, riding you with fierce Aerie energy, and lets out a hawk-cry the whole roof hears when she comes.",
+      "when": "aerie"
+    },
+    {
+      "t": "Sythra wraps you both in warm coils while she takes you, slow as the tide, hissing your name against your ear until you spill into her.",
+      "when": "coil"
+    },
+    {
+      "t": "Vharra doesn’t wait to be asked. She pushes you onto your back and sinks down hard, all heat and pride, and rides you until you flood her.",
+      "when": "clutch"
+    },
+    "You fill every one of them. When it’s over the council collapses in a tangle of fur, feathers, scales and wings, every envoy marked, the council thoroughly adjourned."
   ],
   "erin_romance": [
-    "Erin loses the spar on purpose. When you free your cock she goes red and happy. “Stay down,” or she rises into it—either way she takes the size with loud delight. You fuck her hard; she comes unashamed. You flood her and she stays exactly where you put her."
+    "Erin lost the spar on purpose and she isn’t sorry. When you free your cock she goes red and happy, and takes the size with loud delight.",
+    "You fuck her hard; she comes unashamed. You flood her, and she stays exactly where you put her, grinning up at you."
   ],
   "sakura_romance": [
     "She is shy for one breath. When she takes your cock the magic petals fall and she gasps at the stretch. You fuck her deep; she stops apologizing. When you come you fill her; she comes soft and brave."
@@ -320,5 +346,20 @@ export const UNBOUND = {
   ],
   "elspeth_evening": [
     "She is bold tonight. When she takes your cock she discovers with delight how much she likes being filled. You fuck her thoroughly. When you come you flood her; she comes choosing where she belongs."
+  ],
+  "calla_choice": [
+    "She kisses you first, slow and certain, and when she lifts her hips it’s her hand that frees your cock. Her eyes widen at how thick you are. “I want this,” she says, steady. “I’m choosing it.”",
+    "You ask once more; she laughs and sinks down onto you herself, tight and wet and trembling. You lock an arm around her waist and fuck her in deep, slow thrusts while she rides you under the open sky.",
+    "When you come you hold her close and flood her. She shudders through her climax around you, quiet and completely herself, and stays seated on your cock long after, watching the stars she found again."
   ]
+};
+
+// Lines with `when` play only if that person is in the scene.
+const riteDone = (S, tid) => !!(S.flags[`rite_${tid}`] && S.tribes && S.tribes[tid] && S.tribes[tid].status === 'sworn' && (S.tribes[tid].favor || 0) >= 6);
+export const WHEN = {
+  yuki: S => (S.allies || []).includes('yuki') && !!S.seen.yuki_romance && ((S.bond && S.bond.yuki) || 0) >= 8,
+  aerie: S => riteDone(S, 'aerie'),
+  coil: S => riteDone(S, 'coil'),
+  clutch: S => riteDone(S, 'clutch'),
+  pride: S => riteDone(S, 'pride'),
 };

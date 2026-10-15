@@ -12,7 +12,7 @@ import { registerAlias, registerCustomActor, ACTOR_ACCENTS } from './actors3d.js
 import { installPacks, PACKS, LOOKS } from './packs/index.js';
 import { BOWER_TALK } from './packs/wildkin.js';
 import { install as installCompanions, hangoutSteps } from './companions.js';
-import { UNBOUND } from './unbound_lines.js';
+import { UNBOUND, WHEN } from './unbound_lines.js';
 
 // Character packs merge into the game tables before anything reads them.
 installPacks();
@@ -212,7 +212,8 @@ export function playEvent(ev, opts = {}) {
         }
         // a written Unbound stub: swap in Zoe's lines (docs/UNBOUND_GUIDE.md)
         if (st.spice === 'unbound' && !st.t && UNBOUND[st.stub || ev.id]) {
-          steps.splice(idx, 1, ...UNBOUND[st.stub || ev.id].map(t => ({ s: st.s || 'narr', t, spice: 'unbound' })));
+          const lines = UNBOUND[st.stub || ev.id].filter(l => typeof l === 'string' || !l.when || (WHEN[l.when] && WHEN[l.when](S)));
+          steps.splice(idx, 1, ...lines.map(l => ({ s: st.s || 'narr', t: typeof l === 'string' ? l : l.t, spice: 'unbound' })));
           continue;
         }
         if (st.t === '' && !st.choice) { idx++; continue; } // unwritten stub
