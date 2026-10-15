@@ -1494,7 +1494,7 @@ Every Unbound stub in Binding Codex with its **whole scene**, in the order the p
 - *1 · "Kneel again. Here."* · group, bend the knee: Hot spring in a cleared rift. The Dawnward Company knelt to you in defeat once; this time they kneel because they want to. Erin's strength, Sakura's fearless hands, Shiro's patience. Yuki is in the scene only if their own romance happened (check the cond line).
 - *2 · Open your arms* · group, polyamory: The same spring, softer: laughter first, then the curtain of steam stays drawn. End on Shiro's drowsy "Motion carries unanimously."
 
-**Tokens you can use:** Pronouns for the player: `{they}` `{them}` `{their}` `{They}` `{Their}`, and verb helpers `{s}` `{is}` `{has}` `{was}`.
+**Tokens you can use:** `{Y:they|she}` (any pair, e.g. `{Y:they come|she comes}`): Yuki's words before or after Yuki's request; Pronouns for the player: `{they}` `{them}` `{their}` `{They}` `{Their}`, and verb helpers `{s}` `{is}` `{has}` `{was}`.
 
 **The scene:**
 
@@ -1502,7 +1502,7 @@ Every Unbound stub in Binding Codex with its **whole scene**, in the order the p
 - **Erin:** (sliding into the water beside you) Rule one of the pool: no Lodge. No rifts. Tonight you're just ours, and we're just yours.
 - **Sakura:** (hair all the way down, hat nowhere in sight) I used to practice being brave for moments like this. (she crosses the water to you) I don't have to practice anymore.
 - **Shiro:** (from your other side, close enough that the words land on your skin) I ran the numbers on wanting like this once and concluded it was a liability. I have never been so glad to be wrong.
-- *(only if Yuki has had their own romance with you)* **Yuki:** (hovering at the edge of the water out of old habit, until Erin reaches out and pulls them in) ...Oh. Okay. I'm in. I'm IN.
+- *(only if Yuki has had their own romance with you)* **Yuki:** (hovering at the edge of the water out of old habit, until Erin reaches out and pulls {Y:them|her} in) ...Oh. Okay. I'm in. I'm IN.
 - **▸ The player chooses:**
   - **"The Company knelt to me in the Glade. Kneel again. Here."** ← **leads to your scene**
     - **[Gentle only]** **Narration:** They kneel in the warm water, laughing, and you raise each of them up in turn.
@@ -1510,9 +1510,9 @@ Every Unbound stub in Binding Codex with its **whole scene**, in the order the p
     - ✅ **UNBOUND — written** — stub `dawnward_hearts_1` (in `js/unbound_lines.js`):
       They kneel in the warm water, and this time nobody is defeated. Erin is first, shield long gone, grinning up at you as she takes your cock in her hand. “Told the others it’d be big,” she says, smug, and then sinks onto you right there in the spring and rides you hard and loud.
       Sakura kneels behind her, hat nowhere in sight, petals of stray magic drifting down onto the water, reaching around to stroke Erin where you’re joined while whispering apologies she doesn’t mean. Shiro kneels at your side, perfectly composed, and watches every thrust like she’s memorizing a winning game.
-      *(only if Yuki is there)* Yuki kneels at the very edge of the spring out of old habit, until Erin reaches back without breaking rhythm and pulls them in close.
+      *(only if Yuki is there)* Yuki kneels at the very edge of the spring out of old habit, until Erin reaches back without breaking rhythm and pulls {Y:them|her} in close.
       You come in Erin with a groan; she stays full, laughing, while Sakura takes her place, shy for exactly one breath and then fearless, crying out as she stretches around you. You fill her too, and then Shiro, who rides you with slow precision until strategy breaks down entirely and she comes with a sound she will never write in any ledger.
-      *(only if Yuki is there)* Yuki is last, and earnest about it: they take you slowly, wide-eyed at the size, and come laughing into your neck like they can’t believe they’re allowed.
+      *(only if Yuki is there)* Yuki is last, and earnest about it: {Y:they take|she takes} you slowly, wide-eyed at the size, and {Y:come|comes} laughing into your neck like {Y:they can’t believe they’re|she can’t believe she’s} allowed.
       By the end the whole Company is claimed, armor scattered across the rocks, and no one is quiet about it. Much later somebody says, drowsy and smug: “Motion carries unanimously.”
   - **Open your arms and let them all come to you.** ← **leads to your scene**
     - **[Gentle only]** **Narration:** The steam closes over all of you like a drawn curtain, and there is laughter first, as there always is with them.
@@ -1520,9 +1520,9 @@ Every Unbound stub in Binding Codex with its **whole scene**, in the order the p
     - ✅ **UNBOUND — written** — stub `dawnward_hearts_2` (in `js/unbound_lines.js`):
       They want to lose together. Shiro goes first, because Shiro has a plan: she sinks to her knees in the warm water and takes your cock into her mouth until her eyes water, while Erin counts out loud how much she can take and Sakura covers her face and watches through her fingers.
       Sakura climbs into your lap next, all shyness gone, and sinks down with a sharp, delighted cry at the stretch. Erin holds her from behind, telling her how good she looks taking it; Shiro presses against your back, one hand reaching down to feel where you and Sakura are joined.
-      *(only if Yuki is there)* Yuki waits in the water beside you, shy and certain, until Sakura reaches out mid-ride and pulls them close enough to kiss.
+      *(only if Yuki is there)* Yuki waits in the water beside you, shy and certain, until Sakura reaches out mid-ride and pulls {Y:them|her} close enough to kiss.
       You fill Sakura; then Erin, who takes you on her back on the warm rocks with her legs locked around you and laughs the whole way through; then Shiro, who finally stops calculating and simply wants.
-      *(only if Yuki is there)* Yuki is last. The others hold them while you take them, and they come with a wondering, breathless laugh.
+      *(only if Yuki is there)* Yuki is last. The others hold {Y:them|her} while you take {Y:them|her}, and {Y:they come|she comes} with a wondering, breathless laugh.
       When the last of them comes around you the Company collapses in a golden, laughing heap in the steam, every one of them thoroughly defeated and thoroughly full.
 - *(Chronicle entry: "The Dawnward Company became a company of five.")*
 
@@ -1744,27 +1744,34 @@ Every Unbound stub in Binding Codex with its **whole scene**, in the order the p
 
 **What to write** (from the guide):
 
-- *1 · "Come in."* · romance: Yuki (they/them), earnest, trembling, fearless; they laugh afterward like they can't believe they're allowed.
-- *2 · Take the cold tea and kiss them* · romance, dominance: Yuki discovering, wide-eyed, how much they wanted to be taken in hand.
+- *either choice* · romance: Two versions. **After Yuki's request** (`yuki_change`, she/her): she stands in the doorway in the new shape she asked the Codex for, welcomed by the Company, still a little unsure of it. **Before** (they/them): Yuki, earnest, trembling, fearless, laughing afterward like they can't believe they're allowed. Lines carry `when: 'yuki_femme'` or `when: 'yuki_they'`.
 
-**Tokens you can use:** Pronouns for the player: `{they}` `{them}` `{their}` `{They}` `{Their}`, and verb helpers `{s}` `{is}` `{has}` `{was}`.
+**Tokens you can use:** `{Y:they|she}` (any pair, e.g. `{Y:they come|she comes}`): Yuki's words before or after Yuki's request; Pronouns for the player: `{they}` `{them}` `{their}` `{They}` `{Their}`, and verb helpers `{s}` `{is}` `{has}` `{was}`.
 
 **The scene:**
 
-- **Yuki:** (holding two cups of tea, both going cold) I keep making you tea so I have a reason to come in. (they set them down) I don't want a reason anymore. I just want to come in.
+- **Yuki:** (holding two cups of tea, both going cold) I keep making you tea so I have a reason to come in. ({Y:they set|she sets} them down) I don't want a reason anymore. I just want to come in.
 - **▸ The player chooses:**
   - **"Come in."** ← **leads to your scene**
     - **Yuki:** (a breath that shakes) Okay. Okay.
-    - **[Gentle only]** **Narration:** Yuki holds you like a second chance they never expected, and falls asleep smiling.
-    - **[Steamy — Unbound players see this too]** **Narration:** Yuki gives you everything they have, earnest and trembling and fearless, and laughs into your neck afterward like they can't believe they're allowed this.
+    - **[Gentle only]** **Narration:** Yuki holds you like a second chance {Y:they|she} never expected, and falls asleep smiling.
+    - **[Steamy — Unbound players see this too]** **Narration:** Yuki gives you everything {Y:they have|she has}, earnest and trembling and fearless, and laughs into your neck afterward like {Y:they can't believe they're|she can't believe she's} allowed this.
     - ✅ **UNBOUND — written** — stub `yuki_romance` (in `js/unbound_lines.js`):
-      Yuki comes in without a reason. When they take your cock their eyes go wide. “You’re a lot.” You fuck them earnest and claiming. When you come you fill them; they come laughing like they can’t believe they’re allowed.
-  - **Take the cold tea out of their hands and kiss them.** ← **leads to your scene**
+      *(only if Yuki has asked the Codex to write her as she is (she/her))* She stands in the doorway still a little unsure of the new shape your magic gave her: softer hips, fuller chest, the last traces of her old shape smoothed away. “They all said I look right like this,” she murmurs, cheeks pink. “The others. They welcomed me. Told me I finally fit.”
+      *(only if Yuki has asked the Codex to write her as she is (she/her))* Her hands tremble as she reaches for your cock; when she frees it her eyes go wide at the size. “I used to have one. It was never… this.” She sinks down onto you with a broken, feminine sound, tight and wet and newly made for exactly this.
+      *(only if Yuki has asked the Codex to write her as she is (she/her))* You fuck her slow and deep, one hand on her new waist, emphasizing every soft curve your magic left her. “So full,” she gasps. “I can feel how much smaller I am now.”
+      *(only if Yuki has asked the Codex to write her as she is (she/her))* When you come you hold her down and flood her; she comes around you with a high, surrendered cry, laughing into your neck like she still can’t believe she’s allowed to be the one taking it.
+      *(only if Yuki hasn't made that change (they/them))* Yuki comes in without a reason. When they take your cock their eyes go wide. “You’re a lot.” You fuck them earnest and claiming. When you come you fill them; they come laughing like they can’t believe they’re allowed.
+  - **Take the cold tea out of {Y:their|her} hands and kiss {Y:them|her}.** ← **leads to your scene**
     - **Yuki:** (dazed) ...The tea was a really good plan. This is a better plan.
-    - **[Gentle only]** **Narration:** They stay. Neither of you remembers the tea.
-    - **[Steamy — Unbound players see this too]** **Narration:** They stay, and the tea goes stone cold on the table, and Yuki discovers, wide-eyed, exactly how much they wanted to be taken in hand.
+    - **[Gentle only]** **Narration:** {Y:They stay|She stays}. Neither of you remembers the tea.
+    - **[Steamy — Unbound players see this too]** **Narration:** {Y:They stay|She stays}, and the tea goes stone cold on the table, and Yuki discovers, wide-eyed, exactly how much {Y:they|she} wanted to be taken in hand.
     - ✅ **UNBOUND — written** — stub `yuki_romance` (in `js/unbound_lines.js`):
-      Yuki comes in without a reason. When they take your cock their eyes go wide. “You’re a lot.” You fuck them earnest and claiming. When you come you fill them; they come laughing like they can’t believe they’re allowed.
+      *(only if Yuki has asked the Codex to write her as she is (she/her))* She stands in the doorway still a little unsure of the new shape your magic gave her: softer hips, fuller chest, the last traces of her old shape smoothed away. “They all said I look right like this,” she murmurs, cheeks pink. “The others. They welcomed me. Told me I finally fit.”
+      *(only if Yuki has asked the Codex to write her as she is (she/her))* Her hands tremble as she reaches for your cock; when she frees it her eyes go wide at the size. “I used to have one. It was never… this.” She sinks down onto you with a broken, feminine sound, tight and wet and newly made for exactly this.
+      *(only if Yuki has asked the Codex to write her as she is (she/her))* You fuck her slow and deep, one hand on her new waist, emphasizing every soft curve your magic left her. “So full,” she gasps. “I can feel how much smaller I am now.”
+      *(only if Yuki has asked the Codex to write her as she is (she/her))* When you come you hold her down and flood her; she comes around you with a high, surrendered cry, laughing into your neck like she still can’t believe she’s allowed to be the one taking it.
+      *(only if Yuki hasn't made that change (they/them))* Yuki comes in without a reason. When they take your cock their eyes go wide. “You’re a lot.” You fuck them earnest and claiming. When you come you fill them; they come laughing like they can’t believe they’re allowed.
 - *(Chronicle entry: "Yuki stopped needing a reason to come in.")*
 
 ---
@@ -1968,7 +1975,7 @@ Every Unbound stub in Binding Codex with its **whole scene**, in the order the p
 
 - *Spend the night together* · repeatable: Earnest and fearless (they/them).
 
-**Tokens you can use:** Pronouns for the player: `{they}` `{them}` `{their}` `{They}` `{Their}`, and verb helpers `{s}` `{is}` `{has}` `{was}`.
+**Tokens you can use:** `{Y:they|she}` (any pair, e.g. `{Y:they come|she comes}`): Yuki's words before or after Yuki's request; Pronouns for the player: `{they}` `{them}` `{their}` `{They}` `{Their}`, and verb helpers `{s}` `{is}` `{has}` `{was}`.
 
 **The scene:**
 
@@ -1976,10 +1983,10 @@ Every Unbound stub in Binding Codex with its **whole scene**, in the order the p
 - **▸ The player chooses:**
   - **Spend the night together.** ← **leads to your scene**
     - *(only if you took the Wyrm's Mantle pact)* **Narration:** Your Mantle unfurls in the candlelight, and they make a soft, delighted sound at the sight of it.
-    - **[Gentle only]** **Narration:** Yuki falls asleep holding your hand like it's the second chance they never expected to get.
-    - **[Steamy — Unbound players see this too]** **Narration:** Yuki gives the night everything they have, earnest and trembling and fearless, and when it's over they laugh into your neck like they can't believe they're allowed.
+    - **[Gentle only]** **Narration:** Yuki falls asleep holding your hand like it's the second chance {Y:they|she} never expected to get.
+    - **[Steamy — Unbound players see this too]** **Narration:** Yuki gives the night everything {Y:they have|she has}, earnest and trembling and fearless, and when it's over {Y:they laugh|she laughs} into your neck like {Y:they can't believe they're|she can't believe she's} allowed.
     - ✅ **UNBOUND — written** — stub `yuki_evening` (in `js/unbound_lines.js`):
-      Yuki gives everything. When they take your cock their eyes go wide. “You’re… a lot.” You fuck them deep and claiming. When you come you fill them; they come laughing into your neck.
+      Yuki gives everything. When {Y:they take|she takes} your cock {Y:their|her} eyes go wide. “You’re… a lot.” You fuck {Y:them|her} deep and claiming. When you come you fill {Y:them|her}; {Y:they come|she comes} laughing into your neck.
   - **"Just stay and talk tonight."**
     - **Narration:** You talk until the candles gutter, and fall asleep somewhere in the middle of a sentence. It is exactly enough.
 

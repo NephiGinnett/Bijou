@@ -215,8 +215,8 @@ const EVENINGS = {
     gentle: "She falls asleep with her hair unpinned across your pillow, the most unguarded you've ever seen the White Queen.",
     steamy: "The White Queen plays the night like a long, patient game, every move deliberate, and then, at the end, she tips over her own king with a laugh you'll remember for years." },
   yuki: { ask: "(earnest and nervous all at once) Can I stay tonight? Not for anything. Or — for anything. Whatever you want. I just want to be here.",
-    gentle: "Yuki falls asleep holding your hand like it's the second chance they never expected to get.",
-    steamy: "Yuki gives the night everything they have, earnest and trembling and fearless, and when it's over they laugh into your neck like they can't believe they're allowed." },
+    gentle: "Yuki falls asleep holding your hand like it's the second chance {Y:they|she} never expected to get.",
+    steamy: "Yuki gives the night everything {Y:they have|she has}, earnest and trembling and fearless, and when it's over {Y:they laugh|she laughs} into your neck like {Y:they can't believe they're|she can't believe she's} allowed." },
   elara: { ask: "I've lived a long time and I've never once been in a hurry. (she takes your hand) Let's not hurry tonight either.",
     gentle: "She tells you about the Codex's binding, centuries ago, in a whisper, until you both drift off.",
     steamy: "Elara takes her time, the way only someone with centuries can, curious about every inch of you as if she's discovered something new in the world after a hundred years of nothing." },
@@ -346,17 +346,43 @@ function dawnward(E) {
     chronicle: 'Shiro stopped running the numbers on you.' });
   E.yuki_romance = romance('yuki', { name: 'Yuki', bond: 7, tags: ['romance'], cond: bent,
     lead: [
-      { s: 'yuki', t: '(holding two cups of tea, both going cold) I keep making you tea so I have a reason to come in. (they set them down) I don\'t want a reason anymore. I just want to come in.' },
+      { s: 'yuki', t: '(holding two cups of tea, both going cold) I keep making you tea so I have a reason to come in. ({Y:they set|she sets} them down) I don\'t want a reason anymore. I just want to come in.' },
     ],
     choices: [
       { t: '"Come in."', tone: 'kind', r: [{ s: 'yuki', t: '(a breath that shakes) Okay. Okay.' }],
-        gentle: 'Yuki holds you like a second chance they never expected, and falls asleep smiling.',
-        steamy: 'Yuki gives you everything they have, earnest and trembling and fearless, and laughs into your neck afterward like they can\'t believe they\'re allowed this.' },
-      { t: 'Take the cold tea out of their hands and kiss them.', tone: 'dom', r: [{ s: 'yuki', t: '(dazed) ...The tea was a really good plan. This is a better plan.' }],
-        gentle: 'They stay. Neither of you remembers the tea.',
-        steamy: 'They stay, and the tea goes stone cold on the table, and Yuki discovers, wide-eyed, exactly how much they wanted to be taken in hand.' },
+        gentle: 'Yuki holds you like a second chance {Y:they|she} never expected, and falls asleep smiling.',
+        steamy: 'Yuki gives you everything {Y:they have|she has}, earnest and trembling and fearless, and laughs into your neck afterward like {Y:they can\'t believe they\'re|she can\'t believe she\'s} allowed this.' },
+      { t: 'Take the cold tea out of {Y:their|her} hands and kiss {Y:them|her}.', tone: 'dom', r: [{ s: 'yuki', t: '(dazed) ...The tea was a really good plan. This is a better plan.' }],
+        gentle: '{Y:They stay|She stays}. Neither of you remembers the tea.',
+        steamy: '{Y:They stay|She stays}, and the tea goes stone cold on the table, and Yuki discovers, wide-eyed, exactly how much {Y:they|she} wanted to be taken in hand.' },
     ],
     chronicle: 'Yuki stopped needing a reason to come in.' });
+
+  // Yuki's request: the change they've wanted since long before the Company.
+  // Theirs to ask for; the Codex only does it because Yuki wants it.
+  E.yuki_change = {
+    id: 'yuki_change', where: 'guild', once: true, priority: 52,
+    cond: free('yuki', S => bent(S) && (S.bond.yuki || 0) >= 5 && !S.flags.yuki_femme),
+    steps: [
+      { s: 'narr', t: 'Yuki asks to talk somewhere private. They choose the reading room at dusk, the Codex open between you, and spend a long time not saying anything.' },
+      { s: 'yuki', t: "Can I tell you something I've never said out loud? (their hands are shaking) Since before the Company. Before the Lodge, even. I've wanted to be a girl. Not pretend. Not dress up. Be one." },
+      { s: 'yuki', t: "The Codex rewrites things. Brands, pacts, bodies sometimes; I've watched it. (very small) Could it rewrite me? Only if you'd help. Only because I'm asking." },
+      { choice: [
+        { t: '"If it\'s what you want, then yes. All the way."', tone: 'kind', bond: { yuki: 2 }, flag: 'yuki_femme', r: [] },
+        { t: '"You don\'t need magic to be her. But if you want it, I\'ll help."', tone: 'kind', bond: { yuki: 2 }, flag: 'yuki_femme', r: [] },
+        { t: '"Take a little more time. Ask me again when you\'re sure."', tone: 'kind', reopen: true, r: [
+          { s: 'yuki', t: "(a small, steady nod) I am sure. But... okay. Thank you for asking me that. I'll come back." },
+        ] },
+      ] },
+      { s: 'narr', cond: S => !!S.flags.yuki_femme, t: 'The binding takes all night, and it is gentle. By dawn the Codex has written her the way she has always been underneath: softer hips, a fuller chest, long hair she keeps touching to make sure it\'s real.' },
+      { s: 'yuki', cond: S => !!S.flags.yuki_femme, t: "(laughing and crying into her own hair) It's me. It's actually me." },
+      { s: 'erin', cond: S => !!S.flags.yuki_femme && has(S, 'erin'), t: '(barreling into the reading room) YUKI. Oh my gods. You look RIGHT. You look so right!' },
+      { s: 'sakura', cond: S => !!S.flags.yuki_femme && has(S, 'sakura'), t: '(from behind her hat, tearing up) We always knew. We were just waiting for you to know too.' },
+      { s: 'shiro', cond: S => !!S.flags.yuki_femme && has(S, 'shiro'), t: "Welcome home, Yuki. (she makes a note in the ledger, and doesn't hide it) Correcting the record." },
+      { s: 'codex', cond: S => !!S.flags.yuki_femme, t: '[ YUKI — she/her from now on. ]' },
+      { chronicle: 'Yuki asked the Codex to write her as she is.' },
+    ],
+  };
 }
 
 export function install(EVENTS) {

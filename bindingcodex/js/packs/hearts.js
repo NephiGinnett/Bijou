@@ -180,7 +180,7 @@ function dawnward(E) {
       { s: 'erin', t: '(sliding into the water beside you) Rule one of the pool: no Lodge. No rifts. Tonight you\'re just ours, and we\'re just yours.' },
       { s: 'sakura', t: '(hair all the way down, hat nowhere in sight) I used to practice being brave for moments like this. (she crosses the water to you) I don\'t have to practice anymore.' },
       { s: 'shiro', t: '(from your other side, close enough that the words land on your skin) I ran the numbers on wanting like this once and concluded it was a liability. I have never been so glad to be wrong.' },
-      { s: 'yuki', cond: S => has(S, 'yuki') && romanced(S, 'yuki') && bond(S, 'yuki') >= 8, t: '(hovering at the edge of the water out of old habit, until Erin reaches out and pulls them in) ...Oh. Okay. I\'m in. I\'m IN.' },
+      { s: 'yuki', cond: S => has(S, 'yuki') && romanced(S, 'yuki') && bond(S, 'yuki') >= 8, t: '(hovering at the edge of the water out of old habit, until Erin reaches out and pulls {Y:them|her} in) ...Oh. Okay. I\'m in. I\'m IN.' },
       { choice: [
         { t: '"The Company knelt to me in the Glade. Kneel again. Here."', tone: 'dom', flag: 'dawnward_formed', r: [
           { s: 'narr', t: 'They kneel in the warm water, laughing, and you raise each of them up in turn.', spice: 'gentle' },

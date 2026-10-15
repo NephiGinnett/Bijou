@@ -24,6 +24,7 @@ Everything Zoe needs to fill the **Unbound** intimacy tier in Binding Codex (104
 - **Revisit beats** (`*_revisit`) are for characters whose story began in chains: Calla, Mira Vane, Aelindra and Elspeth. Each is a negotiated scene between free adults. A separate `*_negotiate` event always comes first. In it, she says what she wants, sets limits, and names a **stop word**, and the player can say yes, no, or "ask me again." The revisit then opens with her checking in, and the stop word stays live the whole scene. Have the stop word appear (or be offered) at least once in your text.
 - The card tags shown below come from the Packs GDD. Where it says "see card," the GDD didn't list the tags in full. Use what you know of the original card.
 
+- **Yuki's pronouns** change if Yuki asks the Codex to write her as she is (`yuki_change`). In any line that mentions Yuki, write `{Y:they|she}`, `{Y:them|her}`, `{Y:they come|she comes}` and so on; the game picks the right side.
 - **Family scenes** (`*_expecting`, `*_birth`, the hearth epilogue) have no intimacy tiers and no stubs, on purpose. Keep pregnancy and children out of intimate scenes.
 
 ## The stubs
@@ -144,8 +145,7 @@ Group scenes. Every participant is a free ally who has had her own romance and i
 | `sakura_romance` | 2 · Take her hat and draw her in | romance, dominance | No hat brim to hide behind, so she has nowhere to look but you. |
 | `shiro_romance` | 1 · "Then find out." | romance, slow-burn | The White Queen plays the night like a patient game, then gives up strategy entirely. |
 | `shiro_romance` | 2 · Write one line in her ledger | romance, dominance | You wrote MINE in her ledger. For the first time she does exactly as she's told, with enthusiasm. |
-| `yuki_romance` | 1 · "Come in." | romance | Yuki (they/them), earnest, trembling, fearless; they laugh afterward like they can't believe they're allowed. |
-| `yuki_romance` | 2 · Take the cold tea and kiss them | romance, dominance | Yuki discovering, wide-eyed, how much they wanted to be taken in hand. |
+| `yuki_romance` | either choice | romance | Two versions. **After Yuki's request** (`yuki_change`, she/her): she stands in the doorway in the new shape she asked the Codex for, welcomed by the Company, still a little unsure of it. **Before** (they/them): Yuki, earnest, trembling, fearless, laughing afterward like they can't believe they're allowed. Lines carry `when: 'yuki_femme'` or `when: 'yuki_they'`. |
 
 **Evenings.** Repeatable: from her Companion page, every other night, once her romance has happened. The player chooses "Spend the night together" or "Just stay and talk." These are the familiar nights, so keep them shorter and warmer than the first time; you can write several lines and they'll play each time. One stub each:
 

@@ -189,12 +189,12 @@ export const UNBOUND = {
     "They kneel in the warm water, and this time nobody is defeated. Erin is first, shield long gone, grinning up at you as she takes your cock in her hand. “Told the others it’d be big,” she says, smug, and then sinks onto you right there in the spring and rides you hard and loud.",
     "Sakura kneels behind her, hat nowhere in sight, petals of stray magic drifting down onto the water, reaching around to stroke Erin where you’re joined while whispering apologies she doesn’t mean. Shiro kneels at your side, perfectly composed, and watches every thrust like she’s memorizing a winning game.",
     {
-      "t": "Yuki kneels at the very edge of the spring out of old habit, until Erin reaches back without breaking rhythm and pulls them in close.",
+      "t": "Yuki kneels at the very edge of the spring out of old habit, until Erin reaches back without breaking rhythm and pulls {Y:them|her} in close.",
       "when": "yuki"
     },
     "You come in Erin with a groan; she stays full, laughing, while Sakura takes her place, shy for exactly one breath and then fearless, crying out as she stretches around you. You fill her too, and then Shiro, who rides you with slow precision until strategy breaks down entirely and she comes with a sound she will never write in any ledger.",
     {
-      "t": "Yuki is last, and earnest about it: they take you slowly, wide-eyed at the size, and come laughing into your neck like they can’t believe they’re allowed.",
+      "t": "Yuki is last, and earnest about it: {Y:they take|she takes} you slowly, wide-eyed at the size, and {Y:come|comes} laughing into your neck like {Y:they can’t believe they’re|she can’t believe she’s} allowed.",
       "when": "yuki"
     },
     "By the end the whole Company is claimed, armor scattered across the rocks, and no one is quiet about it. Much later somebody says, drowsy and smug: “Motion carries unanimously.”"
@@ -203,12 +203,12 @@ export const UNBOUND = {
     "They want to lose together. Shiro goes first, because Shiro has a plan: she sinks to her knees in the warm water and takes your cock into her mouth until her eyes water, while Erin counts out loud how much she can take and Sakura covers her face and watches through her fingers.",
     "Sakura climbs into your lap next, all shyness gone, and sinks down with a sharp, delighted cry at the stretch. Erin holds her from behind, telling her how good she looks taking it; Shiro presses against your back, one hand reaching down to feel where you and Sakura are joined.",
     {
-      "t": "Yuki waits in the water beside you, shy and certain, until Sakura reaches out mid-ride and pulls them close enough to kiss.",
+      "t": "Yuki waits in the water beside you, shy and certain, until Sakura reaches out mid-ride and pulls {Y:them|her} close enough to kiss.",
       "when": "yuki"
     },
     "You fill Sakura; then Erin, who takes you on her back on the warm rocks with her legs locked around you and laughs the whole way through; then Shiro, who finally stops calculating and simply wants.",
     {
-      "t": "Yuki is last. The others hold them while you take them, and they come with a wondering, breathless laugh.",
+      "t": "Yuki is last. The others hold {Y:them|her} while you take {Y:them|her}, and {Y:they come|she comes} with a wondering, breathless laugh.",
       "when": "yuki"
     },
     "When the last of them comes around you the Company collapses in a golden, laughing heap in the steam, every one of them thoroughly defeated and thoroughly full."
@@ -261,7 +261,26 @@ export const UNBOUND = {
     "She stops running the numbers. When she takes your cock she makes a precise sound that quickly becomes unprecise. You fuck her until strategy is abandoned. When you come you flood her; she comes with the correct entry written in her body."
   ],
   "yuki_romance": [
-    "Yuki comes in without a reason. When they take your cock their eyes go wide. “You’re a lot.” You fuck them earnest and claiming. When you come you fill them; they come laughing like they can’t believe they’re allowed."
+    {
+      "t": "She stands in the doorway still a little unsure of the new shape your magic gave her: softer hips, fuller chest, the last traces of her old shape smoothed away. “They all said I look right like this,” she murmurs, cheeks pink. “The others. They welcomed me. Told me I finally fit.”",
+      "when": "yuki_femme"
+    },
+    {
+      "t": "Her hands tremble as she reaches for your cock; when she frees it her eyes go wide at the size. “I used to have one. It was never… this.” She sinks down onto you with a broken, feminine sound, tight and wet and newly made for exactly this.",
+      "when": "yuki_femme"
+    },
+    {
+      "t": "You fuck her slow and deep, one hand on her new waist, emphasizing every soft curve your magic left her. “So full,” she gasps. “I can feel how much smaller I am now.”",
+      "when": "yuki_femme"
+    },
+    {
+      "t": "When you come you hold her down and flood her; she comes around you with a high, surrendered cry, laughing into your neck like she still can’t believe she’s allowed to be the one taking it.",
+      "when": "yuki_femme"
+    },
+    {
+      "t": "Yuki comes in without a reason. When they take your cock their eyes go wide. “You’re a lot.” You fuck them earnest and claiming. When you come you fill them; they come laughing like they can’t believe they’re allowed.",
+      "when": "yuki_they"
+    }
   ],
   "vesper_evening": [
     "She pulls you down among the stacks. When you free your cock the Binding hums; she feels the size of it as much as you do. You fuck her deep. When you come you flood her; she comes overwhelmed, ink on both of you."
@@ -285,7 +304,7 @@ export const UNBOUND = {
     "She plays the night like a patient game. When she takes your cock she makes a precise then unprecise sound at the size. You fuck her until she tips her own king. When you come you flood her; she comes with a lasting laugh."
   ],
   "yuki_evening": [
-    "Yuki gives everything. When they take your cock their eyes go wide. “You’re… a lot.” You fuck them deep and claiming. When you come you fill them; they come laughing into your neck."
+    "Yuki gives everything. When {Y:they take|she takes} your cock {Y:their|her} eyes go wide. “You’re… a lot.” You fuck {Y:them|her} deep and claiming. When you come you fill {Y:them|her}; {Y:they come|she comes} laughing into your neck."
   ],
   "elara_evening": [
     "She takes her time. When she takes your cock her eyes light. You fuck her slow and curious. When you come you fill her; she comes with ancient wonder."
@@ -357,6 +376,8 @@ export const UNBOUND = {
 // Lines with `when` play only if that person is in the scene.
 const riteDone = (S, tid) => !!(S.flags[`rite_${tid}`] && S.tribes && S.tribes[tid] && S.tribes[tid].status === 'sworn' && (S.tribes[tid].favor || 0) >= 6);
 export const WHEN = {
+  yuki_femme: S => !!(S.flags && S.flags.yuki_femme),
+  yuki_they: S => !(S.flags && S.flags.yuki_femme),
   yuki: S => (S.allies || []).includes('yuki') && !!S.seen.yuki_romance && ((S.bond && S.bond.yuki) || 0) >= 8,
   aerie: S => riteDone(S, 'aerie'),
   coil: S => riteDone(S, 'coil'),

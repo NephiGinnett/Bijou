@@ -83,7 +83,7 @@ function render(steps, depth, out, evId) {
       if (st.t) out.push(`${pad}- ${pre}**[Unbound — written]** ${speaker(st.s)}: ${quote(st.t)}`);
       else if (UNBOUND[st.stub || evId]) {
         out.push(`${pad}- ${pre}✅ **UNBOUND — written** — stub \`${st.stub || evId}\` (in \`js/unbound_lines.js\`):`);
-        const whoIs = { yuki: 'Yuki is there', aerie: 'Kestra is there', coil: 'Sythra is there', clutch: 'Vharra is there', pride: 'Tashra is there' };
+        const whoIs = { yuki_femme: 'Yuki has asked the Codex to write her as she is (she/her)', yuki_they: 'Yuki hasn\'t made that change (they/them)', yuki: 'Yuki is there', aerie: 'Kestra is there', coil: 'Sythra is there', clutch: 'Vharra is there', pride: 'Tashra is there' };
         for (const l of UNBOUND[st.stub || evId]) out.push(typeof l === 'string' ? `${pad}  ${l}` : `${pad}  *(only if ${whoIs[l.when] || l.when})* ${l.t}`);
       }
       else out.push(`${pad}- ${pre}✍️ **YOUR UNBOUND LINES GO HERE** — stub \`${st.stub || evId}\`. They play right after the Steamy line above.`);
@@ -116,6 +116,7 @@ function tokensUsed(ev) {
   const toks = [];
   if (/\{kin\}|"kin"/.test(src)) toks.push('`{kin}` — her name (any of the 12 women of that tribe)', '`{kinWho}` — her description, e.g. "a storm-scout of the Aerie"');
   if (/\{name\}/.test(src)) toks.push('`{name}` — the player\'s name');
+  if (/yuki/.test(src)) toks.push('`{Y:they|she}` (any pair, e.g. `{Y:they come|she comes}`): Yuki\'s words before or after Yuki\'s request');
   toks.push('Pronouns for the player: `{they}` `{them}` `{their}` `{They}` `{Their}`, and verb helpers `{s}` `{is}` `{has}` `{was}`');
   return toks;
 }

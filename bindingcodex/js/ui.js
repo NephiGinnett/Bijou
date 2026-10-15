@@ -104,14 +104,14 @@ function affixChip(g) {
 }
 function heroName(id) { return id === 'player' ? S.name : (HEROES[id] ? HEROES[id].name : id); }
 function heroColor(id) { return (SPEAKERS[id] && SPEAKERS[id].color) || (HEROES[id] && HEROES[id].color) || '#fff'; }
-function heroVariant(id) { return id === 'player' && S ? S.pronouns + (S.flags.pact_wyrm_mantle ? '_mantle' : '') + (S.flags.scarred ? '_scar' : '') : null; }
+function heroVariant(id) { if (id === 'yuki' && S && S.flags && S.flags.yuki_femme) return 'fem'; return id === 'player' && S ? S.pronouns + (S.flags.pact_wyrm_mantle ? '_mantle' : '') + (S.flags.scarred ? '_scar' : '') : null; }
 function bar(cls, pct, title = '') {
   return `<div class="bar-outer ${cls} sm" title="${esc(title)}"><div class="bar-inner" style="width:${Math.max(0, Math.min(100, pct))}%"></div></div>`;
 }
 
 // Regenerate 2D portraits (player look follows pronoun choice; converts appear).
 async function refreshPortraits(force = false) {
-  const key = (S ? heroVariant('player') : 'she') + '|' + (S ? Object.keys(S.converts || {}).length : 0);
+  const key = (S ? heroVariant('player') : 'she') + '|' + (S ? Object.keys(S.converts || {}).length : 0) + '|' + (S && S.flags && S.flags.yuki_femme ? 'yf' : '');
   if (!force && PORTRAITS.__key === key) return;
   PORTRAITS.__key = key;
   // heroes, plus pack characters who aren't party members (tribe envoys)
@@ -144,7 +144,9 @@ function subName(text) {
     .replaceAll('{captive}', TOKEN_CTX.captive || 'the captive')
     .replaceAll('{ally}', TOKEN_CTX.ally || 'your ally')
     .replaceAll('{kinWho}', TOKEN_CTX.kinWho || 'one of the tribe')
-    .replaceAll('{kin}', TOKEN_CTX.kin || 'a tribeswoman');
+    .replaceAll('{kin}', TOKEN_CTX.kin || 'a tribeswoman')
+    // {Y:they|she}: Yuki's pronouns, before and after Yuki's request
+    .replace(/\{Y:([^|}]*)\|([^}]*)\}/g, (_, a, b) => (S && S.flags && S.flags.yuki_femme ? b : a));
 }
 
 // Intimacy tiers: Gentle shows gentle lines; Steamy shows steamy lines;
@@ -279,7 +281,8 @@ export function playEvent(ev, opts = {}) {
         b.onclick = (e) => {
           e.stopPropagation();
           AU.sfx('confirm');
-          if (replay) { const responses = c.r || []; steps.splice(idx, 1, ...responses); if (!responses.length) idx++; showStep(); return; }
+          // the choice is replaced by its responses (none: it is simply removed, and the next step moves up)
+          if (replay) { steps.splice(idx, 1, ...(c.r || [])); showStep(); return; }
           if (c.bond) for (const [g, n] of Object.entries(c.bond)) {
             if (!(g in S.bond)) continue;
             ST.addBond(S, g, n);
@@ -288,9 +291,7 @@ export function playEvent(ev, opts = {}) {
           if (c.flag) S.flags[c.flag] = true;
           if (c.tone) { S.stats.tone = S.stats.tone || {}; S.stats.tone[c.tone] = (S.stats.tone[c.tone] || 0) + 1; }
           if (c.reopen && ev.id) delete S.seen[ev.id]; // rejections stay retryable
-          const responses = c.r || [];
-          steps.splice(idx, 1, ...responses);
-          if (!responses.length) idx++;
+          steps.splice(idx, 1, ...(c.r || []));
           showStep();
         };
         box.appendChild(b);
@@ -1254,7 +1255,7 @@ async function battle(node) {
 
   stage.battleCamera();
   await stage.layoutBattle(
-    c.units.filter(u => u.side === 'party').map(u => ({ uid: u.uid, model: u.model, variant: u.uid === 'player' ? heroVariant('player') : u.variant })),
+    c.units.filter(u => u.side === 'party').map(u => ({ uid: u.uid, model: u.model, variant: heroVariant(u.uid) || u.variant })),
     c.units.filter(u => u.side === 'enemy').map(u => ({ uid: u.uid, model: u.model, variant: u.variant, boss: u.boss })),
   );
   AU.music('battle');
