@@ -10,6 +10,7 @@ import * as THREE from 'three';
 import { GLTFLoader } from '../vendor/GLTFLoader.js';
 import { tmat, tadd, SS, SC, ST } from './toon.js';
 import { toonFigure, toonHorns, toonTail, parseGear } from './toonfig.js';
+import { beastToon } from './toonbeast.js';
 
 const gltfLoader = new GLTFLoader();
 let manifestPromise = null;
@@ -1165,7 +1166,7 @@ export function buildActor(kind, variant = null, opts = {}) {
   if (ALIASES[kind]) { variant = variant ?? ALIASES[kind].variant; kind = ALIASES[kind].model; }
   const group = new THREE.Group();
   const inner = HERO_BUILDERS[kind] ? HERO_BUILDERS[kind](variant, opts) :
-    CUSTOM_SPECS[kind] ? (CUSTOM_SPECS[kind].toon ? toonLook(CUSTOM_SPECS[kind].toon) : customChibi(CUSTOM_SPECS[kind])) :
+    CUSTOM_SPECS[kind] ? (CUSTOM_SPECS[kind].toon ? toonLook(CUSTOM_SPECS[kind].toon) : CUSTOM_SPECS[kind].beast ? beastToon(CUSTOM_SPECS[kind]) : customChibi(CUSTOM_SPECS[kind])) :
     MONSTER_BUILDERS[kind] ? MONSTER_BUILDERS[kind](variant) :
     chibi({});
   group.add(inner);

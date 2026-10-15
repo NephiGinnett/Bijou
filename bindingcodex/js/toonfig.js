@@ -43,7 +43,7 @@ export function toonFigure(spec) {
   const L = spec.legs || { style: 'stockings' };
   const legM = tmat(L.color ?? C.deep ?? 0x1b2620), bootM = tmat(L.boots ?? 0x2a1e18);
   const legs = {};
-  for (const sx of [-1, 1]) {
+  for (const sx of (L.style === 'serpent' ? [] : [-1, 1])) {
     const root = new THREE.Group(); root.position.set(sx * 0.088 * Math.max(1, th * 0.95), hipY, 0); g.add(root);
     const thigh = new THREE.Group(); root.add(thigh);
     const coverTop = L.style === 'stockings' ? -tl * 0.78 : 0; // how far up the leg covering goes
@@ -150,7 +150,7 @@ export function toonFigure(spec) {
     tadd(arm, SS(0.055 * aw), sl2 === 'armor' ? tmat(C.metal ?? 0x9aa2ac) : sl2 === 'bare' ? tmat(C.glove ?? 0x1a1214) : skin, 0, -armLen * 0.93, 0);
     arms[sx < 0 ? 'L' : 'R'] = arm;
   }
-  ctx.arms = arms; ctx.armLen = armLen;
+  ctx.arms = arms; ctx.armLen = armLen; ctx.legs = legs; ctx.legLen = legLen;
 
   // --- head ---------------------------------------------------------------------------
   tadd(body, SC(0.045, 0.05), skin, 0, shoulderY + 0.06, 0);
@@ -167,7 +167,7 @@ export function toonFigure(spec) {
   gearVisuals(ctx, spec.showArms === false ? { charm: gear.charm } : gear);
   outline(g);
   g.userData.isChibi = true;
-  g.userData.rig = makeRig({ face: faceMesh, armR: arms.R, armL: arms.L, bust, hips, body, legs, legLen });
+  g.userData.rig = makeRig({ face: faceMesh, armR: arms.R, armL: arms.L, bust, hips, body, legs: legs.L ? legs : null, legLen });
   return g;
 }
 

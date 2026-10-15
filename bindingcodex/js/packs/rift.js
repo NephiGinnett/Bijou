@@ -18,7 +18,7 @@ const FOLK = {
     desc: 'Joanne, 52, hosted every block party Larkspur Lane ever had. Her kitchen landed intact, so she opened an inn in it. Auburn curls, a gingham apron, and the firm belief that nobody is too dangerous for a casserole.',
     perk: 'Supper for two: bring an ally to dinner for extra closeness, once a day.' },
   diane: { name: 'Diane', color: '#8ab87a', age: 49, shop: 'Diane\'s Garden', role: 'Herb-wife',
-    desc: 'Diane, 49, was the Lane\'s master gardener and its yoga-in-the-park evangelist. Her greenhouse came through with her, and the fen agrees with it frighteningly well. Sun hat, sage cardigan, dirt under every nail.',
+    desc: 'Diane, 49, was the Lane\'s master gardener, its yoga-in-the-park evangelist, and its happily unmarried woman ("I have a garden, Victoria. I don\'t need a husband."). Her greenhouse came through with her, and the fen agrees with it frighteningly well. Sun hat, sage cardigan, dirt under every nail.',
     perk: 'Potions, ethers and reagents, cheaper with favor. She\'ll buy your spare reagents too.' },
   margot: { name: 'Margot', color: '#e88ab8', age: 46, shop: 'Margot\'s Swap & Sell', role: 'Trader',
     desc: 'Margot, 46, twice divorced and proud of both, ran the Lane\'s garage sales like a hostile takeover. Now she buys and flips whatever you drag out of the rifts. Platinum blowout, hot-pink everything, hoops you could throw.',

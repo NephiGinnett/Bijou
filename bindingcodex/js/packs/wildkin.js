@@ -82,7 +82,10 @@ for (const [tid, T] of Object.entries(TRIBES)) {
   }
 }
 
+for (const v of Object.values(guests.looks)) v.male = true;
 Object.assign(looks, guests.looks);
+// every beastkin look renders on the toon figure (see toonbeast.js)
+for (const v of Object.values(looks)) v.beast = true;
 
 export const speakers = {
   ...guests.speakers,

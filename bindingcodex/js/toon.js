@@ -67,7 +67,7 @@ export function outline(group, width = 0.016) {
 
 // A canvas texture wrapped over the front of the head: big glossy anime
 // eyes with lashes and highlights, soft brows, blush and a small smile.
-export function faceTexture({ eye = 0x8a5ad8, brow = 0x8a6a3a, blush = 0xff8aa0, lashes = 0x2a1a22, mouth = 'smile', closed = false, lip = 0x8a3a4a, shadow = null, fang = true } = {}) {
+export function faceTexture({ eye = 0x8a5ad8, brow = 0x8a6a3a, blush = 0xff8aa0, lashes = 0x2a1a22, mouth = 'smile', closed = false, lip = 0x8a3a4a, shadow = null, fang = true, slit = false, tear = null, freckles = false } = {}) {
   const W = 512, H = 256;
   const cv = document.createElement('canvas'); cv.width = W; cv.height = H;
   const c = cv.getContext('2d');
@@ -99,8 +99,8 @@ export function faceTexture({ eye = 0x8a5ad8, brow = 0x8a6a3a, blush = 0xff8aa0,
     const g = c.createLinearGradient(0, cy - ry, 0, cy + ry);
     g.addColorStop(0, shade(eye, 0.45)); g.addColorStop(0.55, hex(eye)); g.addColorStop(1, lift(eye, 0.55));
     c.fillStyle = g; c.beginPath(); c.ellipse(cx, cy + 6, rx, ry - 4, 0, 0, Math.PI * 2); c.fill();
-    // pupil
-    c.fillStyle = shade(eye, 0.25); c.beginPath(); c.ellipse(cx, cy + 2, rx * 0.45, ry * 0.5, 0, 0, Math.PI * 2); c.fill();
+    // pupil (a slit for serpents and drakes)
+    c.fillStyle = shade(eye, 0.25); c.beginPath(); c.ellipse(cx, cy + 2, rx * (slit ? 0.14 : 0.45), ry * (slit ? 0.72 : 0.5), 0, 0, Math.PI * 2); c.fill();
     // highlights
     c.fillStyle = 'rgba(255,255,255,0.95)'; c.beginPath(); c.ellipse(cx - side * 10 - 6, cy - 14, 10, 13, -0.3, 0, Math.PI * 2); c.fill();
     c.beginPath(); c.ellipse(cx + 10, cy + 22, 5, 5, 0, 0, Math.PI * 2); c.fill();
@@ -114,6 +114,9 @@ export function faceTexture({ eye = 0x8a5ad8, brow = 0x8a6a3a, blush = 0xff8aa0,
     // brow
     c.strokeStyle = hex(brow); c.lineWidth = 6;
     c.beginPath(); c.moveTo(cx - side * 26, cy - ry - 22); c.quadraticCurveTo(cx + side * 4, cy - ry - 34, cx + side * 30, cy - ry - 24); c.stroke();
+    // cheetah tear-marks: a dark line from the inner eye down the cheek
+    if (tear != null) { c.strokeStyle = hex(tear); c.lineWidth = 7; c.lineCap = 'round'; c.beginPath(); c.moveTo(cx - side * 22, cy + ry - 2); c.quadraticCurveTo(cx - side * 26, cy + ry + 30, cx - side * 14, cy + ry + 56); c.stroke(); }
+    if (freckles) { c.fillStyle = '#b8785a99'; for (let i = 0; i < 7; i++) { c.beginPath(); c.arc(cx + side * (2 + (i * 13) % 40), cy + 62 + ((i * 7) % 18), 3.2, 0, Math.PI * 2); c.fill(); } }
     // blush
     const b = c.createRadialGradient(cx + side * 34, cy + 66, 2, cx + side * 34, cy + 66, 36);
     b.addColorStop(0, hex(blush) + 'aa'); b.addColorStop(1, hex(blush) + '00');
