@@ -139,7 +139,7 @@ Five women from a suburban cul-de-sac that fell into the fen. All are adults in 
 
 | Event | Choice | Tags | What to write |
 | --- | --- | --- | --- |
-| `victoria_romance` | 1 · "Then take what you want, Madam President." | power dynamic, workplace authority, older woman, hotwife | Victoria (44), ex-CFO and HOA president, runs the Lane's books. Glasses, pearls, clipboard. Married to gentle Harold, who can't match her and knows it; he sent her to you and wants a full report. She's in charge and very good at it: precise orders, earned rewards, in her own counting-house. |
+| `victoria_romance_lead` | 1 · "Then take what you want, Madam President." | power dynamic, workplace authority, older woman, hotwife | Victoria (44), ex-CFO and HOA president, runs the Lane's books. Glasses, pearls, clipboard. Married to gentle Harold, who can't match her and knows it; he sent her to you and wants a full report. She's in charge and very good at it: precise orders, earned rewards, in her own counting-house. |
 | `victoria_romance` | 2 · "No. Tonight you put the clipboard down." | power dynamic, reversal | The same night, reversed: nobody has told her no in twenty-two years. You take the pen, the glasses, the control; she obeys like it's a relief. |
 | `victoria_evening` | "Stay the night." | repeatable, hotwife | Familiar now, every third night. Harold's at his model-railway club; she'll be telling him everything. "One item on the agenda." |
 | `joanne_romance` | either choice | older woman, tenderness, hotwife | Joanne (52), innkeeper of the Kettle & Crown. Auburn curls, gingham apron, soft and generous. Thirty years married to sweet, sleepy Gary; roommates for the last ten. He's on watch tonight and told her to "go glow a little." She's fed everyone for thirty years; tonight she's the one taken care of. Nervous at first, then not. |
@@ -158,6 +158,17 @@ Five women from a suburban cul-de-sac that fell into the fen. All are adults in 
 | `celeste_romance` | 1 · Take the ring off her finger, and kiss her. | affair, married, forbidden | The first night, in Diane's greenhouse at midnight, among glowing vines. Her wedding ring sits on a potting bench. Under the tennis whites she's still a dancer: strong, flexible, and shameless once she stops thinking. A year of nothing breaking all at once. |
 | `celeste_romance` | 2 · "Then let me look at you first." | affair, married, slow | The same night, slower: nobody has looked at her in a year. Being seen undoes her before anything else does. |
 | `celeste_evening` | Stay the night. | repeatable, affair | Stolen and quick: the greenhouse, a hayloft, once the back of Margot's stall, her hand over her own mouth. After she leaves Brad it's no longer secret, so warmer and slower. Never during pregnancy (the evening is closed then). |
+
+**Lane group scenes.** Everyone in them has had her own romance with Zoe and is at favor 8+. They're reached from buttons at the top of the Larkspur Lane screen. The husbands know and approve; Celeste is at the block party only if she has left Brad.
+
+| Event | Choice | Tags | What to write |
+| --- | --- | --- | --- |
+| `lane_poker_night` | 1 · "Both of you. Now." | group, hotwife, dominance | Victoria and Joanne, while Harold and Gary play poker (and know exactly where their wives are). Victoria tries to run it and finally lets go; Joanne is soft, generous and shameless now that she has company. By the end they're holding hands across Zoe. Harold wants a written summary. |
+| `lane_poker_night` | 2 · "Then show me what you two worked out." | group, hotwife, spoiling | The same night, their plan: Victoria keeps score, Joanne ignores the plan, and Zoe gets spoiled thoroughly by both. |
+| `lane_coven_of_two` | 1 · Step into the candlelight with them. | group, witchy | Diane and Moira in the greenhouse at midnight, by a hundred black candles. Herbs and hexes: Diane flexible and laughing, Moira slow and certain, and the vines "promised to behave" (the vines lie). |
+| `lane_coven_of_two` | 2 · "Teach me something. Both of you." | group, witchy, dominance | Every "lesson" is a dare, and Zoe takes them all until the two most composed women on the Lane are the breathless ones. |
+| `lane_block_party` | 1 · "Motion carries. Everyone inside." | group, polyamory, hotwife | The after-party at the biggest house on the Lane: every Lane woman who's close to Zoe (3 to 6 of Victoria, Joanne, Diane, Margot, Moira, and Celeste if she left Brad; their lines are conditional). Each exactly as she is: bossy, soft, flexible, loud, slow, reckless. Keep it working whoever is present. The husbands are bowling. |
+| `lane_block_party` | 2 · "I want to dance with every one of you first." | group, polyamory | One slow dance with each under the string lights, then all of them indoors, each making sure Zoe knows why she chose her. |
 
 ### Hearts & Hearth (`js/packs/hearts.js`)
 

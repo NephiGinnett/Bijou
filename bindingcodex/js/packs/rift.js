@@ -368,7 +368,7 @@ function romance(id, o) {
         ...(c.r ? [{ s: id, t: c.r }] : []),
         { s: 'narr', t: c.gentle, spice: 'gentle' },
         { s: 'narr', t: c.steamy, spice: 'steamy' },
-        { s: 'narr', t: '', spice: 'unbound', stub: `${id}_romance` }, // ZOE: unbound
+        { s: 'narr', t: '', spice: 'unbound', stub: c.stub || `${id}_romance` }, // ZOE: unbound
       ] })) },
       { do: S => { folkOf(S, id).nightDay = S.day; S.eveningDay = S.day; } },
       { chronicle: o.chronicle },
@@ -463,7 +463,7 @@ export function events(E) {
       'And before you ask: Harold knows. We discussed it like adults over a very good bottle of wine. His exact words were "Vic, go get what you need, and then come home and tell me about it." (a thin, wicked smile) He was very specific about the telling.',
     ],
     choices: [
-      { t: '"Then take what you want, Madam President."', tone: 'kind',
+      { t: '"Then take what you want, Madam President."', tone: 'kind', stub: 'victoria_romance_lead',
         r: '(a slow, dangerous smile) Oh, that is a mistake. I\'ve been in charge of everything for twenty-two years. I\'m very good at it.',
         gentle: 'She takes you by the collar, pins you to the ledger desk, and kisses you like she\'s closing the biggest deal of her life. Later, the clipboard is on the floor and she\'s laughing into your shoulder.',
         steamy: 'Victoria runs the night like a board meeting she\'s already won: precise, unhurried, every instruction obeyed, every reward exactly earned. Her glasses end up on the desk, her pearls in your hand, her composure nowhere at all.' },
@@ -577,6 +577,7 @@ export function events(E) {
   });
 
   celesteArc(E);
+  laneGroups(E);
 }
 
 // --- Celeste: an affair, and how it ends -------------------------------------------
@@ -739,6 +740,106 @@ function celesteArc(E) {
       { s: 'narr', t: 'She\'s been thinking about names.' },
       { choice: ['Grace', 'Lark'].map(nm => ({ t: `"${nm}."`, r: [{ do: S => { (S.family ||= []).push({ parent: C, name: nm, day: S.day, secret: !!S.flags.celeste_secret }); } }, { s: C, t: `${nm}. (she says it like a promise) Hello, ${nm}.` }] })) },
       { chronicle: S => S.flags.celeste_secret ? 'Celeste\'s child was born on the Lane. Brad is a very proud father. You know the truth.' : 'Celeste\'s child was born at the Codex.' },
+    ],
+  };
+}
+
+// --- group scenes for the Lane ---------------------------------------------------------
+// Every woman in them has had her own romance with Zoe and is at favor 8+. Victoria's and
+// Joanne's husbands know and approve; Celeste joins the block party only once she's left Brad.
+function laneGroups(E) {
+  const close = (S, id) => !!(S.seen && S.seen[`${id}_romance`]) && fav(S, id) >= 8;
+  const gate = (pred) => { const fn = S => !!(S.town && S.town.open) && pred(S); fn.__tribe = 'town:group'; return fn; };
+  const LANE = ['victoria', 'joanne', 'diane', 'margot', 'moira'];
+  const partyGuests = S => LANE.filter(id => close(S, id)).length + (S.flags && S.flags.celeste_left && close(S, 'celeste') ? 1 : 0);
+
+  E.lane_poker_night = {
+    id: 'lane_poker_night', where: 'town', once: true,
+    cond: gate(S => close(S, 'victoria') && close(S, 'joanne')),
+    tags: ['group', 'older women', 'hotwife (husbands know and approve)'],
+    steps: [
+      { s: 'narr', t: 'Thursday is poker night at Harold and Gary\'s. Harold and Gary, it turns out, have been told exactly where their wives are spending it.' },
+      { s: 'joanne', t: '(pouring three glasses of wine in the Kettle & Crown\'s back room, a little pink) Vicky had an idea. I want it on the record that I said it was a terrible idea.' },
+      { s: 'victoria', t: '(not looking up from her glass) And then you said yes in under four seconds. I timed it. (she finally looks at you) We\'ve compared notes, Zoe. Extensively. We\'d like to stop comparing and start sharing.' },
+      { s: 'joanne', t: 'Gary said, and I quote, "Have fun, Jo, tell Vic I said hi." Harold asked for a written summary.' },
+      { s: 'victoria', t: 'He\'ll get one. Bullet points.' },
+      { choice: [
+        { t: '"Both of you. Now."', tone: 'dom', r: [
+          { s: 'narr', t: 'You take them both upstairs, Victoria still trying to run the evening and Joanne laughing at her for trying, until neither of them is running anything at all.', spice: 'gentle' },
+          { s: 'narr', t: 'The HOA president and the innkeeper, finally done being in charge of everyone: Victoria taking every order you give like it\'s a relief, Joanne soft and generous and shameless now that she has company, and the two of them holding hands across you by the end like two women who just found out they could have this.', spice: 'steamy' },
+          { s: 'narr', t: '', spice: 'unbound', stub: 'lane_poker_night' }, // ZOE: unbound
+        ] },
+        { t: '"Then show me what you two worked out."', tone: 'kind', r: [
+          { s: 'narr', t: 'They show you, taking turns, Victoria keeping score and Joanne making sure nobody goes hungry, in any sense, until dawn.', spice: 'gentle' },
+          { s: 'narr', t: 'Victoria has drafted a plan, of course, and Joanne ignores it, of course, and between the two of them you are spoiled so thoroughly and so lovingly that the plan becomes a very long list of things both of them want to do again.', spice: 'steamy' },
+          { s: 'narr', t: '', spice: 'unbound', stub: 'lane_poker_night' }, // ZOE: unbound
+        ] },
+        { t: '"Just wine tonight. The three of us."', r: [
+          { s: 'narr', t: 'Three glasses become two bottles, and Victoria laughs harder than you\'ve ever heard her, and Joanne falls asleep on your shoulder. Harold\'s summary is very short: "Wine. Good."' },
+        ] },
+      ] },
+      { chronicle: 'Poker night at Harold and Gary\'s. Their wives spent it with you.' },
+    ],
+  };
+
+  E.lane_coven_of_two = {
+    id: 'lane_coven_of_two', where: 'town', once: true,
+    cond: gate(S => close(S, 'diane') && close(S, 'moira')),
+    tags: ['group', 'older women', 'witchy'],
+    steps: [
+      { s: 'narr', t: 'At midnight Diane\'s greenhouse is lit with a hundred of Moira\'s candles, and the night-blooming flowers are all turned toward the door you come through.' },
+      { s: 'moira', t: '(a black candle in each hand) Diane and I have been talking, dear. Herbs and hexes. Roots and wax. It turns out we have a great deal in common.' },
+      { s: 'diane', t: '(grinning, dirt on her cheek) Mostly you. We have you in common. We thought we\'d see what happens if we stop taking turns.' },
+      { s: 'moira', t: 'The vines have promised to behave. (a pause) The vines lie.' },
+      { choice: [
+        { t: 'Step into the candlelight with them.', tone: 'kind', r: [
+          { s: 'narr', t: 'Candle-flame and glowing leaves and two pairs of patient hands, and somewhere in it the greenhouse sighs and the flowers lean closer.', spice: 'gentle' },
+          { s: 'narr', t: 'The herb-wife and the hexwife work you like a spell they\'ve rehearsed for weeks: Diane flexible and laughing and utterly unashamed, Moira slow and deliberate and certain, the vines curling helpfully where no one asked them to and the black candle burning tallest all night.', spice: 'steamy' },
+          { s: 'narr', t: '', spice: 'unbound', stub: 'lane_coven_of_two' }, // ZOE: unbound
+        ] },
+        { t: '"Teach me something. Both of you."', tone: 'dom', r: [
+          { s: 'narr', t: 'They teach you a great deal, most of it not about botany.', spice: 'gentle' },
+          { s: 'narr', t: 'Every lesson is a dare, and you take every one, until the two most composed women on the Lane are the ones breathless and laughing among the candles, asking what you\'d like to learn next.', spice: 'steamy' },
+          { s: 'narr', t: '', spice: 'unbound', stub: 'lane_coven_of_two' }, // ZOE: unbound
+        ] },
+        { t: '"Just show me the night flowers."', r: [
+          { s: 'narr', t: 'They do. Diane names every one, Moira tells you which ones are lying, and the three of you watch them open until the candles burn down.' },
+        ] },
+      ] },
+      { chronicle: 'A midnight in Diane\'s greenhouse, by Moira\'s candles.' },
+    ],
+  };
+
+  E.lane_block_party = {
+    id: 'lane_block_party', where: 'town', once: true,
+    cond: gate(S => partyGuests(S) >= 3),
+    tags: ['group', 'older women', 'polyamory', 'hotwife (husbands know and approve)'],
+    steps: [
+      { s: 'narr', t: 'Larkspur Lane throws a block party in the fen: string lights between the mailboxes, a folding table, Joanne\'s casseroles, and a hand-painted sign on the basketball hoop that says THE CODEX — OUR FAVORITE NEIGHBOR.' },
+      { s: 'narr', t: 'The husbands, it is announced, are bowling. In a swamp. Nobody asks how.' },
+      { s: 'victoria', cond: S => close(S, 'victoria'), t: '(raising a glass) I move that the after-party be held at the biggest house on the Lane. All in favor.' },
+      { s: 'joanne', cond: S => close(S, 'joanne'), t: '(already untying her apron) Aye, sweetheart. Aye.' },
+      { s: 'diane', cond: S => close(S, 'diane'), t: 'Aye. I brought a blanket. And a flower for everyone. And possibly a vine.' },
+      { s: 'margot', cond: S => close(S, 'margot'), t: '(kicking off her heels) Babe, I\'ve been ready since the first casserole. Aye, aye, aye.' },
+      { s: 'moira', cond: S => close(S, 'moira'), t: '(lighting a single black candle) The candle has voted. It\'s unanimous.' },
+      { s: 'celeste', cond: S => !!(S.flags && S.flags.celeste_left) && close(S, 'celeste'), t: '(barefoot, no ring, laughing) I spent fifteen years at block parties wishing I was anywhere else. Not tonight. Aye.' },
+      { s: 'narr', t: 'Every one of them chose you on her own first. Tonight they choose you together, and then they look at you and wait.' },
+      { choice: [
+        { t: '"Motion carries. Everyone inside."', tone: 'dom', r: [
+          { s: 'narr', t: 'The after-party lasts until the string lights go out, and nobody on the Lane gets any sleep, and nobody on the Lane minds.', spice: 'gentle' },
+          { s: 'narr', t: 'The whole Lane at once, every woman who fell for you, each of them exactly as she is: bossy and soft and flexible and loud and slow and reckless, sharing you and each other until the biggest house on the Lane is full of laughter and gasps and someone, somewhere, calling for more wine.', spice: 'steamy' },
+          { s: 'narr', t: '', spice: 'unbound', stub: 'lane_block_party' }, // ZOE: unbound
+        ] },
+        { t: '"I want to dance with every one of you first."', tone: 'kind', r: [
+          { s: 'narr', t: 'You dance with each of them under the string lights, one song each, and by the last song the dancing has moved indoors and become something else entirely.', spice: 'gentle' },
+          { s: 'narr', t: 'One dance each, slow and close, and then all of them at once in the big house with the lights low, every woman on the Lane making sure you know exactly why she chose you.', spice: 'steamy' },
+          { s: 'narr', t: '', spice: 'unbound', stub: 'lane_block_party' }, // ZOE: unbound
+        ] },
+        { t: '"Let\'s just have the party."', r: [
+          { s: 'narr', t: 'You have the party. It\'s the best one the Lane has ever thrown, and that\'s saying something. The husbands come home at dawn, muddy and triumphant, and nobody tells them anything.' },
+        ] },
+      ] },
+      { chronicle: 'Larkspur Lane threw a block party in your honor. The after-party was at the biggest house on the Lane.' },
     ],
   };
 }

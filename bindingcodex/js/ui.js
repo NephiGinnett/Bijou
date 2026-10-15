@@ -2322,8 +2322,9 @@ function shop() {
 // ------------------------------------------------------------------
 
 // Something waiting in town: a scene, a romance, or a quest ready to turn in.
+const laneGatherings = () => Object.values(EVENTS).filter(ev => ev.id.startsWith('lane_') && ev.where === 'town' && !S.seen[ev.id] && (!ev.cond || ev.cond(S)));
 function townNews() {
-  return TOWN.FOLK_IDS.some(id => townScene(id) || TOWN.questReady(S, id).ok);
+  return laneGatherings().length > 0 || TOWN.FOLK_IDS.some(id => townScene(id) || TOWN.questReady(S, id).ok);
 }
 function townScene(id) {
   return Object.values(EVENTS).find(ev => ev.where === 'town' && ev.once && ev.id.startsWith(id + '_') && !S.seen[ev.id] && (!ev.cond || ev.cond(S))) || null;
@@ -2369,9 +2370,11 @@ function town() {
     <div class="panel shop-panel">
       <div class="row spread"><h2>🏘 Larkspur Lane</h2><div class="row gap"><span class="gold">◈ ${S.gold}g</span> <button class="btn ghost" id="tw-back">← Codex</button></div></div>
       <p class="muted sm-text">A suburban cul-de-sac that fell through a misfired summoning into the fen. Talk daily, run errands for favor, and invest in their businesses. ${div ? `<b class="gold">The Lane pays you ${div}g every night.</b>` : 'Investments pay dividends every night.'}</p>
+      ${laneGatherings().length ? `<div class="row gap wrap" style="margin:8px 0">${laneGatherings().map(ev => `<button class="btn notify tw-gather" data-ev="${ev.id}">♡ ${{ lane_poker_night: 'Poker night at Harold and Gary\'s', lane_coven_of_two: 'A midnight in the greenhouse', lane_block_party: 'The block party' }[ev.id] || 'A gathering'}<em>!</em></button>`).join('')}</div>` : ''}
       <div class="cells">${cards}</div>
     </div>`);
   $('#tw-back').onclick = () => hub();
+  document.querySelectorAll('.tw-gather').forEach(b => b.onclick = async () => { screen('', ''); await playEvent(EVENTS[b.dataset.ev]); ST.save(S); town(); });
   document.querySelectorAll('.tw-talk:not(.disabled)').forEach(b => b.onclick = async () => {
     const id = b.dataset.f, r = TOWN.townTalk(S, id);
     if (!r) return;

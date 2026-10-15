@@ -188,29 +188,17 @@ export const UNBOUND = {
   "dawnward_hearts_1": [
     "They kneel in the warm water, and this time nobody is defeated. Erin is first, shield long gone, grinning up at you as she takes your cock in her hand. “Told the others it’d be big,” she says, smug, and then sinks onto you right there in the spring and rides you hard and loud.",
     "Sakura kneels behind her, hat nowhere in sight, petals of stray magic drifting down onto the water, reaching around to stroke Erin where you’re joined while whispering apologies she doesn’t mean. Shiro kneels at your side, perfectly composed, and watches every thrust like she’s memorizing a winning game.",
-    {
-      "t": "Yuki kneels at the very edge of the spring out of old habit, until Erin reaches back without breaking rhythm and pulls {Y:them|her} in close.",
-      "when": "yuki"
-    },
+    { t: "Yuki kneels at the very edge of the spring out of old habit, until Erin reaches back without breaking rhythm and pulls {Y:them|her} in close.", when: "yuki" },
     "You come in Erin with a groan; she stays full, laughing, while Sakura takes her place, shy for exactly one breath and then fearless, crying out as she stretches around you. You fill her too, and then Shiro, who rides you with slow precision until strategy breaks down entirely and she comes with a sound she will never write in any ledger.",
-    {
-      "t": "Yuki is last, and earnest about it: {Y:they take|she takes} you slowly, wide-eyed at the size, and {Y:come|comes} laughing into your neck like {Y:they can’t believe they’re|she can’t believe she’s} allowed.",
-      "when": "yuki"
-    },
+    { t: "Yuki is last, and earnest about it: {Y:they take|she takes} you slowly, wide-eyed at the size, and {Y:come|comes} laughing into your neck like {Y:they can’t believe they’re|she can’t believe she’s} allowed.", when: "yuki" },
     "By the end the whole Company is claimed, armor scattered across the rocks, and no one is quiet about it. Much later somebody says, drowsy and smug: “Motion carries unanimously.”"
   ],
   "dawnward_hearts_2": [
     "They want to lose together. Shiro goes first, because Shiro has a plan: she sinks to her knees in the warm water and takes your cock into her mouth until her eyes water, while Erin counts out loud how much she can take and Sakura covers her face and watches through her fingers.",
     "Sakura climbs into your lap next, all shyness gone, and sinks down with a sharp, delighted cry at the stretch. Erin holds her from behind, telling her how good she looks taking it; Shiro presses against your back, one hand reaching down to feel where you and Sakura are joined.",
-    {
-      "t": "Yuki waits in the water beside you, shy and certain, until Sakura reaches out mid-ride and pulls {Y:them|her} close enough to kiss.",
-      "when": "yuki"
-    },
+    { t: "Yuki waits in the water beside you, shy and certain, until Sakura reaches out mid-ride and pulls {Y:them|her} close enough to kiss.", when: "yuki" },
     "You fill Sakura; then Erin, who takes you on her back on the warm rocks with her legs locked around you and laughs the whole way through; then Shiro, who finally stops calculating and simply wants.",
-    {
-      "t": "Yuki is last. The others hold {Y:them|her} while you take {Y:them|her}, and {Y:they come|she comes} with a wondering, breathless laugh.",
-      "when": "yuki"
-    },
+    { t: "Yuki is last. The others hold {Y:them|her} while you take {Y:them|her}, and {Y:they come|she comes} with a wondering, breathless laugh.", when: "yuki" },
     "When the last of them comes around you the Company collapses in a golden, laughing heap in the steam, every one of them thoroughly defeated and thoroughly full."
   ],
   "brats_1": [
@@ -232,22 +220,10 @@ export const UNBOUND = {
   ],
   "envoys_council": [
     "The envoys take you together under the open sky, in no order but hunger.",
-    {
-      "t": "Tashra gets to you first if she can; she always does. She strokes your cock once, purrs at the thickness, and sinks down with a rolling of her hips, claws carefully sheathed, riding you quick and playful until you’re both breathless.",
-      "when": "pride"
-    },
-    {
-      "t": "Kestra takes her turn with wings half-spread for balance, riding you with fierce Aerie energy, and lets out a hawk-cry the whole roof hears when she comes.",
-      "when": "aerie"
-    },
-    {
-      "t": "Sythra wraps you both in warm coils while she takes you, slow as the tide, hissing your name against your ear until you spill into her.",
-      "when": "coil"
-    },
-    {
-      "t": "Vharra doesn’t wait to be asked. She pushes you onto your back and sinks down hard, all heat and pride, and rides you until you flood her.",
-      "when": "clutch"
-    },
+    { t: "Tashra gets to you first if she can; she always does. She strokes your cock once, purrs at the thickness, and sinks down with a rolling of her hips, claws carefully sheathed, riding you quick and playful until you’re both breathless.", when: "pride" },
+    { t: "Kestra takes her turn with wings half-spread for balance, riding you with fierce Aerie energy, and lets out a hawk-cry the whole roof hears when she comes.", when: "aerie" },
+    { t: "Sythra wraps you both in warm coils while she takes you, slow as the tide, hissing your name against your ear until you spill into her.", when: "coil" },
+    { t: "Vharra doesn’t wait to be asked. She pushes you onto your back and sinks down hard, all heat and pride, and rides you until you flood her.", when: "clutch" },
     "You fill every one of them. When it’s over the council collapses in a tangle of fur, feathers, scales and wings, every envoy marked, the council thoroughly adjourned."
   ],
   "erin_romance": [
@@ -261,26 +237,11 @@ export const UNBOUND = {
     "She stops running the numbers. When she takes your cock she makes a precise sound that quickly becomes unprecise. You fuck her until strategy is abandoned. When you come you flood her; she comes with the correct entry written in her body."
   ],
   "yuki_romance": [
-    {
-      "t": "She stands in the doorway still a little unsure of the new shape your magic gave her: softer hips, fuller chest, the last traces of her old shape smoothed away. “They all said I look right like this,” she murmurs, cheeks pink. “The others. They welcomed me. Told me I finally fit.”",
-      "when": "yuki_femme"
-    },
-    {
-      "t": "Her hands tremble as she reaches for your cock; when she frees it her eyes go wide at the size. “I used to have one. It was never… this.” She sinks down onto you with a broken, feminine sound, tight and wet and newly made for exactly this.",
-      "when": "yuki_femme"
-    },
-    {
-      "t": "You fuck her slow and deep, one hand on her new waist, emphasizing every soft curve your magic left her. “So full,” she gasps. “I can feel how much smaller I am now.”",
-      "when": "yuki_femme"
-    },
-    {
-      "t": "When you come you hold her down and flood her; she comes around you with a high, surrendered cry, laughing into your neck like she still can’t believe she’s allowed to be the one taking it.",
-      "when": "yuki_femme"
-    },
-    {
-      "t": "Yuki comes in without a reason. When they take your cock their eyes go wide. “You’re a lot.” You fuck them earnest and claiming. When you come you fill them; they come laughing like they can’t believe they’re allowed.",
-      "when": "yuki_they"
-    }
+    { t: "She stands in the doorway still a little unsure of the new shape your magic gave her: softer hips, fuller chest, the last traces of her old shape smoothed away. “They all said I look right like this,” she murmurs, cheeks pink. “The others. They welcomed me. Told me I finally fit.”", when: "yuki_femme" },
+    { t: "Her hands tremble as she reaches for your cock; when she frees it her eyes go wide at the size. “I used to have one. It was never… this.” She sinks down onto you with a broken, feminine sound, tight and wet and newly made for exactly this.", when: "yuki_femme" },
+    { t: "You fuck her slow and deep, one hand on her new waist, emphasizing every soft curve your magic left her. “So full,” she gasps. “I can feel how much smaller I am now.”", when: "yuki_femme" },
+    { t: "When you come you hold her down and flood her; she comes around you with a high, surrendered cry, laughing into your neck like she still can’t believe she’s allowed to be the one taking it.", when: "yuki_femme" },
+    { t: "Yuki comes in without a reason. When they take your cock their eyes go wide. “You’re a lot.” You fuck them earnest and claiming. When you come you fill them; they come laughing like they can’t believe they’re allowed.", when: "yuki_they" }
   ],
   "vesper_evening": [
     "She pulls you down among the stacks. When you free your cock the Binding hums; she feels the size of it as much as you do. You fuck her deep. When you come you flood her; she comes overwhelmed, ink on both of you."
@@ -370,7 +331,99 @@ export const UNBOUND = {
     "She kisses you first, slow and certain, and when she lifts her hips it’s her hand that frees your cock. Her eyes widen at how thick you are. “I want this,” she says, steady. “I’m choosing it.”",
     "You ask once more; she laughs and sinks down onto you herself, tight and wet and trembling. You lock an arm around her waist and fuck her in deep, slow thrusts while she rides you under the open sky.",
     "When you come you hold her close and flood her. She shudders through her climax around you, quiet and completely herself, and stays seated on your cock long after, watching the stars she found again."
-  ]
+  ],
+  "bramble_romance": [
+    "You free your cock; Bramble’s ears go flat, then straight up again at the size of it. “Oh,” he breathes, nose twitching. “That’s… a lot.” You guide him down into the soft straw and push into him slow. He is tight, eager, cottontail twitching wildly with every inch. You fuck him deep while he gasps your name, freckles flushed, ears pink to the tips. When you come you hold him still and flood him; he comes with a soft, startled cry and stays full of you, finally unafraid of anything."
+  ],
+  "bramble_evening": [
+    "He’s braver tonight. When you free your cock he reaches for it himself, ears pink. “Still so big,” he murmurs, and sinks down onto you with a happy little sound. You fuck him slow and deep in the Bower straw; his cottontail never stops twitching. When you come you fill him; he comes around you laughing breathlessly into your neck, soft and claimed and safe."
+  ],
+  "bramble_shared": [
+    "Under Kestra’s wings you free your cock. Bramble’s eyes go wide; Kestra laughs, low and delighted. “Look at what the rabbit gets to take.” You push into Bramble first while Kestra holds his ears and kisses the flush from his freckles. He gasps at the stretch, cottontail thrashing. When you come in him Kestra helps him stay full, then takes her own turn, riding you hard with wings half-spread while Bramble watches, red and eager, already reaching for you again. You fill her too; the three of you collapse in a tangle of feathers and soft fur, both of them marked."
+  ],
+  "ren_romance": [
+    "You free your cock; Ren’s clever smile falters for the first time. “Fuck,” he says, honest. “That’s not fair.” You pin him and push into him slow. His tail curls tight around your thigh as he takes every thick inch, teasing gone, only breathless sounds left. You fuck him deep until he comes with a broken cry; you follow, flooding him. He stays limp and claimed, no smile, just yours."
+  ],
+  "ren_evening": [
+    "He teases until you catch him. When you free your cock he goes still, then soft. “Okay. No more running.” You push into him and fuck him hard; his tail lashes, then winds around your wrist. When you come you fill him; he comes gasping, glad to be caught, red fur damp and thoroughly claimed."
+  ],
+  "ren_shared": [
+    "Out in the long grass Tashra pins Ren for you with a purr. You free your cock; both of them stare. “Pride gets first taste,” Tashra decides, and sinks onto you, taking the thickness with a hungry sound. You fuck her while Ren watches, ears flushed, then take him next while Tashra holds him open and purrs praise. You come in Ren, flooding him; Tashra takes the rest of you and rides until you fill her too. The three of you stay tangled under the yellow moon, both of them marked, the hunt ended the way they wanted."
+  ],
+  "elio_romance": [
+    "You free your cock; Elio’s soft eyes go wide. “The dream didn’t show me this,” he whispers. You push into him slow; he trembles, then leans into every thrust, velvet antlers brushing your temple. You fuck him deep until the careful stillness is gone. When you come you flood him; he comes with a prayer-soft cry and stays full of you, finally unafraid to move."
+  ],
+  "elio_evening": [
+    "He’s still gentle, still wondering. When you free your cock he takes it in both hands first, marveling. You push into him and fuck him slow; the Bower bedding is a ruin by the time he comes around you. You fill him; he stays seated on your cock afterward, antlers soft against your cheek, no longer still at all."
+  ],
+  "elio_shared": [
+    "By the hatchery fires Vharra is heat and pride, Elio soft wonder. You free your cock; Elio gasps, Vharra grins with every fang. You take Elio first while Vharra holds his antlers and murmurs that the deer is braver than any wyrm. You fill him, then take Vharra hard while Elio watches, still full, still smiling. She comes with a fierce cry as you flood her; the three of you stay warm by the fires, both of them claimed."
+  ],
+  "tallow_romance": [
+    "You free your cock; Tallow’s antennae quiver and his wings dim completely. “The warmest light,” he breathes, dramatic and sincere. You pull him close and push into him; he shivers, fluffy collar brushing your throat, wings trembling with every thick inch. You fuck him slow until he comes with a sweet, undone sound. You flood him; he stays held, dimmed, and entirely sincere about every second of it."
+  ],
+  "tallow_evening": [
+    "He brings candles, then forgets them the moment your cock is free. “Still the brightest thing,” he sighs, and sinks onto you with a flutter of wings. You fuck him deep; he dims them in the slow bow of sincerity. When you come you fill him; he comes soft and dramatic and claimed, wings folded over both of you like a lantern’s shade."
+  ],
+  "tallow_shared": [
+    "In the lantern-lit brood-pools Sythra coils around you both. You free your cock; Tallow’s wings flare, then dim. Sythra hisses approval at the size and helps guide him down onto you. You fuck Tallow while she wraps both of you in warm coils, tongue flicking at his antennae. You come in him; she takes her turn next, unhurried as the tide, and you fill her too. The three of you stay coiled and soft in the warm water, both of them marked by the warmest light."
+  ],
+  "victoria_romance_lead": [
+    "She takes you by the collar and sits you in her own chair. “Hands on the armrests,” she says, and frees your cock herself. Her composure cracks only once, at the size of it. “That is… noted.” Then she climbs into your lap and takes you slow, every thick inch on her schedule, glasses still on, giving you instructions you are not allowed to answer.",
+    "She rides you exactly as she runs the Lane: precise, relentless, in total control, until the first time she comes and the control goes with it. When you come she holds you still and makes you flood her, then stays seated on you, flushed and smug and thoroughly in charge. “Harold,” she murmurs, straightening her pearls, “is going to need a much longer report.”"
+  ],
+  "victoria_romance": [
+    "You free your cock on the ledger desk. Victoria’s precise composure cracks at the size. “That is… noted,” she manages, then takes every thick inch with a controlled, then uncontrolled sound. You fuck her hard over her own books while she tries to keep giving orders and fails. When you come you flood her; she comes with a broken, relieved cry, glasses askew, clipboard forgotten, thoroughly audited and claimed."
+  ],
+  "joanne_romance": [
+    "Upstairs you free your cock; Joanne’s soft eyes go wide. “Oh, sweetheart,” she breathes. “That’s a lot more than I expected.” You push into her slow; she is warm and generous and soon not nervous at all. You fuck her deep until she comes with a happy, undone sound. You flood her; she stays full of you, finally the one being taken care of, smiling against your throat."
+  ],
+  "diane_romance": [
+    "Among the night-blooming flowers you free your cock. Diane laughs, bright and unashamed. “Look at that,” she says. “The plants are going to be jealous.” You push into her; she is flexible and eager, inventing poses as she takes every inch. You fuck her hard among the glowing vines. When you come you fill her; she comes laughing, dirt on her cheek, thoroughly cultivated."
+  ],
+  "margot_romance": [
+    "In the shop after hours you free your cock. Margot’s eyes light up. “Babe, that is premium inventory.” She sinks onto you against the counter and rides hard, loud and shameless. You fuck her until she comes with a bright cry; you flood her and she stays seated, already planning where to put the next mark on the display case."
+  ],
+  "moira_romance": [
+    "By the black candle you free your cock. Moira’s low laugh is delighted. “Oh, the flame likes that,” she murmurs. You push into her; she is cool hands and slow certainty, taking every thick inch like a hex she’s casting on herself. You fuck her deep until she comes with that same low laugh. You flood her; the candle burns tallest while she stays full of you, silver rings glinting."
+  ],
+  "victoria_evening": [
+    "She leaves the minutes short. When you free your cock she is already bent over the desk, precise even in this. “Item one,” she says, voice tight. You push into her and fuck her hard; the composure goes. When you come you fill her; she comes with a broken sound that will never appear in any report, and stays claimed until midnight."
+  ],
+  "joanne_evening": [
+    "Upstairs she’s not nervous anymore. When you free your cock she reaches for it with a soft, hungry sound. You push into her and fuck her deep; she is all warm quilts and generous curves. When you come you flood her; she comes smiling, thoroughly glowed, and falls asleep full of you."
+  ],
+  "diane_evening": [
+    "Among the glowing flowers she shows you the pose. When you free your cock she is already wet and laughing. You push into her and fuck her hard; the plants lean in. When you come you fill her; she comes inventing a new name for the feeling, dirt under her nails, claimed."
+  ],
+  "margot_evening": [
+    "Shop’s shut. When you free your cock she takes it with a loud, appreciative sound and rides you on the counter. You fuck her through the stockroom and once the display case; she comes hard each time. You flood her last on the counter; she stays full, inventory complete, thoroughly satisfied."
+  ],
+  "moira_evening": [
+    "The black candle is already lit. When you free your cock Moira’s cool hands guide you in. You fuck her slow and certain; she takes every inch with that low laugh. When you come you fill her; the candle burns down to nothing while she stays full of you, silver rings warm against your skin."
+  ],
+  "celeste_romance": [
+    "The ring sits on the potting bench. You free your cock; Celeste’s polished composure cracks at the size. “Oh God,” she gasps. You push into her among the glowing vines; she is dancer-strong and flexible, climbing you, making up for a year of nothing. You fuck her hard until she comes wild and stunned. You flood her; she laughs into your shoulder, ring forgotten, thoroughly alive."
+  ],
+  "celeste_evening": [
+    "Quick and hungry. When you free your cock she is already reaching, hand over her own mouth. You push into her wherever you’ve stolen tonight and fuck her hard; the thrill makes her bolder. When you come you fill her; she comes shaking, still laughing, still choosing it."
+  ],
+  "lane_poker_night": [
+    "Victoria tries to run it; Joanne ignores the plan. You free your cock; both of them stare. Victoria takes you first, precise then broken, while Joanne holds her hand across you and murmurs soft encouragement. You flood Victoria; Joanne takes her place immediately, soft and generous and shameless, riding you until you fill her too. By the end they are holding hands across your body, both of them marked, Harold’s summary already writing itself in their heads."
+  ],
+  "lane_coven_of_two": [
+    "A hundred black candles. You free your cock; Diane laughs, Moira’s eyes darken. Diane takes you first, flexible and unashamed among the vines, while Moira’s cool hands guide and stroke. You fill Diane; Moira takes her turn slow and certain, casting the hex of herself onto every thick inch. You flood her; the vines curl helpfully and the candles burn tallest while both women stay full of you, herbs and hexes complete."
+  ],
+  "lane_block_party": [
+    "Inside the biggest house on the Lane, the lights go low. You free your cock and they share you.",
+    { t: "Victoria gives precise orders that turn into gasps.", when: "lane_victoria" },
+    { t: "Joanne is soft, feeding you her mouth between turns.", when: "lane_joanne" },
+    { t: "Diane is flexible, inventing positions.", when: "lane_diane" },
+    { t: "Margot is loud and laughing, every inch of herself on display.", when: "lane_margot" },
+    { t: "Moira is slow and certain, candle-wax still on her wrists.", when: "lane_moira" },
+    { t: "Celeste is reckless and ringless.", when: "lane_celeste" },
+    "Each one takes the thickness with her own sound, each one is fucked and filled in turn, each one makes sure you know why she chose you. By the end the biggest house on the Lane is full of laughter, gasps, and the quiet drip of come, every woman marked, the husbands still bowling."
+  ],
 };
 
 // Lines with `when` play only if that person is in the scene.
@@ -383,4 +436,13 @@ export const WHEN = {
   coil: S => riteDone(S, 'coil'),
   clutch: S => riteDone(S, 'clutch'),
   pride: S => riteDone(S, 'pride'),
+  // Larkspur Lane block party: each woman's line plays only if she's there
+  lane_victoria: S => laneClose(S, 'victoria'),
+  lane_joanne: S => laneClose(S, 'joanne'),
+  lane_diane: S => laneClose(S, 'diane'),
+  lane_margot: S => laneClose(S, 'margot'),
+  lane_moira: S => laneClose(S, 'moira'),
+  lane_celeste: S => !!(S.flags && S.flags.celeste_left) && laneClose(S, 'celeste'),
 };
+// Same test as the block party itself: her romance happened and her favor is 8+.
+function laneClose(S, id) { return !!(S.seen && S.seen[`${id}_romance`]) && ((S.town && S.town.folk && S.town.folk[id] && S.town.folk[id].favor) || 0) >= 8; }
