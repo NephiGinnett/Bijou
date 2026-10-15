@@ -18,7 +18,9 @@ globalThis.localStorage = { getItem() { return null; }, setItem() {}, removeItem
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const { installPacks, PACKS } = await import(path.join(ROOT, 'js/packs/index.js'));
 const { EVENTS, SPEAKERS } = await import(path.join(ROOT, 'js/story.js'));
+const { install: installCompanions } = await import(path.join(ROOT, 'js/companions.js'));
 installPacks();
+installCompanions(EVENTS);
 
 const guide = fs.readFileSync(path.join(ROOT, 'docs/UNBOUND_GUIDE.md'), 'utf8');
 
@@ -36,6 +38,7 @@ const WHERE = {
   guild: 'Plays from the **Talk** button at the Codex hub.',
   camp: 'Plays at camp, between rooms on an expedition.',
   bower: 'Plays in the **Envoys\' Bower** (Menagerie), from her card.',
+  home: 'Plays from her **Companion** page (click her on the hub): the ☾ Evening button, every other night.',
   rumor: 'Plays from a rumor at the hub.',
   offer: 'Plays when a recruit petitions to join.',
   release: 'Plays when a captive is released.',
@@ -90,6 +93,7 @@ function render(steps, depth, out, evId) {
     if (st.join) { out.push(`${pad}- *(${speaker(st.join)} joins you)*`); continue; }
     if (st.capture || st.flag || st.give || st.brand === true) continue;
     if (st.t == null) continue;
+    if (typeof st.t === 'function') { out.push(`${pad}- ${pre}**${speaker(st.s)}:** *(a line filled in during play, e.g. with a child's name)*`); continue; }
     if (st.t === '' ) continue;
     const tier = st.spice === 'gentle' ? '**[Gentle only]** ' : st.spice === 'steamy' ? '**[Steamy — Unbound players see this too]** ' : '';
     const gore = st.gore ? `*(${st.gore} gore setting)* ` : '';
@@ -109,7 +113,7 @@ function tokensUsed(ev) {
 const ids = Object.keys(EVENTS).filter(id => hasStub(EVENTS[id].steps));
 const missing = ids.filter(id => !NOTES[id]);
 
-const packName = ev => ev.pack ? `${PACKS[ev.pack].name} pack (\`js/packs/${ev.pack}.js\`)` : 'Base game (`js/story.js`)';
+const packName = ev => ev.pack ? `${PACKS[ev.pack].name} pack (\`js/packs/${ev.pack}.js\`)` : ev.id.endsWith('_evening') || /^(erin|sakura|shiro|yuki)_romance$/.test(ev.id) ? 'Companions (`js/companions.js`)' : 'Base game (`js/story.js`)';
 const groups = {};
 for (const id of ids) (groups[packName(EVENTS[id])] ||= []).push(id);
 

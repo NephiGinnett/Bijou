@@ -1,6 +1,6 @@
 # Unbound Writing Guide
 
-Everything Zoe needs to fill the **Unbound** intimacy tier in Binding Codex (56 stubs across 43 scenes).
+Everything Zoe needs to fill the **Unbound** intimacy tier in Binding Codex (104 stubs across 83 scenes).
 
 ## How the tiers work
 
@@ -22,6 +22,8 @@ Everything Zoe needs to fill the **Unbound** intimacy tier in Binding Codex (56 
 - **Romance beats** (`*_romance`) fire only at high bond (7+) and only for free allies. The player always picks the approach: a dominant choice or a tender one.
 - **Revisit beats** (`*_revisit`) are for characters whose story began in chains: Calla, Mira Vane, Aelindra and Elspeth. Each is a negotiated scene between free adults. A separate `*_negotiate` event always comes first. In it, she says what she wants, sets limits, and names a **stop word**, and the player can say yes, no, or "ask me again." The revisit then opens with her checking in, and the stop word stays live the whole scene. Have the stop word appear (or be offered) at least once in your text.
 - The card tags shown below come from the Packs GDD. Where it says "see card," the GDD didn't list the tags in full. Use what you know of the original card.
+
+- **Family scenes** (`*_expecting`, `*_birth`, the hearth epilogue) have no intimacy tiers and no stubs, on purpose. Keep pregnancy and children out of intimate scenes.
 
 ## The stubs
 
@@ -109,6 +111,73 @@ All partners here are **sapient adults speaking for themselves**. Menagerie beas
 | `kin_night_clutch` | "Go to the hatchery fires with her." | monster (drake-kin), repeatable, `{kin}` | A drake-kin kin you sent for. A rematch she means to lose again. |
 | `kin_night_pride` | "Race her out to the long grass." | monster (cheetah-folk), repeatable, `{kin}` | A cheetah-folk kin you sent for. The chase again, laughing this time, then purring. |
 | `nyxe_mantle` | "Then come down here and explode." | monster forms, abyssal | Nyxe faces something more monstrous than herself and is speechless for the first time, then very loud. Wings everywhere. |
+
+### Hearts & Hearth (`js/packs/hearts.js`)
+
+Group scenes. Every participant is a free ally who has had her own romance and is at bond 8+ (the Envoys' Council needs two or more envoys who've had the rite). Characters whose lines have *(only if …)* in the context doc may or may not be there; write so the scene works either way.
+
+| Event | Choice | Tags | What to write |
+| --- | --- | --- | --- |
+| `circle_pact` | 1 · "Then it's decided. All of us, all in." | group, polyamory | The Inner Circle's first night: Vesper, Rue and Isolde all at once, warm and clumsy until they stop being polite. Vesper feels every touch through the Binding twice over; Rue is forge-hot and can't lie about what she wants; Isolde gives herself with total devotion. Nobody at the edge. |
+| `circle_pact` | 2 · "Kneel. All three of you." | group, dominance | The same night, commanded. Isolde wants orders, Rue wants to be put in her place, Vesper wants to stop being the one in control for once. Take them one at a time, then together. |
+| `circle_night` | 1 · Take command of all three | group, dominance, honesty play | Rue's game: truth or truth, and her brand flares if anyone lies. Every honest answer becomes an order you give. Isolde kneels for hers; Vesper feels all of it through the Binding at once. |
+| `circle_night` | 2 · Let them take you apart | group, receiving | The game turned on you: every question is about what you want, and every true answer is something three of them give you. |
+| `circle_mantle` | (top) | group, monster forms | The Mantle among the Circle: Rue meets you demon to monster, Isolde worships the storm she was trained to fear, Vesper feels the wings and horns through the Binding and loses her words. Wings closed around all three. |
+| `circle_lysandre` | "Come in, Lysandre." | group, shapeshifting | Lysandre joins the Circle (five now). She learns how many shapes there are for being wanted: coiled around Isolde, winged against Rue, every form welcomed, until she stops needing to shift. |
+| `dawnward_hearts` | 1 · "Kneel again. Here." | group, bend the knee | Hot spring in a cleared rift. The Dawnward Company knelt to you in defeat once; this time they kneel because they want to. Erin's strength, Sakura's fearless hands, Shiro's patience. Yuki is in the scene only if their own romance happened (check the cond line). |
+| `dawnward_hearts` | 2 · Open your arms | group, polyamory | The same spring, softer: laughter first, then the curtain of steam stays drawn. End on Shiro's drowsy "Motion carries unanimously." |
+| `brats` | 1 · "Both of you. Put the cards down." | group, bratty, dominance | Rue and Nyxe, nemeses since the Bazaar, put in their place together. Two tails, two smart mouths, competing to behave worse and beg better, both losing to you gloriously. |
+| `brats` | 2 · Let them settle it | group, bratty, rivalry | The two brats out-do each other at pleasing you until the rivalry melts into something warm and loud. |
+| `two_altars` | (top) | group, devotion, worship | Rhea (the zealot who gives everything) and Valdra (the priestess who knows every rite) worship you together at an altar in the chapel stacks. Slow, solemn, fervent. With the Mantle, Rhea's prayer for real wings is answered. |
+| `envoys_council` | "Join the council." | group, monster, sapient partners | A council on the library roof under the full moon: every envoy who's had the rite and is close to you (2 to 4 of Kestra, Sythra, Vharra, Tashra; their lines are conditional). Feathers, coils, fur and fire, each in her tribe's way. Keep it working whichever envoys are present. |
+
+### Companions (`js/companions.js`)
+
+**The Dawnward Company's romances.** After they bend the knee and reach bond 7.
+
+| Event | Choice | Tags | What to write |
+| --- | --- | --- | --- |
+| `erin_romance` | 1 · Pull her up and kiss her | romance | The golden knight who lost a spar on purpose. All at once, all in, armor off piece by piece with laughter and no shame. |
+| `erin_romance` | 2 · "Stay down. I like you there." | romance, dominance | Erin discovering, loudly and happily, how much she likes being told to. |
+| `sakura_romance` | 1 · "Be brave at me." | romance, shy | Shy for one breath, then the Lodge's most dangerous talent; stray petals of magic drift down all night. She stops apologizing. |
+| `sakura_romance` | 2 · Take her hat and draw her in | romance, dominance | No hat brim to hide behind, so she has nowhere to look but you. |
+| `shiro_romance` | 1 · "Then find out." | romance, slow-burn | The White Queen plays the night like a patient game, then gives up strategy entirely. |
+| `shiro_romance` | 2 · Write one line in her ledger | romance, dominance | You wrote MINE in her ledger. For the first time she does exactly as she's told, with enthusiasm. |
+| `yuki_romance` | 1 · "Come in." | romance | Yuki (they/them), earnest, trembling, fearless; they laugh afterward like they can't believe they're allowed. |
+| `yuki_romance` | 2 · Take the cold tea and kiss them | romance, dominance | Yuki discovering, wide-eyed, how much they wanted to be taken in hand. |
+
+**Evenings.** Repeatable: from her Companion page, every other night, once her romance has happened. The player chooses "Spend the night together" or "Just stay and talk." These are the familiar nights, so keep them shorter and warmer than the first time; you can write several lines and they'll play each time. One stub each:
+
+| Event | Choice | Tags | What to write |
+| --- | --- | --- | --- |
+| `vesper_evening` | Spend the night together | repeatable | Among the stacks; the Binding makes it impossible to tell whose wanting is whose. |
+| `rue_evening` | Spend the night together | repeatable | Putting her in her place again; she can't say anything that makes the brand flare. |
+| `isolde_evening` | Spend the night together | repeatable | Gauntlets off; the devotion she gave the Order, all yours. |
+| `lysandre_evening` | Spend the night together | repeatable | Shape to shape under your hands until she settles on one. |
+| `erin_evening` | Spend the night together | repeatable | Loud, warm, golden, unashamed. |
+| `sakura_evening` | Spend the night together | repeatable | Shy no longer; petals of stray magic. |
+| `shiro_evening` | Spend the night together | repeatable | A patient game she tips her own king in. |
+| `yuki_evening` | Spend the night together | repeatable | Earnest and fearless (they/them). |
+| `elara_evening` | Spend the night together | repeatable | Centuries of patience, curious about every inch. |
+| `seraphine_evening` | Spend the night together | repeatable | Her plan, executed, then abandoned for something better (married, affair). |
+| `sister_maren_evening` | Spend the night together | repeatable | Sworn to want nothing; wanting everything. |
+| `kira_evening` | Spend the night together | repeatable | Upstairs over the Drowned Rose; every rule out the window. |
+| `nyxe_evening` | Spend the night together | repeatable | She dares you to make her behave; you take the dare. |
+| `rhea_evening` | Spend the night together | repeatable | Total, fervent worship. |
+| `valdra_evening` | Spend the night together | repeatable | Every rite of the body, slow and solemn. |
+| `aurelia_evening` | Spend the night together | repeatable | You give the orders; the legate follows them perfectly and begs for more. |
+| `brynn_evening` | Spend the night together | repeatable | Earthy, curious, experimenting; a candle that smells like rain. |
+| `sera_evening` | Spend the night together | repeatable | Everything she never dared put in a letter. |
+| `seris_evening` | Spend the night together | repeatable | A hypothesis tested with exhaustive rigor. |
+| `auren_voss_evening` | Spend the night together | repeatable | Unhurried, practiced, taking all of it (married, affair, mature). |
+| `revenant_bride_evening` | Spend the night together | repeatable | The wedding night she never had; cold to fever-bright under your hands. |
+| `mira_ashveil_evening` | Spend the night together | repeatable | Making new rumors above the Lantern & Ash. |
+| `maren_soleil_evening` | Spend the night together | repeatable | Close observation, thoroughly. |
+| `cole_ashmer_evening` | Spend the night together | repeatable | Steady and careful, then not careful at all (he/him). |
+| `calla_evening` | Spend the night together | repeatable | No game tonight; just Calla choosing you. |
+| `mira_vane_evening` | Spend the night together | repeatable | Her chain on your nightstand; nothing at her wrists. |
+| `aelindra_evening` | Spend the night together | repeatable | Every secret she notices, used and kept. |
+| `elspeth_evening` | Spend the night together | repeatable | Raised to be decorative; tonight bold and discovering. |
 
 ## Voice cheat-sheet
 

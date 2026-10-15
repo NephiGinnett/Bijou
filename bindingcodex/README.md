@@ -139,6 +139,29 @@ scenes).
   and six endings (Redeemed · Damned Together · The Long Night · The
   Ascended Warlock · The Codex Keeps You · secret: The Coven Unmade).
 
+## Companions, shared hearts & family
+
+- **Spend time with anyone.** Click an ally on the hub to open their
+  Companion page: Talk, Train together or Walk, once a day each. Every 3
+  visits is +1 bond, so every romance can be reached by simply being with
+  someone. The page shows when one of their scenes is waiting.
+- **Evenings.** Once a romance has happened, a repeatable Evening keeps it
+  going (one a night, every other night per partner): a night together or
+  just talking. The Dawnward Company now has romances of their own.
+- **Memories.** Replay any intimate scene you've seen, from the Chronicle or
+  a Companion page, with no effect on the save.
+- **Hearts & Hearth** (pack, toggle in Settings):
+  - Group scenes for connected lovers:
+    - the Inner Circle (Vesper, Rue and Isolde, later Lysandre),
+    - the Dawnward Company,
+    - two brats (Rue and Nyxe),
+    - two altars (Rhea and Valdra),
+    - the Envoys' Council.
+  - After a few nights together, a partner may tell you she's carrying your child. Births follow, then a possible second child.
+  - Each envoy shows you her first clutch.
+  - A hearth epilogue plays after the ending.
+  - Children appear in the Chronicle's Hearth.
+
 Intimacy lines carry `spice: 'gentle' | 'steamy' | 'unbound'`. Gentle and
 Steamy show only on their own setting; **Unbound** plays the Steamy line
 first and then continues with the Unbound lines. Unbound lines are stubs

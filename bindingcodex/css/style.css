@@ -679,3 +679,11 @@ button.ticker-btn.notify em { font-style: normal; color: var(--gold); animation:
 .recruit-head.suitor { margin-top: 6px; padding-top: 6px; border-top: 1px dashed rgba(255,255,255,.12); }
 .bloodline { display: flex; height: 10px; margin: 4px 0; border-radius: 5px; overflow: hidden; background: #3a3444; border: 1px solid rgba(255,255,255,.12); }
 .bloodline span { height: 100%; }
+
+/* companions, hearth, memories */
+.pcard-click { cursor: pointer; transition: transform .12s, box-shadow .12s; }
+.pcard-click:hover { transform: translateY(-1px); box-shadow: 0 0 0 1px rgba(216,176,74,.45); }
+.pc-free { font-size: 11px; color: #e8a8c8; }
+.hearth { margin: 8px 0; padding: 6px 8px; border: 1px solid rgba(216,176,74,.25); border-radius: 6px; background: rgba(216,176,74,.05); }
+.memories { margin: 8px 0; }
+.mem-list { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
