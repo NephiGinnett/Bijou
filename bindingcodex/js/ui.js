@@ -105,14 +105,41 @@ function affixChip(g) {
 }
 function heroName(id) { return id === 'player' ? S.name : (HEROES[id] ? HEROES[id].name : id); }
 function heroColor(id) { return (SPEAKERS[id] && SPEAKERS[id].color) || (HEROES[id] && HEROES[id].color) || '#fff'; }
-function heroVariant(id) { if (id === 'yuki' && S && S.flags && S.flags.yuki_femme) return 'fem'; return id === 'player' && S ? S.pronouns + (S.flags.pact_wyrm_mantle ? '_mantle' : '') + (S.flags.scarred ? '_scar' : '') : null; }
+const TOON_IDS = ['player', 'vesper', 'rue', 'isolde'];
+const OUTFITS = { adventure: 'Adventuring', formal: 'Formal', offduty: 'Off-duty' };
+// The main cast's equipped gear and chosen outfit travel to the model builder.
+function gearSig(id) {
+  const h = S && S.heroes && S.heroes[id];
+  if (!h || !h.gear) return '';
+  return ['weapon', 'armor', 'charm'].map(sl => { const g = h.gear[sl]; return g ? `${g.name.split(' ').pop().toLowerCase()}.${g.tier}.${g.affix || ''}` : '-'; }).join(',');
+}
+// Per-character outfit picker (main cast only), shown on Allies and Companion pages.
+function attirePick(id, elId) {
+  if (!TOON_IDS.includes(id)) return '';
+  const cur = S.wardrobe[id] || '';
+  return `<label class="set-row sm-text">Attire <select id="${elId}"><option value="">Party default (${OUTFITS[S.settings.outfit || 'adventure']})</option>${Object.entries(OUTFITS).map(([k, v]) => `<option value="${k}" ${cur === k ? 'selected' : ''}>${v}</option>`).join('')}</select></label>`;
+}
+function bindAttire(id, elId, back) {
+  const sel = $('#' + elId);
+  if (sel) sel.onchange = async () => {
+    if (sel.value) S.wardrobe[id] = sel.value; else delete S.wardrobe[id];
+    ST.save(S); await refreshPortraits(); back();
+  };
+}
+function attireOf(id) { return (S && S.wardrobe && S.wardrobe[id]) || (S && S.settings.outfit) || 'adventure'; }
+function heroVariant(id) {
+  if (id === 'yuki' && S && S.flags && S.flags.yuki_femme) return 'fem';
+  const base = id === 'player' && S ? S.pronouns + (S.flags.pact_wyrm_mantle ? '_mantle' : '') + (S.flags.scarred ? '_scar' : '') : null;
+  if (!S || !TOON_IDS.includes(id)) return base;
+  return `${base || ''}|g:${gearSig(id)}|o:${attireOf(id)}`;
+}
 function bar(cls, pct, title = '') {
   return `<div class="bar-outer ${cls} sm" title="${esc(title)}"><div class="bar-inner" style="width:${Math.max(0, Math.min(100, pct))}%"></div></div>`;
 }
 
 // Regenerate 2D portraits (player look follows pronoun choice; converts appear).
 async function refreshPortraits(force = false) {
-  const key = (S ? heroVariant('player') : 'she') + '|' + (S ? Object.keys(S.converts || {}).length : 0) + '|' + (S && S.flags && S.flags.yuki_femme ? 'yf' : '');
+  const key = (S ? TOON_IDS.map(heroVariant).join('/') : 'she') + '|' + (S ? Object.keys(S.converts || {}).length : 0) + '|' + (S && S.flags && S.flags.yuki_femme ? 'yf' : '');
   if (!force && PORTRAITS.__key === key) return;
   PORTRAITS.__key = key;
   // heroes, plus pack characters who aren't party members (tribe envoys)
@@ -2003,11 +2030,13 @@ function companion(id) {
       </div>
       ${away ? '<p class="sm-text muted">They\'re away on a dispatch. Spend time together when they\'re back.</p>' : !open ? '<p class="sm-text muted">You\'ve already spent time together today. Come back tomorrow.</p>' : ''}
       ${waiting ? `<p class="sm-text gold">✦ A scene with ${esc(heroName(id))} is waiting ${waiting.where === 'camp' ? 'at camp on your next expedition' : 'in Talk at the hub'}.</p>` : ''}
+      ${attirePick(id, 'cp-outfit')}
       ${hearthHtml(id)}
       ${mem.length ? `<h3 style="margin-top:10px">✦ Memories</h3><div class="mem-list">${mem.map(ev => `<button class="btn sm mem" data-ev="${ev.id}">${esc(memoryLabel(ev))}</button>`).join('')}</div>` : ''}
     </div>
   `);
   $('#cp-back').onclick = () => hub();
+  bindAttire(id, 'cp-outfit', () => companion(id));
   document.querySelectorAll('.cp-act:not(.disabled)').forEach(b => b.onclick = async () => {
     screen('', '');
     await playEvent({ id: 'banter', steps: hangoutSteps(id, b.dataset.k, heroName(id), S) });
@@ -2099,7 +2128,7 @@ function party(sel = 'player') {
           ${S.statSurge && S.statSurge[sel] ? `<p class="passive" style="color:var(--corrupt)"><b>Blood Surge:</b> +${Math.round(S.statSurge[sel] * 100)}% stats, paid in trust.</p>` : ''}
           ${sel === 'player' && S.flags.scarred ? '<p class="passive" style="color:var(--corrupt)"><b>Scarred:</b> the Scar Rite left its mark.</p>' : ''}
         </div>
-        <div class="sheet-mid"><h3>Stats</h3>${statRows}<h3>Gear</h3>${gearRows}</div>
+        <div class="sheet-mid"><h3>Stats</h3>${statRows}<h3>Gear</h3>${gearRows}${attirePick(sel, 'p-outfit')}</div>
         <div class="sheet-right"><h3>Skills</h3>
           <p class="muted sm-text">In auto-battle this hero uses <b>${S.autoSkill[sel] && SKILLS[S.autoSkill[sel]] ? SKILLS[S.autoSkill[sel]].name : 'Strike'}</b> when possible. Reach ★★★ mastery to set a different auto-skill.</p>
           ${skillRows}</div>
@@ -2109,6 +2138,7 @@ function party(sel = 'player') {
   $('#p-back').onclick = () => hub();
   document.querySelectorAll('.tab').forEach(t => t.onclick = () => { AU.sfx('ui'); party(t.dataset.id); });
   document.querySelectorAll('.gear-slot').forEach(gs => gs.onclick = () => gearPicker(sel, gs.dataset.slot));
+  bindAttire(sel, 'p-outfit', () => party(sel));
   document.querySelectorAll('.auto-set').forEach(b => b.onclick = () => {
     const id = b.dataset.skill;
     if (S.autoSkill[sel] === id) delete S.autoSkill[sel];
@@ -2150,7 +2180,7 @@ function gearPicker(heroId, slot) {
     AU.sfx('confirm');
     ST.save(S);
     modal.remove();
-    party(heroId);
+    if (TOON_IDS.includes(heroId)) refreshPortraits().then(() => party(heroId)); else party(heroId);
   });
 }
 
@@ -2286,6 +2316,7 @@ function settingsModal(back) {
       <option value="gentle" ${s.gore !== 'grim' ? 'selected' : ''}>Gentle</option>
       <option value="grim" ${s.gore === 'grim' ? 'selected' : ''}>Grim</option>
     </select></label>
+    <label class="set-row">Party attire <select id="set-outfit">${Object.entries(OUTFITS).map(([k, v]) => `<option value="${k}" ${(s.outfit || 'adventure') === k ? 'selected' : ''}>${v}</option>`).join('')}</select></label>
     <p class="muted sm-text">Intimacy applies only between free allies, never captives. Grim adds harsher violence to battle logs and the Undercroft.</p>
     ${S ? `<div class="pack-toggles"><b class="sm-text">Character packs</b>${Object.entries(PACKS).map(([id, P]) => `<label class="set-row" title="${esc(P.desc)}">${esc(P.name)} <input type="checkbox" class="pack-tg" data-id="${id}" ${S.settings.packs[id] !== false ? 'checked' : ''}></label>`).join('')}</div>` : ''}
     ${S && S.cleared ? `
@@ -2310,6 +2341,9 @@ function settingsModal(back) {
     s.textFast = modal.querySelector('#set-fast').checked;
     s.spice = modal.querySelector('#set-spice').value;
     s.gore = modal.querySelector('#set-gore').value;
+    const prevOutfit = s.outfit;
+    s.outfit = modal.querySelector('#set-outfit').value;
+    if (S && prevOutfit !== s.outfit) { S.settings = s; refreshPortraits(); }
     modal.querySelectorAll('.pack-tg').forEach(cb => { s.packs = s.packs || {}; s.packs[cb.dataset.id] = cb.checked; });
     AU.applySettings(s);
     if (S) { S.settings = s; ST.save(S); }
@@ -2319,6 +2353,7 @@ function settingsModal(back) {
   modal.querySelector('#set-fast').onchange = apply;
   modal.querySelector('#set-spice').onchange = apply;
   modal.querySelector('#set-gore').onchange = apply;
+  modal.querySelector('#set-outfit').onchange = apply;
   modal.querySelectorAll('.pack-tg').forEach(cb => cb.onchange = apply);
   if (S) {
     modal.querySelector('#set-export').onclick = () => { modal.querySelector('#save-blob').value = ST.exportSave(S); toast('Save code generated — copy it somewhere safe.'); };

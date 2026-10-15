@@ -159,7 +159,12 @@ export function toonFigure(spec) {
   const faceMesh = face(body, hr, hy, spec.face || {});
   toonHair(body, spec.hair || 'long', ctx);
 
+  // gear: weapon in the right hand, armor pieces (adventuring attire only), charms always
+  const gear = spec.gear || {};
+  ctx.hasWeapon = !!(gear.weapon && spec.showArms !== false);
   if (spec.extras) spec.extras(ctx);
+  if (ctx.hasWeapon) { const w = weaponMesh(gear.weapon); w.position.set(0.04, -armLen * 0.97, 0.06); w.rotation.z = -0.3; arms.R.add(w); }
+  gearVisuals(ctx, spec.showArms === false ? { charm: gear.charm } : gear);
   outline(g);
   g.userData.isChibi = true;
   g.userData.rig = makeRig({ face: faceMesh, armR: arms.R, armL: arms.L, bust, hips, body, legs, legLen });
@@ -216,4 +221,112 @@ export function toonTail(body, ctx, color, tip) {
   tadd(t, SC(0.028, 0.32), m, 0, -0.18, 0, 0, 0, 0.2);
   tadd(t, SC(0.024, 0.26), m, 0.07, -0.42, 0.04, -0.5, 0, -0.5);
   if (tip) tadd(t, new THREE.ConeGeometry(0.06, 0.12, 4), tmat(tip), 0.16, -0.55, 0.12, 0, 0, -2.0).scale.set(1, 1, 0.35);
+}
+
+// ============================================================
+// VISIBLE GEAR — what a character has equipped shows on them.
+// gear: { weapon: {type, tier, affix}, armor: {...}, charm: {...} }
+// Tier sets the metal/accent color; affixes add a glow.
+// ============================================================
+export const TIER_COLORS = [0x9aa0a8, 0xd8783a, 0x9a5ad8, 0x4a9a5a, 0xd8b45a, 0x6a2aa8];
+const AFFIX_GLOW = { flame: 0xff7a2a, frost: 0x8ad8ff, venom: 0x8aff6a, cruel: 0xd02a3a, vampiric: 0xa01a3a, keen: 0xf0f0ff, savage: 0xff5a5a, arcane: 0xb08cff, brutal: 0xd88a4a, headsmans: 0x8a8a9a,
+  thorned: 0x6a9a3a, warding: 0x8ac8ff, living: 0x8aff8a, bulwark: 0xd8d8e8, stalwart: 0xd8b45a, swift: 0x8ad8ff, lucky: 0x8aff6a, focused: 0xb08cff, blessed: 0xfff0a0, vigor: 0xff8a5a };
+const STEEL = 0xd8dee6;
+
+export function parseGear(sig) {
+  if (!sig) return {};
+  const [w, a, c] = sig.split(',');
+  const one = s => { if (!s || s === '-') return null; const [type, tier, affix] = s.split('.'); return { type, tier: +tier || 0, affix: affix || null }; };
+  return { weapon: one(w), armor: one(a), charm: one(c) };
+}
+
+export function weaponMesh(w) {
+  const g = new THREE.Group();
+  const tc = TIER_COLORS[w.tier] ?? TIER_COLORS[0];
+  const glowC = AFFIX_GLOW[w.affix];
+  const metal = tmat(STEEL), accent = tmat(tc), wood = tmat(0x6a4a2e), grip = tmat(0x3a2a20);
+  const glowM = glowC ? tmat(glowC, { emissive: glowC, ei: 1.6 }) : null;
+  if (w.type === 'blade') {
+    tadd(g, new THREE.BoxGeometry(0.05, 0.5, 0.016), metal, 0, 0.36, 0);
+    tadd(g, new THREE.ConeGeometry(0.035, 0.08, 4), metal, 0, 0.65, 0, 0, Math.PI / 4).scale.set(1, 1, 0.45);
+    tadd(g, new THREE.BoxGeometry(0.17, 0.03, 0.035), accent, 0, 0.1, 0);
+    tadd(g, SC(0.018, 0.1), grip, 0, 0.02, 0);
+    tadd(g, SS(0.025, 12, 10), accent, 0, -0.05, 0);
+    if (glowM) tadd(g, new THREE.BoxGeometry(0.012, 0.44, 0.02), glowM, 0, 0.36, 0);
+  } else if (w.type === 'warhammer') {
+    tadd(g, SC(0.018, 0.55), wood, 0, 0.22, 0);
+    tadd(g, new THREE.BoxGeometry(0.2, 0.1, 0.1), metal, 0, 0.52, 0);
+    tadd(g, new THREE.BoxGeometry(0.21, 0.025, 0.105), accent, 0, 0.52, 0);
+    if (glowM) tadd(g, SS(0.03, 12, 10), glowM, 0, 0.52, 0.055);
+  } else if (w.type === 'staff') {
+    tadd(g, SC(0.016, 0.95), wood, 0, 0.35, 0);
+    tadd(g, ST(0.06, 0.012), accent, 0, 0.86, 0, Math.PI / 2);
+    tadd(g, SS(0.055, 16, 12), tmat(glowC ?? tc, { emissive: glowC ?? tc, ei: 1.5 }), 0, 0.88, 0);
+  } else if (w.type === 'grimoire') {
+    tadd(g, new THREE.BoxGeometry(0.22, 0.29, 0.07), tmat(new THREE.Color(tc).multiplyScalar(0.55).getHex()));
+    tadd(g, new THREE.BoxGeometry(0.2, 0.27, 0.075), tmat(0xe8e0d0, { noOutline: true }), 0.006, 0, 0);
+    tadd(g, ST(0.045, 0.008), tmat(glowC ?? tc, { emissive: glowC ?? tc, ei: 1.4 }), 0, 0, 0.038);
+  } else if (w.type === 'lance') {
+    tadd(g, SC(0.016, 1.05), wood, 0, 0.42, 0);
+    tadd(g, new THREE.ConeGeometry(0.035, 0.22, 4), metal, 0, 1.06, 0);
+    tadd(g, ST(0.03, 0.012), accent, 0, 0.95, 0, Math.PI / 2);
+    if (glowM) tadd(g, new THREE.ConeGeometry(0.02, 0.16, 4), glowM, 0, 1.06, 0.012);
+  }
+  return g;
+}
+
+// Armor and charms as pieces layered onto the figure.
+export function gearVisuals(ctx, gear) {
+  const { body, arms, armLen, shoulderY, waistY, hipY, hemY, hipR, hy, k, F } = ctx;
+  const A = gear.armor, Ch = gear.charm;
+  if (A) {
+    const tc = TIER_COLORS[A.tier] ?? TIER_COLORS[0];
+    const glowC = AFFIX_GLOW[A.affix];
+    if (A.type === 'plate') {
+      for (const arm of [arms.L, arms.R]) {
+        tadd(arm, SS(0.088), tmat(STEEL), 0, 0.0, 0).scale.set(1.15, 0.8, 1.05);
+        tadd(arm, ST(0.075, 0.012), tmat(tc), 0, -0.04, 0, Math.PI / 2);
+        tadd(arm, SC(0.06, armLen * 0.2), tmat(STEEL), 0, -armLen * 0.7, 0);
+      }
+      tadd(body, ST(ctx.waistR + 0.02, 0.022), tmat(STEEL), 0, waistY - 0.07, 0, Math.PI / 2);
+    } else if (A.type === 'robe') {
+      const robeM = tmat(new THREE.Color(tc).multiplyScalar(0.45).getHex()); robeM.side = THREE.DoubleSide;
+      const h = shoulderY - 0.1;
+      tadd(body, new THREE.CylinderGeometry(F.shoulderX + 0.04, hipR * 1.4, h, 32, 1, true, Math.PI * 0.24, Math.PI * 1.52), robeM, 0, shoulderY - h / 2 - 0.02, -0.02);
+      tadd(body, ST(F.shoulderX + 0.05, 0.016), tmat(tc), 0, shoulderY - 0.03, 0, Math.PI / 2);
+    } else if (A.type === 'hauberk') {
+      const chain = tmat(0x8a9098);
+      tadd(body, lathe([[0, hipY], [hipR * 1.02, hipY], [hipR * 1.14, hemY - 0.06], [0, hemY - 0.06]], 40), chain, 0, 0, 0);
+      tadd(body, new THREE.CylinderGeometry(0.075, 0.12, 0.06, 24), chain, 0, shoulderY + 0.02, 0);
+      tadd(body, ST(0.12, 0.01), tmat(tc), 0, shoulderY - 0.01, 0, Math.PI / 2);
+    } else if (A.type === 'cloak') {
+      const cm = tmat(new THREE.Color(tc).multiplyScalar(0.4).getHex()); cm.side = THREE.DoubleSide;
+      const h = shoulderY - hipY + 0.05;
+      tadd(body, new THREE.CylinderGeometry(F.shoulderX + 0.05, hipR * 1.3, h, 32, 1, true, Math.PI / 2, Math.PI), cm, 0, shoulderY - h / 2, -0.04);
+      tadd(body, new THREE.SphereGeometry(0.2 * k, 24, 16, 0, Math.PI * 2, Math.PI * 0.35, Math.PI * 0.45), cm, 0, hy - 0.02, -0.13 * k).rotation.x = -0.9; // the hood, down
+      tadd(body, SS(0.025, 12, 10), tmat(tc), F.shoulderX * 0.6, shoulderY - 0.02, 0.1);
+    }
+    if (glowC) tadd(body, SS(0.022, 12, 10), tmat(glowC, { emissive: glowC, ei: 1.8 }), 0, waistY + 0.005, ctx.waistR + 0.03);
+  }
+  if (Ch) {
+    const tc = TIER_COLORS[Ch.tier] ?? TIER_COLORS[0];
+    const gemC = AFFIX_GLOW[Ch.affix] ?? tc;
+    const gem = tmat(gemC, { emissive: gemC, ei: 1.4 });
+    if (Ch.type === 'pendant') {
+      tadd(body, ST(0.085, 0.005), tmat(0xd8b45a, { noOutline: true }), 0, shoulderY - 0.005, 0.035, Math.PI / 2 - 0.5);
+      tadd(body, SS(0.022, 12, 10), gem, 0, shoulderY - 0.06, 0.115);
+    } else if (Ch.type === 'ring') {
+      tadd(arms.L, ST(0.03, 0.008), gem, 0.02, -armLen * 0.96, 0.03, Math.PI / 2);
+    } else if (Ch.type === 'sigil') {
+      const s = tadd(body, ST(0.06, 0.008), gem, F.shoulderX + 0.18, shoulderY + 0.12, 0.05, 0.3, 0.5); s.name = 'sigil';
+      tadd(s, ST(0.035, 0.006), gem, 0, 0, 0);
+    } else if (Ch.type === 'band') {
+      tadd(arms.R, ST(0.052, 0.012), tmat(tc), 0, -armLen * 0.35, 0, Math.PI / 2);
+      tadd(arms.R, SS(0.014, 10, 8), gem, 0, -armLen * 0.35, 0.05);
+    } else if (Ch.type === 'idol') {
+      const idol = new THREE.Group(); idol.position.set(ctx.waistR + 0.02, waistY - 0.1, 0.05); body.add(idol);
+      tadd(idol, SC(0.014, 0.03), tmat(tc), 0, 0, 0);
+      tadd(idol, SS(0.016, 10, 8), gem, 0, 0.035, 0);
+    }
+  }
 }

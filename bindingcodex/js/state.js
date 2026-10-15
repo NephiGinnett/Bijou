@@ -68,7 +68,7 @@ export function newGame(playerName, pronouns = 'she') {
     clearedDay: 0,
     ngPlus: 0,
     mastery: {},
-    hangouts: {}, family: [], expecting: {}, seenDay: {}, eveningDay: -1, guests: {},
+    hangouts: {}, family: [], expecting: {}, seenDay: {}, eveningDay: -1, guests: {}, wardrobe: {},
     autoSkill: {},
     dispatch: [],
     dispatchReports: [],
