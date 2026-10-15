@@ -63,9 +63,14 @@ export class Stage {
     this.turnRing = this.makeTurnRing();
     this.scene.add(this.turnRing);
 
+    this.hooks = new Set();     // per-frame callbacks for the Undercroft / pens views
+    this.onPick = null;         // (uid) => void: a tap (not a drag) on an actor
+    this._ray = new THREE.Raycaster();
+
     this.resize();
     addEventListener('resize', () => this.resize());
     this._initOrbitInput();
+    this._initPick();
   }
 
   resize() {
@@ -83,6 +88,38 @@ export class Stage {
   nudgeYaw(d) { this.orbitEnabled = true; this.userYaw += d; }
   nudgeZoom(f) { this.orbitEnabled = true; this._zoomMul(f); }
   resetView() { this.userYaw = 0; this.userPitch = 0; this.userZoom = 1; }
+
+  // A tap that didn't drag picks the actor under it.
+  _initPick() {
+    const c = this.canvas;
+    if (!c) return;
+    let down = null;
+    c.addEventListener('pointerdown', e => { down = { x: e.clientX, y: e.clientY }; });
+    c.addEventListener('pointerup', e => {
+      if (!down || !this.onPick) return;
+      const moved = Math.hypot(e.clientX - down.x, e.clientY - down.y); down = null;
+      if (moved > 8) return;
+      const r = c.getBoundingClientRect();
+      const ndc = new THREE.Vector2(((e.clientX - r.left) / r.width) * 2 - 1, -((e.clientY - r.top) / r.height) * 2 + 1);
+      this._ray.setFromCamera(ndc, this.camera);
+      const hits = this._ray.intersectObjects(this.actorGroup.children, true);
+      for (const h of hits) {
+        let o = h.object;
+        while (o && o.parent !== this.actorGroup) o = o.parent;
+        if (!o) continue;
+        for (const [uid, a] of this.actors) if (a.group === o) { this.onPick(uid); return; }
+      }
+    });
+  }
+  // Glide the camera to a new framing.
+  focus(base, target, halfW = this.viewHalfW, ms = 650) {
+    const b0 = this.camBase.clone(), t0 = this.camTarget.clone(), w0 = this.viewHalfW;
+    return this.tween(ms, p => {
+      this.camBase.lerpVectors(b0, base, p);
+      this.camTarget.lerpVectors(t0, target, p);
+      this.viewHalfW = w0 + (halfW - w0) * p;
+    });
+  }
 
   _initOrbitInput() {
     const c = this.canvas;
@@ -220,6 +257,8 @@ export class Stage {
   // ---------- actors ----------
 
   clearActors() {
+    this.hooks.clear();
+    this.onPick = null;
     for (const a of this.actors.values()) this.actorGroup.remove(a.group);
     this.actors.clear();
     this.turnRing.visible = false;
@@ -326,6 +365,7 @@ export class Stage {
       const rig = a.group.children[0] && a.group.children[0].userData.rig;
       if (rig && (!a.dead || a.group.visible)) rig.update(dt, a.group.position.y);
     }
+    for (const fn of this.hooks) fn(dt, this.t);
     // dust drift
     if (this.dust) {
       const p = this.dust.geometry.attributes.position;

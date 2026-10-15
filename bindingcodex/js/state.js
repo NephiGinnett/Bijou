@@ -1137,6 +1137,16 @@ function makeBeast(S, c, traitsOverride = null) {
     family2: c.family2 || null, yieldId2: c.family2 ? BEAST_FAMILIES[c.family2].reagent : null };
 }
 
+// Once a day you can give a beast some attention: the tame ones like it.
+export function petBeast(S, id) {
+  const b = S.menagerie.find(x => x.id === id);
+  if (!b || b.pettedDay === S.day) return null;
+  b.pettedDay = S.day;
+  if (b.tame < 20) return { ok: false };
+  b.tame = Math.min(100, b.tame + 2);
+  return { ok: true };
+}
+
 // --- the Undercroft ------------------------------------------------------------
 
 export function traitMod(cap, key, dflt = 1) {

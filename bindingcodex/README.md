@@ -71,6 +71,15 @@ Add `?fast=1` to the URL for instant text and 3× animation speed.
 Climb the six **Circles of the Codex** — Ash, Ember, Hex, Thorn, Crown,
 Abyss — by earning **Infamy**.
 
+## Walking the cells & pens
+
+- **👁 Walk the cells** (Undercroft): a torchlit 3D corridor. Each captive is
+  behind bars, chained to the wall, or in the stocks (your pick, cosmetic).
+  Tap one and Zoe walks over; their card shows their mood and the day's visits.
+- **👁 Walk the pens** (Menagerie): beasts roam their fenced pens. Tame ones
+  trot to the gate, hungry ones hang around the trough, eggs sit in a nest.
+  Feed or **pet** them from there (once a day, +2 tame if they trust you).
+
 ## Wild tribes, hybrids & the Wyrm's Mantle
 
 - **Imbue** a tame Menagerie beast with your mark: Codex-Touched (faster

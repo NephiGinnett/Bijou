@@ -706,3 +706,11 @@ details.faction-section > summary:hover { background: rgba(255, 255, 255, 0.04);
 .region-count { font-size: 0.78rem; font-weight: 400; margin-left: 6px; letter-spacing: 0.02em; }
 .region-flag { font-size: 0.72rem; padding: 1px 7px; border-radius: 8px; border: 1px solid var(--gold); color: var(--gold); margin-left: 4px; }
 .region-flag.lair { border-color: #ff7a9a; color: #ffb8c8; }
+
+/* walking the cells and pens */
+#ui.viewer { justify-content: space-between; padding: 10px; }
+.viewer-bar { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
+.viewer-card { max-width: 560px; width: 100%; align-self: center; display: flex; flex-direction: column; gap: 6px; background: rgba(12, 8, 16, 0.82); }
+.viewer-card h3 { margin: 0; }
+.viewer-card p { margin: 0; }
+@media (max-width: 600px) { .viewer-bar .muted { display: none; } }

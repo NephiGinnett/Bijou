@@ -201,6 +201,12 @@ const ACTIONS = {
             L: { x: [[0, 0], [0.15, -2.9], [0.85, -2.9], [1, 0]], z: [[0, 0], [0.15, -0.3], [0.85, -0.3], [1, 0]] },
             face: [[0.1, 'talkA'], [0.9, null]], wiggle: true },
 };
+// Held poses for the Undercroft: arms stay put until released. tug() makes a
+// held figure strain against whatever's holding it for a moment.
+const HOLDS = {
+  shackled: { R: { x: -0.15, z: 2.35 }, L: { x: -0.15, z: -2.35 } },
+  stocks:   { R: { x: -1.5, z: -0.12 }, L: { x: -1.5, z: 0.12 }, body: 0.06 },
+};
 function keyed(keys, p) {
   if (!keys) return 0;
   if (p <= keys[0][0]) return keys[0][1];
@@ -212,7 +218,7 @@ function keyed(keys, p) {
 }
 
 export function makeRig(parts) {
-  const st = { act: null, actT0: 0, actDur: 0, t: 0, nextBlink: 1 + Math.random() * 2, blinkEnd: 0, talkUntil: 0, waveStart: -9, waveEnd: -9, kneel: 0, kneelTo: 0, lastY: null, vel: 0, jig: 0, jigV: 0 };
+  const st = { act: null, actT0: 0, actDur: 0, t: 0, nextBlink: 1 + Math.random() * 2, blinkEnd: 0, hold: null, tugT0: -9, talkUntil: 0, waveStart: -9, waveEnd: -9, kneel: 0, kneelTo: 0, lastY: null, vel: 0, jig: 0, jigV: 0 };
   const faces = parts.face && parts.face.userData.faces;
   const setFace = tex => { if (faces && parts.face.material.map !== tex) { parts.face.material.map = tex; parts.face.material.needsUpdate = true; } };
   const ease = x => x < 0 ? 0 : x > 1 ? 1 : x * x * (3 - 2 * x);
@@ -222,6 +228,9 @@ export function makeRig(parts) {
     kneel(on = true) { st.kneelTo = on ? 1 : 0; },
     // play a battle action (see ACTIONS); returns its length in seconds
     act(name, seconds = 0.6) { if (!ACTIONS[name]) return 0; st.act = name; st.actT0 = st.t; st.actDur = seconds; return seconds; },
+    hold(name) { st.hold = HOLDS[name] ? name : null; },
+    tug() { st.tugT0 = st.t; },
+    parts,
     update(dt, worldY = 0) {
       st.t += dt;
       // the current battle action, if any
@@ -246,6 +255,14 @@ export function makeRig(parts) {
       if (parts.armR) { parts.armR.rotation.x = A && A.R ? keyed(A.R.x, ap) : 0; if (A && A.R && A.R.z) parts.armR.rotation.z += keyed(A.R.z, ap) + wig; }
       if (parts.armL) { parts.armL.rotation.x = A && A.L ? keyed(A.L.x, ap) : 0; parts.armL.rotation.z = parts.armL.userData.rest + (A && A.L && A.L.z ? keyed(A.L.z, ap) - wig : 0); }
       if (parts.body) { const b = A && A.body; parts.body.rotation.x = b ? keyed(b.x, ap) : 0; parts.body.rotation.y = b ? keyed(b.y, ap) : 0; parts.body.rotation.z = b ? keyed(b.z, ap) : 0; }
+      // a held pose replaces the arms' rest; a tug shakes it for about a second
+      const H = !A && st.hold && HOLDS[st.hold];
+      if (H) {
+        const tp = (st.t - st.tugT0) / 1.1, tg = tp >= 0 && tp < 1 ? Math.sin(tp * Math.PI * 6) * (1 - tp) * 0.18 : 0;
+        if (parts.armR) { parts.armR.rotation.x = H.R.x + tg * 0.5; parts.armR.rotation.z = parts.armR.userData.rest + H.R.z + tg; }
+        if (parts.armL) { parts.armL.rotation.x = H.L.x - tg * 0.5; parts.armL.rotation.z = parts.armL.userData.rest + H.L.z + tg; }
+        if (parts.body) { parts.body.rotation.x = (H.body || 0) + tg * 0.3; parts.body.rotation.z = tg * 0.4; }
+      }
       // breathing
       if (parts.bust) parts.bust.scale.y = 1 + Math.sin(st.t * 2.1) * 0.015;
       // springy follow-through: the bust (and hips, gently) lag the body's bounce
