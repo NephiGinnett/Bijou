@@ -1406,7 +1406,7 @@ Every Unbound stub in Binding Codex with its **whole scene**, in the order the p
 - **Erin:** (sliding into the water beside you) Rule one of the pool: no Lodge. No rifts. Tonight you're just ours, and we're just yours.
 - **Sakura:** (hair all the way down, hat nowhere in sight) I used to practice being brave for moments like this. (she crosses the water to you) I don't have to practice anymore.
 - **Shiro:** (from your other side, close enough that the words land on your skin) I ran the numbers on wanting like this once and concluded it was a liability. I have never been so glad to be wrong.
-- *(only if Yuki is with you)* **Yuki:** (hovering at the edge of the water out of old habit, until Erin reaches out and pulls them in) ...Oh. Okay. I'm in. I'm IN.
+- *(only if Yuki has had their own romance with you)* **Yuki:** (hovering at the edge of the water out of old habit, until Erin reaches out and pulls them in) ...Oh. Okay. I'm in. I'm IN.
 - **▸ The player chooses:**
   - **"The Company knelt to me in the Glade. Kneel again. Here."** ← **leads to your scene**
     - **[Gentle only]** **Narration:** They kneel in the warm water, laughing, and you raise each of them up in turn.
@@ -1490,10 +1490,10 @@ Every Unbound stub in Binding Codex with its **whole scene**, in the order the p
 **The scene:**
 
 - **Narration:** The envoys have called a council. They hold it on the library roof under a full moon, and you are the only item on the agenda.
-- *(only in some playthroughs)* **Kestra of the Aerie:** (perched on the broken skylight) The Aerie shares its high branches. It turns out we're willing to share other things too.
-- *(only in some playthroughs)* **Sythra of the Coil:** (coiled around a chimney) The Coil has held you. The others would like to hold you as well. (a slow hiss) I am feeling generous.
-- *(only in some playthroughs)* **Vharra of the Clutch:** Drake-kin hoard. I've decided you're a hoard worth sharing. (a fanged grin) Once.
-- *(only in some playthroughs)* **Tashra of the Pride:** (stretched along the roof ridge, tail swaying) The Pride hunts in a pack. Tonight, so do we.
+- *(only if Kestra of the Skyrend Aerie has had the rite with you)* **Kestra of the Aerie:** (perched on the broken skylight) The Aerie shares its high branches. It turns out we're willing to share other things too.
+- *(only if Sythra of the Coil of the Black Mire has had the rite with you)* **Sythra of the Coil:** (coiled around a chimney) The Coil has held you. The others would like to hold you as well. (a slow hiss) I am feeling generous.
+- *(only if Vharra of the Ashreach Clutch has had the rite with you)* **Vharra of the Clutch:** Drake-kin hoard. I've decided you're a hoard worth sharing. (a fanged grin) Once.
+- *(only if Tashra of the Sunrun Pride has had the rite with you)* **Tashra of the Pride:** (stretched along the roof ridge, tail swaying) The Pride hunts in a pack. Tonight, so do we.
 - **Narration:** Every oath stands either way; each of them says so before the moon is fully up. Then they ask.
 - **▸ The player chooses:**
   - **Join the council.** ← **leads to your scene**

@@ -18,6 +18,7 @@ globalThis.localStorage = { getItem() { return null; }, setItem() {}, removeItem
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const { installPacks, PACKS } = await import(path.join(ROOT, 'js/packs/index.js'));
 const { EVENTS, SPEAKERS } = await import(path.join(ROOT, 'js/story.js'));
+const { TRIBES } = await import(path.join(ROOT, 'js/data.js'));
 const { install: installCompanions } = await import(path.join(ROOT, 'js/companions.js'));
 installPacks();
 installCompanions(EVENTS);
@@ -58,11 +59,14 @@ function speaker(id) {
 function condNote(fn) {
   const src = String(fn);
   if (fn.name === 'mantled' || /mantled/.test(src)) return 'only if you took the Wyrm\'s Mantle pact';
+  if (/has\(S, 'yuki'\) && romanced\(S, 'yuki'\)/.test(src)) return 'only if Yuki has had their own romance with you';
   let m = src.match(/has\(S, '([a-z_]+)'\)/);
   if (m) return `only if ${speaker(m[1])} is with you`;
   if (/n\(S\) < 3/.test(src)) return 'only while she\'s among your first few kin';
   if (/n\(S\) >= 3 && n\(S\) < 6/.test(src)) return 'only once the tribe is Nesting Near (3–5 kin)';
   if (/n\(S\) >= 6/.test(src)) return 'only once the tribe is Devoted (6+ kin)';
+  m = src.match(/riteDone\(S, '([a-z]+)'\)/);
+  if (m) { const T = TRIBES[m[1]]; return `only if ${T.envoyName} of ${T.name.replace(/^The /, 'the ')} has had the rite with you`; }
   m = src.match(/flags\.([a-z_]+)/);
   if (m) return `only if \`${m[1]}\` has happened`;
   return 'only in some playthroughs';
