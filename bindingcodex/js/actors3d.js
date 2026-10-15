@@ -8,6 +8,7 @@
 
 import * as THREE from 'three';
 import { GLTFLoader } from '../vendor/GLTFLoader.js';
+import { tmat, tadd, SS, SC, ST, outline, face, lathe } from './toon.js';
 
 const gltfLoader = new GLTFLoader();
 let manifestPromise = null;
@@ -192,15 +193,96 @@ function chibi(o = {}) {
 // hero builders
 // ---------------------------------------------------------------
 
+// ---------------------------------------------------------------
+// soft-toon Zoe: blonde, dark green coat-dress, gold accents
+// ---------------------------------------------------------------
+function toonPlayer(v) {
+  const scar = !!v && v.endsWith('_scar'); if (scar) v = v.slice(0, -5);
+  const mantle = !!v && v.endsWith('_mantle'); if (mantle) v = v.slice(0, -7);
+  const fem = v === 'she' || v == null;
+  const g = new THREE.Group();
+  const SKIN = 0xf6dcc8, HAIR = 0xf2d27a, GREEN = 0x1f4a34, DEEP = 0x143224, GOLD = 0xd8b45a, STOCK = 0x1b2620, BOOT = 0x2a1e18;
+  const skin = tmat(SKIN, { soft: true }), hair = tmat(HAIR), green = tmat(GREEN), deep = tmat(DEEP), gold = tmat(GOLD);
+  // legs and boots
+  for (const sx of [-1, 1]) {
+    tadd(g, SC(0.066, 0.2), tmat(STOCK), sx * 0.1, 0.22, 0);
+    tadd(g, SC(0.078, 0.08), tmat(BOOT), sx * 0.1, 0.08, 0.015);
+    tadd(g, ST(0.07, 0.012), gold, sx * 0.1, 0.15, 0.015, Math.PI / 2);
+  }
+  // coat-dress: fitted bodice, a real waist, a flared skirt
+  const body = fem
+    ? [[0, 0.99], [0.075, 0.99], [0.1, 0.96], [0.2, 0.9], [0.22, 0.81], [0.2, 0.72], [0.155, 0.63], [0.165, 0.56], [0.26, 0.43], [0.34, 0.3], [0.36, 0.23], [0, 0.23]]
+    : [[0, 0.99], [0.08, 0.99], [0.11, 0.96], [0.22, 0.9], [0.23, 0.8], [0.21, 0.66], [0.2, 0.56], [0.27, 0.42], [0.33, 0.3], [0.34, 0.23], [0, 0.23]];
+  tadd(g, lathe(body), green, 0, 0, 0);
+  if (fem) { const bust = tmat(GREEN, { noOutline: true }); for (const sx of [-1, 1]) tadd(g, SS(0.1), bust, sx * 0.085, 0.79, 0.12).scale.set(1, 0.92, 0.8); }
+  // gold accents: belt, hem, collar, buttons, a clasp
+  tadd(g, ST(fem ? 0.158 : 0.2, 0.02), gold, 0, fem ? 0.62 : 0.6, 0, Math.PI / 2);
+  tadd(g, ST(0.355, 0.016), gold, 0, 0.235, 0, Math.PI / 2);
+  tadd(g, ST(0.1, 0.02), gold, 0, 0.965, 0, Math.PI / 2);
+  for (let i = 0; i < 3; i++) tadd(g, SS(0.018, 12, 10), gold, 0, 0.53 - i * 0.09, 0.2 + i * 0.03);
+  tadd(g, SS(0.03, 12, 10), gold, 0, 0.62, 0.165);
+  // a short cape behind, deep green
+  const cape = new THREE.CylinderGeometry(0.2, 0.37, 0.64, 32, 1, true, Math.PI / 2, Math.PI);
+  const capeM = tmat(DEEP); capeM.side = THREE.DoubleSide;
+  tadd(g, cape, capeM, 0, 0.62, -0.02);
+  // arms, gold cuffs, hands
+  for (const sx of [-1, 1]) {
+    const arm = tadd(g, SC(0.062, 0.22), green, sx * 0.29, 0.75, 0, 0, 0, -sx * 0.35);
+    arm.name = sx < 0 ? 'armL' : 'armR';
+    tadd(g, ST(0.06, 0.016), gold, sx * 0.345, 0.62, 0, Math.PI / 2, 0, -sx * 0.35);
+    tadd(g, SS(0.065), skin, sx * 0.37, 0.57, 0);
+  }
+  // neck and head
+  tadd(g, SC(0.055, 0.05), skin, 0, 1.0, 0);
+  const head = tadd(g, SS(0.32), skin, 0, 1.2, 0); head.name = 'head';
+  for (const sx of [-1, 1]) tadd(g, SS(0.06), skin, sx * 0.31, 1.18, 0).scale.set(0.6, 1, 0.8);
+  face(g, 0.32, 1.2, { eye: 0x8a5ad8, brow: 0xc8a050, blush: 0xff8aa0 });
+  // hair: a cap, a fringe of rounded locks, side locks, and length for her
+  tadd(g, SS(0.345), hair, 0, 1.25, -0.035).scale.set(1, 0.95, 1);
+  const fringe = [-0.22, -0.13, -0.045, 0.045, 0.13, 0.22];
+  fringe.forEach((x, i) => {
+    const lock = tadd(g, SS(0.085), hair, x, 1.36 - Math.abs(x) * 0.35, Math.sqrt(0.345 ** 2 - x * x) - 0.06, -0.25, 0, -x * 1.6 + (i % 2 ? 0.08 : -0.08));
+    lock.scale.set(0.62, 1.45, 0.5);
+  });
+  for (const sx of [-1, 1]) tadd(g, SC(0.058, fem ? 0.36 : 0.18), hair, sx * 0.29, fem ? 1.0 : 1.1, 0.07, 0, 0, sx * 0.08);
+  if (fem) {
+    tadd(g, SC(0.2, 0.46), hair, 0, 0.88, -0.2).scale.set(1.25, 1, 0.6);
+    for (const [x, rz] of [[-0.16, 0.25], [0, 0], [0.16, -0.25]]) tadd(g, SC(0.08, 0.18), hair, x, 0.6, -0.22, 0.2, 0, rz);
+  } else if (v === 'they') {
+    tadd(g, SC(0.19, 0.2), hair, 0, 1.02, -0.2).scale.set(1.25, 1, 0.6);
+  }
+  // the anime "angel ring" shine on the hair
+  tadd(g, ST(0.24, 0.013), tmat(0xfff2c0, { noOutline: true }), 0, 1.4, 0.04, Math.PI / 2 - 0.35);
+  // the mark (left hand) and the hex-light (right hand)
+  tadd(g, ST(0.065, 0.018), tmat(0xc86cff, { emissive: 0xc86cff, ei: 1.6 }), -0.37, 0.62, 0.02, Math.PI / 2);
+  const orb = tadd(g, SS(0.065), tmat(0xc86cff, { emissive: 0xc86cff, ei: 2 }), 0.44, 0.7, 0.08); orb.name = 'orb';
+  if (mantle) {
+    horns(g, 0x2a1a34, 1.5, 0.15, 0.3);
+    wings(g, 0x1a2a22, 1.0, 0.62);
+    const tail = new THREE.Group();
+    tadd(tail, SC(0.04, 0.55), tmat(DEEP), 0, 0, 0, 0, 0, 0.9);
+    tadd(tail, new THREE.ConeGeometry(0.08, 0.14, 12), tmat(0xc86cff, { emissive: 0xc86cff, ei: 1.2 }), -0.3, -0.2, 0, 0, 0, 2.4);
+    tail.position.set(0, 0.42, -0.3); tail.rotation.x = 0.5; g.add(tail);
+  }
+  if (scar) {
+    const sm = tmat(0xff5a3a, { emissive: 0xff5a3a, ei: 1.8 });
+    tadd(g, new THREE.BoxGeometry(0.03, 0.26, 0.012), sm, 0.1, 1.2, 0.315, 0.1, 0, -0.5);
+  }
+  outline(g);
+  g.userData.isChibi = true;
+  return g;
+}
+
 const HERO_BUILDERS = {
-  player(v) {
+  player: toonPlayer,
+  player_classic(v) {
     // the warlock: hooded ash-black coat, violet-lined, sigil-mark aglow
     const scar = !!v && v.endsWith('_scar');
     if (scar) v = v.slice(0, -5);
     const mantle = !!v && v.endsWith('_mantle');
     if (mantle) v = v.slice(0, -7);
     const fem = v === 'she';
-    const g = chibi({ skin: 0xead2bc, hair: 0x1e1a22, hairstyle: fem ? 'long' : v === 'they' ? 'straight' : 'short', outfit: 0x221c2a, sleeve: 0x221c2a, legColor: 0x17131c, eyeColor: 0x8a5ad8, chest: fem ? 1 : 0 });
+    const g = chibi({ skin: 0xead2bc, hair: 0xf2d27a, hairstyle: fem ? 'long' : v === 'they' ? 'straight' : 'short', outfit: 0x1f4a34, sleeve: 0x1f4a34, legColor: 0x17131c, eyeColor: 0x8a5ad8, chest: fem ? 1 : 0 });
     add(g, Cone(0.4, 0.62, 9, 1, true), mat(0x17131c), 0, 0.82, -0.06);                                   // long coat
     add(g, Cone(0.2, 0.26, 8), mat(0x17131c), 0, 1.45, -0.1, 0.3);                                         // hood
     add(g, Tor(0.2, 0.03, 6, 14), mat(0xb06cff, { emissive: 0xb06cff, ei: 0.9 }), 0, 1.02, 0, Math.PI / 2.4); // violet collar
