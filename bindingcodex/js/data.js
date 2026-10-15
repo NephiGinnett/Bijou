@@ -27,7 +27,9 @@ export const XP_MULT = { Ash: 1, Ember: 1.9, Hex: 3.4, Thorn: 5.8, Crown: 9.5, A
 
 // Enemy stat scaling per Circle. Softer than XP_MULT early on: the warlock
 // starts nearly alone, not with three veterans like Gatebound did.
-export const ENEMY_TIER = { Ash: 0.52, Ember: 1.3, Hex: 2.7, Thorn: 5.0, Crown: 8.6, Abyss: 14 };
+// Crown and Abyss were 8.6 and 14: a party needed ~level 22 for Crown and ~35 for
+// Abyss, well past where the Circle climb leaves you. Now ~14 and ~22.
+export const ENEMY_TIER = { Ash: 0.52, Ember: 1.3, Hex: 2.7, Thorn: 5.0, Crown: 7.0, Abyss: 11 };
 
 export function xpToNext(level) {
   return Math.round(50 * Math.pow(level, 1.45));
@@ -566,7 +568,7 @@ export const ENEMIES = {
   elder_treant:  { name: 'Elder Treant',    model: 'vine',    variant: 'elder', boss: true, captureType: 'beast', family: 'hollow_stag', sealResist: 0.65, base: { hp: 120, atk: 15, mag: 12, def: 11, res: 10, agi: 5 }, skills: ['e_smash', 'e_venom', 'e_aoe_phys', 'e_heal'], xp: 46, gold: 42 },
   bone_tyrant:   { name: 'Bone Tyrant',     model: 'skeleton',variant: 'tyrant', boss: true, captureType: null, base: { hp: 110, atk: 17, mag: 12, def: 10, res: 8, agi: 9 }, skills: ['strike', 'e_sunder', 'e_curse', 'e_aoe_mag'], xp: 46, gold: 44 },
   colossus:      { name: 'Forge Colossus',  model: 'golem',   variant: 'colossus', boss: true, captureType: null, base: { hp: 150, atk: 18, mag: 8, def: 15, res: 10, agi: 4 }, skills: ['e_smash', 'e_aoe_phys', 'e_sunder'], xp: 50, gold: 48 },
-  drowned_matriarch:{ name: 'Drowned Matriarch', model: 'elemental', variant: 'matriarch', boss: true, captureType: null, base: { hp: 130, atk: 12, mag: 20, def: 10, res: 14, agi: 10 }, skills: ['e_frost', 'e_aoe_mag', 'e_heal', 'e_curse'], xp: 52, gold: 50 },
+  drowned_matriarch:{ name: 'Drowned Matriarch', model: 'elemental', variant: 'matriarch', boss: true, captureType: null, base: { hp: 115, atk: 12, mag: 16, def: 10, res: 12, agi: 10 }, skills: ['e_frost', 'e_aoe_mag', 'e_curse'], xp: 52, gold: 50 },
   vigil_marshal: { name: 'Vigil Marshal',   model: 'vigil', variant: 'marshal', boss: true, faction: 'vigil', captureType: 'humanoid', sealResist: 0.65, base: { hp: 125, atk: 18, mag: 6, def: 15, res: 14, agi: 9 }, skills: ['e_vigil_cut', 'e_devastate', 'e_heal', 'e_enrage'], xp: 50, gold: 48 },
   pit_lord:      { name: 'Market Pit Lord', model: 'demon',   boss: true, captureType: 'humanoid', faction: 'market', sealResist: 0.7, base: { hp: 140, atk: 20, mag: 16, def: 12, res: 11, agi: 11 }, skills: ['e_smash', 'e_ember', 'e_aoe_mag', 'e_howl'], xp: 56, gold: 55 },
   wraith_queen:  { name: 'The Weeping Queen', model: 'wraith', variant: 'queen', boss: true, captureType: null, base: { hp: 118, atk: 10, mag: 20, def: 9, res: 15, agi: 12 }, skills: ['e_aoe_mag', 'e_hex', 'e_curse', 'e_heal', 'e_enrage'], xp: 48, gold: 46 },
@@ -727,7 +729,7 @@ export const LOCATIONS = {
 };
 
 export const LAIR_POWER = 35;   // a faction's leader becomes reachable at or below this
-export const POWER = { clear: 10, lairFail: 0, capture: 3, kill: 1, lieutenantCapture: 15, lieutenantDefeat: 8, regen: 1 };
+export const POWER = { clear: 10, lairFail: 0, capture: 3, kill: 1, lieutenantCapture: 15, lieutenantDefeat: 8, regen: 1, quietDays: 3 };
 
 // Location modifiers (a holding's character).
 export const GATE_MODIFIERS = [

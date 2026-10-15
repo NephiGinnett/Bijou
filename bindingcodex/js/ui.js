@@ -768,7 +768,7 @@ function worldMap() {
   const card = (locId) => {
     const L = LOCATIONS[locId];
     const open = ST.locationOpen(S, locId);
-    const rIdx = Math.max(L.circle, S.circleIdx);
+    const rIdx = ST.expeditionRank(S, locId);
     const mod = GATE_MODIFIERS.find(m => m.id === L.modifier);
     const lt = ST.pendingLieutenant(S, locId);
     const visits = S.visits[locId] || 0;
