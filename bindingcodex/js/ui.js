@@ -245,6 +245,8 @@ export function playEvent(ev, opts = {}) {
       if (st.brand) { void box.offsetWidth; box.classList.add('brand-flash'); AU.sfx('crit'); }
       layer.querySelector('.d-name').innerHTML = esc(subName(sp.name)) + (st.brand ? '<span class="brand-tag">🔥 the brand flares</span>' : '');
       layer.querySelector('.d-name').style.color = sp.color;
+      // whoever is speaking moves their mouth (rigged characters)
+      if (stage && stage.speak && sid && sid !== 'narr') stage.speak(sid, Math.min(4, 0.6 + subName(st.t).length / 45));
       const pEl = layer.querySelector('.d-portrait');
       pEl.innerHTML = PORTRAITS[sid] ? portraitImg(sid) : '';
       pEl.style.display = PORTRAITS[sid] ? '' : 'none';
@@ -426,7 +428,7 @@ async function hub() {
   AU.music('guild');
   stage.setBiome(null);
   stage.battleCamera();
-  stage.showcase(ST.roster(S).slice(0, 5), heroVariant);
+  stage.showcase(ST.roster(S).slice(0, 5), heroVariant).then(() => { if (!hub.waved) { hub.waved = true; setTimeout(() => stage.wave('player'), 600); } });
   stage.camBase.set(0, 2.0, 6.2);
 
   await drainQueue();

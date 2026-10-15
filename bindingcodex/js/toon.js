@@ -67,7 +67,7 @@ export function outline(group, width = 0.016) {
 
 // A canvas texture wrapped over the front of the head: big glossy anime
 // eyes with lashes and highlights, soft brows, blush and a small smile.
-export function faceTexture({ eye = 0x8a5ad8, brow = 0x8a6a3a, blush = 0xff8aa0, lashes = 0x2a1a22, mouth = 'smile' } = {}) {
+export function faceTexture({ eye = 0x8a5ad8, brow = 0x8a6a3a, blush = 0xff8aa0, lashes = 0x2a1a22, mouth = 'smile', closed = false } = {}) {
   const W = 512, H = 256;
   const cv = document.createElement('canvas'); cv.width = W; cv.height = H;
   const c = cv.getContext('2d');
@@ -76,6 +76,17 @@ export function faceTexture({ eye = 0x8a5ad8, brow = 0x8a6a3a, blush = 0xff8aa0,
   const lift = (n, f) => '#' + new THREE.Color(n).lerp(new THREE.Color(0xffffff), f).getHexString();
   for (const side of [-1, 1]) {
     const cx = W / 2 + side * 78, cy = 118, rx = 30, ry = 42;
+    if (closed) {
+      c.strokeStyle = hex(lashes); c.lineCap = 'round'; c.lineWidth = 8;
+      c.beginPath(); c.ellipse(cx, cy + 10, rx + 6, 14, 0, Math.PI * 0.05, Math.PI * 0.95); c.stroke();
+      c.lineWidth = 5; c.beginPath(); c.moveTo(cx + side * (rx + 4), cy + 14); c.lineTo(cx + side * (rx + 16), cy + 6); c.stroke();
+      c.strokeStyle = hex(brow); c.lineWidth = 6;
+      c.beginPath(); c.moveTo(cx - side * 26, cy - ry - 18); c.quadraticCurveTo(cx + side * 4, cy - ry - 30, cx + side * 30, cy - ry - 20); c.stroke();
+      const b = c.createRadialGradient(cx + side * 34, cy + 66, 2, cx + side * 34, cy + 66, 36);
+      b.addColorStop(0, hex(blush) + 'aa'); b.addColorStop(1, hex(blush) + '00');
+      c.fillStyle = b; c.beginPath(); c.ellipse(cx + side * 34, cy + 66, 40, 22, 0, 0, Math.PI * 2); c.fill();
+      continue;
+    }
     // white of the eye
     c.fillStyle = '#fbf7f4'; c.beginPath(); c.ellipse(cx, cy + 4, rx + 6, ry, 0, 0, Math.PI * 2); c.fill();
     // iris: light at the bottom, deep at the top
@@ -104,9 +115,13 @@ export function faceTexture({ eye = 0x8a5ad8, brow = 0x8a6a3a, blush = 0xff8aa0,
   // mouth
   c.strokeStyle = '#8a3a4a'; c.lineWidth = 5; c.lineCap = 'round';
   c.beginPath();
-  if (mouth === 'smile') { c.moveTo(W / 2 - 16, 214); c.quadraticCurveTo(W / 2, 226, W / 2 + 16, 214); }
-  else { c.moveTo(W / 2 - 10, 218); c.lineTo(W / 2 + 10, 218); }
-  c.stroke();
+  if (mouth === 'smile') { c.moveTo(W / 2 - 16, 214); c.quadraticCurveTo(W / 2, 226, W / 2 + 16, 214); c.stroke(); }
+  else if (mouth === 'open' || mouth === 'mid') {
+    // a little open mouth, talking
+    const h = mouth === 'open' ? 16 : 9;
+    c.fillStyle = '#7a2a3a'; c.beginPath(); c.ellipse(W / 2, 216, 14, h, 0, 0, Math.PI * 2); c.fill();
+    c.fillStyle = '#e8828e'; c.beginPath(); c.ellipse(W / 2, 216 + h * 0.45, 9, h * 0.4, 0, 0, Math.PI * 2); c.fill();
+  } else { c.moveTo(W / 2 - 10, 218); c.lineTo(W / 2 + 10, 218); c.stroke(); }
   const tex = new THREE.CanvasTexture(cv);
   tex.colorSpace = THREE.SRGBColorSpace;
   tex.anisotropy = 4;
@@ -115,7 +130,86 @@ export function faceTexture({ eye = 0x8a5ad8, brow = 0x8a6a3a, blush = 0xff8aa0,
 // The face sits on a patch of sphere just outside the head.
 export function face(group, headR, y, opts) {
   const geo = new THREE.SphereGeometry(headR * 1.012, 48, 24, Math.PI / 2 - 0.9, 1.8, Math.PI / 2 - 0.42, 0.95);
-  return tadd(group, geo, tmat(0xffffff, { map: faceTexture(opts), soft: true }), 0, y, 0);
+  const faces = {
+    rest: faceTexture(opts),
+    blink: faceTexture({ ...opts, closed: true }),
+    talkA: faceTexture({ ...opts, mouth: 'open' }),
+    talkB: faceTexture({ ...opts, mouth: 'mid' }),
+  };
+  const m = tadd(group, geo, tmat(0xffffff, { map: faces.rest, soft: true }), 0, y, 0);
+  m.userData.faces = faces;
+  return m;
+}
+
+// Pleats: ripple a lathe's radius around its axis, more toward the hem.
+export function pleat(geo, count, yTop, yBottom, depth = 0.05) {
+  const p = geo.attributes.position;
+  for (let i = 0; i < p.count; i++) {
+    const x = p.getX(i), y = p.getY(i), z = p.getZ(i);
+    const r = Math.hypot(x, z); if (r < 1e-4) continue;
+    const a = Math.atan2(x, z);
+    const w = Math.max(0, Math.min(1, (yTop - y) / (yTop - yBottom)));
+    const tri = 1 - Math.abs(((a * count / Math.PI) % 2 + 2) % 2 - 1) * 2; // -1..1 zigzag
+    const f = 1 + depth * w * (tri * 0.5 + 0.5);
+    p.setX(i, x * f); p.setZ(i, z * f);
+  }
+  geo.computeVertexNormals();
+  return geo;
+}
+
+// ---------------------------------------------------------------
+// The rig: blinking, talking, waving, kneeling, breathing and a little
+// springy follow-through. The stage calls rig.update(dt) every frame.
+// parts: { face, armR, armL, bust, hips, body, legs: { L: {thigh, shin}, R: {...} }, legLen }
+// ---------------------------------------------------------------
+export function makeRig(parts) {
+  const st = { t: 0, nextBlink: 1 + Math.random() * 2, blinkEnd: 0, talkUntil: 0, waveStart: -9, waveEnd: -9, kneel: 0, kneelTo: 0, lastY: null, vel: 0, jig: 0, jigV: 0 };
+  const faces = parts.face && parts.face.userData.faces;
+  const setFace = tex => { if (faces && parts.face.material.map !== tex) { parts.face.material.map = tex; parts.face.material.needsUpdate = true; } };
+  const ease = x => x < 0 ? 0 : x > 1 ? 1 : x * x * (3 - 2 * x);
+  return {
+    talk(seconds = 1.6) { st.talkUntil = st.t + seconds; },
+    wave(seconds = 1.8) { st.waveStart = st.t; st.waveEnd = st.t + seconds; },
+    kneel(on = true) { st.kneelTo = on ? 1 : 0; },
+    update(dt, worldY = 0) {
+      st.t += dt;
+      // blink every few seconds; talk by flicking the mouth
+      if (st.t > st.nextBlink) { st.blinkEnd = st.t + 0.13; st.nextBlink = st.t + 2.2 + Math.random() * 3.2; }
+      if (faces) {
+        if (st.t < st.blinkEnd) setFace(faces.blink);
+        else if (st.t < st.talkUntil) setFace(Math.floor(st.t * 9) % 3 === 0 ? faces.rest : Math.floor(st.t * 9) % 3 === 1 ? faces.talkA : faces.talkB);
+        else setFace(faces.rest);
+      }
+      // wave with the right arm: up, a few waggles, back down
+      if (parts.armR) {
+        const w = st.t < st.waveEnd ? ease((st.t - st.waveStart) / 0.3) * ease((st.waveEnd - st.t) / 0.3) : 0;
+        parts.armR.rotation.z = parts.armR.userData.rest + w * (2.05 + Math.sin(st.t * 11) * 0.3);
+      }
+      // breathing
+      if (parts.bust) parts.bust.scale.y = 1 + Math.sin(st.t * 2.1) * 0.015;
+      // springy follow-through: the bust (and hips, gently) lag the body's bounce
+      if (st.lastY != null && dt > 0) {
+        const v = (worldY - st.lastY) / dt;
+        const acc = (v - st.vel) / dt; st.vel = v;
+        st.jigV += (-180 * st.jig - 11 * st.jigV - acc * 0.9) * dt;
+        st.jig += st.jigV * dt;
+        st.jig = Math.max(-0.025, Math.min(0.025, st.jig));
+      }
+      st.lastY = worldY;
+      if (parts.bust) parts.bust.position.y = parts.bust.userData.restY + st.jig;
+      if (parts.hips) parts.hips.rotation.z = Math.sin(st.t * 1.3) * 0.02 + st.jig * 0.8;
+      // kneel on the right knee
+      st.kneel += (st.kneelTo - st.kneel) * Math.min(1, dt * 5);
+      const k = ease(st.kneel);
+      if (parts.legs) {
+        const { L, R } = parts.legs;
+        L.thigh.rotation.x = -1.45 * k; L.shin.rotation.x = 1.45 * k;
+        R.thigh.rotation.x = 0.15 * k; R.shin.rotation.x = 1.6 * k;
+        if (parts.body) parts.body.position.y = -(parts.legLen * 0.47) * k;
+        for (const leg of [L, R]) { if (leg.root.userData.restY == null) leg.root.userData.restY = leg.root.position.y; leg.root.position.y = leg.root.userData.restY - parts.legLen * 0.47 * k; }
+      }
+    },
+  };
 }
 
 // A smooth body from a side profile [radius, height] (a lathe), so waists and

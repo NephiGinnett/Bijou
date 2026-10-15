@@ -8,7 +8,7 @@
 
 import * as THREE from 'three';
 import { GLTFLoader } from '../vendor/GLTFLoader.js';
-import { tmat, tadd, SS, SC, ST, outline, face, lathe } from './toon.js';
+import { tmat, tadd, SS, SC, ST, outline, face, lathe, pleat, makeRig } from './toon.js';
 
 const gltfLoader = new GLTFLoader();
 let manifestPromise = null;
@@ -202,7 +202,7 @@ export const TOON_FIGURES = {
   curvy: { hr: 0.31, hy: 1.2, shoulderY: 0.92, bustY: 0.8, waistY: 0.63, hipY: 0.5, hemY: 0.33, waistR: 0.112, hipR: 0.27, bustR: 0.115, shoulderX: 0.19 },
   tall:  { hr: 0.255, hy: 1.6, shoulderY: 1.3, bustY: 1.17, waistY: 0.98, hipY: 0.82, hemY: 0.62, waistR: 0.105, hipR: 0.25, bustR: 0.11, shoulderX: 0.18 },
 };
-export let TOON_FIGURE = 'curvy';
+export let TOON_FIGURE = 'tall';
 
 function toonPlayer(v, opts = {}) {
   const scar = !!v && v.endsWith('_scar'); if (scar) v = v.slice(0, -5);
@@ -211,96 +211,112 @@ function toonPlayer(v, opts = {}) {
   const F = TOON_FIGURES[opts.figure || TOON_FIGURE];
   const { hr, hy, shoulderY, bustY, waistY, hipY, hemY } = F;
   const waistR = fem ? F.waistR : F.waistR + 0.05, hipR = fem ? F.hipR : F.hipR - 0.04;
-  const k = hr / 0.32; // hair and face scale with the head
+  const k = hr / 0.32;
   const g = new THREE.Group();
+  const body = new THREE.Group(); body.name = 'body'; g.add(body);
   const SKIN = 0xf6dcc8, HAIR = 0xf2d27a, GREEN = 0x1f4a34, DEEP = 0x143224, GOLD = 0xd8b45a, STOCK = 0x1b2620, BOOT = 0x2a1e18;
-  const skin = tmat(SKIN, { soft: true }), hair = tmat(HAIR), green = tmat(GREEN), deep = tmat(DEEP), gold = tmat(GOLD);
-  const smooth = tmat(GREEN, { noOutline: true });
+  const skin = tmat(SKIN, { soft: true }), hair = tmat(HAIR), green = tmat(GREEN), deep = tmat(DEEP), gold = tmat(GOLD), stockM = tmat(STOCK), bootM = tmat(BOOT);
 
-  // legs: shapely thighs, knees, calves; thigh-high stockings with a gold band
-  const L = hipY + 0.02;
-  const leg = [[0, 0], [0.04, 0.0], [0.046, 0.08 * L], [0.064, 0.3 * L], [0.052, 0.5 * L], [0.085, 0.78 * L], [0.098, 0.95 * L], [0, L]];
-  const stock = [[0, 0], [0.044, 0.0], [0.05, 0.08 * L], [0.068, 0.3 * L], [0.056, 0.5 * L], [0.074, 0.6 * L], [0, 0.6 * L]];
-  const boot = [[0, 0], [0.058, 0.0], [0.06, 0.05 * L], [0.056, 0.2 * L], [0, 0.2 * L]];
+  // --- legs: hip pivot > thigh > knee pivot > shin > boot -------------------------------
+  const legLen = hipY, tl = legLen * 0.5, sl = legLen * 0.5;
+  const thighP = [[0, -tl], [0.058, -tl], [0.068, -tl * 0.6], [0.088, -tl * 0.15], [0.094, 0], [0, 0]];
+  const shinP = [[0, -sl], [0.04, -sl], [0.044, -sl * 0.85], [0.062, -sl * 0.45], [0.055, -sl * 0.05], [0.057, 0], [0, 0]];
+  const legs = {};
   for (const sx of [-1, 1]) {
-    tadd(g, lathe(leg, 24), skin, sx * 0.095, 0, 0);
-    tadd(g, lathe(stock, 24), tmat(STOCK), sx * 0.095, 0.002, 0);
-    tadd(g, ST(0.075, 0.011), gold, sx * 0.095, 0.6 * L, 0, Math.PI / 2);
-    tadd(g, lathe(boot, 24), tmat(BOOT), sx * 0.095, 0, 0.005);
+    const root = new THREE.Group(); root.position.set(sx * 0.088, hipY, 0); g.add(root);
+    const thigh = new THREE.Group(); root.add(thigh);
+    tadd(thigh, lathe(thighP, 28), skin, 0, 0, 0);
+    tadd(thigh, lathe(thighP.filter(([, y]) => y <= -tl * 0.78).concat([[0.068, -tl * 0.78], [0, -tl * 0.78]]).map(([r, y]) => [r && r + 0.004, y]), 28), stockM, 0, 0, 0);
+    tadd(thigh, ST(0.072, 0.011), gold, 0, -tl * 0.78, 0, Math.PI / 2);
+    const shin = new THREE.Group(); shin.position.y = -tl; thigh.add(shin);
+    tadd(shin, SS(0.06, 20, 16), stockM, 0, 0, 0);                                     // knee
+    tadd(shin, lathe(shinP.map(([r, y]) => [r && r + 0.004, y]), 28), stockM, 0, 0, 0);
+    tadd(shin, lathe([[0, -sl], [0.056, -sl], [0.058, -sl * 0.8], [0.06, -sl * 0.62], [0, -sl * 0.62]], 28), bootM, 0, 0, 0); // boot shaft
+    tadd(shin, ST(0.06, 0.009), gold, 0, -sl * 0.62, 0, Math.PI / 2);
+    tadd(shin, SS(0.05, 20, 14), bootM, 0, -sl + 0.01, 0.045).scale.set(0.95, 0.62, 1.75);   // foot, pointing forward
+    tadd(shin, SS(0.03, 12, 10), bootM, 0, -sl - 0.005, -0.03);                           // heel
+    legs[sx < 0 ? 'L' : 'R'] = { root, thigh, shin };
   }
-  // upper body skin (shoulders and collarbone show above the neckline)
-  tadd(g, lathe([[0, bustY - 0.06], [0.13, bustY - 0.06], [0.15, bustY], [F.shoulderX + 0.02, shoulderY - 0.02], [0.09, shoulderY + 0.04], [0, shoulderY + 0.06]], 32), skin, 0, 0, 0);
-  // the bodice: cinched waist up to a neckline across the bust
+
+  // --- torso ---------------------------------------------------------------------------
+  tadd(body, lathe([[0, bustY - 0.06], [0.13, bustY - 0.06], [0.15, bustY], [F.shoulderX + 0.02, shoulderY - 0.02], [0.09, shoulderY + 0.04], [0, shoulderY + 0.06]], 32), skin, 0, 0, 0);
   const neckY = bustY + 0.05;
-  tadd(g, lathe([[0, waistY - 0.06], [waistR, waistY - 0.06], [waistR, waistY + 0.04], [waistR + 0.04, bustY - 0.08], [0.165, bustY], [0.16, neckY], [0, neckY]], 40), green, 0, 0, 0);
+  tadd(body, lathe([[0, waistY - 0.06], [waistR, waistY - 0.06], [waistR, waistY + 0.04], [waistR + 0.04, bustY - 0.08], [0.165, bustY], [0.16, neckY], [0, neckY]], 40), green, 0, 0, 0);
+  const bust = new THREE.Group(); bust.userData.restY = 0; body.add(bust);
   if (fem) {
-    const bust = smooth;
-    for (const sx of [-1, 1]) tadd(g, SS(F.bustR), bust, sx * 0.075, bustY + 0.005, 0.085).scale.set(1, 0.93, 0.95);
-    tadd(g, ST(0.158, 0.013), gold, 0, neckY - 0.005, 0.01, Math.PI / 2 - 0.08); // neckline trim
+    const bm = tmat(GREEN, { noOutline: true });
+    for (const sx of [-1, 1]) tadd(bust, SS(F.bustR), bm, sx * 0.075, bustY + 0.005, 0.085).scale.set(1, 0.93, 0.95);
+    tadd(bust, ST(0.158, 0.013), gold, 0, neckY - 0.005, 0.01, Math.PI / 2 - 0.08);
   }
-  // corset band: deep green with gold edges and lacing
-  tadd(g, lathe([[0, waistY - 0.07], [waistR + 0.012, waistY - 0.07], [waistR + 0.012, waistY + 0.08], [0, waistY + 0.08]], 40), deep, 0, 0, 0);
-  for (const y of [waistY - 0.07, waistY + 0.08]) tadd(g, ST(waistR + 0.013, 0.008), gold, 0, y, 0, Math.PI / 2);
+  tadd(body, lathe([[0, waistY - 0.07], [waistR + 0.012, waistY - 0.07], [waistR + 0.012, waistY + 0.08], [0, waistY + 0.08]], 40), deep, 0, 0, 0);
+  for (const y of [waistY - 0.07, waistY + 0.08]) tadd(body, ST(waistR + 0.013, 0.008), gold, 0, y, 0, Math.PI / 2);
+  const lace = tmat(GOLD, { noOutline: true });
   for (let i = 0; i < 3; i++) {
     const y = waistY - 0.04 + i * 0.045;
-    tadd(g, new THREE.BoxGeometry(0.06, 0.008, 0.008), tmat(GOLD, { noOutline: true }), 0, y, waistR + 0.012, 0, 0, 0.5);
-    tadd(g, new THREE.BoxGeometry(0.06, 0.008, 0.008), tmat(GOLD, { noOutline: true }), 0, y, waistR + 0.012, 0, 0, -0.5);
+    tadd(body, new THREE.BoxGeometry(0.06, 0.008, 0.008), lace, 0, y, waistR + 0.012, 0, 0, 0.5);
+    tadd(body, new THREE.BoxGeometry(0.06, 0.008, 0.008), lace, 0, y, waistR + 0.012, 0, 0, -0.5);
   }
-  // skirt: out over the hips, then a short flare
-  tadd(g, lathe([[0, waistY - 0.06], [waistR + 0.01, waistY - 0.06], [hipR * 0.8, (waistY + hipY) / 2 - 0.02], [hipR, hipY], [hipR * 1.05, (hipY + hemY) / 2], [hipR * 1.1, hemY], [0, hemY]], 40), green, 0, 0, 0);
-  tadd(g, ST(hipR * 1.1, 0.014), gold, 0, hemY + 0.004, 0, Math.PI / 2);
-  // a short cape from the shoulders
+  // skirt: high-waisted, hugging the hips, a short pleated flare
+  const hips = new THREE.Group(); hips.position.y = waistY; body.add(hips);
+  const skirtPts = [[0, waistY - 0.06], [waistR + 0.01, waistY - 0.06], [hipR * 0.82, (waistY + hipY) / 2 - 0.03], [hipR, hipY], [hipR * 1.04, (hipY + hemY) / 2], [hipR * 1.12, hemY], [0, hemY]].map(([r, y]) => [r, y - waistY]);
+  tadd(hips, pleat(lathe(skirtPts, 64), 14, hipY - waistY, hemY - waistY, 0.08), green, 0, 0, 0);
+  tadd(hips, ST(hipR * 1.13, 0.013), gold, 0, hemY - waistY + 0.004, 0, Math.PI / 2);
+  // cape
   const capeH = shoulderY - hemY - 0.05;
-  const cape = new THREE.CylinderGeometry(F.shoulderX + 0.02, hipR * 1.3, capeH, 32, 1, true, Math.PI / 2, Math.PI);
   const capeM = tmat(DEEP); capeM.side = THREE.DoubleSide;
-  tadd(g, cape, capeM, 0, shoulderY - capeH / 2, -0.03);
-  // off-shoulder puffs, bare upper arms, detached sleeves with gold cuffs
+  tadd(body, new THREE.CylinderGeometry(F.shoulderX + 0.02, hipR * 1.3, capeH, 32, 1, true, Math.PI / 2, Math.PI), capeM, 0, shoulderY - capeH / 2, -0.03);
+
+  // --- arms on shoulder pivots ------------------------------------------------------------
   const armLen = shoulderY - hipY + 0.05;
+  const arms = {};
   for (const sx of [-1, 1]) {
-    tadd(g, SS(0.07), green, sx * (F.shoulderX + 0.03), shoulderY - 0.05, 0).scale.set(1, 0.8, 1);
-    const upper = tadd(g, SC(0.045, armLen * 0.36), skin, sx * (F.shoulderX + 0.08), shoulderY - armLen * 0.3, 0, 0, 0, sx * 0.32);
-    upper.name = sx < 0 ? 'armL' : 'armR';
-    tadd(g, SC(0.055, armLen * 0.3), green, sx * (F.shoulderX + 0.17), shoulderY - armLen * 0.68, 0, 0, 0, sx * 0.26);
-    tadd(g, ST(0.055, 0.012), gold, sx * (F.shoulderX + 0.2), shoulderY - armLen * 0.84, 0, Math.PI / 2, 0, sx * 0.26);
-    tadd(g, SS(0.055), skin, sx * (F.shoulderX + 0.23), shoulderY - armLen * 0.95, 0);
+    const arm = new THREE.Group();
+    arm.position.set(sx * (F.shoulderX + 0.04), shoulderY - 0.04, 0);
+    arm.userData.rest = sx * 0.32; arm.rotation.z = arm.userData.rest;
+    arm.name = sx < 0 ? 'armL' : 'armR';
+    body.add(arm);
+    tadd(arm, SS(0.07), green, 0, -0.01, 0).scale.set(1, 0.8, 1);
+    tadd(arm, SC(0.045, armLen * 0.36), skin, 0, -armLen * 0.28, 0);
+    tadd(arm, SC(0.055, armLen * 0.3), green, 0, -armLen * 0.66, 0);
+    tadd(arm, ST(0.055, 0.012), gold, 0, -armLen * 0.83, 0, Math.PI / 2);
+    tadd(arm, SS(0.055), skin, 0, -armLen * 0.93, 0);
+    if (sx < 0) tadd(arm, ST(0.06, 0.016), tmat(0xc86cff, { emissive: 0xc86cff, ei: 1.6 }), 0, -armLen * 0.88, 0.02, Math.PI / 2);
+    else { const orb = tadd(arm, SS(0.06), tmat(0xc86cff, { emissive: 0xc86cff, ei: 2 }), 0.05, -armLen * 0.98, 0.07); orb.name = 'orb'; }
+    arms[sx < 0 ? 'L' : 'R'] = arm;
   }
-  // neck and head
-  tadd(g, SC(0.045, 0.05), skin, 0, shoulderY + 0.06, 0);
-  const head = tadd(g, SS(hr), skin, 0, hy, 0); head.name = 'head';
-  for (const sx of [-1, 1]) tadd(g, SS(0.06 * k), skin, sx * hr * 0.97, hy - 0.02, 0).scale.set(0.6, 1, 0.8);
-  face(g, hr, hy, { eye: 0x8a5ad8, brow: 0xc8a050, blush: 0xff8aa0 });
-  // hair
-  tadd(g, SS(hr * 1.08), hair, 0, hy + 0.05 * k, -0.035 * k).scale.set(1, 0.95, 1);
+
+  // --- head ---------------------------------------------------------------------------
+  tadd(body, SC(0.045, 0.05), skin, 0, shoulderY + 0.06, 0);
+  const head = tadd(body, SS(hr), skin, 0, hy, 0); head.name = 'head';
+  for (const sx of [-1, 1]) tadd(body, SS(0.06 * k), skin, sx * hr * 0.97, hy - 0.02, 0).scale.set(0.6, 1, 0.8);
+  const faceMesh = face(body, hr, hy, { eye: 0x8a5ad8, brow: 0xc8a050, blush: 0xff8aa0 });
+  tadd(body, SS(hr * 1.08), hair, 0, hy + 0.05 * k, -0.035 * k).scale.set(1, 0.95, 1);
   [-0.22, -0.13, -0.045, 0.045, 0.13, 0.22].forEach((x0, i) => {
     const x = x0 * k, R = hr * 1.08;
-    const lock = tadd(g, SS(0.085 * k), hair, x, hy + (0.16 - Math.abs(x0) * 0.35) * k, Math.sqrt(R * R - x * x) - 0.06 * k, -0.25, 0, -x0 * 1.6 + (i % 2 ? 0.08 : -0.08));
-    lock.scale.set(0.62, 1.45, 0.5);
+    tadd(body, SS(0.085 * k), hair, x, hy + (0.16 - Math.abs(x0) * 0.35) * k, Math.sqrt(R * R - x * x) - 0.06 * k, -0.25, 0, -x0 * 1.6 + (i % 2 ? 0.08 : -0.08)).scale.set(0.62, 1.45, 0.5);
   });
   const sideLen = fem ? (hy - bustY) * 0.9 : 0.18 * k;
-  for (const sx of [-1, 1]) tadd(g, SC(0.058 * k, sideLen), hair, sx * hr * 0.92, hy - sideLen * 0.45, 0.07 * k, 0, 0, sx * 0.08);
+  for (const sx of [-1, 1]) tadd(body, SC(0.058 * k, sideLen), hair, sx * hr * 0.92, hy - sideLen * 0.45, 0.07 * k, 0, 0, sx * 0.08);
   if (fem) {
     const len = hy - waistY;
-    tadd(g, SC(0.2 * k, len * 0.8), hair, 0, hy - len * 0.55, -0.2 * k).scale.set(1.25, 1, 0.6);
-    for (const [x, rz] of [[-0.16, 0.25], [0, 0], [0.16, -0.25]]) tadd(g, SC(0.08 * k, 0.18), hair, x * k, waistY + 0.02, -0.22 * k, 0.2, 0, rz);
+    tadd(body, SC(0.2 * k, len * 0.8), hair, 0, hy - len * 0.55, -0.2 * k).scale.set(1.25, 1, 0.6);
+    for (const [x, rz] of [[-0.16, 0.25], [0, 0], [0.16, -0.25]]) tadd(body, SC(0.08 * k, 0.18), hair, x * k, waistY + 0.02, -0.22 * k, 0.2, 0, rz);
   } else if (v === 'they') {
-    tadd(g, SC(0.19 * k, 0.2), hair, 0, hy - 0.18 * k, -0.2 * k).scale.set(1.25, 1, 0.6);
+    tadd(body, SC(0.19 * k, 0.2), hair, 0, hy - 0.18 * k, -0.2 * k).scale.set(1.25, 1, 0.6);
   }
-  tadd(g, ST(0.24 * k, 0.013), tmat(0xfff2c0, { noOutline: true }), 0, hy + 0.2 * k, 0.04, Math.PI / 2 - 0.35);
-  // the mark (left hand) and the hex-light (right hand)
-  const handY = shoulderY - armLen * 0.95, handX = F.shoulderX + 0.23;
-  tadd(g, ST(0.06, 0.016), tmat(0xc86cff, { emissive: 0xc86cff, ei: 1.6 }), -handX, handY + 0.04, 0.02, Math.PI / 2);
-  const orb = tadd(g, SS(0.06), tmat(0xc86cff, { emissive: 0xc86cff, ei: 2 }), handX + 0.06, handY + 0.12, 0.08); orb.name = 'orb';
+  tadd(body, ST(0.24 * k, 0.013), tmat(0xfff2c0, { noOutline: true }), 0, hy + 0.2 * k, 0.04, Math.PI / 2 - 0.35);
   if (mantle) {
-    horns(g, 0x2a1a34, hy + 0.3 * k, 0.15 * k, 0.3 * k);
-    wings(g, 0x1a2a22, shoulderY + 0.05, 0.62);
+    horns(body, 0x2a1a34, hy + 0.3 * k, 0.15 * k, 0.3 * k);
+    wings(body, 0x1a2a22, shoulderY + 0.05, 0.62);
     const tail = new THREE.Group();
     tadd(tail, SC(0.04, 0.55), tmat(DEEP), 0, 0, 0, 0, 0, 0.9);
     tadd(tail, new THREE.ConeGeometry(0.08, 0.14, 12), tmat(0xc86cff, { emissive: 0xc86cff, ei: 1.2 }), -0.3, -0.2, 0, 0, 0, 2.4);
-    tail.position.set(0, hipY - 0.05, -0.3); tail.rotation.x = 0.5; g.add(tail);
+    tail.position.set(0, hipY - 0.05, -0.3); tail.rotation.x = 0.5; body.add(tail);
   }
-  if (scar) tadd(g, new THREE.BoxGeometry(0.03, 0.24 * k, 0.012), tmat(0xff5a3a, { emissive: 0xff5a3a, ei: 1.8 }), 0.1 * k, hy, hr + 0.005, 0.1, 0, -0.5);
+  if (scar) tadd(body, new THREE.BoxGeometry(0.03, 0.24 * k, 0.012), tmat(0xff5a3a, { emissive: 0xff5a3a, ei: 1.8 }), 0.1 * k, hy, hr + 0.005, 0.1, 0, -0.5);
   outline(g);
   g.userData.isChibi = true;
+  g.userData.rig = makeRig({ face: faceMesh, armR: arms.R, armL: arms.L, bust, hips, body, legs, legLen });
   return g;
 }
 export function buildToonZoe(variant, figure) { return toonPlayer(variant, { figure }); }
