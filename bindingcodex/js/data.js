@@ -1041,6 +1041,16 @@ export const RECIPES = {
   frostheart_draught:   { makes: 'frostheart_draught',   needs: ['wyrm_frost', 'drake_scale'] },
   beast_bait:        { makes: 'beast_bait',        needs: ['*'], gold: 20 }, // any one reagent + gold
 };
+// A clue for each recipe you haven't found: what it does, and one of its reagents.
+export const RECIPE_HINTS = {
+  yielding_draught: 'Something that numbs, and something that burns. Starts with silk venom.',
+  truth_draught: 'Something soft from the stag, and something still warm. Starts with antler velvet.',
+  wardens_tonic: 'Something harder than iron, and something soft from the stag. Starts with drake scale.',
+  blackblood_elixir: 'Three things: scale, ash and salt. Dangerous.',
+  sleepwalkers_philter: 'Something that drifts at night, and something that numbs. Starts with moth dust.',
+  frostheart_draught: 'Something cold as a wyrm\'s breath, and something harder than iron. Starts with wyrm frost.',
+  beast_bait: 'Any single reagent, and a little gold.',
+};
 export const RECIPE_DISCOVERY = 0.6; // unknown-but-valid combos discover the recipe this often
 
 export function recipeFor(ids) {

@@ -3,7 +3,7 @@
 // ============================================================
 
 import { RANKS, RANK_STYLE, HEROES, SKILLS, STATUSES, ITEMS, BIOMES, GATE_MODIFIERS, AFFIXES, xpToNext, heroStatsAt, gearScore, shopStock, GATE_GP, recruitOffers, reforgeCost, reforgeGear, ROLE_INFO, heroDesc,
-  TAROT, TRIBES, FACTIONS, LOCATIONS, LAIR_POWER, ENEMIES, GATE_ROOMS, CAPTIVE_TRAITS, BEAST_FAMILIES, BEAST_TRAITS, REAGENTS, RECIPES, PACTS, WARDEN_STYLES } from './data.js';
+  TAROT, TRIBES, FACTIONS, LOCATIONS, LAIR_POWER, ENEMIES, GATE_ROOMS, CAPTIVE_TRAITS, BEAST_FAMILIES, BEAST_TRAITS, REAGENTS, RECIPES, RECIPE_HINTS, PACTS, WARDEN_STYLES } from './data.js';
 import * as ST from './state.js';
 import { Combat, SEAL_MP } from './combat.js';
 import { Stage, makePortrait } from './scene3d.js';
@@ -784,13 +784,22 @@ function worldMap() {
         : `<button class="btn disabled">${esc(open.why)}</button>`}
     </div>`;
   };
+  // Each region folds up; which ones are open is remembered on this device.
+  let openSet = null;
+  try { openSet = JSON.parse(localStorage.getItem('bc_map_open') || 'null'); } catch (e) { openSet = null; }
   const sections = groups.map(gr => {
     const locs = ids.filter(id => LOCATIONS[id].faction === gr.id && (!LOCATIONS[id].lair || !ST.locationOpen(S, id).done));
     if (!locs.length) return '';
-    return `<div class="faction-section">
-      <div class="row spread"><h3 style="color:${gr.color}">${gr.icon} ${esc(gr.name)}</h3>${gr.id ? factionBar(gr.id) : ''}</div>
+    const key = gr.id || 'wild';
+    const ready = locs.filter(id => ST.locationOpen(S, id).ok);
+    const lairOpen = locs.some(id => LOCATIONS[id].lair && ST.locationOpen(S, id).ok);
+    const held = locs.some(id => ST.pendingLieutenant(S, id));
+    const isOpen = openSet ? openSet.includes(key) : key === 'wild';
+    const dom = gr.id && ST.dominated(S, gr.id);
+    return `<details class="faction-section" data-key="${key}" ${isOpen ? 'open' : ''}>
+      <summary class="row spread"><h3 style="color:${gr.color}">${gr.icon} ${esc(gr.name)} <small class="muted region-count">${ready.length}/${locs.length} open${dom ? ' · dominated' : ''}</small>${lairOpen ? ' <span class="region-flag lair">♛ lair open</span>' : ''}${held ? ' <span class="region-flag">★ held</span>' : ''}</h3>${gr.id ? factionBar(gr.id) : ''}</summary>
       <div class="gate-grid">${locs.map(card).join('')}</div>
-    </div>`;
+    </details>`;
   }).join('');
   const echo = S.cleared ? `<div class="faction-section"><h3>☠ Beyond the Heart</h3><div class="gate-grid"><div class="gate-card lair"><div class="gate-head"><b>Echoes of the Heart</b></div><p class="muted sm-text">The Heart remembers. Deeper every time.</p><button class="btn primary" id="echo-go">Descend</button></div></div></div>` : '';
   const om = S.omen && S.omen.day === S.day ? TAROT[S.omen.card] : null;
@@ -806,6 +815,10 @@ function worldMap() {
     </div>
   `);
   $('#m-back').onclick = () => hub();
+  document.querySelectorAll('details.faction-section').forEach(d => d.ontoggle = () => {
+    const keys = [...document.querySelectorAll('details.faction-section[open]')].map(x => x.dataset.key);
+    try { localStorage.setItem('bc_map_open', JSON.stringify(keys)); } catch (e) { /* private mode */ }
+  });
   const eg = $('#echo-go'); if (eg) eg.onclick = () => { AU.sfx('ui'); partySelect(ST.makeEchoRift(S)); };
   document.querySelectorAll('.raid').forEach(b => b.onclick = async () => {
     const locId = b.dataset.id;
@@ -1581,6 +1594,11 @@ function undercroft() {
     <div class="panel map-panel">
       <div class="row spread"><h2>⛓ The Undercroft</h2><button class="btn ghost" id="u-back">← Codex</button></div>
       <p class="muted">Old cells beneath the library. Wardens burn the brand down a little every day; without one it creeps back, and defiant captives look for a way out. Visit each captive once a day. At brand 0 they're released — and choose. ${fear ? '<b class="danger">Your Corruption terrifies them: resolve breaks faster, regard falls harder.</b>' : ''}</p>
+      ${caps.some(c => c.visitedDay !== S.day && !c.releasePending) ? `<div class="visit-row all-visit">
+        <b class="sm-text">Visit everyone:</b>
+        <select id="u-allkind">${Object.entries(ST.VISITS).map(([k, v]) => `<option value="${k}">${v.icon} ${v.name}${k === 'bargain' ? ` (${ST.bargainCost(S)}g each)` : ''}</option>`).join('')}</select>
+        <button class="btn" id="u-all" title="Give every captive you haven't visited today the same visit. Captives with a scene waiting, or who can't take this visit, are skipped.">Visit all</button>
+      </div>` : ''}
       ${caps.length ? `<div class="cells scroll-list">${cards}</div>` : '<p class="muted">The cells are empty. Seal someone humanoid in a rift (⛓) to bring them here.</p>'}
       ${S.released.length ? `<p class="muted sm-text">Released: ${S.released.slice(-6).map(r => `${esc(r.name)} (${r.fate})`).join(', ')}</p>` : ''}
     </div>
@@ -1596,6 +1614,38 @@ function undercroft() {
     if (ST.useTonic(S, b.dataset.cap)) { AU.sfx('heal'); toast('Warden\'s Tonic: +25% Reclamation for 3 days.'); ST.save(S); undercroft(); }
   });
   document.querySelectorAll('.visit:not(.disabled)').forEach(b => b.onclick = () => visitFlow(b.dataset.cap, b.dataset.k));
+  const all = $('#u-all');
+  if (all) all.onclick = () => visitAll($('#u-allkind').value);
+}
+
+// One visit, applied to every captive you haven't seen today. Named captives with a
+// hand-written scene waiting are left for you to visit yourself.
+async function visitAll(kind) {
+  const lines = [], skipped = [];
+  let spent = 0;
+  for (const cap of S.captives.slice()) {
+    if (cap.visitedDay === S.day || cap.releasePending) continue;
+    if (pickCellEvent(S, cap)) { skipped.push(`${cap.name} (has a scene waiting)`); continue; }
+    if (kind === 'testimony' && !ST.testimonyWitness(S, cap)) { skipped.push(`${cap.name} (no witness)`); continue; }
+    if (kind === 'bargain' && S.gold < ST.bargainCost(S)) { skipped.push(`${cap.name} (not enough gold)`); continue; }
+    const before = { brand: cap.brand, resolve: cap.resolve, regard: cap.regard };
+    const res = ST.visitCaptive(S, cap.id, kind, {});
+    if (!res.ok) { skipped.push(cap.name); continue; }
+    if (res.cost) spent += res.cost;
+    const d = ['brand', 'resolve', 'regard'].map(k => { const n = cap[k] - before[k]; return n ? `${k} ${n > 0 ? '+' : ''}${n}` : ''; }).filter(Boolean).join(', ');
+    const secret = kind === 'interrogate' ? res.text.find(t => t.includes('gives it up')) : null;
+    lines.push(`${cap.name}: ${d || 'no change'}${res.outburst ? ' — lashed out' : ''}${cap.releasePending ? ' — the brand is gone!' : ''}${secret ? `. ${secret}` : ''}`);
+  }
+  AU.sfx('ui');
+  screen('', '');
+  await playEvent({ id: 'visit', steps: [
+    { s: 'narr', t: lines.length ? `You make the rounds of the cells: ${ST.VISITS[kind].name.toLowerCase()} for everyone.` : 'There is no one left to visit today.' },
+    ...lines.map(t => ({ s: 'narr', t })),
+    ...(skipped.length ? [{ s: 'narr', t: `Skipped: ${skipped.join(', ')}.` }] : []),
+  ] });
+  if (spent) toast(`−${spent} gold`, 'gold');
+  ST.save(S);
+  undercroft();
 }
 
 function pickLine(pool) {
@@ -1869,6 +1919,7 @@ function bindBower() {
 
 let cauldron = [];
 
+const unknownRecipes = () => Object.keys(RECIPES).filter(rid => !S.recipes.includes(rid));
 function alchemy() {
   const have = id => (S.reagents[id] || 0) - cauldron.filter(x => x === id).length;
   const reagentBtns = Object.entries(REAGENTS).map(([id, r]) =>
@@ -1893,6 +1944,8 @@ function alchemy() {
         </div>
         <div>
           <h3>Recipes in the Codex</h3>${known}
+          ${unknownRecipes().length ? `<h3>Still to discover</h3>${unknownRecipes().map(rid => `<div class="shop-row"><div><b>??? ${esc(ITEMS[RECIPES[rid].makes].name)}</b><p class="muted sm-text">${esc(RECIPE_HINTS[rid] || '')} ${esc(ITEMS[RECIPES[rid].makes].desc)}</p></div></div>`).join('')}
+          <p class="sm-text gold">${ST.packOn(S, 'rift') && TOWN.townOpen(S) ? 'Diane, the herb-wife on Larkspur Lane, can teach you any of these.' : ST.packOn(S, 'rift') ? 'Someone who knows herbs may turn up nearby soon.' : 'Brew what the clues suggest: the Codex writes it down when it works.'}</p>` : ''}
           <h3>Brewed</h3>
           ${brewed.length ? brewed.map(([id, n]) => `<div class="shop-row"><div><b>${ITEMS[id].name}</b> ×${n}<p class="muted sm-text">${esc(ITEMS[id].desc)}</p></div><button class="btn sm sell-p" data-id="${id}">sell ◈${ITEMS[id].sell}</button></div>`).join('') : '<p class="muted">Nothing brewed.</p>'}
         </div>
@@ -2383,6 +2436,8 @@ function townShop(id) {
       <h3>From the kitchen</h3>${['potion', 'ether'].map(it => `<div class="shop-row"><div><b>${ITEMS[it].name}</b> <small class="muted">×${S.inventory[it] || 0} · "Joanne's home remedy"</small></div><button class="btn tw-buyi ${S.gold >= TOWN.priceAt(S, id, ITEMS[it].price) ? '' : 'disabled'}" data-i="${it}">◈ ${TOWN.priceAt(S, id, ITEMS[it].price)}g</button></div>`).join('')}`;
   } else if (id === 'diane') {
     body = `<h3>Remedies</h3>${TOWN.dianeStock(S).map(it => `<div class="shop-row"><div><b>${ITEMS[it].name}</b> <small class="muted">×${S.inventory[it] || 0}</small><p class="muted">${ITEMS[it].desc}</p></div><button class="btn tw-buyi ${S.gold >= TOWN.priceAt(S, id, ITEMS[it].price) ? '' : 'disabled'}" data-i="${it}">◈ ${TOWN.priceAt(S, id, ITEMS[it].price)}g</button></div>`).join('')}
+      ${unknownRecipes().length ? `<h3>Recipe lessons</h3><p class="muted sm-text">"Watch my hands, Zoe. Then do it exactly like this." She teaches you a recipe and the Codex writes it down.</p>
+      ${unknownRecipes().map(rid => { const cost = TOWN.priceAt(S, id, 80); return `<div class="shop-row"><div><b>${esc(ITEMS[RECIPES[rid].makes].name)}</b><p class="muted sm-text">${esc(ITEMS[RECIPES[rid].makes].desc)}</p></div><button class="btn tw-learn ${S.gold >= cost ? '' : 'disabled'}" data-r="${rid}">learn ◈ ${cost}g</button></div>`; }).join('')}` : '<p class="sm-text gold">"You know everything I know now. Mostly." She winks.</p>'}
       <h3>Reagents</h3>${Object.entries(REAGENTS).map(([r, R]) => `<div class="shop-row"><div><b>${R.icon} ${R.name}</b> <small class="muted">×${S.reagents[r] || 0}</small></div><div class="row gap">
         <button class="btn sm tw-buyr ${S.gold >= TOWN.reagentBuy(S, r) ? '' : 'disabled'}" data-r="${r}">buy ◈ ${TOWN.reagentBuy(S, r)}g</button>
         <button class="btn sm tw-sellr ${(S.reagents[r] || 0) > 0 ? '' : 'disabled'}" data-r="${r}">sell ◈ ${TOWN.reagentSell(S, r)}g</button></div></div>`).join('')}`;
@@ -2420,6 +2475,12 @@ function townShop(id) {
     const r = b.dataset.r, price = TOWN.reagentBuy(S, r);
     if (S.gold < price) return;
     S.gold -= price; S.reagents[r] = (S.reagents[r] || 0) + 1; AU.sfx('coin'); again();
+  });
+  document.querySelectorAll('.tw-learn:not(.disabled)').forEach(b => b.onclick = () => {
+    const rid = b.dataset.r, cost = TOWN.priceAt(S, id, 80);
+    if (S.gold < cost || S.recipes.includes(rid)) return;
+    S.gold -= cost; S.recipes.push(rid); ST.addChronicle(S, `Diane taught you a recipe: ${ITEMS[RECIPES[rid].makes].name}.`);
+    AU.sfx('promo'); toast(`Recipe learned: ${ITEMS[RECIPES[rid].makes].name}`, 'gold'); again();
   });
   document.querySelectorAll('.tw-sellr:not(.disabled)').forEach(b => b.onclick = () => {
     const r = b.dataset.r; if (!(S.reagents[r] > 0)) return;
