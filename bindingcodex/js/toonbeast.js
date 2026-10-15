@@ -9,6 +9,7 @@
 import * as THREE from 'three';
 import { tmat, tadd, SS, SC, ST } from './toon.js';
 import { toonFigure } from './toonfig.js';
+import { ACCESSORIES as ACC } from './toonacc.js';
 
 const darker = (hex, f) => new THREE.Color(hex).multiplyScalar(f).getHex();
 const lighter = (hex, f) => new THREE.Color(hex).lerp(new THREE.Color(0xffffff), f).getHex();
@@ -204,7 +205,8 @@ function scalePatches(c, color) {
 // --- the adapter -----------------------------------------------------------------------
 const BUST = [0.8, 1.0, 1.15, 1.3];
 export function beastToon(spec) {
-  const male = !!spec.male;
+  const male = !!(spec.male || spec.facialHair);
+  const beast = !!(spec.armWings || spec.lowerBody || spec.ears || spec.tail || spec.wings || spec.antennae || spec.antlers);
   const serpent = spec.lowerBody === 'serpent';
   const harpy = !!spec.armWings;
   const skin = spec.skin ?? 0xf0d0b8, hair = spec.hair ?? 0x3a2a1a, main = spec.outfit ?? 0x5a3a2a;
@@ -223,6 +225,9 @@ export function beastToon(spec) {
     t.skirt = { style: 'long', hem: 0.66, trim: false };
     t.legs = { style: 'pants', color: spec.legColor ?? darker(main, 0.6), boots: 0x4a3424, bootHeight: 0.45 };
     t.sleeves = 'long';
+  } else if (style === 'dress') {
+    t.top = { style: 'corset', cut: 1.08 };
+    t.skirt = { style: 'long', hem: 0.1 };
   } else if (style === 'robe') {
     t.top = { style: 'corset', cut: 1.08 };
     t.skirt = { style: 'long', hem: serpent ? 0.66 : 0.12 };
@@ -230,6 +235,9 @@ export function beastToon(spec) {
     t.top = { style: 'corset', cut: 1.02 };
     t.skirt = { style: 'tasset', hem: 0.6, color: spec.scaleColor ?? main };
     t.colors.glove = spec.scaleColor ?? darker(skin, 0.6);
+  } else if (!beast) {
+    t.top = { style: 'corset', cut: 1.04 };
+    t.skirt = { style: 'pleated', hem: 0.5 };
   } else {
     t.top = { style: 'corset', cut: harpy ? 1.06 : 1.0, corset: false };
     t.skirt = { style: 'tattered', hem: harpy ? 0.6 : 0.66, color: harpy ? spec.wingColor ?? main : main };
@@ -242,7 +250,22 @@ export function beastToon(spec) {
       : { style: 'stockings', color: spec.legColor ?? darker(main, 0.6), boots: darker(spec.legColor ?? main, 0.7), bootHeight: 0.4 };
   }
   if (style === 'armor') t.legs = { style: 'stockings', color: spec.legColor ?? 0x3a1a10, boots: darker(spec.scaleColor ?? main, 0.6), bootHeight: 0.55, band: spec.scaleColor ?? main };
+  if (spec.cape) t.cape = spec.capeColor ?? darker(main, 0.6);
+  if (spec.ghost) { t.colors.skin = lighter(skin, 0.35); t.face.eye = spec.eyeColor ?? 0x9ad8e8; }
   t.extras = c => {
+    if (spec.elf) ACC.elf(c);
+    if (spec.facialHair) ACC.beard(c);
+    if (spec.helm) ACC.helm(c, spec.helm);
+    if (spec.wimple) ACC.wimple(c, spec.wimple);
+    if (spec.veil) ACC.veil(c, spec.veil);
+    if (spec.halo) ACC.halo(c);
+    if (spec.collar) ACC.collarglow(c, spec.collarColor ?? 0xd8b04a);
+    if (spec.mug) ACC.mug(c);
+    if (spec.bottle) ACC.bottle(c);
+    if (spec.ladle) ACC.ladle(c);
+    if (spec.fan) ACC.fan(c, spec.fanColor ?? 0xd8b04a);
+    if (spec.weapon === 'book') ACC.book(c, darker(main, 0.6));
+    if (spec.weapon === 'staff') ACC.staff(c, spec.accent ?? spec.eyeColor ?? 0xb06cff);
     if (spec.ears) ears(c, spec.antlers ? 'deer' : spec.ears, spec.ears === 'round' ? (spec.tailColor ?? hair) : hair, null, spec.spots);
     if (spec.horns) horns(c, spec.hornStyle, spec.hornSize, spec.hornColor ?? 0x3a2a1a);
     if (spec.antlers) antlers(c, spec.hornColor ?? 0xcbb48a);
@@ -260,8 +283,8 @@ export function beastToon(spec) {
     if (spec.apron) tadd(c.body, new THREE.BoxGeometry(0.2, 0.32, 0.015), tmat(spec.apron), 0, c.waistY - 0.15, c.hipR * 0.92 + 0.02, -0.1);
     if (spec.ribbons) for (const sx of [-1, 1]) tadd(c.body, SC(0.012, 0.16), tmat(spec.ribbons), sx * c.hr * 0.7, c.hy - c.hr * 0.6, -0.04, 0, 0, sx * 0.4);
     if (spec.changeArm) { const m = tmat(spec.tailColor ?? 0x2a6a5a); tadd(c.arms.L, SC(0.052, c.armLen * 0.5), m, 0, -c.armLen * 0.6, 0); for (let i = -1; i <= 1; i++) tadd(c.arms.L, new THREE.ConeGeometry(0.012, 0.07, 6), tmat(0xe8e4da), i * 0.02, -c.armLen * 1.02, 0.02, Math.PI); }
-    if (spec.weapon === 'sword' && !c.hasWeapon) { const g = new THREE.Group(); g.position.set(0.04, -c.armLen * 0.97, 0.06); g.rotation.z = -0.3; c.arms.R.add(g); tadd(g, new THREE.BoxGeometry(0.04, 0.5, 0.012), tmat(0xdde4ea), 0, -0.3, 0); tadd(g, new THREE.BoxGeometry(0.14, 0.025, 0.03), tmat(spec.scaleColor ?? 0xb85a2a), 0, -0.04, 0); }
-    if (spec.weapon === 'shield') { const s = tadd(c.arms.L, new THREE.CylinderGeometry(0.13, 0.13, 0.025, 20), tmat(spec.scaleColor ?? 0xb85a2a), 0.03, -c.armLen * 0.7, 0.07, Math.PI / 2); s.rotation.z = 0.2; }
+    if (spec.weapon === 'sword') ACC.sword(c);
+    if (spec.weapon === 'shield') ACC.shield(c, spec.scaleColor ?? 0x9aa2ac);
     if (spec.weapon === 'claw') for (const arm of [c.arms.L, c.arms.R]) for (let i = -1; i <= 1; i++) tadd(arm, new THREE.ConeGeometry(0.01, 0.07, 6), tmat(0xe8e4da), i * 0.022, -c.armLen * 1.0, 0.03, Math.PI);
   };
   const g = toonFigure(t);

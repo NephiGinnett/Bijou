@@ -696,3 +696,13 @@ button.ticker-btn.notify em { font-style: normal; color: var(--gold); animation:
 .hearth { margin: 8px 0; padding: 6px 8px; border: 1px solid rgba(216,176,74,.25); border-radius: 6px; background: rgba(216,176,74,.05); }
 .memories { margin: 8px 0; }
 .mem-list { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
+
+/* collapsible map regions */
+details.faction-section > summary { list-style: none; cursor: pointer; padding: 6px 4px; border-radius: 8px; }
+details.faction-section > summary::-webkit-details-marker { display: none; }
+details.faction-section > summary h3::before { content: '▸'; display: inline-block; margin-right: 8px; transition: transform 0.15s; color: var(--muted); }
+details.faction-section[open] > summary h3::before { transform: rotate(90deg); }
+details.faction-section > summary:hover { background: rgba(255, 255, 255, 0.04); }
+.region-count { font-size: 0.78rem; font-weight: 400; margin-left: 6px; letter-spacing: 0.02em; }
+.region-flag { font-size: 0.72rem; padding: 1px 7px; border-radius: 8px; border: 1px solid var(--gold); color: var(--gold); margin-left: 4px; }
+.region-flag.lair { border-color: #ff7a9a; color: #ffb8c8; }

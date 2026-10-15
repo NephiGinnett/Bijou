@@ -11,6 +11,8 @@ import { GLTFLoader } from '../vendor/GLTFLoader.js';
 import { tmat, tadd, SS, SC, ST } from './toon.js';
 import { toonFigure, toonHorns, toonTail, parseGear } from './toonfig.js';
 import { beastToon } from './toonbeast.js';
+import { applyAccessories } from './toonacc.js';
+import { castLook, CAST_IDS, convertLook } from './toonheroes.js';
 
 const gltfLoader = new GLTFLoader();
 let manifestPromise = null;
@@ -316,23 +318,10 @@ function toonIsolde(variant) {
   }, P.outfit));
 }
 
-// Townsfolk accessories, by name (pack looks list them as a comma string).
-const ACCESSORIES = {
-  glasses: c => { const m = tmat(0x6a2a2a, { noOutline: true }); for (const sx of [-1, 1]) tadd(c.body, ST(0.046 * c.k, 0.0045), m, sx * c.hr * 0.27, c.hy - 0.005, c.hr * 0.985); tadd(c.body, SC(0.004, 0.04 * c.k), m, 0, c.hy + 0.002, c.hr * 1.0, 0, 0, Math.PI / 2); },
-  pearls: c => { for (let i = 0; i < 13; i++) { const a = -1.2 + i * 0.2; tadd(c.body, SS(0.013, 10, 8), tmat(0xf4f0e8, { noOutline: true }), Math.sin(a) * 0.1, c.shoulderY - 0.02 - Math.cos(a) * 0.05, 0.13 + Math.cos(a) * 0.04); } },
-  clipboard: c => { if (c.hasWeapon) return; const b = new THREE.Group(); b.position.set(0.04, -c.armLen * 0.9, 0.1); b.rotation.set(0.2, -0.4, 0); c.arms.R.add(b); tadd(b, new THREE.BoxGeometry(0.18, 0.24, 0.015), tmat(0x8a6a4a)); tadd(b, new THREE.BoxGeometry(0.15, 0.19, 0.018), tmat(0xf4f0e8, { noOutline: true }), 0, -0.01, 0.002); tadd(b, new THREE.BoxGeometry(0.06, 0.025, 0.025), tmat(0xb8b8c0), 0, 0.12, 0.004); },
-  apron: c => { const m = tmat(0xf4ecdc); tadd(c.body, new THREE.BoxGeometry(0.2, 0.36, 0.015), m, 0, c.waistY - 0.17, c.hipR * 0.92 + 0.03, -0.12); tadd(c.body, ST(c.waistR + 0.015, 0.01), m, 0, c.waistY, 0, Math.PI / 2); },
-  sunhat: c => { const m = tmat(0xe8d49a); tadd(c.body, new THREE.CylinderGeometry(c.hr * 1.75, c.hr * 1.8, 0.02, 32), m, 0, c.hy + c.hr * 0.55, -0.02, -0.12); tadd(c.body, new THREE.CylinderGeometry(c.hr * 0.8, c.hr * 0.95, c.hr * 0.4, 24), m, 0, c.hy + c.hr * 0.75, -0.03, -0.12); tadd(c.body, ST(c.hr * 0.93, 0.012), tmat(0x8ab87a), 0, c.hy + c.hr * 0.6, -0.03, Math.PI / 2 - 0.12); },
-  trowel: c => { if (c.hasWeapon) return; const t = new THREE.Group(); t.position.set(0.03, -c.armLen * 0.96, 0.05); t.rotation.set(0.3, 0, -0.2); c.arms.R.add(t); tadd(t, SC(0.016, 0.08), tmat(0x6a4a2e)); tadd(t, new THREE.ConeGeometry(0.04, 0.12, 4), tmat(0xb8bcc4), 0, -0.11, 0, Math.PI); },
-  hoops: c => { const m = tmat(0xf4d04a, { noOutline: true }); for (const sx of [-1, 1]) tadd(c.body, ST(0.045 * c.k, 0.007), m, sx * c.hr * 0.98, c.hy - 0.11 * c.k, 0.01, 0, Math.PI / 2); },
-  streak: c => { tadd(c.body, SC(0.04 * c.k, c.hr * 0.45), tmat(0xd8d8e0), -c.hr * 0.36, c.hy + c.hr * 0.42, c.hr * 0.8, -0.5, 0, 0.35).scale.set(1, 1, 0.55); },
-  sunglasses: c => { const m = tmat(0x1a1214); for (const sx of [-1, 1]) tadd(c.body, SS(0.06 * c.k, 14, 10), m, sx * c.hr * 0.3, c.hy + c.hr * 0.98, c.hr * 0.42, -1.1).scale.set(1.25, 0.8, 0.35); tadd(c.body, SC(0.007, 0.07 * c.k), tmat(0xd8b04a), 0, c.hy + c.hr * 1.0, c.hr * 0.46, 0, 0, Math.PI / 2); },
-  bangles: c => { const m = tmat(0xd8b04a, { noOutline: true }); for (const arm of [c.arms.L, c.arms.R]) for (let i = 0; i < 2; i++) tadd(arm, ST(0.05, 0.007), m, 0, -c.armLen * (0.76 + i * 0.04), 0, Math.PI / 2); },
-  candle: c => { if (c.hasWeapon) return; const t = new THREE.Group(); t.position.set(0.03, -c.armLen * 0.95, 0.08); c.arms.R.add(t); tadd(t, new THREE.CylinderGeometry(0.02, 0.022, 0.13, 12), tmat(0x141018)); tadd(t, SS(0.016, 10, 8), tmat(0x8a4aff, { emissive: 0x6a2aff, ei: 2 }), 0, 0.09, 0).scale.set(0.8, 1.5, 0.8); },
-};
+// Toon looks from data: a toonFigure spec whose extras name accessories (js/toonacc.js).
 export function toonLook(spec) {
-  const names = typeof spec.extras === 'string' ? spec.extras.split(',') : [];
-  return toonFigure({ ...spec, extras: names.length ? c => names.forEach(n => ACCESSORIES[n] && ACCESSORIES[n](c)) : spec.extras });
+  const list = typeof spec.extras === 'string' ? spec.extras.split(',') : Array.isArray(spec.extras) ? spec.extras : null;
+  return toonFigure({ ...spec, extras: list ? c => applyAccessories(c, list) : spec.extras });
 }
 
 const HERO_BUILDERS = {
@@ -1163,12 +1152,23 @@ function customChibi(spec) {
 // Aliases: hero ids that render with another builder (reclaimed captives).
 const ALIASES = {};
 export function registerAlias(id, model, variant = null) { ALIASES[id] = { model, variant }; }
+// The rest of the cast on the toon figure; the old chibi builders stay as `<id>_classic`.
+for (const id of CAST_IDS) {
+  if (HERO_BUILDERS[id]) HERO_BUILDERS[id + '_classic'] = HERO_BUILDERS[id];
+  HERO_BUILDERS[id] = v => { const spec = castLook(id, v); const g = toonLook(spec); if (spec.float) g.userData.float = true; return g; };
+}
+// Reclaimed captives alias to their faction's model; give them a toon look of their own.
+const MODEL_FACTION = { coven: 'coven', vigil: 'vigil', college: 'college', hunter: 'lodge', cultist: 'market' };
 
 export function buildActor(kind, variant = null, opts = {}) {
-  if (ALIASES[kind]) { variant = variant ?? ALIASES[kind].variant; kind = ALIASES[kind].model; }
+  if (ALIASES[kind] && !HERO_BUILDERS[kind] && /^cv_/.test(kind) && MODEL_FACTION[ALIASES[kind].model]) {
+    const group = new THREE.Group(); group.add(toonLook(convertLook(kind, MODEL_FACTION[ALIASES[kind].model])));
+    return { group, ready: Promise.resolve(group) };
+  }
+  if (ALIASES[kind] && !HERO_BUILDERS[kind]) { variant = variant ?? ALIASES[kind].variant; kind = ALIASES[kind].model; }
   const group = new THREE.Group();
   const inner = HERO_BUILDERS[kind] ? HERO_BUILDERS[kind](variant, opts) :
-    CUSTOM_SPECS[kind] ? (CUSTOM_SPECS[kind].toon ? toonLook(CUSTOM_SPECS[kind].toon) : CUSTOM_SPECS[kind].beast ? beastToon(CUSTOM_SPECS[kind]) : customChibi(CUSTOM_SPECS[kind])) :
+    CUSTOM_SPECS[kind] ? (CUSTOM_SPECS[kind].toon ? toonLook(CUSTOM_SPECS[kind].toon) : CUSTOM_SPECS[kind].chibi ? customChibi(CUSTOM_SPECS[kind]) : beastToon(CUSTOM_SPECS[kind])) :
     MONSTER_BUILDERS[kind] ? MONSTER_BUILDERS[kind](variant) :
     chibi({});
   group.add(inner);
