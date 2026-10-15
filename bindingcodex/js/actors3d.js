@@ -196,82 +196,114 @@ function chibi(o = {}) {
 // ---------------------------------------------------------------
 // soft-toon Zoe: blonde, dark green coat-dress, gold accents
 // ---------------------------------------------------------------
-function toonPlayer(v) {
+// Figures: where the body's landmarks sit. 'curvy' keeps chibi proportions;
+// 'tall' is a semi-chibi with a smaller head and longer legs.
+export const TOON_FIGURES = {
+  curvy: { hr: 0.31, hy: 1.2, shoulderY: 0.92, bustY: 0.8, waistY: 0.63, hipY: 0.5, hemY: 0.33, waistR: 0.112, hipR: 0.27, bustR: 0.115, shoulderX: 0.19 },
+  tall:  { hr: 0.255, hy: 1.6, shoulderY: 1.3, bustY: 1.17, waistY: 0.98, hipY: 0.82, hemY: 0.62, waistR: 0.105, hipR: 0.25, bustR: 0.11, shoulderX: 0.18 },
+};
+export let TOON_FIGURE = 'curvy';
+
+function toonPlayer(v, opts = {}) {
   const scar = !!v && v.endsWith('_scar'); if (scar) v = v.slice(0, -5);
   const mantle = !!v && v.endsWith('_mantle'); if (mantle) v = v.slice(0, -7);
   const fem = v === 'she' || v == null;
+  const F = TOON_FIGURES[opts.figure || TOON_FIGURE];
+  const { hr, hy, shoulderY, bustY, waistY, hipY, hemY } = F;
+  const waistR = fem ? F.waistR : F.waistR + 0.05, hipR = fem ? F.hipR : F.hipR - 0.04;
+  const k = hr / 0.32; // hair and face scale with the head
   const g = new THREE.Group();
   const SKIN = 0xf6dcc8, HAIR = 0xf2d27a, GREEN = 0x1f4a34, DEEP = 0x143224, GOLD = 0xd8b45a, STOCK = 0x1b2620, BOOT = 0x2a1e18;
   const skin = tmat(SKIN, { soft: true }), hair = tmat(HAIR), green = tmat(GREEN), deep = tmat(DEEP), gold = tmat(GOLD);
-  // legs and boots
+  const smooth = tmat(GREEN, { noOutline: true });
+
+  // legs: shapely thighs, knees, calves; thigh-high stockings with a gold band
+  const L = hipY + 0.02;
+  const leg = [[0, 0], [0.04, 0.0], [0.046, 0.08 * L], [0.064, 0.3 * L], [0.052, 0.5 * L], [0.085, 0.78 * L], [0.098, 0.95 * L], [0, L]];
+  const stock = [[0, 0], [0.044, 0.0], [0.05, 0.08 * L], [0.068, 0.3 * L], [0.056, 0.5 * L], [0.074, 0.6 * L], [0, 0.6 * L]];
+  const boot = [[0, 0], [0.058, 0.0], [0.06, 0.05 * L], [0.056, 0.2 * L], [0, 0.2 * L]];
   for (const sx of [-1, 1]) {
-    tadd(g, SC(0.066, 0.2), tmat(STOCK), sx * 0.1, 0.22, 0);
-    tadd(g, SC(0.078, 0.08), tmat(BOOT), sx * 0.1, 0.08, 0.015);
-    tadd(g, ST(0.07, 0.012), gold, sx * 0.1, 0.15, 0.015, Math.PI / 2);
+    tadd(g, lathe(leg, 24), skin, sx * 0.095, 0, 0);
+    tadd(g, lathe(stock, 24), tmat(STOCK), sx * 0.095, 0.002, 0);
+    tadd(g, ST(0.075, 0.011), gold, sx * 0.095, 0.6 * L, 0, Math.PI / 2);
+    tadd(g, lathe(boot, 24), tmat(BOOT), sx * 0.095, 0, 0.005);
   }
-  // coat-dress: fitted bodice, a real waist, a flared skirt
-  const body = fem
-    ? [[0, 0.99], [0.075, 0.99], [0.1, 0.96], [0.2, 0.9], [0.22, 0.81], [0.2, 0.72], [0.155, 0.63], [0.165, 0.56], [0.26, 0.43], [0.34, 0.3], [0.36, 0.23], [0, 0.23]]
-    : [[0, 0.99], [0.08, 0.99], [0.11, 0.96], [0.22, 0.9], [0.23, 0.8], [0.21, 0.66], [0.2, 0.56], [0.27, 0.42], [0.33, 0.3], [0.34, 0.23], [0, 0.23]];
-  tadd(g, lathe(body), green, 0, 0, 0);
-  if (fem) { const bust = tmat(GREEN, { noOutline: true }); for (const sx of [-1, 1]) tadd(g, SS(0.1), bust, sx * 0.085, 0.79, 0.12).scale.set(1, 0.92, 0.8); }
-  // gold accents: belt, hem, collar, buttons, a clasp
-  tadd(g, ST(fem ? 0.158 : 0.2, 0.02), gold, 0, fem ? 0.62 : 0.6, 0, Math.PI / 2);
-  tadd(g, ST(0.355, 0.016), gold, 0, 0.235, 0, Math.PI / 2);
-  tadd(g, ST(0.1, 0.02), gold, 0, 0.965, 0, Math.PI / 2);
-  for (let i = 0; i < 3; i++) tadd(g, SS(0.018, 12, 10), gold, 0, 0.53 - i * 0.09, 0.2 + i * 0.03);
-  tadd(g, SS(0.03, 12, 10), gold, 0, 0.62, 0.165);
-  // a short cape behind, deep green
-  const cape = new THREE.CylinderGeometry(0.2, 0.37, 0.64, 32, 1, true, Math.PI / 2, Math.PI);
+  // upper body skin (shoulders and collarbone show above the neckline)
+  tadd(g, lathe([[0, bustY - 0.06], [0.13, bustY - 0.06], [0.15, bustY], [F.shoulderX + 0.02, shoulderY - 0.02], [0.09, shoulderY + 0.04], [0, shoulderY + 0.06]], 32), skin, 0, 0, 0);
+  // the bodice: cinched waist up to a neckline across the bust
+  const neckY = bustY + 0.05;
+  tadd(g, lathe([[0, waistY - 0.06], [waistR, waistY - 0.06], [waistR, waistY + 0.04], [waistR + 0.04, bustY - 0.08], [0.165, bustY], [0.16, neckY], [0, neckY]], 40), green, 0, 0, 0);
+  if (fem) {
+    const bust = smooth;
+    for (const sx of [-1, 1]) tadd(g, SS(F.bustR), bust, sx * 0.075, bustY + 0.005, 0.085).scale.set(1, 0.93, 0.95);
+    tadd(g, ST(0.158, 0.013), gold, 0, neckY - 0.005, 0.01, Math.PI / 2 - 0.08); // neckline trim
+  }
+  // corset band: deep green with gold edges and lacing
+  tadd(g, lathe([[0, waistY - 0.07], [waistR + 0.012, waistY - 0.07], [waistR + 0.012, waistY + 0.08], [0, waistY + 0.08]], 40), deep, 0, 0, 0);
+  for (const y of [waistY - 0.07, waistY + 0.08]) tadd(g, ST(waistR + 0.013, 0.008), gold, 0, y, 0, Math.PI / 2);
+  for (let i = 0; i < 3; i++) {
+    const y = waistY - 0.04 + i * 0.045;
+    tadd(g, new THREE.BoxGeometry(0.06, 0.008, 0.008), tmat(GOLD, { noOutline: true }), 0, y, waistR + 0.012, 0, 0, 0.5);
+    tadd(g, new THREE.BoxGeometry(0.06, 0.008, 0.008), tmat(GOLD, { noOutline: true }), 0, y, waistR + 0.012, 0, 0, -0.5);
+  }
+  // skirt: out over the hips, then a short flare
+  tadd(g, lathe([[0, waistY - 0.06], [waistR + 0.01, waistY - 0.06], [hipR * 0.8, (waistY + hipY) / 2 - 0.02], [hipR, hipY], [hipR * 1.05, (hipY + hemY) / 2], [hipR * 1.1, hemY], [0, hemY]], 40), green, 0, 0, 0);
+  tadd(g, ST(hipR * 1.1, 0.014), gold, 0, hemY + 0.004, 0, Math.PI / 2);
+  // a short cape from the shoulders
+  const capeH = shoulderY - hemY - 0.05;
+  const cape = new THREE.CylinderGeometry(F.shoulderX + 0.02, hipR * 1.3, capeH, 32, 1, true, Math.PI / 2, Math.PI);
   const capeM = tmat(DEEP); capeM.side = THREE.DoubleSide;
-  tadd(g, cape, capeM, 0, 0.62, -0.02);
-  // arms, gold cuffs, hands
+  tadd(g, cape, capeM, 0, shoulderY - capeH / 2, -0.03);
+  // off-shoulder puffs, bare upper arms, detached sleeves with gold cuffs
+  const armLen = shoulderY - hipY + 0.05;
   for (const sx of [-1, 1]) {
-    const arm = tadd(g, SC(0.062, 0.22), green, sx * 0.29, 0.75, 0, 0, 0, -sx * 0.35);
-    arm.name = sx < 0 ? 'armL' : 'armR';
-    tadd(g, ST(0.06, 0.016), gold, sx * 0.345, 0.62, 0, Math.PI / 2, 0, -sx * 0.35);
-    tadd(g, SS(0.065), skin, sx * 0.37, 0.57, 0);
+    tadd(g, SS(0.07), green, sx * (F.shoulderX + 0.03), shoulderY - 0.05, 0).scale.set(1, 0.8, 1);
+    const upper = tadd(g, SC(0.045, armLen * 0.36), skin, sx * (F.shoulderX + 0.08), shoulderY - armLen * 0.3, 0, 0, 0, sx * 0.32);
+    upper.name = sx < 0 ? 'armL' : 'armR';
+    tadd(g, SC(0.055, armLen * 0.3), green, sx * (F.shoulderX + 0.17), shoulderY - armLen * 0.68, 0, 0, 0, sx * 0.26);
+    tadd(g, ST(0.055, 0.012), gold, sx * (F.shoulderX + 0.2), shoulderY - armLen * 0.84, 0, Math.PI / 2, 0, sx * 0.26);
+    tadd(g, SS(0.055), skin, sx * (F.shoulderX + 0.23), shoulderY - armLen * 0.95, 0);
   }
   // neck and head
-  tadd(g, SC(0.055, 0.05), skin, 0, 1.0, 0);
-  const head = tadd(g, SS(0.32), skin, 0, 1.2, 0); head.name = 'head';
-  for (const sx of [-1, 1]) tadd(g, SS(0.06), skin, sx * 0.31, 1.18, 0).scale.set(0.6, 1, 0.8);
-  face(g, 0.32, 1.2, { eye: 0x8a5ad8, brow: 0xc8a050, blush: 0xff8aa0 });
-  // hair: a cap, a fringe of rounded locks, side locks, and length for her
-  tadd(g, SS(0.345), hair, 0, 1.25, -0.035).scale.set(1, 0.95, 1);
-  const fringe = [-0.22, -0.13, -0.045, 0.045, 0.13, 0.22];
-  fringe.forEach((x, i) => {
-    const lock = tadd(g, SS(0.085), hair, x, 1.36 - Math.abs(x) * 0.35, Math.sqrt(0.345 ** 2 - x * x) - 0.06, -0.25, 0, -x * 1.6 + (i % 2 ? 0.08 : -0.08));
+  tadd(g, SC(0.045, 0.05), skin, 0, shoulderY + 0.06, 0);
+  const head = tadd(g, SS(hr), skin, 0, hy, 0); head.name = 'head';
+  for (const sx of [-1, 1]) tadd(g, SS(0.06 * k), skin, sx * hr * 0.97, hy - 0.02, 0).scale.set(0.6, 1, 0.8);
+  face(g, hr, hy, { eye: 0x8a5ad8, brow: 0xc8a050, blush: 0xff8aa0 });
+  // hair
+  tadd(g, SS(hr * 1.08), hair, 0, hy + 0.05 * k, -0.035 * k).scale.set(1, 0.95, 1);
+  [-0.22, -0.13, -0.045, 0.045, 0.13, 0.22].forEach((x0, i) => {
+    const x = x0 * k, R = hr * 1.08;
+    const lock = tadd(g, SS(0.085 * k), hair, x, hy + (0.16 - Math.abs(x0) * 0.35) * k, Math.sqrt(R * R - x * x) - 0.06 * k, -0.25, 0, -x0 * 1.6 + (i % 2 ? 0.08 : -0.08));
     lock.scale.set(0.62, 1.45, 0.5);
   });
-  for (const sx of [-1, 1]) tadd(g, SC(0.058, fem ? 0.36 : 0.18), hair, sx * 0.29, fem ? 1.0 : 1.1, 0.07, 0, 0, sx * 0.08);
+  const sideLen = fem ? (hy - bustY) * 0.9 : 0.18 * k;
+  for (const sx of [-1, 1]) tadd(g, SC(0.058 * k, sideLen), hair, sx * hr * 0.92, hy - sideLen * 0.45, 0.07 * k, 0, 0, sx * 0.08);
   if (fem) {
-    tadd(g, SC(0.2, 0.46), hair, 0, 0.88, -0.2).scale.set(1.25, 1, 0.6);
-    for (const [x, rz] of [[-0.16, 0.25], [0, 0], [0.16, -0.25]]) tadd(g, SC(0.08, 0.18), hair, x, 0.6, -0.22, 0.2, 0, rz);
+    const len = hy - waistY;
+    tadd(g, SC(0.2 * k, len * 0.8), hair, 0, hy - len * 0.55, -0.2 * k).scale.set(1.25, 1, 0.6);
+    for (const [x, rz] of [[-0.16, 0.25], [0, 0], [0.16, -0.25]]) tadd(g, SC(0.08 * k, 0.18), hair, x * k, waistY + 0.02, -0.22 * k, 0.2, 0, rz);
   } else if (v === 'they') {
-    tadd(g, SC(0.19, 0.2), hair, 0, 1.02, -0.2).scale.set(1.25, 1, 0.6);
+    tadd(g, SC(0.19 * k, 0.2), hair, 0, hy - 0.18 * k, -0.2 * k).scale.set(1.25, 1, 0.6);
   }
-  // the anime "angel ring" shine on the hair
-  tadd(g, ST(0.24, 0.013), tmat(0xfff2c0, { noOutline: true }), 0, 1.4, 0.04, Math.PI / 2 - 0.35);
+  tadd(g, ST(0.24 * k, 0.013), tmat(0xfff2c0, { noOutline: true }), 0, hy + 0.2 * k, 0.04, Math.PI / 2 - 0.35);
   // the mark (left hand) and the hex-light (right hand)
-  tadd(g, ST(0.065, 0.018), tmat(0xc86cff, { emissive: 0xc86cff, ei: 1.6 }), -0.37, 0.62, 0.02, Math.PI / 2);
-  const orb = tadd(g, SS(0.065), tmat(0xc86cff, { emissive: 0xc86cff, ei: 2 }), 0.44, 0.7, 0.08); orb.name = 'orb';
+  const handY = shoulderY - armLen * 0.95, handX = F.shoulderX + 0.23;
+  tadd(g, ST(0.06, 0.016), tmat(0xc86cff, { emissive: 0xc86cff, ei: 1.6 }), -handX, handY + 0.04, 0.02, Math.PI / 2);
+  const orb = tadd(g, SS(0.06), tmat(0xc86cff, { emissive: 0xc86cff, ei: 2 }), handX + 0.06, handY + 0.12, 0.08); orb.name = 'orb';
   if (mantle) {
-    horns(g, 0x2a1a34, 1.5, 0.15, 0.3);
-    wings(g, 0x1a2a22, 1.0, 0.62);
+    horns(g, 0x2a1a34, hy + 0.3 * k, 0.15 * k, 0.3 * k);
+    wings(g, 0x1a2a22, shoulderY + 0.05, 0.62);
     const tail = new THREE.Group();
     tadd(tail, SC(0.04, 0.55), tmat(DEEP), 0, 0, 0, 0, 0, 0.9);
     tadd(tail, new THREE.ConeGeometry(0.08, 0.14, 12), tmat(0xc86cff, { emissive: 0xc86cff, ei: 1.2 }), -0.3, -0.2, 0, 0, 0, 2.4);
-    tail.position.set(0, 0.42, -0.3); tail.rotation.x = 0.5; g.add(tail);
+    tail.position.set(0, hipY - 0.05, -0.3); tail.rotation.x = 0.5; g.add(tail);
   }
-  if (scar) {
-    const sm = tmat(0xff5a3a, { emissive: 0xff5a3a, ei: 1.8 });
-    tadd(g, new THREE.BoxGeometry(0.03, 0.26, 0.012), sm, 0.1, 1.2, 0.315, 0.1, 0, -0.5);
-  }
+  if (scar) tadd(g, new THREE.BoxGeometry(0.03, 0.24 * k, 0.012), tmat(0xff5a3a, { emissive: 0xff5a3a, ei: 1.8 }), 0.1 * k, hy, hr + 0.005, 0.1, 0, -0.5);
   outline(g);
   g.userData.isChibi = true;
   return g;
 }
+export function buildToonZoe(variant, figure) { return toonPlayer(variant, { figure }); }
 
 const HERO_BUILDERS = {
   player: toonPlayer,
