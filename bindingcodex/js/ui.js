@@ -11,6 +11,7 @@ import { EVENTS, SPEAKERS, DUNGEON_EVENTS, BARGAIN_EVENTS, VISIT_LINES, TAUNT_LI
 import { registerAlias, registerCustomActor, ACTOR_ACCENTS } from './actors3d.js';
 import { installPacks, PACKS, LOOKS } from './packs/index.js';
 import { BOWER_TALK } from './packs/wildkin.js';
+import { GUESTS, GUEST_TALK } from './packs/guests.js';
 import { install as installCompanions, hangoutSteps } from './companions.js';
 import { UNBOUND, WHEN } from './unbound_lines.js';
 
@@ -1691,9 +1692,28 @@ function broodHtml(tid) {
 }
 
 // The Envoys' Bower: visiting tribe envoys keep a corner of the Menagerie.
+function guestHtml() {
+  const here = Object.keys(GUESTS).filter(id => ST.guestHere(S, id));
+  if (!here.length) return '';
+  return `<h3 style="margin-top:12px">🕊 Guests under your protection</h3>
+    <div class="cells">${here.map(id => {
+      const G = GUESTS[id], g = S.guests[id], T = TRIBES[G.tribe];
+      const rom = ST.guestRomanceOpen(S, id), eve = ST.guestEveningOpen(S, id), romanced = !!S.seen[`${id}_romance`];
+      return `<div class="cell-card">
+        <div class="recruit-head">${portraitImg(id)}<div><b style="color:${G.color}">${esc(G.name)}</b> <small class="muted">of ${esc(G.of.replace(/^the /, 'the '))}</small><br><small class="muted">${esc(G.race)} · ${g.truce ? `truce with ${esc(T.envoyName)}` : 'waiting for a truce'}</small></div></div>
+        ${g.truce ? `<div class="meter"><span>Favor</span>${bar('regard', g.favor * 10)}<span>${g.favor}/10</span></div>
+        <div class="visit-row">
+          <button class="btn gw-talk ${g.talkDay === S.day ? 'disabled' : ''}" data-g="${id}">❝ Talk</button>
+          ${rom ? `<button class="btn gw-rom notify" data-g="${id}">♡ He has something to ask you</button>` : ''}
+          ${romanced ? `<button class="btn gw-eve ${eve ? '' : 'disabled'}" data-g="${id}" title="${eve ? '' : 'One evening a night; every third night with him.'}">☾ Evening</button>` : ''}
+        </div>` : `<p class="sm-text gold">He asked you to negotiate with ${esc(T.envoyName)} for ${esc(G.of)}. Use Talk at the hub to broker the truce.</p>`}
+      </div>`;
+    }).join('')}</div>`;
+}
+
 function bowerHtml() {
   const here = Object.keys(TRIBES).filter(tid => ST.envoyHere(S, tid));
-  if (!here.length) return '';
+  if (!here.length) return guestHtml();
   const own = Object.entries(S.reagents).filter(([, n]) => n >= 2).map(([r]) => r);
   return `<h3 style="margin-top:12px">🪶 The Envoys' Bower</h3>
     <p class="muted sm-text">A warm corner of the Menagerie kept for visiting envoys. Talk with them, trade with them; once one has asked for the rite, she may invite you to spend the night.</p>
@@ -1716,10 +1736,28 @@ function bowerHtml() {
           ${S.flags['rite_' + tid] ? `<button class="btn bw-night ${nightOpen ? '' : 'disabled'}" data-t="${tid}" title="${nightOpen ? '' : 'She\'ll invite you again in a few days (favor 3+).'}">☾ Evening</button>` : ''}
         </div>
       </div>`;
-    }).join('')}</div>`;
+    }).join('')}</div>${guestHtml()}`;
 }
 
 function bindBower() {
+  document.querySelectorAll('.gw-talk:not(.disabled)').forEach(b => b.onclick = async () => {
+    const id = b.dataset.g, fav = ST.guestTalk(S, id);
+    if (fav == null) return;
+    const lines = GUEST_TALK[id];
+    screen('', '');
+    await playEvent({ id: 'banter', steps: [{ s: id, t: lines[(S.day + fav) % lines.length] }] });
+    ST.save(S); menagerie();
+  });
+  document.querySelectorAll('.gw-rom').forEach(b => b.onclick = async () => {
+    const id = b.dataset.g;
+    screen('', ''); await playEvent(EVENTS[id + '_romance']);
+    if (S.seen[id + '_romance']) { S.guests[id].nightDay = S.day; S.eveningDay = S.day; } // tonight was the first night
+    ST.save(S); menagerie();
+  });
+  document.querySelectorAll('.gw-eve:not(.disabled)').forEach(b => b.onclick = async () => {
+    const id = b.dataset.g;
+    screen('', ''); await playEvent(EVENTS[id + '_evening']); ST.guestEvening(S, id); ST.save(S); menagerie();
+  });
   document.querySelectorAll('.bw-talk:not(.disabled)').forEach(b => b.onclick = async () => {
     const tid = b.dataset.t, T = TRIBES[tid];
     const r = ST.envoyTalk(S, tid);

@@ -39,7 +39,7 @@ const WHERE = {
   auto: 'Plays automatically when its moment comes (usually at the start of a day).',
   guild: 'Plays from the **Talk** button at the Codex hub.',
   camp: 'Plays at camp, between rooms on an expedition.',
-  bower: 'Plays in the **Envoys\' Bower** (Menagerie), from her card.',
+  bower: 'Plays in the **Envoys\' Bower** (Menagerie), from their card.',
   home: 'Plays from her **Companion** page (click her on the hub): the ☾ Evening button, every other night.',
   rumor: 'Plays from a rumor at the hub.',
   offer: 'Plays when a recruit petitions to join.',

@@ -100,6 +100,14 @@ Abyss — by earning **Infamy**.
   your kin by name from the Bower every other day; sometimes she's busy.
 - Every tribeswoman has her own model, rolled from her name: skin, hair,
   eyes, chest, build, height and her tribe's colors.
+- **Guests under your protection.** Once a tribe is sworn and your favor
+  with it is high (7+), the beast-folk it hunts send an envoy to ask you,
+  as its friend, for a truce: Bramble of the Hollow Warren (bunny-folk, via
+  the Aerie), Ren of the Ember Den (fox-folk, via the Pride), Elio of the
+  Snowline Herd (fawn-folk, via the Clutch) and Tallow of the Lantern Court
+  (moth-folk, via the Coil). You broker the truce with both envoys in the
+  room; he then stays in the Bower: talks, a romance once he trusts you,
+  evenings, and later a shared night with his tribe's envoy.
 - **Lysandre**, a shapeshifter, arrives when your first hybrid hatches.
 - **The Wyrm's Mantle** (pact): horns, wings and tail on your model, a
   monstrous battle form, and scenes with the allies who'd love it.

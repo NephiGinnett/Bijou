@@ -68,7 +68,7 @@ export function newGame(playerName, pronouns = 'she') {
     clearedDay: 0,
     ngPlus: 0,
     mastery: {},
-    hangouts: {}, family: [], expecting: {}, seenDay: {}, eveningDay: -1,
+    hangouts: {}, family: [], expecting: {}, seenDay: {}, eveningDay: -1, guests: {},
     autoSkill: {},
     dispatch: [],
     dispatchReports: [],
@@ -550,6 +550,23 @@ export function broodInfo(S, tid) {
   else if (lead && lead.share >= 0.12) resemble = `More and more of ${T.name.replace(/^The /, 'the ')} have ${lead.name}'s ${lead.word}.`;
   return { pop, base: T.pop, born: t.born || 0, warming: (t.clutches || []).reduce((a, c) => a + c.n, 0), rites: t.rites || 0, pairs, lines, resemble, young: T.young };
 }
+
+// --- wildkin guests: envoys who came asking for your protection ------------------------
+
+const guest = (S, id) => (S.guests[id] ||= { here: false, truce: false, favor: 0, talkDay: -1, nightDay: -9 });
+export function guestArrive(S, id) { guest(S, id).here = true; }
+export function guestTruce(S, id) { const g = guest(S, id); g.truce = true; g.favor = Math.max(g.favor, 2); }
+export function guestHere(S, id) { return !!(S.guests[id] && S.guests[id].here && packOn(S, 'wildkin')); }
+export function guestTalk(S, id) {
+  const g = guest(S, id);
+  if (!guestHere(S, id) || !g.truce || g.talkDay === S.day) return null;
+  g.talkDay = S.day; g.favor = Math.min(10, g.favor + 1);
+  return g.favor;
+}
+// His romance unlocks at favor 5; evenings after, every third night.
+export function guestRomanceOpen(S, id) { const g = S.guests[id]; return guestHere(S, id) && !!g.truce && g.favor >= 5 && !S.seen[`${id}_romance`]; }
+export function guestEveningOpen(S, id) { const g = S.guests[id]; return guestHere(S, id) && !!S.seen[`${id}_romance`] && S.eveningDay !== S.day && S.day - g.nightDay >= 3; }
+export function guestEvening(S, id) { const g = guest(S, id); g.nightDay = S.day; S.eveningDay = S.day; g.favor = Math.min(10, g.favor + 1); }
 
 // What the tribe wants next, and whether you can give it.
 export function tribeRequest(S, tid) {

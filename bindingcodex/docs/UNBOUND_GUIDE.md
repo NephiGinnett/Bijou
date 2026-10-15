@@ -114,6 +114,25 @@ All partners here are **sapient adults speaking for themselves**. Menagerie beas
 | `kin_night_pride` | "Race her out to the long grass." | monster (cheetah-folk), repeatable, `{kin}` | A cheetah-folk kin you sent for. The chase again, laughing this time, then purring. |
 | `nyxe_mantle` | "Then come down here and explode." | monster forms, abyssal | Nyxe faces something more monstrous than herself and is speechless for the first time, then very loud. Wings everywhere. |
 
+### Wildkin guests (`js/packs/guests.js`)
+
+Four beast-folk men who came asking for protection from the tribe that hunted them. All are grown adults (ages in their descriptions); keep childlike framing out of intimate text. He/him.
+
+| Event | Choice | Tags | What to write |
+| --- | --- | --- | --- |
+| `bramble_romance` | either choice | romance, femboy | Bramble (bunny-folk, 23), Hollow Warren, Pale Wood. Shy, quick, freckled, cream rabbit ears and a cottontail that twitches when he's touched; his nose twitches when he lies. He gave you clover (a Warren courting gift). Soft and eager once he stops listening for wings. Kind choice: he's held; firm choice: he's caught, and glad. |
+| `bramble_evening` | "Spend the night with him." | repeatable | Familiar now, every third night. Shorter and warmer than the first time. |
+| `bramble_shared` | (first choice) | group, sapient partners | He and Kestra (harpy): she used to hunt his Warren; now she guards his window. Feathers and flushed ears. |
+| `ren_romance` | either choice | romance, femboy | Ren (fox-folk, 26), Ember Den, Charmed Glade. Sly, flirty, a thief who returns what he steals; the smile is armor. Red fox-tail that curls around you. Under the teasing, breathless and honest. Kind choice: he's held; firm choice: he's caught, and glad. |
+| `ren_evening` | "Spend the night with him." | repeatable | Familiar now, every third night. Shorter and warmer than the first time. |
+| `ren_shared` | (first choice) | group, sapient partners | He and Tashra (cheetah-folk): a hunt nobody wants to end. Purrs, red fur, wicked laughter. |
+| `elio_romance` | either choice | romance, femboy | Elio (fawn-folk, 24), Snowline Herd, Ashreach. Gentle, soft-spoken, dappled freckles and velvet antlers; his people freeze when afraid and he's choosing not to. The Pale Stag sent him. Wondering, then not gentle at all. Kind choice: he's held; firm choice: he's caught, and glad. |
+| `elio_evening` | "Spend the night with him." | repeatable | Familiar now, every third night. Shorter and warmer than the first time. |
+| `elio_shared` | (first choice) | group, sapient partners | He and Vharra (drake-kin): a fawn and a dragon making peace by the hatchery fires. Heat and wonder. |
+| `tallow_romance` | either choice | romance, femboy | Tallow (moth-folk, 27), Lantern Court, Black Mire. Dreamy and a little dramatic, fluffy collar, feathery antennae, dusty soft wings; drawn to the warmest light, which is you. He dims his wings to show he's sincere. Kind choice: he's held; firm choice: he's caught, and glad. |
+| `tallow_evening` | "Spend the night with him." | repeatable | Familiar now, every third night. Shorter and warmer than the first time. |
+| `tallow_shared` | (first choice) | group, sapient partners | He and Sythra (naga): coils and soft wings in the lantern-lit brood-pools. |
+
 ### Hearts & Hearth (`js/packs/hearts.js`)
 
 Group scenes. Every participant is a free ally who has had her own romance and is at bond 8+ (the Envoys' Council needs two or more envoys who've had the rite). Characters whose lines have *(only if …)* in the context doc may or may not be there; write so the scene works either way.

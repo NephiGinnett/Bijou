@@ -832,7 +832,10 @@ function customChibi(spec) {
 
   // tail (skip if the lower body is already a snake)
   if (!spec.lowerBody || spec.lowerBody === 'hooves') {
-    if (spec.tail === 'fox') {
+    if (spec.tail === 'puff') {
+      // rabbit: a round cottontail
+      add(g, S(0.09, 10, 8), mat(spec.tailColor ?? spec.hair ?? 0xf4efe6, { rough: 1 }), 0, 0.42, -0.26);
+    } else if (spec.tail === 'fox') {
       add(g, Cap(0.11, 0.34, 4, 8), mat(spec.hair ?? 0xd87c3a, { rough: 0.85 }), 0, 0.42, -0.3, 0.9);
       add(g, S(0.09, 8, 8), mat(0xf4efe6), 0, 0.62, -0.44);
     } else if (spec.tail === 'dragon') {

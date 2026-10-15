@@ -1,6 +1,6 @@
 # Unbound Scene Context
 
-Every Unbound stub in Binding Codex with its **whole scene**, in the order the player reads it: 83 scenes, 104 stubs.
+Every Unbound stub in Binding Codex with its **whole scene**, in the order the player reads it: 95 scenes, 120 stubs.
 
 **Written so far:** 89 stub ids (✅ in the scenes below); the rest are marked ✍️. To revise a written one, edit its lines in `js/unbound_lines.js`, or send new text and Momo will swap it in.
 
@@ -19,7 +19,7 @@ Every Unbound stub in Binding Codex with its **whole scene**, in the order the p
 - **Obsidian College pack (`js/packs/obsidian.js`):** [`seris_romance`](#seris_romance), [`auren_voss_romance`](#auren_voss_romance), [`revenant_bride_romance`](#revenant_bride_romance), [`mira_ashveil_romance`](#mira_ashveil_romance), [`maren_soleil_romance`](#maren_soleil_romance), [`cole_ashmer_romance`](#cole_ashmer_romance)
 - **Northern Reach pack (`js/packs/northern.js`):** [`nyxe_romance`](#nyxe_romance), [`mira_vane_revisit`](#mira_vane_revisit), [`rhea_romance`](#rhea_romance), [`valdra_romance`](#valdra_romance), [`aelindra_revisit`](#aelindra_revisit), [`aurelia_romance`](#aurelia_romance), [`brynn_romance`](#brynn_romance), [`sera_romance`](#sera_romance)
 - **Classic Fantasy pack (`js/packs/classic.js`):** [`elara_romance`](#elara_romance), [`seraphine_romance`](#seraphine_romance), [`elspeth_revisit`](#elspeth_revisit), [`sister_maren_romance`](#sister_maren_romance), [`kira_romance`](#kira_romance)
-- **Wildkin pack (`js/packs/wildkin.js`):** [`envoy_night_pride`](#envoy_night_pride), [`envoy_night_aerie`](#envoy_night_aerie), [`envoy_night_coil`](#envoy_night_coil), [`envoy_night_clutch`](#envoy_night_clutch), [`kin_rite_pride`](#kin_rite_pride), [`kin_rite_aerie`](#kin_rite_aerie), [`kin_rite_coil`](#kin_rite_coil), [`kin_rite_clutch`](#kin_rite_clutch), [`kin_night_aerie`](#kin_night_aerie), [`kin_night_coil`](#kin_night_coil), [`kin_night_clutch`](#kin_night_clutch), [`kin_night_pride`](#kin_night_pride), [`tribe_aerie_rite`](#tribe_aerie_rite), [`tribe_coil_rite`](#tribe_coil_rite), [`tribe_clutch_rite`](#tribe_clutch_rite), [`tribe_pride_rite`](#tribe_pride_rite), [`lysandre_romance`](#lysandre_romance), [`rue_mantle`](#rue_mantle), [`nyxe_mantle`](#nyxe_mantle)
+- **Wildkin pack (`js/packs/wildkin.js`):** [`bramble_romance`](#bramble_romance), [`bramble_evening`](#bramble_evening), [`bramble_shared`](#bramble_shared), [`ren_romance`](#ren_romance), [`ren_evening`](#ren_evening), [`ren_shared`](#ren_shared), [`elio_romance`](#elio_romance), [`elio_evening`](#elio_evening), [`elio_shared`](#elio_shared), [`tallow_romance`](#tallow_romance), [`tallow_evening`](#tallow_evening), [`tallow_shared`](#tallow_shared), [`envoy_night_pride`](#envoy_night_pride), [`envoy_night_aerie`](#envoy_night_aerie), [`envoy_night_coil`](#envoy_night_coil), [`envoy_night_clutch`](#envoy_night_clutch), [`kin_rite_pride`](#kin_rite_pride), [`kin_rite_aerie`](#kin_rite_aerie), [`kin_rite_coil`](#kin_rite_coil), [`kin_rite_clutch`](#kin_rite_clutch), [`kin_night_aerie`](#kin_night_aerie), [`kin_night_coil`](#kin_night_coil), [`kin_night_clutch`](#kin_night_clutch), [`kin_night_pride`](#kin_night_pride), [`tribe_aerie_rite`](#tribe_aerie_rite), [`tribe_coil_rite`](#tribe_coil_rite), [`tribe_clutch_rite`](#tribe_clutch_rite), [`tribe_pride_rite`](#tribe_pride_rite), [`lysandre_romance`](#lysandre_romance), [`rue_mantle`](#rue_mantle), [`nyxe_mantle`](#nyxe_mantle)
 - **Hearts & Hearth pack (`js/packs/hearts.js`):** [`circle_pact`](#circle_pact), [`circle_night`](#circle_night), [`circle_mantle`](#circle_mantle), [`circle_lysandre`](#circle_lysandre), [`dawnward_hearts`](#dawnward_hearts), [`brats`](#brats), [`two_altars`](#two_altars), [`envoys_council`](#envoys_council)
 - **Companions (`js/companions.js`):** [`erin_romance`](#erin_romance), [`sakura_romance`](#sakura_romance), [`shiro_romance`](#shiro_romance), [`yuki_romance`](#yuki_romance), [`vesper_evening`](#vesper_evening), [`rue_evening`](#rue_evening), [`isolde_evening`](#isolde_evening), [`lysandre_evening`](#lysandre_evening), [`erin_evening`](#erin_evening), [`sakura_evening`](#sakura_evening), [`shiro_evening`](#shiro_evening), [`yuki_evening`](#yuki_evening), [`elara_evening`](#elara_evening), [`seraphine_evening`](#seraphine_evening), [`sister_maren_evening`](#sister_maren_evening), [`kira_evening`](#kira_evening), [`nyxe_evening`](#nyxe_evening), [`rhea_evening`](#rhea_evening), [`valdra_evening`](#valdra_evening), [`aurelia_evening`](#aurelia_evening), [`brynn_evening`](#brynn_evening), [`sera_evening`](#sera_evening), [`seris_evening`](#seris_evening), [`auren_voss_evening`](#auren_voss_evening), [`revenant_bride_evening`](#revenant_bride_evening), [`mira_ashveil_evening`](#mira_ashveil_evening), [`maren_soleil_evening`](#maren_soleil_evening), [`cole_ashmer_evening`](#cole_ashmer_evening), [`calla_evening`](#calla_evening), [`mira_vane_evening`](#mira_vane_evening), [`aelindra_evening`](#aelindra_evening), [`elspeth_evening`](#elspeth_evening)
 
@@ -775,9 +775,357 @@ Every Unbound stub in Binding Codex with its **whole scene**, in the order the p
 
 ## Wildkin pack (`js/packs/wildkin.js`)
 
+### bramble_romance
+
+**When:** Plays in the **Envoys' Bower** (Menagerie), from their card.
+
+**Tags:** romance, shy, femboy
+
+**What to write** (from the guide):
+
+- *either choice* · romance, femboy: Bramble (bunny-folk, 23), Hollow Warren, Pale Wood. Shy, quick, freckled, cream rabbit ears and a cottontail that twitches when he's touched; his nose twitches when he lies. He gave you clover (a Warren courting gift). Soft and eager once he stops listening for wings. Kind choice: he's held; firm choice: he's caught, and glad.
+
+**Tokens you can use:** Pronouns for the player: `{they}` `{them}` `{their}` `{They}` `{Their}`, and verb helpers `{s}` `{is}` `{has}` `{was}`.
+
+**The scene:**
+
+- **Bramble of the Hollow Warren:** (holding out a sprig of clover, ears pink at the roots) In the Warren, you give clover to someone you want to share a burrow with. I've been carrying this around for a week. (his nose twitches) I'm not lying. You can check.
+- **Bramble of the Hollow Warren:** I'm not brave. But I came here alone through harpy country to ask a warlock for help, so I think I can ask you this.
+- **▸ The player chooses:**
+  - **Take the clover, and him.** ← **leads to your scene**
+    - **Bramble of the Hollow Warren:** (a startled, wonderful laugh) Oh. Oh, okay.
+    - *(only if you took the Wyrm's Mantle pact)* **Narration:** When your Mantle unfurls he jumps, then stares, then reaches out to touch a wing with enormous care. "You're a predator too," he whispers. "And you're safe."
+    - **[Gentle only]** **Narration:** He curls into you like he's finally found somewhere the sky can't reach, ears soft against your cheek, and falls asleep before he can stop smiling.
+    - **[Steamy — Unbound players see this too]** **Narration:** He's shy for exactly as long as it takes you to kiss him, and then he isn't: soft and eager and quick, ears flushed pink, his cottontail twitching every time you touch him, until he forgets entirely to be afraid of anything.
+    - ✍️ **YOUR UNBOUND LINES GO HERE** — stub `bramble_romance`. They play right after the Steamy line above.
+  - **"Come here, Bramble. I've got you."** ← **leads to your scene**
+    - **Bramble of the Hollow Warren:** (his ears go flat with relief, then straight up again) Yes. Yes, please.
+    - *(only if you took the Wyrm's Mantle pact)* **Narration:** When your Mantle unfurls he jumps, then stares, then reaches out to touch a wing with enormous care. "You're a predator too," he whispers. "And you're safe."
+    - **[Gentle only]** **Narration:** You hold him, and for the first time since he left the Warren he stops listening for wings.
+    - **[Steamy — Unbound players see this too]** **Narration:** You hold him down in the soft Bower straw and he melts under your hands, all freckles and flushed ears, gasping your name like he's been waiting his whole life for someone to catch him and be gentle about it.
+    - ✍️ **YOUR UNBOUND LINES GO HERE** — stub `bramble_romance`. They play right after the Steamy line above.
+- *(Chronicle entry: "Bramble of the Hollow Warren gave you clover.")*
+
+---
+
+### bramble_evening
+
+**When:** Plays in the **Envoys' Bower** (Menagerie), from their card. Repeatable.
+
+**Tags:** repeatable
+
+**What to write** (from the guide):
+
+- *"Spend the night with him."* · repeatable: Familiar now, every third night. Shorter and warmer than the first time.
+
+**Tokens you can use:** Pronouns for the player: `{they}` `{them}` `{their}` `{They}` `{Their}`, and verb helpers `{s}` `{is}` `{has}` `{was}`.
+
+**The scene:**
+
+- **Bramble of the Hollow Warren:** (holding out another sprig of clover, ears pink) I brought more. Can I stay tonight?
+- **▸ The player chooses:**
+  - **Spend the night with him.** ← **leads to your scene**
+    - **[Gentle only]** **Narration:** He falls asleep tucked into your side, ears twitching through a dream about clover fields with no sky over them.
+    - **[Steamy — Unbound players see this too]** **Narration:** He's braver every time: soft and eager, cottontail twitching, laughing breathlessly into your neck until the Bower lantern burns down.
+    - ✍️ **YOUR UNBOUND LINES GO HERE** — stub `bramble_evening`. They play right after the Steamy line above.
+  - **"Just stay and talk tonight."**
+    - **Bramble of the Hollow Warren:** (curling up beside you) Okay. Tell me about the strangest thing you've ever seen in the Wood. I'll tell you which herbs grow there.
+
+---
+
+### bramble_shared
+
+**When:** Plays from the **Talk** button at the Codex hub.
+
+**Tags:** group, monster, sapient partners
+
+**What to write** (from the guide):
+
+- *(first choice)* · group, sapient partners: He and Kestra (harpy): she used to hunt his Warren; now she guards his window. Feathers and flushed ears.
+
+**Tokens you can use:** Pronouns for the player: `{they}` `{them}` `{their}` `{They}` `{Their}`, and verb helpers `{s}` `{is}` `{has}` `{was}`.
+
+**The scene:**
+
+- **Narration:** Kestra has taken to perching outside Bramble's window in the Bower. "Guarding him," she says. Bramble has stopped flinching. Tonight, he asked her in.
+- **Kestra of the Aerie:** (half-perched on the Bower rail, wings mantling) The rabbit says he wants us both. (a delighted, toothy smile) I've never been asked by a rabbit before. I find I like it.
+- **Bramble of the Hollow Warren:** (red to the ears, very determined) I do. Both of you. If you want.
+- **▸ The player chooses:**
+  - **Bring them both into the Bower tonight.** ← **leads to your scene**
+    - *(only if you took the Wyrm's Mantle pact)* **Narration:** Your Mantle unfurls, and now there are two pairs of wings sheltering the shyest person in the room.
+    - **[Gentle only]** **Narration:** Kestra wraps her wings around both of you, and Bramble falls asleep between a harpy and a warlock, completely unafraid.
+    - **[Steamy — Unbound players see this too]** **Narration:** Under Kestra's wings and your hands, the rabbit who crossed harpy country to ask for help finds out exactly how good it feels to be wanted by both, all feathers and flushed ears and laughter.
+    - ✍️ **YOUR UNBOUND LINES GO HERE** — stub `bramble_shared`. They play right after the Steamy line above.
+  - **"Not tonight. Stay up here with me anyway."**
+    - **Narration:** Kestra tucks Bramble under one wing anyway, and the three of you watch the Pale Wood go dark together.
+- *(Chronicle entry: "Bramble and Kestra shared your Bower.")*
+
+---
+
+### ren_romance
+
+**When:** Plays in the **Envoys' Bower** (Menagerie), from their card.
+
+**Tags:** romance, flirt, femboy
+
+**What to write** (from the guide):
+
+- *either choice* · romance, femboy: Ren (fox-folk, 26), Ember Den, Charmed Glade. Sly, flirty, a thief who returns what he steals; the smile is armor. Red fox-tail that curls around you. Under the teasing, breathless and honest. Kind choice: he's held; firm choice: he's caught, and glad.
+
+**Tokens you can use:** Pronouns for the player: `{they}` `{them}` `{their}` `{They}` `{Their}`, and verb helpers `{s}` `{is}` `{has}` `{was}`.
+
+**The scene:**
+
+- **Ren of the Ember Den:** (turning your own ring over in his fingers) I've stolen a lot of things. Hearts, mostly. It's easy when nobody means it. (he puts the ring back on your hand, slowly) I mean this one. That's new. I don't like it. I like it a lot.
+- **Ren of the Ember Den:** So I'm asking, which foxes never do: will you have me?
+- **▸ The player chooses:**
+  - **"Yes. And stop hiding behind the smile."** ← **leads to your scene**
+    - **Ren of the Ember Den:** (the smile cracks; something softer looks out) ...Okay. No smile. Just me.
+    - *(only if you took the Wyrm's Mantle pact)* **Narration:** Your Mantle unfurls and Ren's ears go straight up. "Oh," he says softly. "You're the hound, and I still want you. That's new too."
+    - **[Gentle only]** **Narration:** He curls around you, tail over both of you like a blanket, and for once doesn't say anything clever at all.
+    - **[Steamy — Unbound players see this too]** **Narration:** Without the smile to hide behind he's all sharp angles and soft sounds, tail curling around your thigh, teasing right up until he can't, then breathless and honest and entirely yours.
+    - ✍️ **YOUR UNBOUND LINES GO HERE** — stub `ren_romance`. They play right after the Steamy line above.
+  - **Catch his wrist before he can steal anything else.** ← **leads to your scene**
+    - **Ren of the Ember Den:** (ears flat, grinning, caught) Oh, you're good. Oh, that's not fair.
+    - *(only if you took the Wyrm's Mantle pact)* **Narration:** Your Mantle unfurls and Ren's ears go straight up. "Oh," he says softly. "You're the hound, and I still want you. That's new too."
+    - **[Gentle only]** **Narration:** You don't let go of his wrist all night. He doesn't ask you to.
+    - **[Steamy — Unbound players see this too]** **Narration:** You pin the thief by the wrists and he laughs, then gasps, then stops laughing entirely, his clever mouth finally out of clever things to say as you take him apart slowly.
+    - ✍️ **YOUR UNBOUND LINES GO HERE** — stub `ren_romance`. They play right after the Steamy line above.
+- *(Chronicle entry: "Ren of the Ember Den stopped stealing, mostly.")*
+
+---
+
+### ren_evening
+
+**When:** Plays in the **Envoys' Bower** (Menagerie), from their card. Repeatable.
+
+**Tags:** repeatable
+
+**What to write** (from the guide):
+
+- *"Spend the night with him."* · repeatable: Familiar now, every third night. Shorter and warmer than the first time.
+
+**Tokens you can use:** Pronouns for the player: `{they}` `{them}` `{their}` `{They}` `{Their}`, and verb helpers `{s}` `{is}` `{has}` `{was}`.
+
+**The scene:**
+
+- **Ren of the Ember Den:** (sprawled across your bed before you've even asked) I stole your pillow. Come get it.
+- **▸ The player chooses:**
+  - **Spend the night with him.** ← **leads to your scene**
+    - **[Gentle only]** **Narration:** He falls asleep with his tail across your chest and your pillow under his chin, extremely pleased with himself.
+    - **[Steamy — Unbound players see this too]** **Narration:** He makes you work for it, teasing and sly and slippery, until you catch him, and then he's soft and gasping and very glad to be caught.
+    - ✍️ **YOUR UNBOUND LINES GO HERE** — stub `ren_evening`. They play right after the Steamy line above.
+  - **"Just stay and talk tonight."**
+    - **Ren of the Ember Den:** (propping his chin on his hands) Tell me a secret. I'll tell you a better one. That's how foxes flirt. And talk. Same thing.
+
+---
+
+### ren_shared
+
+**When:** Plays from the **Talk** button at the Codex hub.
+
+**Tags:** group, monster, sapient partners
+
+**What to write** (from the guide):
+
+- *(first choice)* · group, sapient partners: He and Tashra (cheetah-folk): a hunt nobody wants to end. Purrs, red fur, wicked laughter.
+
+**Tokens you can use:** Pronouns for the player: `{they}` `{them}` `{their}` `{They}` `{Their}`, and verb helpers `{s}` `{is}` `{has}` `{was}`.
+
+**The scene:**
+
+- **Narration:** Ren and Tashra have been racing each other around the Glade every morning. Ren loses every time. He says it's on purpose. Tonight they both turn up at your door.
+- **Tashra of the Pride:** (tail swaying) The fox says the Pride hunts in packs. (a sharp grin) He wants to know if that goes for other things too.
+- **Ren of the Ember Den:** (ears flushed, smile wobbly and real) I did say that. I meant it. Both of you?
+- **▸ The player chooses:**
+  - **Run with both of them tonight.** ← **leads to your scene**
+    - *(only if you took the Wyrm's Mantle pact)* **Narration:** Your Mantle unfurls and Tashra purrs; Ren stares, then laughs, delighted to be the smallest predator in the room.
+    - **[Gentle only]** **Narration:** Out in the long grass, the fox and the cheetah fall asleep tangled on either side of you, both tails over you like a blanket.
+    - **[Steamy — Unbound players see this too]** **Narration:** Out in the long grass Tashra chases and Ren teases, and between them they make you the prize of a hunt nobody wants to end, all purrs and red fur and breathless, wicked laughter.
+    - ✍️ **YOUR UNBOUND LINES GO HERE** — stub `ren_shared`. They play right after the Steamy line above.
+  - **"Not tonight. Stay up here with me anyway."**
+    - **Narration:** The three of you lie in the grass and watch the stars, and Ren tells Tashra every Den secret, and she tells him every Pride one.
+- *(Chronicle entry: "Ren and Tashra ran together, with you.")*
+
+---
+
+### elio_romance
+
+**When:** Plays in the **Envoys' Bower** (Menagerie), from their card.
+
+**Tags:** romance, gentle, femboy
+
+**What to write** (from the guide):
+
+- *either choice* · romance, femboy: Elio (fawn-folk, 24), Snowline Herd, Ashreach. Gentle, soft-spoken, dappled freckles and velvet antlers; his people freeze when afraid and he's choosing not to. The Pale Stag sent him. Wondering, then not gentle at all. Kind choice: he's held; firm choice: he's caught, and glad.
+
+**Tokens you can use:** Pronouns for the player: `{they}` `{them}` `{their}` `{They}` `{Their}`, and verb helpers `{s}` `{is}` `{has}` `{was}`.
+
+**The scene:**
+
+- **Elio of the Snowline Herd:** (standing very still, then deliberately not) My people freeze when we're afraid. I'm afraid now. But I'm choosing not to freeze.
+- **Elio of the Snowline Herd:** The Pale Stag showed me your face in a dream. I think it was telling me to stop waiting. (softly) I would like to be yours, if you'll have me.
+- **▸ The player chooses:**
+  - **Cup his face and kiss him, slowly.** ← **leads to your scene**
+    - **Elio of the Snowline Herd:** (a soft, shaking breath) ...Oh. That's what the dream meant.
+    - *(only if you took the Wyrm's Mantle pact)* **Narration:** Your Mantle unfurls and Elio goes still for one heartbeat, then deliberately steps closer and lays his palm on your scales. "I'm not afraid of you," he says, amazed. "Not even a little."
+    - **[Gentle only]** **Narration:** He rests his forehead against yours, antlers gentle, and stays exactly there until he falls asleep.
+    - **[Steamy — Unbound players see this too]** **Narration:** He trembles at the first touch and then leans into every one after, velvet antlers brushing your temple, dappled skin flushing warm, gentle and wondering and then not gentle at all.
+    - ✍️ **YOUR UNBOUND LINES GO HERE** — stub `elio_romance`. They play right after the Steamy line above.
+  - **"You don't have to be still with me. Come here."** ← **leads to your scene**
+    - **Elio of the Snowline Herd:** (and he does, all at once, like a deer finally running) Yes.
+    - *(only if you took the Wyrm's Mantle pact)* **Narration:** Your Mantle unfurls and Elio goes still for one heartbeat, then deliberately steps closer and lays his palm on your scales. "I'm not afraid of you," he says, amazed. "Not even a little."
+    - **[Gentle only]** **Narration:** He curls into your arms, and the stillness goes out of him completely.
+    - **[Steamy — Unbound players see this too]** **Narration:** You take him down into the soft Bower bedding and he gives himself over completely, every careful stillness of his life undone by your hands, gasping your name like a prayer the Stag taught him.
+    - ✍️ **YOUR UNBOUND LINES GO HERE** — stub `elio_romance`. They play right after the Steamy line above.
+- *(Chronicle entry: "Elio of the Snowline Herd stopped standing still.")*
+
+---
+
+### elio_evening
+
+**When:** Plays in the **Envoys' Bower** (Menagerie), from their card. Repeatable.
+
+**Tags:** repeatable
+
+**What to write** (from the guide):
+
+- *"Spend the night with him."* · repeatable: Familiar now, every third night. Shorter and warmer than the first time.
+
+**Tokens you can use:** Pronouns for the player: `{they}` `{them}` `{their}` `{They}` `{Their}`, and verb helpers `{s}` `{is}` `{has}` `{was}`.
+
+**The scene:**
+
+- **Elio of the Snowline Herd:** (at the Bower door, antlers catching the lantern light) The snowline's quiet tonight. Will you be quiet with me?
+- **▸ The player chooses:**
+  - **Spend the night with him.** ← **leads to your scene**
+    - **[Gentle only]** **Narration:** He sleeps the whole night through in your arms, which he tells you, every morning, still feels like a miracle.
+    - **[Steamy — Unbound players see this too]** **Narration:** He's still gentle, still wondering, but he isn't still at all anymore, and the Bower bedding is a ruin by morning.
+    - ✍️ **YOUR UNBOUND LINES GO HERE** — stub `elio_evening`. They play right after the Steamy line above.
+  - **"Just stay and talk tonight."**
+    - **Elio of the Snowline Herd:** (settling beside you, very calm) Tell me about the places you've been. I've only ever seen snow and trees. I want to imagine everywhere else.
+
+---
+
+### elio_shared
+
+**When:** Plays from the **Talk** button at the Codex hub.
+
+**Tags:** group, monster, sapient partners
+
+**What to write** (from the guide):
+
+- *(first choice)* · group, sapient partners: He and Vharra (drake-kin): a fawn and a dragon making peace by the hatchery fires. Heat and wonder.
+
+**Tokens you can use:** Pronouns for the player: `{they}` `{them}` `{their}` `{They}` `{Their}`, and verb helpers `{s}` `{is}` `{has}` `{was}`.
+
+**The scene:**
+
+- **Narration:** Vharra has started bringing Elio shiny things: copper bells, a silver comb for his antlers, a polished river-stone. "Apologies," she says gruffly. "For a thousand winters." Elio keeps every one.
+- **Vharra of the Clutch:** (arms crossed, wings twitching, absolutely not blushing) The deer asked if I wanted to... join. You. Both. (a fierce grin) I said I'd ask you. Drake-kin do things properly.
+- **Elio of the Snowline Herd:** (soft, certain) I asked her. I want this. Both of you.
+- **▸ The player chooses:**
+  - **Take them both to the warm hatchery.** ← **leads to your scene**
+    - *(only if you took the Wyrm's Mantle pact)* **Narration:** Your Mantle unfurls, and Vharra breathes "kin," and Elio, between two dragons, laughs with pure delight.
+    - **[Gentle only]** **Narration:** By the hatchery fires Elio sleeps between drake-kin and warlock, warm for the first winter of his life.
+    - **[Steamy — Unbound players see this too]** **Narration:** By the hatchery fires Vharra is all heat and pride and Elio all gentle wonder, and between them you learn exactly how a fawn and a dragon can make peace, slowly and then not slowly at all.
+    - ✍️ **YOUR UNBOUND LINES GO HERE** — stub `elio_shared`. They play right after the Steamy line above.
+  - **"Not tonight. Stay up here with me anyway."**
+    - **Narration:** Vharra wraps her wings around both of you by the fire, and Elio tells you the names of every star the Herd knows.
+- *(Chronicle entry: "Elio and Vharra shared the hatchery fire with you.")*
+
+---
+
+### tallow_romance
+
+**When:** Plays in the **Envoys' Bower** (Menagerie), from their card.
+
+**Tags:** romance, dreamy, femboy
+
+**What to write** (from the guide):
+
+- *either choice* · romance, femboy: Tallow (moth-folk, 27), Lantern Court, Black Mire. Dreamy and a little dramatic, fluffy collar, feathery antennae, dusty soft wings; drawn to the warmest light, which is you. He dims his wings to show he's sincere. Kind choice: he's held; firm choice: he's caught, and glad.
+
+**Tokens you can use:** Pronouns for the player: `{they}` `{them}` `{their}` `{They}` `{Their}`, and verb helpers `{s}` `{is}` `{has}` `{was}`.
+
+**The scene:**
+
+- **Tallow of the Lantern Court:** (drifting closer to you instead of the candle, which he has never once done before) My people are drawn to the warmest light in the dark. Everyone says it's foolish.
+- **Tallow of the Lantern Court:** (he dims his wings, very slowly) The warmest light in this city isn't a candle. It's you. May I come closer?
+- **▸ The player chooses:**
+  - **"Come here, lantern."** ← **leads to your scene**
+    - **Tallow of the Lantern Court:** (a delighted, fluttering laugh) Oh, you've been listening to Sythra.
+    - *(only if you took the Wyrm's Mantle pact)* **Narration:** Your Mantle unfurls, and Tallow gasps at the wings, then shyly spreads his own beside them to compare. "Yours are much more alarming," he says. "I love them."
+    - **[Gentle only]** **Narration:** He settles against you, wings folding soft around you both, and hums in his sleep like a moth beside a lamp.
+    - **[Steamy — Unbound players see this too]** **Narration:** He drifts into your arms and doesn't drift away again: soft wings trembling, fluffy collar brushing your throat, sweet and dramatic and utterly, sincerely undone.
+    - ✍️ **YOUR UNBOUND LINES GO HERE** — stub `tallow_romance`. They play right after the Steamy line above.
+  - **Catch him by the wrist and pull him into your light.** ← **leads to your scene**
+    - **Tallow of the Lantern Court:** (wings flaring, then folding, then dimming) Yes. Oh, yes, please, don't let go.
+    - *(only if you took the Wyrm's Mantle pact)* **Narration:** Your Mantle unfurls, and Tallow gasps at the wings, then shyly spreads his own beside them to compare. "Yours are much more alarming," he says. "I love them."
+    - **[Gentle only]** **Narration:** You don't let go. He falls asleep held, and for once doesn't dream about candles.
+    - **[Steamy — Unbound players see this too]** **Narration:** You pull him close and he burns for it, wings shivering wide, every dramatic sigh entirely sincere, giving himself to the one light he never has to keep his distance from.
+    - ✍️ **YOUR UNBOUND LINES GO HERE** — stub `tallow_romance`. They play right after the Steamy line above.
+- *(Chronicle entry: "Tallow of the Lantern Court found the warmest light.")*
+
+---
+
+### tallow_evening
+
+**When:** Plays in the **Envoys' Bower** (Menagerie), from their card. Repeatable.
+
+**Tags:** repeatable
+
+**What to write** (from the guide):
+
+- *"Spend the night with him."* · repeatable: Familiar now, every third night. Shorter and warmer than the first time.
+
+**Tokens you can use:** Pronouns for the player: `{they}` `{them}` `{their}` `{They}` `{Their}`, and verb helpers `{s}` `{is}` `{has}` `{was}`.
+
+**The scene:**
+
+- **Tallow of the Lantern Court:** (hovering at your door with a candle in each hand) I brought my own light. Can I stay in yours?
+- **▸ The player chooses:**
+  - **Spend the night with him.** ← **leads to your scene**
+    - **[Gentle only]** **Narration:** He falls asleep with his wings folded over both of you, soft as dust and warm as a lantern.
+    - **[Steamy — Unbound players see this too]** **Narration:** He's sweet and dramatic and shivering under your hands, wings fluttering every time you touch him, until he dims them in the slow bow that means he's sincere about every second of it.
+    - ✍️ **YOUR UNBOUND LINES GO HERE** — stub `tallow_evening`. They play right after the Steamy line above.
+  - **"Just stay and talk tonight."**
+    - **Tallow of the Lantern Court:** (settling down beside the lantern) Tell me what the Codex looks like at midnight. I imagine it very often.
+
+---
+
+### tallow_shared
+
+**When:** Plays from the **Talk** button at the Codex hub.
+
+**Tags:** group, monster, sapient partners
+
+**What to write** (from the guide):
+
+- *(first choice)* · group, sapient partners: He and Sythra (naga): coils and soft wings in the lantern-lit brood-pools.
+
+**Tokens you can use:** Pronouns for the player: `{they}` `{them}` `{their}` `{They}` `{Their}`, and verb helpers `{s}` `{is}` `{has}` `{was}`.
+
+**The scene:**
+
+- **Narration:** Sythra has started hanging the Court's lanterns herself, coiled up the Bower's pillars, while Tallow drifts beside her telling her where each one should go. Tonight they come to you together.
+- **Sythra of the Coil:** (coils loose, amused) The lantern asked if I would like to share you. (a slow hiss) I said I would very much like to share you.
+- **Tallow of the Lantern Court:** (wings dimmed, cheeks flushed) I asked. I meant it. Both of you.
+- **▸ The player chooses:**
+  - **Go down to the lantern-lit brood-pools with them.** ← **leads to your scene**
+    - *(only if you took the Wyrm's Mantle pact)* **Narration:** Your Mantle unfurls in the lantern light, and Sythra hisses with pleasure while Tallow spreads his wings beside yours.
+    - **[Gentle only]** **Narration:** In the warm, lantern-lit pools Sythra coils loose around you both, and Tallow falls asleep on your chest, dimming his wings in the slow way that means forever.
+    - **[Steamy — Unbound players see this too]** **Narration:** In the warm, lantern-lit brood-pools Sythra holds you both in gleaming coils while Tallow trembles between you, wings shivering, sweet and sincere, and the three of you make the darkest place in the Mire the warmest.
+    - ✍️ **YOUR UNBOUND LINES GO HERE** — stub `tallow_shared`. They play right after the Steamy line above.
+  - **"Not tonight. Stay up here with me anyway."**
+    - **Narration:** You sit together by the pools, and Sythra lets Tallow hang every lantern exactly where he wants it.
+- *(Chronicle entry: "Tallow and Sythra lit the brood-pools for you.")*
+
+---
+
 ### envoy_night_pride
 
-**When:** Plays in the **Envoys' Bower** (Menagerie), from her card. Repeatable.
+**When:** Plays in the **Envoys' Bower** (Menagerie), from their card. Repeatable.
 
 **Tags:** monster, sapient partner, breeding
 
@@ -804,7 +1152,7 @@ Every Unbound stub in Binding Codex with its **whole scene**, in the order the p
 
 ### envoy_night_aerie
 
-**When:** Plays in the **Envoys' Bower** (Menagerie), from her card. Repeatable.
+**When:** Plays in the **Envoys' Bower** (Menagerie), from their card. Repeatable.
 
 **Tags:** monster, sapient partner, breeding
 
@@ -831,7 +1179,7 @@ Every Unbound stub in Binding Codex with its **whole scene**, in the order the p
 
 ### envoy_night_coil
 
-**When:** Plays in the **Envoys' Bower** (Menagerie), from her card. Repeatable.
+**When:** Plays in the **Envoys' Bower** (Menagerie), from their card. Repeatable.
 
 **Tags:** monster, sapient partner, breeding
 
@@ -858,7 +1206,7 @@ Every Unbound stub in Binding Codex with its **whole scene**, in the order the p
 
 ### envoy_night_clutch
 
-**When:** Plays in the **Envoys' Bower** (Menagerie), from her card. Repeatable.
+**When:** Plays in the **Envoys' Bower** (Menagerie), from their card. Repeatable.
 
 **Tags:** monster, sapient partner, breeding
 
@@ -885,7 +1233,7 @@ Every Unbound stub in Binding Codex with its **whole scene**, in the order the p
 
 ### kin_rite_pride
 
-**When:** Plays in the **Envoys' Bower** (Menagerie), from her card. Repeatable.
+**When:** Plays in the **Envoys' Bower** (Menagerie), from their card. Repeatable.
 
 **Tags:** breeding, monster, sapient partner
 
@@ -918,7 +1266,7 @@ Every Unbound stub in Binding Codex with its **whole scene**, in the order the p
 
 ### kin_rite_aerie
 
-**When:** Plays in the **Envoys' Bower** (Menagerie), from her card. Repeatable.
+**When:** Plays in the **Envoys' Bower** (Menagerie), from their card. Repeatable.
 
 **Tags:** breeding, monster, sapient partner
 
@@ -951,7 +1299,7 @@ Every Unbound stub in Binding Codex with its **whole scene**, in the order the p
 
 ### kin_rite_coil
 
-**When:** Plays in the **Envoys' Bower** (Menagerie), from her card. Repeatable.
+**When:** Plays in the **Envoys' Bower** (Menagerie), from their card. Repeatable.
 
 **Tags:** breeding, monster, sapient partner
 
@@ -984,7 +1332,7 @@ Every Unbound stub in Binding Codex with its **whole scene**, in the order the p
 
 ### kin_rite_clutch
 
-**When:** Plays in the **Envoys' Bower** (Menagerie), from her card. Repeatable.
+**When:** Plays in the **Envoys' Bower** (Menagerie), from their card. Repeatable.
 
 **Tags:** breeding, monster, sapient partner
 
@@ -1017,7 +1365,7 @@ Every Unbound stub in Binding Codex with its **whole scene**, in the order the p
 
 ### kin_night_aerie
 
-**When:** Plays in the **Envoys' Bower** (Menagerie), from her card. Repeatable.
+**When:** Plays in the **Envoys' Bower** (Menagerie), from their card. Repeatable.
 
 **Tags:** breeding, monster, sapient partner, repeatable
 
@@ -1044,7 +1392,7 @@ Every Unbound stub in Binding Codex with its **whole scene**, in the order the p
 
 ### kin_night_coil
 
-**When:** Plays in the **Envoys' Bower** (Menagerie), from her card. Repeatable.
+**When:** Plays in the **Envoys' Bower** (Menagerie), from their card. Repeatable.
 
 **Tags:** breeding, monster, sapient partner, repeatable
 
@@ -1071,7 +1419,7 @@ Every Unbound stub in Binding Codex with its **whole scene**, in the order the p
 
 ### kin_night_clutch
 
-**When:** Plays in the **Envoys' Bower** (Menagerie), from her card. Repeatable.
+**When:** Plays in the **Envoys' Bower** (Menagerie), from their card. Repeatable.
 
 **Tags:** breeding, monster, sapient partner, repeatable
 
@@ -1098,7 +1446,7 @@ Every Unbound stub in Binding Codex with its **whole scene**, in the order the p
 
 ### kin_night_pride
 
-**When:** Plays in the **Envoys' Bower** (Menagerie), from her card. Repeatable.
+**When:** Plays in the **Envoys' Bower** (Menagerie), from their card. Repeatable.
 
 **Tags:** breeding, monster, sapient partner, repeatable
 
