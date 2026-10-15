@@ -12,6 +12,7 @@ import { registerAlias, registerCustomActor, ACTOR_ACCENTS } from './actors3d.js
 import { installPacks, PACKS, LOOKS } from './packs/index.js';
 import { BOWER_TALK } from './packs/wildkin.js';
 import { install as installCompanions, hangoutSteps } from './companions.js';
+import { UNBOUND } from './unbound_lines.js';
 
 // Character packs merge into the game tables before anything reads them.
 installPacks();
@@ -208,6 +209,11 @@ export function playEvent(ev, opts = {}) {
           if (st.give.gold) { S.gold += st.give.gold; toast(`+${st.give.gold} gold`, 'gold'); }
           if (st.give.item) { S.inventory[st.give.item] = (S.inventory[st.give.item] || 0) + 1; }
           idx++; continue;
+        }
+        // a written Unbound stub: swap in Zoe's lines (docs/UNBOUND_GUIDE.md)
+        if (st.spice === 'unbound' && !st.t && UNBOUND[st.stub || ev.id]) {
+          steps.splice(idx, 1, ...UNBOUND[st.stub || ev.id].map(t => ({ s: st.s || 'narr', t, spice: 'unbound' })));
+          continue;
         }
         if (st.t === '' && !st.choice) { idx++; continue; } // unwritten stub
         if (typeof st.t === 'function') { const t = st.t(S); if (!t) { idx++; continue; } steps[idx] = { ...st, t }; }

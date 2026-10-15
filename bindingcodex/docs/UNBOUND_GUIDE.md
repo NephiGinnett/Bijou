@@ -14,6 +14,7 @@ Everything Zoe needs to fill the **Unbound** intimacy tier in Binding Codex (104
 - **Unbound follows Steamy.** On Unbound the player sees the steamy line first, then your lines. The steamy line sets the scene; you pick up where it leaves off and carry the beat to its landing. You don't need to repeat the setting.
 - A stub can grow into several lines. Copy the stub line as many times as you need, and give each copy `spice: 'unbound'`. Dialogue works too: `{ s: 'vesper', t: '…', spice: 'unbound' }`.
 - An empty stub (`t: ''`) is skipped automatically, so an unfilled stub just reads as the Steamy version.
+- **Written stubs live in `js/unbound_lines.js`**, keyed by stub id: each string is one click-through line, and the game swaps them in for the empty stub. To add or revise, edit that file, or send new text and it gets swapped in.
 - **Need more context?** `docs/UNBOUND_CONTEXT.md` prints every stub's whole scene in reading order: what leads up to it, the choice the player made, the Gentle and Steamy lines, and the tokens you can use. Regenerate it after changing scenes with `node tools/stub_context.mjs` (run from `bindingcodex/`).
 - **Never add intimacy to a captive.** Every event with spice lines is gated by `free(...)`, so it can only fire once the character is a free ally. On load, the game logs a console warning if any spice line could be reached otherwise.
 
