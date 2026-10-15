@@ -1,6 +1,6 @@
 # Unbound Scene Context
 
-Every Unbound stub in Binding Codex with its **whole scene**, in the order the player reads it: 107 scenes, 138 stubs.
+Every Unbound stub in Binding Codex with its **whole scene**, in the order the player reads it: 110 scenes, 144 stubs.
 
 **Written so far:** 89 stub ids (✅ in the scenes below); the rest are marked ✍️. To revise a written one, edit its lines in `js/unbound_lines.js`, or send new text and Momo will swap it in.
 
@@ -21,7 +21,7 @@ Every Unbound stub in Binding Codex with its **whole scene**, in the order the p
 - **Classic Fantasy pack (`js/packs/classic.js`):** [`elara_romance`](#elara_romance), [`seraphine_romance`](#seraphine_romance), [`elspeth_revisit`](#elspeth_revisit), [`sister_maren_romance`](#sister_maren_romance), [`kira_romance`](#kira_romance)
 - **Wildkin pack (`js/packs/wildkin.js`):** [`bramble_romance`](#bramble_romance), [`bramble_evening`](#bramble_evening), [`bramble_shared`](#bramble_shared), [`ren_romance`](#ren_romance), [`ren_evening`](#ren_evening), [`ren_shared`](#ren_shared), [`elio_romance`](#elio_romance), [`elio_evening`](#elio_evening), [`elio_shared`](#elio_shared), [`tallow_romance`](#tallow_romance), [`tallow_evening`](#tallow_evening), [`tallow_shared`](#tallow_shared), [`envoy_night_pride`](#envoy_night_pride), [`envoy_night_aerie`](#envoy_night_aerie), [`envoy_night_coil`](#envoy_night_coil), [`envoy_night_clutch`](#envoy_night_clutch), [`kin_rite_pride`](#kin_rite_pride), [`kin_rite_aerie`](#kin_rite_aerie), [`kin_rite_coil`](#kin_rite_coil), [`kin_rite_clutch`](#kin_rite_clutch), [`kin_night_aerie`](#kin_night_aerie), [`kin_night_coil`](#kin_night_coil), [`kin_night_clutch`](#kin_night_clutch), [`kin_night_pride`](#kin_night_pride), [`tribe_aerie_rite`](#tribe_aerie_rite), [`tribe_coil_rite`](#tribe_coil_rite), [`tribe_clutch_rite`](#tribe_clutch_rite), [`tribe_pride_rite`](#tribe_pride_rite), [`lysandre_romance`](#lysandre_romance), [`rue_mantle`](#rue_mantle), [`nyxe_mantle`](#nyxe_mantle)
 - **Hearts & Hearth pack (`js/packs/hearts.js`):** [`circle_pact`](#circle_pact), [`circle_night`](#circle_night), [`circle_mantle`](#circle_mantle), [`circle_lysandre`](#circle_lysandre), [`dawnward_hearts`](#dawnward_hearts), [`brats`](#brats), [`two_altars`](#two_altars), [`envoys_council`](#envoys_council)
-- **Through the Rift pack (`js/packs/rift.js`):** [`victoria_romance`](#victoria_romance), [`joanne_romance`](#joanne_romance), [`diane_romance`](#diane_romance), [`margot_romance`](#margot_romance), [`moira_romance`](#moira_romance), [`victoria_evening`](#victoria_evening), [`joanne_evening`](#joanne_evening), [`diane_evening`](#diane_evening), [`margot_evening`](#margot_evening), [`moira_evening`](#moira_evening), [`celeste_romance`](#celeste_romance), [`celeste_evening`](#celeste_evening)
+- **Through the Rift pack (`js/packs/rift.js`):** [`victoria_romance`](#victoria_romance), [`joanne_romance`](#joanne_romance), [`diane_romance`](#diane_romance), [`margot_romance`](#margot_romance), [`moira_romance`](#moira_romance), [`victoria_evening`](#victoria_evening), [`joanne_evening`](#joanne_evening), [`diane_evening`](#diane_evening), [`margot_evening`](#margot_evening), [`moira_evening`](#moira_evening), [`celeste_romance`](#celeste_romance), [`celeste_evening`](#celeste_evening), [`lane_poker_night`](#lane_poker_night), [`lane_coven_of_two`](#lane_coven_of_two), [`lane_block_party`](#lane_block_party)
 - **Companions (`js/companions.js`):** [`erin_romance`](#erin_romance), [`sakura_romance`](#sakura_romance), [`shiro_romance`](#shiro_romance), [`yuki_romance`](#yuki_romance), [`vesper_evening`](#vesper_evening), [`rue_evening`](#rue_evening), [`isolde_evening`](#isolde_evening), [`lysandre_evening`](#lysandre_evening), [`erin_evening`](#erin_evening), [`sakura_evening`](#sakura_evening), [`shiro_evening`](#shiro_evening), [`yuki_evening`](#yuki_evening), [`elara_evening`](#elara_evening), [`seraphine_evening`](#seraphine_evening), [`sister_maren_evening`](#sister_maren_evening), [`kira_evening`](#kira_evening), [`nyxe_evening`](#nyxe_evening), [`rhea_evening`](#rhea_evening), [`valdra_evening`](#valdra_evening), [`aurelia_evening`](#aurelia_evening), [`brynn_evening`](#brynn_evening), [`sera_evening`](#sera_evening), [`seris_evening`](#seris_evening), [`auren_voss_evening`](#auren_voss_evening), [`revenant_bride_evening`](#revenant_bride_evening), [`mira_ashveil_evening`](#mira_ashveil_evening), [`maren_soleil_evening`](#maren_soleil_evening), [`cole_ashmer_evening`](#cole_ashmer_evening), [`calla_evening`](#calla_evening), [`mira_vane_evening`](#mira_vane_evening), [`aelindra_evening`](#aelindra_evening), [`elspeth_evening`](#elspeth_evening)
 
 ## Base game (`js/story.js`)
@@ -2292,6 +2292,108 @@ Every Unbound stub in Binding Codex with its **whole scene**, in the order the p
     - ✍️ **YOUR UNBOUND LINES GO HERE** — stub `celeste_evening`. They play right after the Steamy line above.
   - **"Just walk with me tonight."**
     - **Celeste:** (she takes your arm, which is somehow more dangerous than anything else) Just a walk. Along the edge of the fen, where nobody looks.
+
+---
+
+### lane_poker_night
+
+**Tags:** group, older women, hotwife (husbands know and approve)
+
+**What to write** (from the guide):
+
+- *1 · "Both of you. Now."* · group, hotwife, dominance: Victoria and Joanne, while Harold and Gary play poker (and know exactly where their wives are). Victoria tries to run it and finally lets go; Joanne is soft, generous and shameless now that she has company. By the end they're holding hands across Zoe. Harold wants a written summary.
+- *2 · "Then show me what you two worked out."* · group, hotwife, spoiling: The same night, their plan: Victoria keeps score, Joanne ignores the plan, and Zoe gets spoiled thoroughly by both.
+
+**Tokens you can use:** Pronouns for the player: `{they}` `{them}` `{their}` `{They}` `{Their}`, and verb helpers `{s}` `{is}` `{has}` `{was}`.
+
+**The scene:**
+
+- **Narration:** Thursday is poker night at Harold and Gary's. Harold and Gary, it turns out, have been told exactly where their wives are spending it.
+- **Joanne:** (pouring three glasses of wine in the Kettle & Crown's back room, a little pink) Vicky had an idea. I want it on the record that I said it was a terrible idea.
+- **Victoria:** (not looking up from her glass) And then you said yes in under four seconds. I timed it. (she finally looks at you) We've compared notes, Zoe. Extensively. We'd like to stop comparing and start sharing.
+- **Joanne:** Gary said, and I quote, "Have fun, Jo, tell Vic I said hi." Harold asked for a written summary.
+- **Victoria:** He'll get one. Bullet points.
+- **▸ The player chooses:**
+  - **"Both of you. Now."** ← **leads to your scene**
+    - **[Gentle only]** **Narration:** You take them both upstairs, Victoria still trying to run the evening and Joanne laughing at her for trying, until neither of them is running anything at all.
+    - **[Steamy — Unbound players see this too]** **Narration:** The HOA president and the innkeeper, finally done being in charge of everyone: Victoria taking every order you give like it's a relief, Joanne soft and generous and shameless now that she has company, and the two of them holding hands across you by the end like two women who just found out they could have this.
+    - ✍️ **YOUR UNBOUND LINES GO HERE** — stub `lane_poker_night`. They play right after the Steamy line above.
+  - **"Then show me what you two worked out."** ← **leads to your scene**
+    - **[Gentle only]** **Narration:** They show you, taking turns, Victoria keeping score and Joanne making sure nobody goes hungry, in any sense, until dawn.
+    - **[Steamy — Unbound players see this too]** **Narration:** Victoria has drafted a plan, of course, and Joanne ignores it, of course, and between the two of them you are spoiled so thoroughly and so lovingly that the plan becomes a very long list of things both of them want to do again.
+    - ✍️ **YOUR UNBOUND LINES GO HERE** — stub `lane_poker_night`. They play right after the Steamy line above.
+  - **"Just wine tonight. The three of us."**
+    - **Narration:** Three glasses become two bottles, and Victoria laughs harder than you've ever heard her, and Joanne falls asleep on your shoulder. Harold's summary is very short: "Wine. Good."
+- *(Chronicle entry: "Poker night at Harold and Gary's. Their wives spent it with you.")*
+
+---
+
+### lane_coven_of_two
+
+**Tags:** group, older women, witchy
+
+**What to write** (from the guide):
+
+- *1 · Step into the candlelight with them.* · group, witchy: Diane and Moira in the greenhouse at midnight, by a hundred black candles. Herbs and hexes: Diane flexible and laughing, Moira slow and certain, and the vines "promised to behave" (the vines lie).
+- *2 · "Teach me something. Both of you."* · group, witchy, dominance: Every "lesson" is a dare, and Zoe takes them all until the two most composed women on the Lane are the breathless ones.
+
+**Tokens you can use:** Pronouns for the player: `{they}` `{them}` `{their}` `{They}` `{Their}`, and verb helpers `{s}` `{is}` `{has}` `{was}`.
+
+**The scene:**
+
+- **Narration:** At midnight Diane's greenhouse is lit with a hundred of Moira's candles, and the night-blooming flowers are all turned toward the door you come through.
+- **Moira:** (a black candle in each hand) Diane and I have been talking, dear. Herbs and hexes. Roots and wax. It turns out we have a great deal in common.
+- **Diane:** (grinning, dirt on her cheek) Mostly you. We have you in common. We thought we'd see what happens if we stop taking turns.
+- **Moira:** The vines have promised to behave. (a pause) The vines lie.
+- **▸ The player chooses:**
+  - **Step into the candlelight with them.** ← **leads to your scene**
+    - **[Gentle only]** **Narration:** Candle-flame and glowing leaves and two pairs of patient hands, and somewhere in it the greenhouse sighs and the flowers lean closer.
+    - **[Steamy — Unbound players see this too]** **Narration:** The herb-wife and the hexwife work you like a spell they've rehearsed for weeks: Diane flexible and laughing and utterly unashamed, Moira slow and deliberate and certain, the vines curling helpfully where no one asked them to and the black candle burning tallest all night.
+    - ✍️ **YOUR UNBOUND LINES GO HERE** — stub `lane_coven_of_two`. They play right after the Steamy line above.
+  - **"Teach me something. Both of you."** ← **leads to your scene**
+    - **[Gentle only]** **Narration:** They teach you a great deal, most of it not about botany.
+    - **[Steamy — Unbound players see this too]** **Narration:** Every lesson is a dare, and you take every one, until the two most composed women on the Lane are the ones breathless and laughing among the candles, asking what you'd like to learn next.
+    - ✍️ **YOUR UNBOUND LINES GO HERE** — stub `lane_coven_of_two`. They play right after the Steamy line above.
+  - **"Just show me the night flowers."**
+    - **Narration:** They do. Diane names every one, Moira tells you which ones are lying, and the three of you watch them open until the candles burn down.
+- *(Chronicle entry: "A midnight in Diane's greenhouse, by Moira's candles.")*
+
+---
+
+### lane_block_party
+
+**Tags:** group, older women, polyamory, hotwife (husbands know and approve)
+
+**What to write** (from the guide):
+
+- *1 · "Motion carries. Everyone inside."* · group, polyamory, hotwife: The after-party at the biggest house on the Lane: every Lane woman who's close to Zoe (3 to 6 of Victoria, Joanne, Diane, Margot, Moira, and Celeste if she left Brad; their lines are conditional). Each exactly as she is: bossy, soft, flexible, loud, slow, reckless. Keep it working whoever is present. The husbands are bowling.
+- *2 · "I want to dance with every one of you first."* · group, polyamory: One slow dance with each under the string lights, then all of them indoors, each making sure Zoe knows why she chose her.
+
+**Tokens you can use:** Pronouns for the player: `{they}` `{them}` `{their}` `{They}` `{Their}`, and verb helpers `{s}` `{is}` `{has}` `{was}`.
+
+**The scene:**
+
+- **Narration:** Larkspur Lane throws a block party in the fen: string lights between the mailboxes, a folding table, Joanne's casseroles, and a hand-painted sign on the basketball hoop that says THE CODEX — OUR FAVORITE NEIGHBOR.
+- **Narration:** The husbands, it is announced, are bowling. In a swamp. Nobody asks how.
+- *(only in some playthroughs)* **Victoria:** (raising a glass) I move that the after-party be held at the biggest house on the Lane. All in favor.
+- *(only in some playthroughs)* **Joanne:** (already untying her apron) Aye, sweetheart. Aye.
+- *(only in some playthroughs)* **Diane:** Aye. I brought a blanket. And a flower for everyone. And possibly a vine.
+- *(only in some playthroughs)* **Margot:** (kicking off her heels) Babe, I've been ready since the first casserole. Aye, aye, aye.
+- *(only in some playthroughs)* **Moira:** (lighting a single black candle) The candle has voted. It's unanimous.
+- *(only if `celeste_left` has happened)* **Celeste:** (barefoot, no ring, laughing) I spent fifteen years at block parties wishing I was anywhere else. Not tonight. Aye.
+- **Narration:** Every one of them chose you on her own first. Tonight they choose you together, and then they look at you and wait.
+- **▸ The player chooses:**
+  - **"Motion carries. Everyone inside."** ← **leads to your scene**
+    - **[Gentle only]** **Narration:** The after-party lasts until the string lights go out, and nobody on the Lane gets any sleep, and nobody on the Lane minds.
+    - **[Steamy — Unbound players see this too]** **Narration:** The whole Lane at once, every woman who fell for you, each of them exactly as she is: bossy and soft and flexible and loud and slow and reckless, sharing you and each other until the biggest house on the Lane is full of laughter and gasps and someone, somewhere, calling for more wine.
+    - ✍️ **YOUR UNBOUND LINES GO HERE** — stub `lane_block_party`. They play right after the Steamy line above.
+  - **"I want to dance with every one of you first."** ← **leads to your scene**
+    - **[Gentle only]** **Narration:** You dance with each of them under the string lights, one song each, and by the last song the dancing has moved indoors and become something else entirely.
+    - **[Steamy — Unbound players see this too]** **Narration:** One dance each, slow and close, and then all of them at once in the big house with the lights low, every woman on the Lane making sure you know exactly why she chose you.
+    - ✍️ **YOUR UNBOUND LINES GO HERE** — stub `lane_block_party`. They play right after the Steamy line above.
+  - **"Let's just have the party."**
+    - **Narration:** You have the party. It's the best one the Lane has ever thrown, and that's saying something. The husbands come home at dawn, muddy and triumphant, and nobody tells them anything.
+- *(Chronicle entry: "Larkspur Lane threw a block party in your honor. The after-party was at the biggest house on the Lane.")*
 
 ---
 

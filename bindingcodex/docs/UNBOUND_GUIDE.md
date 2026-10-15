@@ -159,6 +159,17 @@ Five women from a suburban cul-de-sac that fell into the fen. All are adults in 
 | `celeste_romance` | 2 · "Then let me look at you first." | affair, married, slow | The same night, slower: nobody has looked at her in a year. Being seen undoes her before anything else does. |
 | `celeste_evening` | Stay the night. | repeatable, affair | Stolen and quick: the greenhouse, a hayloft, once the back of Margot's stall, her hand over her own mouth. After she leaves Brad it's no longer secret, so warmer and slower. Never during pregnancy (the evening is closed then). |
 
+**Lane group scenes.** Everyone in them has had her own romance with Zoe and is at favor 8+. They're reached from buttons at the top of the Larkspur Lane screen. The husbands know and approve; Celeste is at the block party only if she has left Brad.
+
+| Event | Choice | Tags | What to write |
+| --- | --- | --- | --- |
+| `lane_poker_night` | 1 · "Both of you. Now." | group, hotwife, dominance | Victoria and Joanne, while Harold and Gary play poker (and know exactly where their wives are). Victoria tries to run it and finally lets go; Joanne is soft, generous and shameless now that she has company. By the end they're holding hands across Zoe. Harold wants a written summary. |
+| `lane_poker_night` | 2 · "Then show me what you two worked out." | group, hotwife, spoiling | The same night, their plan: Victoria keeps score, Joanne ignores the plan, and Zoe gets spoiled thoroughly by both. |
+| `lane_coven_of_two` | 1 · Step into the candlelight with them. | group, witchy | Diane and Moira in the greenhouse at midnight, by a hundred black candles. Herbs and hexes: Diane flexible and laughing, Moira slow and certain, and the vines "promised to behave" (the vines lie). |
+| `lane_coven_of_two` | 2 · "Teach me something. Both of you." | group, witchy, dominance | Every "lesson" is a dare, and Zoe takes them all until the two most composed women on the Lane are the breathless ones. |
+| `lane_block_party` | 1 · "Motion carries. Everyone inside." | group, polyamory, hotwife | The after-party at the biggest house on the Lane: every Lane woman who's close to Zoe (3 to 6 of Victoria, Joanne, Diane, Margot, Moira, and Celeste if she left Brad; their lines are conditional). Each exactly as she is: bossy, soft, flexible, loud, slow, reckless. Keep it working whoever is present. The husbands are bowling. |
+| `lane_block_party` | 2 · "I want to dance with every one of you first." | group, polyamory | One slow dance with each under the string lights, then all of them indoors, each making sure Zoe knows why she chose her. |
+
 ### Hearts & Hearth (`js/packs/hearts.js`)
 
 Group scenes. Every participant is a free ally who has had her own romance and is at bond 8+ (the Envoys' Council needs two or more envoys who've had the rite). Characters whose lines have *(only if …)* in the context doc may or may not be there; write so the scene works either way.
