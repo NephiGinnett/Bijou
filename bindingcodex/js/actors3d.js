@@ -8,7 +8,8 @@
 
 import * as THREE from 'three';
 import { GLTFLoader } from '../vendor/GLTFLoader.js';
-import { tmat, tadd, SS, SC, ST, outline, face, lathe, pleat, makeRig } from './toon.js';
+import { tmat, tadd, SS, SC, ST } from './toon.js';
+import { toonFigure, toonHorns, toonTail } from './toonfig.js';
 
 const gltfLoader = new GLTFLoader();
 let manifestPromise = null;
@@ -198,131 +199,95 @@ function chibi(o = {}) {
 // ---------------------------------------------------------------
 // Figures: where the body's landmarks sit. 'curvy' keeps chibi proportions;
 // 'tall' is a semi-chibi with a smaller head and longer legs.
-export const TOON_FIGURES = {
-  curvy: { hr: 0.31, hy: 1.2, shoulderY: 0.92, bustY: 0.8, waistY: 0.63, hipY: 0.5, hemY: 0.33, waistR: 0.112, hipR: 0.27, bustR: 0.115, shoulderX: 0.19 },
-  tall:  { hr: 0.255, hy: 1.6, shoulderY: 1.3, bustY: 1.17, waistY: 0.98, hipY: 0.82, hemY: 0.62, waistR: 0.105, hipR: 0.25, bustR: 0.11, shoulderX: 0.18 },
-};
-export let TOON_FIGURE = 'tall';
+// ---------------------------------------------------------------
+// soft-toon main cast (see toonfig.js for the shared recipe)
+// ---------------------------------------------------------------
+const glow = c => tmat(c, { emissive: c, ei: 1.8 });
 
-function toonPlayer(v, opts = {}) {
+// Zoe: blonde, a dark green corset dress with gold, a short cape.
+function toonPlayer(v) {
   const scar = !!v && v.endsWith('_scar'); if (scar) v = v.slice(0, -5);
   const mantle = !!v && v.endsWith('_mantle'); if (mantle) v = v.slice(0, -7);
   const fem = v === 'she' || v == null;
-  const F = TOON_FIGURES[opts.figure || TOON_FIGURE];
-  const { hr, hy, shoulderY, bustY, waistY, hipY, hemY } = F;
-  const waistR = fem ? F.waistR : F.waistR + 0.05, hipR = fem ? F.hipR : F.hipR - 0.04;
-  const k = hr / 0.32;
-  const g = new THREE.Group();
-  const body = new THREE.Group(); body.name = 'body'; g.add(body);
-  const SKIN = 0xf6dcc8, HAIR = 0xf2d27a, GREEN = 0x1f4a34, DEEP = 0x143224, GOLD = 0xd8b45a, STOCK = 0x1b2620, BOOT = 0x2a1e18;
-  const skin = tmat(SKIN, { soft: true }), hair = tmat(HAIR), green = tmat(GREEN), deep = tmat(DEEP), gold = tmat(GOLD), stockM = tmat(STOCK), bootM = tmat(BOOT);
-
-  // --- legs: hip pivot > thigh > knee pivot > shin > boot -------------------------------
-  const legLen = hipY, tl = legLen * 0.5, sl = legLen * 0.5;
-  const thighP = [[0, -tl], [0.058, -tl], [0.068, -tl * 0.6], [0.088, -tl * 0.15], [0.094, 0], [0, 0]];
-  const shinP = [[0, -sl], [0.04, -sl], [0.044, -sl * 0.85], [0.062, -sl * 0.45], [0.055, -sl * 0.05], [0.057, 0], [0, 0]];
-  const legs = {};
-  for (const sx of [-1, 1]) {
-    const root = new THREE.Group(); root.position.set(sx * 0.088, hipY, 0); g.add(root);
-    const thigh = new THREE.Group(); root.add(thigh);
-    tadd(thigh, lathe(thighP, 28), skin, 0, 0, 0);
-    tadd(thigh, lathe(thighP.filter(([, y]) => y <= -tl * 0.78).concat([[0.068, -tl * 0.78], [0, -tl * 0.78]]).map(([r, y]) => [r && r + 0.004, y]), 28), stockM, 0, 0, 0);
-    tadd(thigh, ST(0.072, 0.011), gold, 0, -tl * 0.78, 0, Math.PI / 2);
-    const shin = new THREE.Group(); shin.position.y = -tl; thigh.add(shin);
-    tadd(shin, SS(0.06, 20, 16), stockM, 0, 0, 0);                                     // knee
-    tadd(shin, lathe(shinP.map(([r, y]) => [r && r + 0.004, y]), 28), stockM, 0, 0, 0);
-    tadd(shin, lathe([[0, -sl], [0.056, -sl], [0.058, -sl * 0.8], [0.06, -sl * 0.62], [0, -sl * 0.62]], 28), bootM, 0, 0, 0); // boot shaft
-    tadd(shin, ST(0.06, 0.009), gold, 0, -sl * 0.62, 0, Math.PI / 2);
-    tadd(shin, SS(0.05, 20, 14), bootM, 0, -sl + 0.01, 0.045).scale.set(0.95, 0.62, 1.75);   // foot, pointing forward
-    tadd(shin, SS(0.03, 12, 10), bootM, 0, -sl - 0.005, -0.03);                           // heel
-    legs[sx < 0 ? 'L' : 'R'] = { root, thigh, shin };
-  }
-
-  // --- torso ---------------------------------------------------------------------------
-  tadd(body, lathe([[0, bustY - 0.06], [0.13, bustY - 0.06], [0.15, bustY], [F.shoulderX + 0.02, shoulderY - 0.02], [0.09, shoulderY + 0.04], [0, shoulderY + 0.06]], 32), skin, 0, 0, 0);
-  const neckY = bustY + 0.05;
-  tadd(body, lathe([[0, waistY - 0.06], [waistR, waistY - 0.06], [waistR, waistY + 0.04], [waistR + 0.04, bustY - 0.08], [0.165, bustY], [0.16, neckY], [0, neckY]], 40), green, 0, 0, 0);
-  const bust = new THREE.Group(); bust.userData.restY = 0; body.add(bust);
-  if (fem) {
-    const bm = tmat(GREEN, { noOutline: true });
-    for (const sx of [-1, 1]) tadd(bust, SS(F.bustR), bm, sx * 0.075, bustY + 0.005, 0.085).scale.set(1, 0.93, 0.95);
-    tadd(bust, ST(0.158, 0.013), gold, 0, neckY - 0.005, 0.01, Math.PI / 2 - 0.08);
-  }
-  tadd(body, lathe([[0, waistY - 0.07], [waistR + 0.012, waistY - 0.07], [waistR + 0.012, waistY + 0.08], [0, waistY + 0.08]], 40), deep, 0, 0, 0);
-  for (const y of [waistY - 0.07, waistY + 0.08]) tadd(body, ST(waistR + 0.013, 0.008), gold, 0, y, 0, Math.PI / 2);
-  const lace = tmat(GOLD, { noOutline: true });
-  for (let i = 0; i < 3; i++) {
-    const y = waistY - 0.04 + i * 0.045;
-    tadd(body, new THREE.BoxGeometry(0.06, 0.008, 0.008), lace, 0, y, waistR + 0.012, 0, 0, 0.5);
-    tadd(body, new THREE.BoxGeometry(0.06, 0.008, 0.008), lace, 0, y, waistR + 0.012, 0, 0, -0.5);
-  }
-  // skirt: high-waisted, hugging the hips, a short pleated flare
-  const hips = new THREE.Group(); hips.position.y = waistY; body.add(hips);
-  const skirtPts = [[0, waistY - 0.06], [waistR + 0.01, waistY - 0.06], [hipR * 0.82, (waistY + hipY) / 2 - 0.03], [hipR, hipY], [hipR * 1.04, (hipY + hemY) / 2], [hipR * 1.12, hemY], [0, hemY]].map(([r, y]) => [r, y - waistY]);
-  tadd(hips, pleat(lathe(skirtPts, 64), 14, hipY - waistY, hemY - waistY, 0.08), green, 0, 0, 0);
-  tadd(hips, ST(hipR * 1.13, 0.013), gold, 0, hemY - waistY + 0.004, 0, Math.PI / 2);
-  // cape
-  const capeH = shoulderY - hemY - 0.05;
-  const capeM = tmat(DEEP); capeM.side = THREE.DoubleSide;
-  tadd(body, new THREE.CylinderGeometry(F.shoulderX + 0.02, hipR * 1.3, capeH, 32, 1, true, Math.PI / 2, Math.PI), capeM, 0, shoulderY - capeH / 2, -0.03);
-
-  // --- arms on shoulder pivots ------------------------------------------------------------
-  const armLen = shoulderY - hipY + 0.05;
-  const arms = {};
-  for (const sx of [-1, 1]) {
-    const arm = new THREE.Group();
-    arm.position.set(sx * (F.shoulderX + 0.04), shoulderY - 0.04, 0);
-    arm.userData.rest = sx * 0.32; arm.rotation.z = arm.userData.rest;
-    arm.name = sx < 0 ? 'armL' : 'armR';
-    body.add(arm);
-    tadd(arm, SS(0.07), green, 0, -0.01, 0).scale.set(1, 0.8, 1);
-    tadd(arm, SC(0.045, armLen * 0.36), skin, 0, -armLen * 0.28, 0);
-    tadd(arm, SC(0.055, armLen * 0.3), green, 0, -armLen * 0.66, 0);
-    tadd(arm, ST(0.055, 0.012), gold, 0, -armLen * 0.83, 0, Math.PI / 2);
-    tadd(arm, SS(0.055), skin, 0, -armLen * 0.93, 0);
-    if (sx < 0) tadd(arm, ST(0.06, 0.016), tmat(0xc86cff, { emissive: 0xc86cff, ei: 1.6 }), 0, -armLen * 0.88, 0.02, Math.PI / 2);
-    else { const orb = tadd(arm, SS(0.06), tmat(0xc86cff, { emissive: 0xc86cff, ei: 2 }), 0.05, -armLen * 0.98, 0.07); orb.name = 'orb'; }
-    arms[sx < 0 ? 'L' : 'R'] = arm;
-  }
-
-  // --- head ---------------------------------------------------------------------------
-  tadd(body, SC(0.045, 0.05), skin, 0, shoulderY + 0.06, 0);
-  const head = tadd(body, SS(hr), skin, 0, hy, 0); head.name = 'head';
-  for (const sx of [-1, 1]) tadd(body, SS(0.06 * k), skin, sx * hr * 0.97, hy - 0.02, 0).scale.set(0.6, 1, 0.8);
-  const faceMesh = face(body, hr, hy, { eye: 0x8a5ad8, brow: 0xc8a050, blush: 0xff8aa0 });
-  tadd(body, SS(hr * 1.08), hair, 0, hy + 0.05 * k, -0.035 * k).scale.set(1, 0.95, 1);
-  [-0.22, -0.13, -0.045, 0.045, 0.13, 0.22].forEach((x0, i) => {
-    const x = x0 * k, R = hr * 1.08;
-    tadd(body, SS(0.085 * k), hair, x, hy + (0.16 - Math.abs(x0) * 0.35) * k, Math.sqrt(R * R - x * x) - 0.06 * k, -0.25, 0, -x0 * 1.6 + (i % 2 ? 0.08 : -0.08)).scale.set(0.62, 1.45, 0.5);
+  return toonFigure({
+    fem, build: fem ? 'curvy' : 'average', bust: 0.92,
+    colors: { skin: 0xf6dcc8, hair: 0xf2d27a, main: 0x1f4a34, deep: 0x143224, trim: 0xd8b45a },
+    face: { eye: 0x8a5ad8, brow: 0xc8a050, blush: 0xff8aa0 },
+    top: { style: 'corset', cut: 1.1 }, skirt: { style: 'pleated' },
+    legs: { style: fem ? 'stockings' : 'pants', color: 0x1b2620, boots: 0x2a1e18 },
+    sleeves: 'detached', cape: 0x143224,
+    hair: fem ? 'long' : 'short',
+    extras: c => {
+      tadd(c.arms.L, ST(0.06, 0.016), glow(0xc86cff), 0, -c.armLen * 0.88, 0.02, Math.PI / 2);                    // the mark
+      tadd(c.arms.R, SS(0.06), glow(0xc86cff), 0.05, -c.armLen * 0.98, 0.07).name = 'orb';                         // hex-light
+      if (mantle) { toonHorns(c.body, c, 0x2a1a34, 1.1); wings(c.body, 0x1a2a22, c.shoulderY + 0.05, 0.62); toonTail(c.body, c, 0x143224, 0xc86cff); }
+      if (scar) tadd(c.body, new THREE.BoxGeometry(0.03, 0.24 * c.k, 0.012), glow(0xff5a3a), 0.1 * c.k, c.hy, c.hr + 0.005, 0.1, 0, -0.5);
+    },
   });
-  const sideLen = fem ? (hy - bustY) * 0.9 : 0.18 * k;
-  for (const sx of [-1, 1]) tadd(body, SC(0.058 * k, sideLen), hair, sx * hr * 0.92, hy - sideLen * 0.45, 0.07 * k, 0, 0, sx * 0.08);
-  if (fem) {
-    const len = hy - waistY;
-    tadd(body, SC(0.2 * k, len * 0.8), hair, 0, hy - len * 0.55, -0.2 * k).scale.set(1.25, 1, 0.6);
-    for (const [x, rz] of [[-0.16, 0.25], [0, 0], [0.16, -0.25]]) tadd(body, SC(0.08 * k, 0.18), hair, x * k, waistY + 0.02, -0.22 * k, 0.2, 0, rz);
-  } else if (v === 'they') {
-    tadd(body, SC(0.19 * k, 0.2), hair, 0, hy - 0.18 * k, -0.2 * k).scale.set(1.25, 1, 0.6);
-  }
-  tadd(body, ST(0.24 * k, 0.013), tmat(0xfff2c0, { noOutline: true }), 0, hy + 0.2 * k, 0.04, Math.PI / 2 - 0.35);
-  if (mantle) {
-    horns(body, 0x2a1a34, hy + 0.3 * k, 0.15 * k, 0.3 * k);
-    wings(body, 0x1a2a22, shoulderY + 0.05, 0.62);
-    const tail = new THREE.Group();
-    tadd(tail, SC(0.04, 0.55), tmat(DEEP), 0, 0, 0, 0, 0, 0.9);
-    tadd(tail, new THREE.ConeGeometry(0.08, 0.14, 12), tmat(0xc86cff, { emissive: 0xc86cff, ei: 1.2 }), -0.3, -0.2, 0, 0, 0, 2.4);
-    tail.position.set(0, hipY - 0.05, -0.3); tail.rotation.x = 0.5; body.add(tail);
-  }
-  if (scar) tadd(body, new THREE.BoxGeometry(0.03, 0.24 * k, 0.012), tmat(0xff5a3a, { emissive: 0xff5a3a, ei: 1.8 }), 0.1 * k, hy, hr + 0.005, 0.1, 0, -0.5);
-  outline(g);
-  g.userData.isChibi = true;
-  g.userData.rig = makeRig({ face: faceMesh, armR: arms.R, armL: arms.L, bust, hips, body, legs, legLen });
-  return g;
 }
-export function buildToonZoe(variant, figure) { return toonPlayer(variant, { figure }); }
+
+// Vesper: willowy archivist, black hair, a high-collared indigo coat with a
+// keyhole, brass buttons, a long skirt, quill and grimoire.
+function toonVesper() {
+  return toonFigure({
+    build: 'slim', bust: 1.15,
+    colors: { skin: 0xf2e2da, hair: 0x141018, main: 0x221c36, deep: 0x342a52, trim: 0xc8a050 },
+    face: { eye: 0x9a88c8, brow: 0x2a2030, blush: 0xf08aa8, lashes: 0x141018 },
+    top: { style: 'coat', keyhole: true, cut: 1.15, buttons: 4, corset: true }, skirt: { style: 'long', hem: 0.16 },
+    legs: { style: 'pants', color: 0x18142a, boots: 0x18142a, bootHeight: 0.4 },
+    sleeves: 'long', hair: 'straight',
+    extras: c => {
+      tadd(c.body, new THREE.CylinderGeometry(0.008, 0.008, 0.34, 6), tmat(0xe8e0d0), 0.14 * c.k, c.hy + 0.28 * c.k, -0.06, 0.3, 0, -0.6); // quill
+      tadd(c.arms.L, ST(0.06, 0.014), glow(0xb08cff), 0, -c.armLen * 0.86, 0.02, Math.PI / 2);                                 // the Binding sigil
+      const book = new THREE.Group(); book.position.set(0.05, -c.armLen * 0.95, 0.1); book.rotation.set(0.2, -0.5, 0); c.arms.R.add(book);
+      tadd(book, new THREE.BoxGeometry(0.22, 0.29, 0.07), tmat(0x2a1f3e));
+      tadd(book, new THREE.BoxGeometry(0.2, 0.27, 0.075), tmat(0xe8e0d0, { noOutline: true }), 0.006, 0, 0);
+    },
+  });
+}
+
+// Rue: demon brat; crimson mane, obsidian horns, a black corset and a
+// tattered skirt, bare arms in gloves, a spade-tipped tail, the debt brand.
+function toonRue() {
+  return toonFigure({
+    build: 'slim', bust: 1.05,
+    colors: { skin: 0xf4cdb6, hair: 0xb8202a, main: 0x1a1214, deep: 0x3a1418, trim: 0xc02a3a, glove: 0x1a1214 },
+    face: { eye: 0xff8a2a, brow: 0x7a1a1a, blush: 0xff7a8a, mouth: 'smirk' },
+    top: { style: 'corset', cut: 1.0 }, skirt: { style: 'tattered', hem: 0.66 },
+    legs: { style: 'stockings', color: 0x1a1214, boots: 0x1a1214, band: 0xc02a3a, bootHeight: 0.35 },
+    sleeves: 'bare', hair: 'curly',
+    extras: c => {
+      toonHorns(c.body, c, 0x15121a, 1.3);
+      toonTail(c.body, c, 0x2a1418, 0xc02a3a);
+      tadd(c.body, new THREE.BoxGeometry(0.11, 0.022, 0.01), glow(0xff7a2a), 0.07, c.shoulderY - 0.05, 0.14, 0, 0, 0.2); // the debt brand
+    },
+  });
+}
+
+// Isolde: oathbreaker knight, broad and strong; silver plate over a deep
+// blue tabard, plated tassets, short pale hair, a sword.
+function toonIsolde() {
+  return toonFigure({
+    build: 'broad', bust: 1.05, armRest: 0.26,
+    colors: { skin: 0xecd4c0, hair: 0xd8d0b8, main: 0x2a3a5a, deep: 0x1e2a44, trim: 0xd8b45a, metal: 0xaab2bc },
+    face: { eye: 0x7a8aa0, brow: 0xa89880, blush: 0xf09a9a, mouth: 'flat' },
+    top: { style: 'armor', collar: false, corset: false }, skirt: { style: 'tasset', hem: 0.6, color: 0xaab2bc },
+    legs: { style: 'pants', color: 0x2a2c32, boots: 0x8a929c, bootHeight: 0.5, bootTrim: 0xd8b45a },
+    sleeves: 'armor', hair: 'short',
+    extras: c => {
+      // tabard panel over the plate, and a sword in the right hand
+      tadd(c.body, new THREE.BoxGeometry(0.16, 0.42, 0.02), tmat(0x2a3a5a), 0, c.waistY - 0.2, c.hipR * 0.95 + 0.01);
+      tadd(c.body, new THREE.BoxGeometry(0.17, 0.02, 0.025), tmat(0xd8b45a), 0, c.waistY - 0.41, c.hipR * 0.95 + 0.012);
+      const sw = sword(0xdde4ea, 0.6); sw.position.set(0.04, -c.armLen * 0.98, 0.06); sw.rotation.z = -0.35; c.arms.R.add(sw);
+    },
+  });
+}
 
 const HERO_BUILDERS = {
   player: toonPlayer,
+  vesper: toonVesper,
+  rue: toonRue,
+  isolde: toonIsolde,
   player_classic(v) {
     // the warlock: hooded ash-black coat, violet-lined, sigil-mark aglow
     const scar = !!v && v.endsWith('_scar');
@@ -352,7 +317,7 @@ const HERO_BUILDERS = {
     }
     return g;
   },
-  vesper() {
+  vesper_classic() {
     // Keeper of the Codex: high-collared archivist coat, brass buttons, quill in her hair
     const g = chibi({ skin: 0xf0e0d8, hair: 0x141018, hairstyle: 'long', outfit: 0x1e1a2e, outfitStyle: 'robe', frill: 0x3a2e4e, eyeColor: 0x8a8a96, chest: 1 });
     add(g, Cyl(0.2, 0.24, 0.16, 12), mat(0x1e1a2e), 0, 1.0, 0);                                            // high collar
@@ -362,7 +327,7 @@ const HERO_BUILDERS = {
     const b = grimoire(); b.position.set(0.4, 0.66, 0.12); b.rotation.y = -0.5; g.add(b);
     return g;
   },
-  rue() {
+  rue_classic() {
     // demon of the Ninth Ember: obsidian horns, crimson mess, tattered corset jacket, tail
     const g = chibi({ skin: 0xf2c8b0, hair: 0xb8202a, hairstyle: 'curly', outfit: 0x1a1214, sleeve: 0x2a1a1c, legColor: 0x1a1214, eyeColor: 0xff8a2a, eyeGlow: true, build: 'slim' });
     horns(g, 0x15121a, 1.52, 0.17, 0.28);
@@ -374,7 +339,7 @@ const HERO_BUILDERS = {
     g.add(tail);
     return g;
   },
-  isolde() {
+  isolde_classic() {
     // last knight of the Vigil: dark weathered plate, violet runes, tattered black cloak
     const g = chibi({ skin: 0xe8d0bc, hair: 0xc8c0a8, hairstyle: 'short', outfit: 0x3a3c44, outfitStyle: 'armor', sleeve: 0x3a3c44, legColor: 0x2a2c32, eyeColor: 0x7a8088, build: 'broad' });
     add(g, Cone(0.4, 0.7, 9, 1, true), mat(0x101014, { opacity: 0.9 }), 0, 0.72, -0.1);                     // cloak

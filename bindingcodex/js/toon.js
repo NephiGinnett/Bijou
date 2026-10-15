@@ -121,6 +121,10 @@ export function faceTexture({ eye = 0x8a5ad8, brow = 0x8a6a3a, blush = 0xff8aa0,
     const h = mouth === 'open' ? 16 : 9;
     c.fillStyle = '#7a2a3a'; c.beginPath(); c.ellipse(W / 2, 216, 14, h, 0, 0, Math.PI * 2); c.fill();
     c.fillStyle = '#e8828e'; c.beginPath(); c.ellipse(W / 2, 216 + h * 0.45, 9, h * 0.4, 0, 0, Math.PI * 2); c.fill();
+  } else if (mouth === 'smirk') {
+    // a lopsided, very pleased-with-herself smirk, and a fang
+    c.moveTo(W / 2 - 14, 216); c.quadraticCurveTo(W / 2 + 4, 226, W / 2 + 18, 208); c.stroke();
+    c.fillStyle = '#ffffff'; c.beginPath(); c.moveTo(W / 2 + 6, 219); c.lineTo(W / 2 + 10, 230); c.lineTo(W / 2 + 13, 217); c.fill();
   } else { c.moveTo(W / 2 - 10, 218); c.lineTo(W / 2 + 10, 218); c.stroke(); }
   const tex = new THREE.CanvasTexture(cv);
   tex.colorSpace = THREE.SRGBColorSpace;
