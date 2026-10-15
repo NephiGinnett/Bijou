@@ -67,7 +67,7 @@ export function outline(group, width = 0.016) {
 
 // A canvas texture wrapped over the front of the head: big glossy anime
 // eyes with lashes and highlights, soft brows, blush and a small smile.
-export function faceTexture({ eye = 0x8a5ad8, brow = 0x8a6a3a, blush = 0xff8aa0, lashes = 0x2a1a22, mouth = 'smile', closed = false, lip = 0x8a3a4a, shadow = null } = {}) {
+export function faceTexture({ eye = 0x8a5ad8, brow = 0x8a6a3a, blush = 0xff8aa0, lashes = 0x2a1a22, mouth = 'smile', closed = false, lip = 0x8a3a4a, shadow = null, fang = true } = {}) {
   const W = 512, H = 256;
   const cv = document.createElement('canvas'); cv.width = W; cv.height = H;
   const c = cv.getContext('2d');
@@ -131,7 +131,7 @@ export function faceTexture({ eye = 0x8a5ad8, brow = 0x8a6a3a, blush = 0xff8aa0,
   } else if (mouth === 'smirk') {
     // a lopsided, very pleased-with-herself smirk, and a fang
     c.moveTo(W / 2 - 14, 216); c.quadraticCurveTo(W / 2 + 4, 226, W / 2 + 18, 208); c.stroke();
-    c.fillStyle = '#ffffff'; c.beginPath(); c.moveTo(W / 2 + 6, 219); c.lineTo(W / 2 + 10, 230); c.lineTo(W / 2 + 13, 217); c.fill();
+    if (fang) { c.fillStyle = '#ffffff'; c.beginPath(); c.moveTo(W / 2 + 6, 219); c.lineTo(W / 2 + 10, 230); c.lineTo(W / 2 + 13, 217); c.fill(); }
   } else { c.moveTo(W / 2 - 10, 218); c.lineTo(W / 2 + 10, 218); c.stroke(); }
   const tex = new THREE.CanvasTexture(cv);
   tex.colorSpace = THREE.SRGBColorSpace;

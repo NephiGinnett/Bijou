@@ -68,7 +68,7 @@ export function newGame(playerName, pronouns = 'she') {
     clearedDay: 0,
     ngPlus: 0,
     mastery: {},
-    hangouts: {}, family: [], expecting: {}, seenDay: {}, eveningDay: -1, guests: {}, wardrobe: {},
+    hangouts: {}, family: [], expecting: {}, seenDay: {}, eveningDay: -1, guests: {}, wardrobe: {}, town: {},
     autoSkill: {},
     dispatch: [],
     dispatchReports: [],
@@ -88,7 +88,7 @@ export function newGame(playerName, pronouns = 'she') {
     reagents: {},
     recipes: [],
     chronicle: [],                   // { day, text, ev, crossed }
-    settings: { volume: 0.6, music: true, textFast: false, spice: 'gentle', gore: 'gentle', outfit: 'adventure', autoBattle: false, packs: { obsidian: true, northern: true, classic: true, wildkin: true, hearts: true } },
+    settings: { volume: 0.6, music: true, textFast: false, spice: 'gentle', gore: 'gentle', outfit: 'adventure', autoBattle: false, packs: { obsidian: true, northern: true, classic: true, wildkin: true, hearts: true, rift: true } },
   };
   S.heroes.player = { level: 1, xp: 0, gear: { weapon: null, armor: null, charm: null } };
   return S;
@@ -174,6 +174,14 @@ export function hangout(S, id) {
   return { up, bond: S.bond[id] ?? 0, close: h.close };
 }
 export function closeness(S, id) { return hang(S, id).close; }
+// Extra closeness outside the daily visit (supper at the Kettle & Crown).
+export function addCloseness(S, id, n = 1) {
+  const h = hang(S, id);
+  let up = false;
+  h.close += n;
+  while (h.close >= CLOSE_PER_BOND) { h.close -= CLOSE_PER_BOND; if ((S.bond[id] ?? 0) < 10) { addBond(S, id, 1); up = true; } }
+  return { up, bond: S.bond[id] ?? 0, close: h.close };
+}
 // Romanced: her romance (or negotiated revisit) has happened.
 export function romanced(S, id) { return !!(S.seen[`${id}_romance`] || S.seen[`${id}_revisit`]); }
 // An evening together: one a night overall, every other night with the same partner.

@@ -133,6 +133,24 @@ Four beast-folk men who came asking for protection from the tribe that hunted th
 | `tallow_evening` | "Spend the night with him." | repeatable | Familiar now, every third night. Shorter and warmer than the first time. |
 | `tallow_shared` | (first choice) | group, sapient partners | He and Sythra (naga): coils and soft wings in the lantern-lit brood-pools. |
 
+### Through the Rift: Larkspur Lane (`js/packs/rift.js`)
+
+Five women from a suburban cul-de-sac that fell into the fen. All are adults in their 40s and 50s (ages in their descriptions), free townsfolk under the Codex's protection, never captives. Their romances open at favor 8, after all three of their errands and their personal story. The tone is warm, with a little culture-clash comedy. No family-relation framing.
+
+| Event | Choice | Tags | What to write |
+| --- | --- | --- | --- |
+| `victoria_romance` | 1 · "Then take what you want, Madam President." | power dynamic, workplace authority, older woman | Victoria (44), ex-CFO and HOA president, runs the Lane's books. Glasses, pearls, clipboard. She's in charge and very good at it: precise orders, earned rewards, in her own counting-house. |
+| `victoria_romance` | 2 · "No. Tonight you put the clipboard down." | power dynamic, reversal | The same night, reversed: nobody has told her no in twenty-two years. You take the pen, the glasses, the control; she obeys like it's a relief. |
+| `victoria_evening` | "Stay the night." | repeatable | Familiar now, every third night. "One item on the agenda." |
+| `joanne_romance` | either choice | older woman, tenderness | Joanne (52), innkeeper of the Kettle & Crown. Auburn curls, gingham apron, soft and generous. She's fed everyone for thirty years; tonight she's the one taken care of. Nervous at first, then not. |
+| `joanne_evening` | "Stay the night." | repeatable | Upstairs at the inn, warm quilts. Not nervous anymore. |
+| `diane_romance` | either choice | older woman, flexibility | Diane (49), herb-wife, ex-yoga-in-the-park evangelist, greenhouse of glowing, affectionate plants. Done being "harmless". Astonishingly flexible and unashamed; the vines help. |
+| `diane_evening` | "Stay the night." | repeatable | Among the night-blooming flowers. A pose she swears she invented for you. |
+| `margot_romance` | either choice | older woman, flirt | Margot (46), twice divorced, hot pink, platinum blowout, hoops. Told she was "too much" all her life. Loud, shameless, delighted; she's exactly enough. The firm choice turns all that brass into begging. |
+| `margot_evening` | "Stay the night." | repeatable | The stockroom, the counter, regrettably the display case. |
+| `moira_romance` | either choice | older woman, dark aesthetic | Moira (55), goth widow and hexwife. Black lace, silver rings, a silver streak in black curls, a voice like velvet in a crypt. Slow, deliberate, utterly sure. Her black candle has burned for you since the night you met. |
+| `moira_evening` | "Stay the night." | repeatable | Candle-light and cool hands; the candle burns down before you're done. |
+
 ### Hearts & Hearth (`js/packs/hearts.js`)
 
 Group scenes. Every participant is a free ally who has had her own romance and is at bond 8+ (the Envoys' Council needs two or more envoys who've had the rite). Characters whose lines have *(only if …)* in the context doc may or may not be there; write so the scene works either way.
@@ -213,3 +231,8 @@ Group scenes. Every participant is a free ally who has had her own romance and i
 - **Sythra** (naga): languid, teasing, patient. Says "mmm."
 - **Vharra** (drake-kin): blunt and fierce. Honors strength, including the strength to refuse.
 - **Lysandre**: wistful, shape-shifting mid-sentence, longs to be chosen.
+- **Victoria**: crisp, corporate, dry. Talks in bylaws and receipts. Her composure is the thing that breaks.
+- **Joanne**: warm, born hostess. "Honey," "sweetheart." Feeds everyone.
+- **Diane**: earnest, outdoorsy, gently wicked once she lets herself be.
+- **Margot**: brassy, flirty, "babe." All flash on top, sharp underneath.
+- **Moira**: velvet and gallows humor. "Dear." Never hurries.

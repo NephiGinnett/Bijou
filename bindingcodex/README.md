@@ -125,7 +125,26 @@ through the Menagerie), **Northern Reach** (Valdra, Nyxe, Mira Vane, Rhea,
 Aelindra, Legate Aurelia, Brynn, Sera — and the Mira Vane → Rhea → Valdra
 testimony chain), **Classic Fantasy** (Elara Moonwhisper, Lady Seraphine,
 Elspeth, Sister Maren, Kira), **Wildkin** (the tribes, Lysandre, Mantle
-scenes).
+scenes), **Through the Rift** (Larkspur Lane, below).
+
+## Larkspur Lane (Through the Rift)
+
+On day 4 a misfired Coven summoning drops a suburban cul-de-sac into the
+fen. Its five residents open shops, reachable from the hub:
+
+- **Victoria** (the Ledger House): daily requisitions of gear, and the
+  Lane's ledger. Her stake raises every dividend by 10% a level.
+- **Joanne** (the Kettle & Crown): supper for two with an ally, for extra
+  closeness once a day.
+- **Diane** (Diane's Garden): potions and reagents; buys reagents.
+- **Margot** (Swap & Sell): buys gear and brewed draughts above market.
+- **Moira** (the Black Candle): two enchanted charms every morning.
+
+Talk daily (favor up to 3), run each woman's three errands, and invest in
+her business (three stakes: 200, 500, 1000g) for nightly dividends, better
+stock and favor. At favor 4 she tells you her story; at favor 8 with her
+errands done, a romance and repeatable evenings. All five are free adults
+(44 to 55) and never captives.
 
 ## Story
 
