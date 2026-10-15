@@ -351,7 +351,7 @@ export const UNBOUND = {
     "Out in the long grass Tashra pins Ren for you with a purr. You free your cock; both of them stare. “Pride gets first taste,” Tashra decides, and sinks onto you, taking the thickness with a hungry sound. You fuck her while Ren watches, ears flushed, then take him next while Tashra holds him open and purrs praise. You come in Ren, flooding him; Tashra takes the rest of you and rides until you fill her too. The three of you stay tangled under the yellow moon, both of them marked, the hunt ended the way they wanted."
   ],
   "elio_romance": [
-    "You free your cock; Elio’s soft eyes go wide. “The dream didn’t show me this,” he whispers. You push into him slow; he trembles, then leans into every thrust, velvet antlers brushing your temple. You fuck him deep until the careful stillness is gone. When you come you flood him; he comes with a prayer-soft cry and stays full of you, finally running."
+    "You free your cock; Elio’s soft eyes go wide. “The dream didn’t show me this,” he whispers. You push into him slow; he trembles, then leans into every thrust, velvet antlers brushing your temple. You fuck him deep until the careful stillness is gone. When you come you flood him; he comes with a prayer-soft cry and stays full of you, finally unafraid to move."
   ],
   "elio_evening": [
     "He’s still gentle, still wondering. When you free your cock he takes it in both hands first, marveling. You push into him and fuck him slow; the Bower bedding is a ruin by the time he comes around you. You fill him; he stays seated on your cock afterward, antlers soft against your cheek, no longer still at all."
@@ -367,6 +367,10 @@ export const UNBOUND = {
   ],
   "tallow_shared": [
     "In the lantern-lit brood-pools Sythra coils around you both. You free your cock; Tallow’s wings flare, then dim. Sythra hisses approval at the size and helps guide him down onto you. You fuck Tallow while she wraps both of you in warm coils, tongue flicking at his antennae. You come in him; she takes her turn next, unhurried as the tide, and you fill her too. The three of you stay coiled and soft in the warm water, both of them marked by the warmest light."
+  ],
+  "victoria_romance_lead": [
+    "She takes you by the collar and sits you in her own chair. “Hands on the armrests,” she says, and frees your cock herself. Her composure cracks only once, at the size of it. “That is… noted.” Then she climbs into your lap and takes you slow, every thick inch on her schedule, glasses still on, giving you instructions you are not allowed to answer.",
+    "She rides you exactly as she runs the Lane: precise, relentless, in total control, until the first time she comes and the control goes with it. When you come she holds you still and makes you flood her, then stays seated on you, flushed and smug and thoroughly in charge. “Harold,” she murmurs, straightening her pearls, “is going to need a much longer report.”"
   ],
   "victoria_romance": [
     "You free your cock on the ledger desk. Victoria’s precise composure cracks at the size. “That is… noted,” she manages, then takes every thick inch with a controlled, then uncontrolled sound. You fuck her hard over her own books while she tries to keep giving orders and fails. When you come you flood her; she comes with a broken, relieved cry, glasses askew, clipboard forgotten, thoroughly audited and claimed."
@@ -411,7 +415,7 @@ export const UNBOUND = {
     "A hundred black candles. You free your cock; Diane laughs, Moira’s eyes darken. Diane takes you first, flexible and unashamed among the vines, while Moira’s cool hands guide and stroke. You fill Diane; Moira takes her turn slow and certain, casting the hex of herself onto every thick inch. You flood her; the vines curl helpfully and the candles burn tallest while both women stay full of you, herbs and hexes complete."
   ],
   "lane_block_party": [
-    "The whole Lane at once. You free your cock and they share you.",
+    "Inside the biggest house on the Lane, the lights go low. You free your cock and they share you.",
     { t: "Victoria gives precise orders that turn into gasps.", when: "lane_victoria" },
     { t: "Joanne is soft, feeding you her mouth between turns.", when: "lane_joanne" },
     { t: "Diane is flexible, inventing positions.", when: "lane_diane" },

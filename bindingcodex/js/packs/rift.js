@@ -368,7 +368,7 @@ function romance(id, o) {
         ...(c.r ? [{ s: id, t: c.r }] : []),
         { s: 'narr', t: c.gentle, spice: 'gentle' },
         { s: 'narr', t: c.steamy, spice: 'steamy' },
-        { s: 'narr', t: '', spice: 'unbound', stub: `${id}_romance` }, // ZOE: unbound
+        { s: 'narr', t: '', spice: 'unbound', stub: c.stub || `${id}_romance` }, // ZOE: unbound
       ] })) },
       { do: S => { folkOf(S, id).nightDay = S.day; S.eveningDay = S.day; } },
       { chronicle: o.chronicle },
@@ -463,7 +463,7 @@ export function events(E) {
       'And before you ask: Harold knows. We discussed it like adults over a very good bottle of wine. His exact words were "Vic, go get what you need, and then come home and tell me about it." (a thin, wicked smile) He was very specific about the telling.',
     ],
     choices: [
-      { t: '"Then take what you want, Madam President."', tone: 'kind',
+      { t: '"Then take what you want, Madam President."', tone: 'kind', stub: 'victoria_romance_lead',
         r: '(a slow, dangerous smile) Oh, that is a mistake. I\'ve been in charge of everything for twenty-two years. I\'m very good at it.',
         gentle: 'She takes you by the collar, pins you to the ledger desk, and kisses you like she\'s closing the biggest deal of her life. Later, the clipboard is on the floor and she\'s laughing into your shoulder.',
         steamy: 'Victoria runs the night like a board meeting she\'s already won: precise, unhurried, every instruction obeyed, every reward exactly earned. Her glasses end up on the desk, her pearls in your hand, her composure nowhere at all.' },
