@@ -278,10 +278,12 @@ export function events(E) {
   E.sera_letter_1 = { id: 'sera_letter_1', where: 'rumor', once: true, priority: 40, cond: S => S.circleIdx >= 1, steps: [
     { s: 'narr', t: 'A crow with frost on its feathers brings a letter sealed in red wax. The Thane of the Ashreach\'s crest — but the hand is a woman\'s.' },
     { s: 'sera', t: '"Warlock — the Coven moves supplies through my husband\'s passes on the new moon. He takes their coin. I do not. — S."' },
+    { s: 'codex', t: '[ SERA, the Thane of the Ashreach\'s wife, is on your side, quietly. Nothing to do yet: keep raiding the Coven and rise to the next Circle, and she\'ll write again. ]' },
   ] };
   E.sera_letter_2 = { id: 'sera_letter_2', where: 'rumor', once: true, priority: 39, cond: S => !!S.seen.sera_letter_1 && S.circleIdx >= 2, steps: [
     { s: 'sera', t: '"The passes are clear; your raid on the Temple frightened them off. My husband is furious. I have not laughed so much in years. Write back. — S."' },
     { s: 'sera', t: '"P.S. I have read that you are terrifying. I find I would like to verify this in person."' },
+    { s: 'codex', t: '[ Sera is coming to the Codex. Look for her under Talk at the hub. ]' },
   ] };
   E.sera_visits = { id: 'sera_visits', where: 'guild', once: true, priority: 58, cond: S => !!S.seen.sera_letter_2, steps: [
     { s: 'narr', t: 'A woman in a fur-trimmed red gown descends the drowned stair alone, a sealed letter in her gloved hand — this one addressed to herself.' },

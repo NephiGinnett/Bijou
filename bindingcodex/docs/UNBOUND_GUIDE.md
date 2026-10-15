@@ -133,6 +133,32 @@ Four beast-folk men who came asking for protection from the tribe that hunted th
 | `tallow_evening` | "Spend the night with him." | repeatable | Familiar now, every third night. Shorter and warmer than the first time. |
 | `tallow_shared` | (first choice) | group, sapient partners | He and Sythra (naga): coils and soft wings in the lantern-lit brood-pools. |
 
+### Through the Rift: Larkspur Lane (`js/packs/rift.js`)
+
+Five women from a suburban cul-de-sac that fell into the fen. All are adults in their 40s and 50s (ages in their descriptions), free townsfolk under the Codex's protection, never captives. **Victoria and Joanne are married and unfulfilled**: their husbands (Harold; Gary from number nine) know and approve, so it's hotwife, not cheating. Harold wants to hear all about it afterward; Gary just wants Joanne to glow. Diane is single, Margot divorced, Moira widowed. Their romances open at favor 8, after all three of their errands and their personal story. The tone is warm, with a little culture-clash comedy. No family-relation framing.
+
+| Event | Choice | Tags | What to write |
+| --- | --- | --- | --- |
+| `victoria_romance` | 1 · "Then take what you want, Madam President." | power dynamic, workplace authority, older woman, hotwife | Victoria (44), ex-CFO and HOA president, runs the Lane's books. Glasses, pearls, clipboard. Married to gentle Harold, who can't match her and knows it; he sent her to you and wants a full report. She's in charge and very good at it: precise orders, earned rewards, in her own counting-house. |
+| `victoria_romance` | 2 · "No. Tonight you put the clipboard down." | power dynamic, reversal | The same night, reversed: nobody has told her no in twenty-two years. You take the pen, the glasses, the control; she obeys like it's a relief. |
+| `victoria_evening` | "Stay the night." | repeatable, hotwife | Familiar now, every third night. Harold's at his model-railway club; she'll be telling him everything. "One item on the agenda." |
+| `joanne_romance` | either choice | older woman, tenderness, hotwife | Joanne (52), innkeeper of the Kettle & Crown. Auburn curls, gingham apron, soft and generous. Thirty years married to sweet, sleepy Gary; roommates for the last ten. He's on watch tonight and told her to "go glow a little." She's fed everyone for thirty years; tonight she's the one taken care of. Nervous at first, then not. |
+| `joanne_evening` | "Stay the night." | repeatable, hotwife | Upstairs at the inn while Gary's on night watch (he says hello). Not nervous anymore. |
+| `diane_romance` | either choice | older woman, flexibility | Diane (49), herb-wife, ex-yoga-in-the-park evangelist, greenhouse of glowing, affectionate plants. Done being "harmless". Astonishingly flexible and unashamed; the vines help. |
+| `diane_evening` | "Stay the night." | repeatable | Among the night-blooming flowers. A pose she swears she invented for you. |
+| `margot_romance` | either choice | older woman, flirt | Margot (46), twice divorced, hot pink, platinum blowout, hoops. Told she was "too much" all her life. Loud, shameless, delighted; she's exactly enough. The firm choice turns all that brass into begging. |
+| `margot_evening` | "Stay the night." | repeatable | The stockroom, the counter, regrettably the display case. |
+| `moira_romance` | either choice | older woman, dark aesthetic | Moira (55), goth widow and hexwife. Black lace, silver rings, a silver streak in black curls, a voice like velvet in a crypt. Slow, deliberate, utterly sure. Her black candle has burned for you since the night you met. |
+| `moira_evening` | "Stay the night." | repeatable | Candle-light and cool hands; the candle burns down before you're done. |
+
+**Celeste: the affair.** Celeste (39), ex-dancer, married fifteen years to Brad, a realtor who is always on a call and hasn't touched her in a year. **Brad doesn't know.** This one is a real affair: the thrill is the secret, never coercion. She chooses it, and says so. The arc runs from her porch to a note, then the greenhouse, secret evenings, a close call, and a crossroads (end it, or keep going until she's pregnant).
+
+| Event | Choice | Tags | What to write |
+| --- | --- | --- | --- |
+| `celeste_romance` | 1 · Take the ring off her finger, and kiss her. | affair, married, forbidden | The first night, in Diane's greenhouse at midnight, among glowing vines. Her wedding ring sits on a potting bench. Under the tennis whites she's still a dancer: strong, flexible, and shameless once she stops thinking. A year of nothing breaking all at once. |
+| `celeste_romance` | 2 · "Then let me look at you first." | affair, married, slow | The same night, slower: nobody has looked at her in a year. Being seen undoes her before anything else does. |
+| `celeste_evening` | Stay the night. | repeatable, affair | Stolen and quick: the greenhouse, a hayloft, once the back of Margot's stall, her hand over her own mouth. After she leaves Brad it's no longer secret, so warmer and slower. Never during pregnancy (the evening is closed then). |
+
 ### Hearts & Hearth (`js/packs/hearts.js`)
 
 Group scenes. Every participant is a free ally who has had her own romance and is at bond 8+ (the Envoys' Council needs two or more envoys who've had the rite). Characters whose lines have *(only if …)* in the context doc may or may not be there; write so the scene works either way.
@@ -213,3 +239,9 @@ Group scenes. Every participant is a free ally who has had her own romance and i
 - **Sythra** (naga): languid, teasing, patient. Says "mmm."
 - **Vharra** (drake-kin): blunt and fierce. Honors strength, including the strength to refuse.
 - **Lysandre**: wistful, shape-shifting mid-sentence, longs to be chosen.
+- **Victoria**: crisp, corporate, dry. Talks in bylaws and receipts. Her composure is the thing that breaks.
+- **Joanne**: warm, born hostess. "Honey," "sweetheart." Feeds everyone.
+- **Diane**: earnest, outdoorsy, gently wicked once she lets herself be.
+- **Margot**: brassy, flirty, "babe." All flash on top, sharp underneath.
+- **Moira**: velvet and gallows humor. "Dear." Never hurries.
+- **Celeste**: polished, wry, lonely under it, and reckless once she lets herself be. Turns her ring when she's nervous.

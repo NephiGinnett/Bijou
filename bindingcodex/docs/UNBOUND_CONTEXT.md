@@ -1,6 +1,6 @@
 # Unbound Scene Context
 
-Every Unbound stub in Binding Codex with its **whole scene**, in the order the player reads it: 95 scenes, 120 stubs.
+Every Unbound stub in Binding Codex with its **whole scene**, in the order the player reads it: 107 scenes, 138 stubs.
 
 **Written so far:** 89 stub ids (✅ in the scenes below); the rest are marked ✍️. To revise a written one, edit its lines in `js/unbound_lines.js`, or send new text and Momo will swap it in.
 
@@ -21,6 +21,7 @@ Every Unbound stub in Binding Codex with its **whole scene**, in the order the p
 - **Classic Fantasy pack (`js/packs/classic.js`):** [`elara_romance`](#elara_romance), [`seraphine_romance`](#seraphine_romance), [`elspeth_revisit`](#elspeth_revisit), [`sister_maren_romance`](#sister_maren_romance), [`kira_romance`](#kira_romance)
 - **Wildkin pack (`js/packs/wildkin.js`):** [`bramble_romance`](#bramble_romance), [`bramble_evening`](#bramble_evening), [`bramble_shared`](#bramble_shared), [`ren_romance`](#ren_romance), [`ren_evening`](#ren_evening), [`ren_shared`](#ren_shared), [`elio_romance`](#elio_romance), [`elio_evening`](#elio_evening), [`elio_shared`](#elio_shared), [`tallow_romance`](#tallow_romance), [`tallow_evening`](#tallow_evening), [`tallow_shared`](#tallow_shared), [`envoy_night_pride`](#envoy_night_pride), [`envoy_night_aerie`](#envoy_night_aerie), [`envoy_night_coil`](#envoy_night_coil), [`envoy_night_clutch`](#envoy_night_clutch), [`kin_rite_pride`](#kin_rite_pride), [`kin_rite_aerie`](#kin_rite_aerie), [`kin_rite_coil`](#kin_rite_coil), [`kin_rite_clutch`](#kin_rite_clutch), [`kin_night_aerie`](#kin_night_aerie), [`kin_night_coil`](#kin_night_coil), [`kin_night_clutch`](#kin_night_clutch), [`kin_night_pride`](#kin_night_pride), [`tribe_aerie_rite`](#tribe_aerie_rite), [`tribe_coil_rite`](#tribe_coil_rite), [`tribe_clutch_rite`](#tribe_clutch_rite), [`tribe_pride_rite`](#tribe_pride_rite), [`lysandre_romance`](#lysandre_romance), [`rue_mantle`](#rue_mantle), [`nyxe_mantle`](#nyxe_mantle)
 - **Hearts & Hearth pack (`js/packs/hearts.js`):** [`circle_pact`](#circle_pact), [`circle_night`](#circle_night), [`circle_mantle`](#circle_mantle), [`circle_lysandre`](#circle_lysandre), [`dawnward_hearts`](#dawnward_hearts), [`brats`](#brats), [`two_altars`](#two_altars), [`envoys_council`](#envoys_council)
+- **Through the Rift pack (`js/packs/rift.js`):** [`victoria_romance`](#victoria_romance), [`joanne_romance`](#joanne_romance), [`diane_romance`](#diane_romance), [`margot_romance`](#margot_romance), [`moira_romance`](#moira_romance), [`victoria_evening`](#victoria_evening), [`joanne_evening`](#joanne_evening), [`diane_evening`](#diane_evening), [`margot_evening`](#margot_evening), [`moira_evening`](#moira_evening), [`celeste_romance`](#celeste_romance), [`celeste_evening`](#celeste_evening)
 - **Companions (`js/companions.js`):** [`erin_romance`](#erin_romance), [`sakura_romance`](#sakura_romance), [`shiro_romance`](#shiro_romance), [`yuki_romance`](#yuki_romance), [`vesper_evening`](#vesper_evening), [`rue_evening`](#rue_evening), [`isolde_evening`](#isolde_evening), [`lysandre_evening`](#lysandre_evening), [`erin_evening`](#erin_evening), [`sakura_evening`](#sakura_evening), [`shiro_evening`](#shiro_evening), [`yuki_evening`](#yuki_evening), [`elara_evening`](#elara_evening), [`seraphine_evening`](#seraphine_evening), [`sister_maren_evening`](#sister_maren_evening), [`kira_evening`](#kira_evening), [`nyxe_evening`](#nyxe_evening), [`rhea_evening`](#rhea_evening), [`valdra_evening`](#valdra_evening), [`aurelia_evening`](#aurelia_evening), [`brynn_evening`](#brynn_evening), [`sera_evening`](#sera_evening), [`seris_evening`](#seris_evening), [`auren_voss_evening`](#auren_voss_evening), [`revenant_bride_evening`](#revenant_bride_evening), [`mira_ashveil_evening`](#mira_ashveil_evening), [`maren_soleil_evening`](#maren_soleil_evening), [`cole_ashmer_evening`](#cole_ashmer_evening), [`calla_evening`](#calla_evening), [`mira_vane_evening`](#mira_vane_evening), [`aelindra_evening`](#aelindra_evening), [`elspeth_evening`](#elspeth_evening)
 
 ## Base game (`js/story.js`)
@@ -1976,6 +1977,321 @@ Every Unbound stub in Binding Codex with its **whole scene**, in the order the p
       You fill every one of them. When it’s over the council collapses in a tangle of fur, feathers, scales and wings, every envoy marked, the council thoroughly adjourned.
   - **"Not tonight. But stay for the moon."**
     - **Narration:** They stay. Four tribes' envoys on one roof, trading stories until dawn, and nobody minds at all.
+
+---
+
+## Through the Rift pack (`js/packs/rift.js`)
+
+### victoria_romance
+
+**Tags:** romance, power dynamic, workplace authority, older woman, married, hotwife (husband knows and approves)
+
+**What to write** (from the guide):
+
+- *1 · "Then take what you want, Madam President."* · power dynamic, workplace authority, older woman, hotwife: Victoria (44), ex-CFO and HOA president, runs the Lane's books. Glasses, pearls, clipboard. Married to gentle Harold, who can't match her and knows it; he sent her to you and wants a full report. She's in charge and very good at it: precise orders, earned rewards, in her own counting-house.
+- *2 · "No. Tonight you put the clipboard down."* · power dynamic, reversal: The same night, reversed: nobody has told her no in twenty-two years. You take the pen, the glasses, the control; she obeys like it's a relief.
+
+**Tokens you can use:** Pronouns for the player: `{they}` `{them}` `{their}` `{They}` `{Their}`, and verb helpers `{s}` `{is}` `{has}` `{was}`.
+
+**The scene:**
+
+- **Victoria:** Close the door. Sit. (she doesn't look up from the ledger) I've been auditing my own feelings, and the numbers don't reconcile.
+- **Victoria:** (she takes off her glasses, finally looks at you) I'm forty-four, Zoe. I don't do things by accident. So I'm going to be very clear: I want you, and I would like to hear your answer before I lose my nerve. Which I never do.
+- **Victoria:** And before you ask: Harold knows. We discussed it like adults over a very good bottle of wine. His exact words were "Vic, go get what you need, and then come home and tell me about it." (a thin, wicked smile) He was very specific about the telling.
+- **▸ The player chooses:**
+  - **"Then take what you want, Madam President."** ← **leads to your scene**
+    - **Victoria:** (a slow, dangerous smile) Oh, that is a mistake. I've been in charge of everything for twenty-two years. I'm very good at it.
+    - **[Gentle only]** **Narration:** She takes you by the collar, pins you to the ledger desk, and kisses you like she's closing the biggest deal of her life. Later, the clipboard is on the floor and she's laughing into your shoulder.
+    - **[Steamy — Unbound players see this too]** **Narration:** Victoria runs the night like a board meeting she's already won: precise, unhurried, every instruction obeyed, every reward exactly earned. Her glasses end up on the desk, her pearls in your hand, her composure nowhere at all.
+    - ✍️ **YOUR UNBOUND LINES GO HERE** — stub `victoria_romance`. They play right after the Steamy line above.
+  - **"No. Tonight you put the clipboard down."** ← **leads to your scene**
+    - **Victoria:** (she goes very still) No one has ever said no to me in my own office. (she sets the clipboard down) ...Do it again.
+    - **[Gentle only]** **Narration:** She lets you take the pen from her hand, then the glasses, then the rest, and for the first time in years, Victoria lets someone else decide what happens next.
+    - **[Steamy — Unbound players see this too]** **Narration:** You bend the HOA president over her own ledger and take her apart line by line until she's begging for instructions, and every time you give one she obeys like it's the first thing in years that's made sense.
+    - ✍️ **YOUR UNBOUND LINES GO HERE** — stub `victoria_romance`. They play right after the Steamy line above.
+- *(Chronicle entry: "Victoria put the clipboard down for you.")*
+
+---
+
+### joanne_romance
+
+**Tags:** romance, older woman, married, hotwife (husband knows and approves)
+
+**What to write** (from the guide):
+
+- *either choice* · older woman, tenderness, hotwife: Joanne (52), innkeeper of the Kettle & Crown. Auburn curls, gingham apron, soft and generous. Thirty years married to sweet, sleepy Gary; roommates for the last ten. He's on watch tonight and told her to "go glow a little." She's fed everyone for thirty years; tonight she's the one taken care of. Nervous at first, then not.
+
+**Tokens you can use:** Pronouns for the player: `{they}` `{them}` `{their}` `{They}` `{Their}`, and verb helpers `{s}` `{is}` `{has}` `{was}`.
+
+**The scene:**
+
+- **Joanne:** (she's turned the inn sign to CLOSED, and she's nervous, which you've never seen) Sit with me a minute, sweetheart. I'm fifty-two and I feel about sixteen and it's very undignified.
+- **Joanne:** I've spent my whole life taking care of people. Just this once I'd like someone to take care of me. And I'd like it to be you. (a shaky laugh) There. I said it.
+- **Joanne:** Gary's on watch till dawn. He kissed my cheek on the way out and said, "Don't wait up, Jo. Go glow a little." (she's blushing to her ears) He meant you, sweetheart. He knows. He wants me happy more than he wants me home.
+- **▸ The player chooses:**
+  - **Take her hand and lead her upstairs.** ← **leads to your scene**
+    - **[Gentle only]** **Narration:** Upstairs, she laughs at herself twice and then stops laughing, and you spend the night making sure Joanne, for once, is the one who's fed.
+    - **[Steamy — Unbound players see this too]** **Narration:** You undo her apron strings like you're unwrapping something precious, and you take your time with every soft, generous curve of her until she's gasping your name into the quilt and forgetting, for one whole night, to worry about anybody.
+    - ✍️ **YOUR UNBOUND LINES GO HERE** — stub `joanne_romance`. They play right after the Steamy line above.
+  - **"Then let me spoil you."** ← **leads to your scene**
+    - **Joanne:** (her eyes go bright) Oh, honey. Oh, nobody's ever offered.
+    - **[Gentle only]** **Narration:** You run her a bath, rub her feet, and kiss her slowly in the steam, and she cries a little and then laughs, and then kisses you back like she means to make up for thirty years.
+    - **[Steamy — Unbound players see this too]** **Narration:** You spoil her: bath oil, slow hands, every inch of her worshipped, until the most capable woman on the Lane is clinging to you and saying "oh, sweetheart, oh" like a prayer.
+    - ✍️ **YOUR UNBOUND LINES GO HERE** — stub `joanne_romance`. They play right after the Steamy line above.
+- *(Chronicle entry: "Someone finally took care of Joanne.")*
+
+---
+
+### diane_romance
+
+**Tags:** romance, older woman, flexibility
+
+**What to write** (from the guide):
+
+- *either choice* · older woman, flexibility: Diane (49), herb-wife, ex-yoga-in-the-park evangelist, greenhouse of glowing, affectionate plants. Done being "harmless". Astonishingly flexible and unashamed; the vines help.
+
+**Tokens you can use:** Pronouns for the player: `{they}` `{them}` `{their}` `{They}` `{Their}`, and verb helpers `{s}` `{is}` `{has}` `{was}`.
+
+**The scene:**
+
+- **Diane:** (in the greenhouse, at night, among the glowing plants) I told you I wasn't harmless anymore. I meant it about everything.
+- **Diane:** Forty-nine years of being the nice lady. I want to be the woman who asks for what she wants. (she takes your hand and puts it on her waist) I want you. Is that all right?
+- **▸ The player chooses:**
+  - **"More than all right."** ← **leads to your scene**
+    - **[Gentle only]** **Narration:** You kiss her among the glowing vines, and she laughs into your mouth when one of them curls helpfully around your ankle, and the greenhouse keeps your secret until dawn.
+    - **[Steamy — Unbound players see this too]** **Narration:** Twenty years of yoga in the park turn out to have been preparation for exactly this: Diane is astonishingly flexible and completely unashamed, folding herself into every shape you ask for among the warm, glowing leaves.
+    - ✍️ **YOUR UNBOUND LINES GO HERE** — stub `diane_romance`. They play right after the Steamy line above.
+  - **"Show me how flexible you really are."** ← **leads to your scene**
+    - **Diane:** (a startled laugh, then a very slow smile) Oh, you've been watching me in the park.
+    - **[Gentle only]** **Narration:** She shows you, laughing, and then not laughing at all, and the vines draw a curtain of leaves around the two of you.
+    - **[Steamy — Unbound players see this too]** **Narration:** She shows you, and keeps showing you, and you put every one of those impossible poses to devastating use until the nice lady from the Lane is shaking and wild and very loudly not nice at all.
+    - ✍️ **YOUR UNBOUND LINES GO HERE** — stub `diane_romance`. They play right after the Steamy line above.
+- *(Chronicle entry: "Diane stopped being harmless with you.")*
+
+---
+
+### margot_romance
+
+**Tags:** romance, older woman, flirt
+
+**What to write** (from the guide):
+
+- *either choice* · older woman, flirt: Margot (46), twice divorced, hot pink, platinum blowout, hoops. Told she was "too much" all her life. Loud, shameless, delighted; she's exactly enough. The firm choice turns all that brass into begging.
+
+**Tokens you can use:** Pronouns for the player: `{they}` `{them}` `{their}` `{They}` `{Their}`, and verb helpers `{s}` `{is}` `{has}` `{was}`.
+
+**The scene:**
+
+- **Margot:** (the stall's shutters are down; she's sitting on the counter in heels, swinging one foot) So. I've been flirting with you for a month and you keep flirting back, and I'm forty-six, babe. I don't have time to be subtle.
+- **Margot:** Too much. That's what they said. (she hooks a finger in your collar) Are you going to tell me I'm too much?
+- **▸ The player chooses:**
+  - **"You're exactly enough. Come here."** ← **leads to your scene**
+    - **[Gentle only]** **Narration:** You kiss her against the counter and she laughs, delighted, and keeps laughing all night, like she's finally somewhere with enough room for all of her.
+    - **[Steamy — Unbound players see this too]** **Narration:** Margot is loud and shameless and gorgeous, and she wants all of it: your hands everywhere, the counter, the stockroom, the counter again, every inch of her too much and every inch of it adored.
+    - ✍️ **YOUR UNBOUND LINES GO HERE** — stub `margot_romance`. They play right after the Steamy line above.
+  - **"I'm going to find out exactly how much."** ← **leads to your scene**
+    - **Margot:** (her eyes go wide and then very, very dark) Oh. Oh, you're trouble.
+    - **[Gentle only]** **Narration:** You find out, and she's more, and you don't once tell her to be less.
+    - **[Steamy — Unbound players see this too]** **Narration:** You take every bit of her brass and flash and turn it into begging, Margot sprawled on her own counter with her hoops ringing, finally, gloriously, too much for someone who wants every bit of it.
+    - ✍️ **YOUR UNBOUND LINES GO HERE** — stub `margot_romance`. They play right after the Steamy line above.
+- *(Chronicle entry: "Margot was too much, and you wanted every bit.")*
+
+---
+
+### moira_romance
+
+**Tags:** romance, older woman, dark aesthetic
+
+**What to write** (from the guide):
+
+- *either choice* · older woman, dark aesthetic: Moira (55), goth widow and hexwife. Black lace, silver rings, a silver streak in black curls, a voice like velvet in a crypt. Slow, deliberate, utterly sure. Her black candle has burned for you since the night you met.
+
+**Tokens you can use:** Pronouns for the player: `{they}` `{them}` `{their}` `{They}` `{Their}`, and verb helpers `{s}` `{is}` `{has}` `{was}`.
+
+**The scene:**
+
+- **Moira:** (every candle in the shop is lit, and the black one burns tallest) Sit, dear. I want to tell you a secret. I lit that candle the night we met. It was never a curse.
+- **Moira:** (she takes your hand, cool fingers, silver rings) I'm fifty-five and widowed and I know exactly what I want. I'd like you to stay tonight.
+- **▸ The player chooses:**
+  - **"Then show me what the candle was for."** ← **leads to your scene**
+    - **[Gentle only]** **Narration:** She leads you through the beaded curtain to a bed draped in black lace, and every candle in the shop gutters at once, politely, and the dark keeps you both.
+    - **[Steamy — Unbound players see this too]** **Narration:** Moira makes love the way she lights candles: slow, deliberate, utterly sure every one will work. Black lace and silver rings and that velvet-in-a-crypt voice telling you exactly what she wants, and the black flame burning tallest of all.
+    - ✍️ **YOUR UNBOUND LINES GO HERE** — stub `moira_romance`. They play right after the Steamy line above.
+  - **"I'll stay. On my terms."** ← **leads to your scene**
+    - **Moira:** (a low, delighted laugh) Oh, finally. Someone who isn't afraid of the widow.
+    - **[Gentle only]** **Narration:** She lets you take the lead, and watches you with dark, approving eyes the whole time, as if you're the most interesting spell she's ever cast.
+    - **[Steamy — Unbound players see this too]** **Narration:** You take the hexwife on her own altar of black candles, and she gives you everything with dark, glittering eyes, the most composed woman on the Lane undone and laughing low in your arms.
+    - ✍️ **YOUR UNBOUND LINES GO HERE** — stub `moira_romance`. They play right after the Steamy line above.
+- *(Chronicle entry: "Moira's black candle burned all night.")*
+
+---
+
+### victoria_evening
+
+**Tags:** repeatable
+
+**What to write** (from the guide):
+
+- *"Stay the night."* · repeatable, hotwife: Familiar now, every third night. Harold's at his model-railway club; she'll be telling him everything. "One item on the agenda."
+
+**Tokens you can use:** Pronouns for the player: `{they}` `{them}` `{their}` `{They}` `{Their}`, and verb helpers `{s}` `{is}` `{has}` `{was}`.
+
+**The scene:**
+
+- **Victoria:** (she clicks her pen once, deliberately) Harold's at his model-railway club until midnight, and he's expecting a full report. I've blocked out my evening for you. Don't make me reschedule.
+- **▸ The player chooses:**
+  - **Stay the night.** ← **leads to your scene**
+    - **[Gentle only]** **Narration:** You spend the evening in the Ledger House, her glasses on the desk, her head on your shoulder, and she falls asleep before she can draft anything.
+    - **[Steamy — Unbound players see this too]** **Narration:** She leaves the meeting minutes very short tonight: one item on the agenda, discussed at length, carried unanimously, twice.
+    - ✍️ **YOUR UNBOUND LINES GO HERE** — stub `victoria_evening`. They play right after the Steamy line above.
+  - **"Just keep me company tonight."**
+    - **Victoria:** Fine. Sit with me while I do the quarterlies. (a pause) I like the company. Don't put that in the minutes.
+
+---
+
+### joanne_evening
+
+**Tags:** repeatable
+
+**What to write** (from the guide):
+
+- *"Stay the night."* · repeatable, hotwife: Upstairs at the inn while Gary's on night watch (he says hello). Not nervous anymore.
+
+**Tokens you can use:** Pronouns for the player: `{they}` `{them}` `{their}` `{They}` `{Their}`, and verb helpers `{s}` `{is}` `{has}` `{was}`.
+
+**The scene:**
+
+- **Joanne:** (untying her apron) Gary's on night watch, and he says hello. I saved you the last slice, sweetheart. And the rest of my night.
+- **▸ The player chooses:**
+  - **Stay the night.** ← **leads to your scene**
+    - **[Gentle only]** **Narration:** Upstairs at the Kettle & Crown, warm quilts and warmer hands, and she falls asleep smiling against you.
+    - **[Steamy — Unbound players see this too]** **Narration:** She pulls you upstairs, laughing, already pulling at your coat, and this time she's not nervous at all.
+    - ✍️ **YOUR UNBOUND LINES GO HERE** — stub `joanne_evening`. They play right after the Steamy line above.
+  - **"Just keep me company tonight."**
+    - **Joanne:** Then sit and eat and tell me everything. All of it. Even the parts with monsters.
+
+---
+
+### diane_evening
+
+**Tags:** repeatable
+
+**What to write** (from the guide):
+
+- *"Stay the night."* · repeatable: Among the night-blooming flowers. A pose she swears she invented for you.
+
+**Tokens you can use:** Pronouns for the player: `{they}` `{them}` `{their}` `{They}` `{Their}`, and verb helpers `{s}` `{is}` `{has}` `{was}`.
+
+**The scene:**
+
+- **Diane:** (wiping her hands on her apron, eyes bright) The night-blooming flowers are out. Come see them. Stay after.
+- **▸ The player chooses:**
+  - **Stay the night.** ← **leads to your scene**
+    - **[Gentle only]** **Narration:** Among the glowing flowers, slow and soft, and she names every plant that leans in to watch.
+    - **[Steamy — Unbound players see this too]** **Narration:** Among the glowing flowers, not slow at all, and she shows you a pose she swears she invented for you.
+    - ✍️ **YOUR UNBOUND LINES GO HERE** — stub `diane_evening`. They play right after the Steamy line above.
+  - **"Just keep me company tonight."**
+    - **Diane:** Then help me repot the mandrakes. Warn them first. They'll only sigh.
+
+---
+
+### margot_evening
+
+**Tags:** repeatable
+
+**What to write** (from the guide):
+
+- *"Stay the night."* · repeatable: The stockroom, the counter, regrettably the display case.
+
+**Tokens you can use:** Pronouns for the player: `{they}` `{them}` `{their}` `{They}` `{Their}`, and verb helpers `{s}` `{is}` `{has}` `{was}`.
+
+**The scene:**
+
+- **Margot:** (flipping the CLOSED sign with a flourish) Shop's shut, babe. Inventory's you.
+- **▸ The player chooses:**
+  - **Stay the night.** ← **leads to your scene**
+    - **[Gentle only]** **Narration:** She laughs the whole time and doesn't let go of your hand all night.
+    - **[Steamy — Unbound players see this too]** **Narration:** The stockroom, the counter, and once, regrettably, the display case. She says it was worth it. She's right.
+    - ✍️ **YOUR UNBOUND LINES GO HERE** — stub `margot_evening`. They play right after the Steamy line above.
+  - **"Just keep me company tonight."**
+    - **Margot:** Fine, help me price this junk. If you say "it's worth nothing" I'm charging double.
+
+---
+
+### moira_evening
+
+**Tags:** repeatable
+
+**What to write** (from the guide):
+
+- *"Stay the night."* · repeatable: Candle-light and cool hands; the candle burns down before you're done.
+
+**Tokens you can use:** Pronouns for the player: `{they}` `{them}` `{their}` `{They}` `{Their}`, and verb helpers `{s}` `{is}` `{has}` `{was}`.
+
+**The scene:**
+
+- **Moira:** (the black candle already lit) It's burning for you again, dear. It always is.
+- **▸ The player chooses:**
+  - **Stay the night.** ← **leads to your scene**
+    - **[Gentle only]** **Narration:** Black lace, candle-light, and her cool hands in your hair until you sleep.
+    - **[Steamy — Unbound players see this too]** **Narration:** Black lace and silver rings and that low, delighted laugh, and the candle burns down to nothing before either of you are done.
+    - ✍️ **YOUR UNBOUND LINES GO HERE** — stub `moira_evening`. They play right after the Steamy line above.
+  - **"Just keep me company tonight."**
+    - **Moira:** Then sit with me and watch the flames. They'll tell you things, if you're patient. Mostly gossip.
+
+---
+
+### celeste_romance
+
+**Tags:** romance, affair, married (her husband doesn't know), forbidden
+
+**What to write** (from the guide):
+
+- *1 · Take the ring off her finger, and kiss her.* · affair, married, forbidden: The first night, in Diane's greenhouse at midnight, among glowing vines. Her wedding ring sits on a potting bench. Under the tennis whites she's still a dancer: strong, flexible, and shameless once she stops thinking. A year of nothing breaking all at once.
+- *2 · "Then let me look at you first."* · affair, married, slow: The same night, slower: nobody has looked at her in a year. Being seen undoes her before anything else does.
+
+**Tokens you can use:** Pronouns for the player: `{they}` `{them}` `{their}` `{They}` `{Their}`, and verb helpers `{s}` `{is}` `{has}` `{was}`.
+
+**The scene:**
+
+- **Narration:** The greenhouse is warm and green and glowing, and Celeste is already there, still in her tennis whites, turning her wedding ring around and around.
+- **Celeste:** I've never done this. I want you to know that. Fifteen years and I never once — (she stops) I came here anyway. I'm choosing this. I need you to know I'm choosing it.
+- **▸ The player chooses:**
+  - **Take the ring off her finger, and kiss her.** ← **leads to your scene**
+    - **Celeste:** (a sharp, shaky breath as the ring comes off) Oh. Oh, God. Yes.
+    - **[Gentle only]** **Narration:** She kisses you like a woman who's been holding her breath for a year, and the ring sits on a potting bench, glinting, forgotten.
+    - **[Steamy — Unbound players see this too]** **Narration:** She's a dancer still, under the tennis whites: strong, flexible, shameless once she stops thinking, and she climbs you among the glowing vines like she's making up for every night Brad slept through. Afterward she laughs into your shoulder, wild and stunned and alive.
+    - ✍️ **YOUR UNBOUND LINES GO HERE** — stub `celeste_romance`. They play right after the Steamy line above.
+  - **"Then let me look at you first."** ← **leads to your scene**
+    - **Celeste:** (she flushes all the way down) Nobody's looked at me in a year.
+    - **[Gentle only]** **Narration:** You look. She lets you. And then, slowly, she lets you do a great deal more than look.
+    - **[Steamy — Unbound players see this too]** **Narration:** You take her apart slowly among the night-blooming flowers, every touch something she'd forgotten she could have, until the most polished woman on the Lane is trembling and gasping your name into the warm green dark.
+    - ✍️ **YOUR UNBOUND LINES GO HERE** — stub `celeste_romance`. They play right after the Steamy line above.
+- **Celeste:** (slipping her ring back on, slowly, at the greenhouse door) Same time in two nights? (she doesn't wait for an answer; she already knows it)
+- *(Chronicle entry: "Celeste met you in Diane's greenhouse at midnight. Brad was on a call.")*
+
+---
+
+### celeste_evening
+
+**Tags:** repeatable, affair
+
+**What to write** (from the guide):
+
+- *Stay the night.* · repeatable, affair: Stolen and quick: the greenhouse, a hayloft, once the back of Margot's stall, her hand over her own mouth. After she leaves Brad it's no longer secret, so warmer and slower. Never during pregnancy (the evening is closed then).
+
+**Tokens you can use:** Pronouns for the player: `{they}` `{them}` `{their}` `{They}` `{Their}`, and verb helpers `{s}` `{is}` `{has}` `{was}`.
+
+**The scene:**
+
+- **Celeste:** *(a line filled in during play, e.g. with a child's name)*
+- **▸ The player chooses:**
+  - **Stay the night.** ← **leads to your scene**
+    - **[Gentle only]** **Narration:** Somewhere warm and secret: the greenhouse, a hayloft, once the back of Margot's stall. She never stops smiling.
+    - **[Steamy — Unbound players see this too]** **Narration:** Quick and hungry and half-laughing, her hand over her own mouth, the thrill of it making her bolder every time.
+    - ✍️ **YOUR UNBOUND LINES GO HERE** — stub `celeste_evening`. They play right after the Steamy line above.
+  - **"Just walk with me tonight."**
+    - **Celeste:** (she takes your arm, which is somehow more dangerous than anything else) Just a walk. Along the edge of the fen, where nobody looks.
 
 ---
 

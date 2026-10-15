@@ -773,6 +773,12 @@ export async function makePortrait(kind, variant = null, opts = {}) {
   cam.lookAt(0, 1.12, 0);
   portraitRenderer.render(scene, cam);
   const url = portraitRenderer.domElement.toDataURL('image/png');
+  // free the throwaway model (procedural ones only; a loaded GLB may be shared)
+  if (!group.userData.gltf) group.traverse(o => {
+    if (o.geometry) o.geometry.dispose();
+    if (o.material) for (const m of [].concat(o.material)) { if (m.map) m.map.dispose(); m.dispose(); }
+    if (o.userData && o.userData.faces) for (const t of Object.values(o.userData.faces)) t.dispose();
+  });
   if (opts.cache !== false) portraitCache.set(key, url);
   return url;
 }

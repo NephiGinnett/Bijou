@@ -12,6 +12,7 @@ import { registerAlias, registerCustomActor, ACTOR_ACCENTS } from './actors3d.js
 import { installPacks, PACKS, LOOKS } from './packs/index.js';
 import { BOWER_TALK } from './packs/wildkin.js';
 import { GUESTS, GUEST_TALK } from './packs/guests.js';
+import * as TOWN from './packs/rift.js';
 import { install as installCompanions, hangoutSteps } from './companions.js';
 import { UNBOUND, WHEN } from './unbound_lines.js';
 
@@ -103,16 +104,43 @@ function affixChip(g) {
   const a = g && g.affix ? AFFIXES[g.affix] : null;
   return a ? `<span class="affix" title="${esc(a.desc)}">◆ ${esc(a.desc)}</span>` : '';
 }
-function heroName(id) { return id === 'player' ? S.name : (HEROES[id] ? HEROES[id].name : id); }
+function heroName(id) { return id === 'player' ? S.name : (HEROES[id] ? HEROES[id].name : (SPEAKERS[id] && SPEAKERS[id].name) || id); }
 function heroColor(id) { return (SPEAKERS[id] && SPEAKERS[id].color) || (HEROES[id] && HEROES[id].color) || '#fff'; }
-function heroVariant(id) { if (id === 'yuki' && S && S.flags && S.flags.yuki_femme) return 'fem'; return id === 'player' && S ? S.pronouns + (S.flags.pact_wyrm_mantle ? '_mantle' : '') + (S.flags.scarred ? '_scar' : '') : null; }
+const TOON_IDS = ['player', 'vesper', 'rue', 'isolde'];
+const OUTFITS = { adventure: 'Adventuring', formal: 'Formal', offduty: 'Off-duty' };
+// The main cast's equipped gear and chosen outfit travel to the model builder.
+function gearSig(id) {
+  const h = S && S.heroes && S.heroes[id];
+  if (!h || !h.gear) return '';
+  return ['weapon', 'armor', 'charm'].map(sl => { const g = h.gear[sl]; return g ? `${g.name.split(' ').pop().toLowerCase()}.${g.tier}.${g.affix || ''}` : '-'; }).join(',');
+}
+// Per-character outfit picker (main cast only), shown on Allies and Companion pages.
+function attirePick(id, elId) {
+  if (!TOON_IDS.includes(id)) return '';
+  const cur = S.wardrobe[id] || '';
+  return `<label class="set-row sm-text">Attire <select id="${elId}"><option value="">Party default (${OUTFITS[S.settings.outfit || 'adventure']})</option>${Object.entries(OUTFITS).map(([k, v]) => `<option value="${k}" ${cur === k ? 'selected' : ''}>${v}</option>`).join('')}</select></label>`;
+}
+function bindAttire(id, elId, back) {
+  const sel = $('#' + elId);
+  if (sel) sel.onchange = async () => {
+    if (sel.value) S.wardrobe[id] = sel.value; else delete S.wardrobe[id];
+    ST.save(S); await refreshPortraits(); back();
+  };
+}
+function attireOf(id) { return (S && S.wardrobe && S.wardrobe[id]) || (S && S.settings.outfit) || 'adventure'; }
+function heroVariant(id) {
+  if (id === 'yuki' && S && S.flags && S.flags.yuki_femme) return 'fem';
+  const base = id === 'player' && S ? S.pronouns + (S.flags.pact_wyrm_mantle ? '_mantle' : '') + (S.flags.scarred ? '_scar' : '') : null;
+  if (!S || !TOON_IDS.includes(id)) return base;
+  return `${base || ''}|g:${gearSig(id)}|o:${attireOf(id)}`;
+}
 function bar(cls, pct, title = '') {
   return `<div class="bar-outer ${cls} sm" title="${esc(title)}"><div class="bar-inner" style="width:${Math.max(0, Math.min(100, pct))}%"></div></div>`;
 }
 
 // Regenerate 2D portraits (player look follows pronoun choice; converts appear).
 async function refreshPortraits(force = false) {
-  const key = (S ? heroVariant('player') : 'she') + '|' + (S ? Object.keys(S.converts || {}).length : 0) + '|' + (S && S.flags && S.flags.yuki_femme ? 'yf' : '');
+  const key = (S ? TOON_IDS.map(heroVariant).join('/') : 'she') + '|' + (S ? Object.keys(S.converts || {}).length : 0) + '|' + (S && S.flags && S.flags.yuki_femme ? 'yf' : '');
   if (!force && PORTRAITS.__key === key) return;
   PORTRAITS.__key = key;
   // heroes, plus pack characters who aren't party members (tribe envoys)
@@ -206,7 +234,7 @@ export function playEvent(ev, opts = {}) {
           if (!ST.isAlly(S, st.join)) { ST.joinAlly(S, st.join); toast(`${heroName(st.join)} joins you.`, 'gold'); AU.sfx('promo'); }
           idx++; continue;
         }
-        if (st.chronicle) { ST.addChronicle(S, st.chronicle, ev.id); idx++; continue; }
+        if (st.chronicle) { ST.addChronicle(S, typeof st.chronicle === 'function' ? st.chronicle(S) : st.chronicle, ev.id); idx++; continue; }
         if (st.capture) { const c = ST.addNamedCaptive(S, st.capture); if (c) toast(`⛓ ${esc(c.name)} is taken to the Undercroft.`, 'gold'); idx++; continue; }
         if (st.give) {
           if (st.give.gold) { S.gold += st.give.gold; toast(`+${st.give.gold} gold`, 'gold'); }
@@ -221,8 +249,9 @@ export function playEvent(ev, opts = {}) {
         }
         if (st.t === '' && !st.choice) { idx++; continue; } // unwritten stub
         if (typeof st.t === 'function') { const t = st.t(S); if (!t) { idx++; continue; } steps[idx] = { ...st, t }; }
-        if (st.choice) { renderChoice(st); return; }
-        renderLine(st); return;
+        // (a computed line was just swapped into steps[idx], so render that, not st)
+        if (steps[idx].choice) { renderChoice(steps[idx]); return; }
+        renderLine(steps[idx]); return;
       }
       cleanup();
     };
@@ -461,15 +490,17 @@ async function hub() {
       <div class="panel bar">
         <span class="day">Day ${S.day}${S.legacy && S.legacy.cycle ? ` · Cycle ${S.legacy.cycle + 1}` : ''}</span>
         <span class="lic">Circle ${rankBadge(rank)}</span>
-        <div class="gp-wrap" title="Infamy toward your next inscription">
+        <div class="gp-wrap" title="Infamy: earned by clearing rifts. Fill it to rise to the next Circle.">
+          <span class="hud-label">Infamy</span>
           <div class="bar-outer gp"><div class="bar-inner" style="width:${need ? Math.min(100, S.infamy / need * 100) : 100}%"></div></div>
-          <span class="gp-num">${need ? `${S.infamy}/${need} Infamy` : 'ABYSS'}</span>
+          <span class="gp-num">${need ? `${S.infamy}/${need}` : 'ABYSS'}</span>
         </div>
         <div class="corrupt-wrap" title="Corruption: pacts, Blackblood, killing what you could have sealed. 50+ opens Slot VI; 80+ and captives fear you.">
-          ${bar('corrupt', S.corruption)}<span class="corrupt-num">☩ ${S.corruption}</span>
+          <span class="hud-label">Corruption</span>${bar('corrupt', S.corruption)}<span class="corrupt-num">☩ ${S.corruption}</span>
         </div>
         <span class="gold">◈ ${S.gold}g</span>
       </div>
+      ${standingStrip()}
     </div>
     <div class="guild-layout">
       <div class="panel guild-main">
@@ -488,6 +519,7 @@ async function hub() {
           ${Object.values(S.reagents).some(n => n > 0) || S.recipes.length || S.menagerie.length ? '<button class="btn big" id="g-alch">⚗ Alchemy<small>the cauldron</small></button>' : ''}
           ${S.flags.altar_open ? '<button class="btn big" id="g-altar">☩ Pact Altar<small>power, for a price</small></button>' : ''}
           <button class="btn big" id="g-shop">◈ Market<small>potions, gear & pens</small></button>
+          ${ST.packOn(S, 'rift') && TOWN.townOpen(S) ? `<button class="btn big ${townNews() ? 'notify' : ''}" id="g-town">🏘 Larkspur Lane${townNews() ? '<em>!</em>' : ''}<small>townsfolk, shops & quests</small></button>` : ''}
           <button class="btn big ${talkEv ? 'notify' : ''}" id="g-talk">❝ Talk${talkEv ? '<em>!</em>' : ''}<small>the household</small></button>
           <button class="btn big" id="g-chron">📖 Chronicle<small>what the Codex wrote</small></button>
           ${ST.roster(S).length >= 4 ? `<button class="btn big ${newReports ? 'notify' : ''}" id="g-dispatch">✈ Dispatch${newReports ? '<em>!</em>' : ''}<small>${S.dispatch.length ? S.dispatch.length + ' out' : 'send allies to a rift'}</small></button>` : ''}
@@ -528,6 +560,7 @@ async function hub() {
   on('g-alch', () => { AU.sfx('ui'); alchemy(); });
   on('g-altar', () => { AU.sfx('ui'); altar(); });
   on('g-shop', () => { AU.sfx('ui'); shop(); });
+  on('g-town', () => { AU.sfx('ui'); town(); });
   on('g-chron', () => { AU.sfx('ui'); chronicle(); });
   on('g-talk', async () => {
     AU.sfx('ui');
@@ -1035,7 +1068,8 @@ function dungeonScreen() {
       <div class="dungeon-body">${body}</div>
       ${caps}
       <div class="row gap wrap">${actions}
-        <button class="btn ghost" id="d-auto" title="Let the party push through the rest of the rift on its own (each ally's auto-skill; the warlock seals anything ready to be bound).">⏩ Auto-clear</button>
+        ${(() => { const boss = run.nodes.slice(run.nodeIdx).find(n => n.type === 'boss'); const stop = boss && !ST.bossBeaten(S, boss);
+          return `<button class="btn ghost" id="d-auto" title="Let the party push through the rest of the rift on its own (each ally's auto-skill; the warlock seals anything ready to be bound).${stop ? ' It stops at the boss: the first time, you fight it yourself.' : ''}">⏩ ${stop ? 'Auto-clear to the boss' : 'Auto-clear'}</button>`; })()}
         <button class="btn ghost" id="d-retreat">Retreat</button>
       </div>
       <div class="mini-party">${hpRows}</div>
@@ -1108,6 +1142,13 @@ async function autoResolveDungeon() {
   while (S.run && run.nodeIdx < run.nodes.length && guard++ < 200) {
     const node = run.nodes[run.nodeIdx];
     if (node.type === 'branch') { run.nodes[run.nodeIdx] = node.options.find(o => !o.elite) || node.options[0]; continue; }
+    if (node.type === 'boss' && !ST.bossBeaten(S, node)) {
+      // a boss you've never beaten: the party stops at the door and you fight it yourself
+      overlay.remove();
+      ST.save(S);
+      toast('The party halts at the heart of the rift. This one you face yourself.', 'gold');
+      return dungeonScreen();
+    }
     if (node.type === 'fight' || node.type === 'boss') {
       tick(node.type === 'boss' ? 'The heart of the rift.' : `Chamber ${run.nodeIdx + 1}…`);
       await stage.wait(window.__FAST ? 60 : 220);
@@ -1117,7 +1158,8 @@ async function autoResolveDungeon() {
       fights++;
       if (r.outcome === 'wipe' || !r.outcome) { overlay.remove(); AU.sfx('wipe'); return results(ST.endRun(S, 'wipe')); }
       if (r.outcome === 'retreat') { overlay.remove(); return results(ST.endRun(S, 'retreat')); }
-      if (node.type === 'boss') {
+      if (node.type === 'boss') ST.markBossBeaten(S, node);
+      if (node.type === 'boss' && run.nodeIdx >= run.nodes.length - 1) {
         ST.rollBossDrop(S, gate);
         overlay.remove();
         AU.sfx('victory');
@@ -1329,6 +1371,7 @@ async function battle(node) {
     const endEv = res.events.find(e => e.t === 'end');
     toast(`Victory! +${endEv?.xp || 0} XP, +${endEv?.gold || 0}g`, 'gold');
     await stage.wait(600);
+    if (node.type === 'boss') ST.markBossBeaten(S, node);
     if (node.type === 'boss' && S.run.nodeIdx >= S.run.nodes.length - 1) {
       const drop = ST.rollBossDrop(S, gate);
       if (drop) toast(`Spoils: ${drop.name}`, 'gold');
@@ -1951,7 +1994,7 @@ function hearthHtml(only = null) {
   const due = Object.entries(S.expecting || {}).filter(([id]) => !only || id === only);
   if (!kids.length && !due.length) return '';
   return `<div class="hearth"><b>🏠 Hearth</b>
-    ${kids.map(c => `<div class="sm-text">${esc(c.name)} <span class="muted">— with ${esc(heroName(c.parent))}, born day ${c.day}</span></div>`).join('')}
+    ${kids.map(c => `<div class="sm-text">${esc(c.name)} <span class="muted">— with ${esc(heroName(c.parent))}, born day ${c.day}${c.secret ? ' · Brad thinks they\'re his' : ''}</span></div>`).join('')}
     ${due.map(([id, d]) => `<div class="sm-text gold">${esc(heroName(id))} is expecting <span class="muted">— due in ${Math.max(0, d - S.day)} day${d - S.day === 1 ? '' : 's'}</span></div>`).join('')}
   </div>`;
 }
@@ -2003,11 +2046,13 @@ function companion(id) {
       </div>
       ${away ? '<p class="sm-text muted">They\'re away on a dispatch. Spend time together when they\'re back.</p>' : !open ? '<p class="sm-text muted">You\'ve already spent time together today. Come back tomorrow.</p>' : ''}
       ${waiting ? `<p class="sm-text gold">✦ A scene with ${esc(heroName(id))} is waiting ${waiting.where === 'camp' ? 'at camp on your next expedition' : 'in Talk at the hub'}.</p>` : ''}
+      ${attirePick(id, 'cp-outfit')}
       ${hearthHtml(id)}
       ${mem.length ? `<h3 style="margin-top:10px">✦ Memories</h3><div class="mem-list">${mem.map(ev => `<button class="btn sm mem" data-ev="${ev.id}">${esc(memoryLabel(ev))}</button>`).join('')}</div>` : ''}
     </div>
   `);
   $('#cp-back').onclick = () => hub();
+  bindAttire(id, 'cp-outfit', () => companion(id));
   document.querySelectorAll('.cp-act:not(.disabled)').forEach(b => b.onclick = async () => {
     screen('', '');
     await playEvent({ id: 'banter', steps: hangoutSteps(id, b.dataset.k, heroName(id), S) });
@@ -2099,7 +2144,7 @@ function party(sel = 'player') {
           ${S.statSurge && S.statSurge[sel] ? `<p class="passive" style="color:var(--corrupt)"><b>Blood Surge:</b> +${Math.round(S.statSurge[sel] * 100)}% stats, paid in trust.</p>` : ''}
           ${sel === 'player' && S.flags.scarred ? '<p class="passive" style="color:var(--corrupt)"><b>Scarred:</b> the Scar Rite left its mark.</p>' : ''}
         </div>
-        <div class="sheet-mid"><h3>Stats</h3>${statRows}<h3>Gear</h3>${gearRows}</div>
+        <div class="sheet-mid"><h3>Stats</h3>${statRows}<h3>Gear</h3>${gearRows}${attirePick(sel, 'p-outfit')}</div>
         <div class="sheet-right"><h3>Skills</h3>
           <p class="muted sm-text">In auto-battle this hero uses <b>${S.autoSkill[sel] && SKILLS[S.autoSkill[sel]] ? SKILLS[S.autoSkill[sel]].name : 'Strike'}</b> when possible. Reach ★★★ mastery to set a different auto-skill.</p>
           ${skillRows}</div>
@@ -2109,6 +2154,7 @@ function party(sel = 'player') {
   $('#p-back').onclick = () => hub();
   document.querySelectorAll('.tab').forEach(t => t.onclick = () => { AU.sfx('ui'); party(t.dataset.id); });
   document.querySelectorAll('.gear-slot').forEach(gs => gs.onclick = () => gearPicker(sel, gs.dataset.slot));
+  bindAttire(sel, 'p-outfit', () => party(sel));
   document.querySelectorAll('.auto-set').forEach(b => b.onclick = () => {
     const id = b.dataset.skill;
     if (S.autoSkill[sel] === id) delete S.autoSkill[sel];
@@ -2150,7 +2196,7 @@ function gearPicker(heroId, slot) {
     AU.sfx('confirm');
     ST.save(S);
     modal.remove();
-    party(heroId);
+    if (TOON_IDS.includes(heroId)) refreshPortraits().then(() => party(heroId)); else party(heroId);
   });
 }
 
@@ -2216,6 +2262,192 @@ function shop() {
     ST.save(S);
     shop();
   });
+}
+
+// ------------------------------------------------------------------
+// Larkspur Lane — the town (Through the Rift pack)
+// ------------------------------------------------------------------
+
+// Something waiting in town: a scene, a romance, or a quest ready to turn in.
+function townNews() {
+  return TOWN.FOLK_IDS.some(id => townScene(id) || TOWN.questReady(S, id).ok);
+}
+function townScene(id) {
+  return Object.values(EVENTS).find(ev => ev.where === 'town' && ev.once && ev.id.startsWith(id + '_') && !S.seen[ev.id] && (!ev.cond || ev.cond(S))) || null;
+}
+// Your standing at a glance: each rival's Power (or its fate), and each tribe's favor.
+function standingStrip() {
+  const rivals = Object.entries(FACTIONS).filter(([, F]) => !F.pack || ST.packOn(S, F.pack)).map(([fid, F]) => {
+    const f = S.factions[fid]; if (!f) return '';
+    const short = F.name.replace(/^The (Order of the )?/, '');
+    return `<span class="stand-chip ${f.fate ? 'won' : ''}" style="--fc:${F.color}" title="${esc(F.name)}: ${f.fate ? `dominated (${f.fate})` : `Power ${f.power}/100. Raid its holdings to drain it; at 35 or less, ${esc(F.leaderName)}'s lair opens.`}">${F.icon} ${esc(short)} <b>${f.fate ? '✓' : f.power}</b></span>`;
+  }).join('');
+  const tribes = Object.entries(TRIBES).filter(([tid]) => S.tribes && S.tribes[tid] && S.tribes[tid].status).map(([tid, T]) => {
+    const t = S.tribes[tid];
+    return `<span class="stand-chip tribe" style="--fc:${T.color || '#c8a87a'}" title="${esc(T.name)}: ${esc(t.status)}, favor ${t.favor}/10">🪶 ${esc(T.name.replace(/^The /, '').split(' ')[0])} <b>${t.favor}</b></span>`;
+  }).join('');
+  return `<div class="stand-strip"><span class="hud-label">Rivals</span>${rivals}${tribes ? `<span class="hud-label">Tribes</span>${tribes}` : ''}</div>`;
+}
+function stake(lvl) { return '◆'.repeat(lvl) + '◇'.repeat(3 - lvl); }
+
+function town() {
+  const div = TOWN.dividends(S);
+  const cards = TOWN.FOLK_IDS.map(id => {
+    const P = TOWN.TOWNSFOLK[id], f = TOWN.folkOf(S, id), q = TOWN.questOf(S, id), qr = TOWN.questReady(S, id);
+    const scene = townScene(id), cost = TOWN.investCost(S, id);
+    const eveOk = TOWN.townEveningOpen(S, id);
+    return `<div class="cell-card">
+      <div class="recruit-head">${portraitImg(id)}<div><b style="color:${P.color}">${esc(P.name)}</b> <small class="muted">${esc(P.role)}</small><br><small class="muted">${esc(P.shop || 'Larkspur Lane')}</small>${P.shop ? `<br><small class="muted" title="Investment level">stake ${stake(f.level)}</small>` : ''}</div></div>
+      <div class="meter"><span>Favor</span>${bar('regard', f.favor * 10)}<span>${f.favor}/10</span></div>
+      <p class="sm-text muted">${esc(P.perk)}</p>
+      ${scene ? `<button class="btn tw-scene notify" data-f="${id}">${scene.id.endsWith('_romance') ? '♡ She has something to ask you' : scene.id === 'celeste_note' ? '✉ Something in your coat pocket' : '✦ She wants to talk'}</button>` : ''}
+      <div class="visit-row">
+        <button class="btn tw-talk ${f.talkDay === S.day ? 'disabled' : ''}" data-f="${id}">❝ Talk</button>
+        ${P.shop ? `<button class="btn tw-shop" data-f="${id}">◈ ${id === 'joanne' ? 'Supper' : 'Shop'}</button>
+        <button class="btn tw-inv ${cost != null && S.gold >= cost ? '' : 'disabled'}" data-f="${id}" title="${cost == null ? 'Fully invested.' : `Invest ${cost}g: +${TOWN.DIVIDEND[f.level + 1] - TOWN.DIVIDEND[f.level]}g a night, +1 favor, better stock.`}">⬆ ${cost == null ? 'Fully invested' : `Invest ${cost}g`}</button>` : ''}
+        ${S.seen[id + '_romance'] && !S.flags[id + '_ended'] ? `<button class="btn tw-eve ${eveOk ? '' : 'disabled'}" data-f="${id}" title="${eveOk ? '' : 'One evening a night; every third night with her.'}">☾ Evening</button>` : ''}
+      </div>
+      ${id === 'celeste' ? `<p class="sm-text gold">${esc(TOWN.affairNote(S))}</p>` : q ? `<div class="quest-box"><b class="sm-text">${f.active ? '◇' : '?'} ${esc(q.title)}</b>
+        ${f.active ? `<div class="sm-text muted">${qr.note}</div><button class="btn sm tw-turn ${qr.ok ? 'notify' : 'disabled'}" data-f="${id}">Hand it over</button>` : `<button class="btn sm tw-ask" data-f="${id}">Ask about it</button>`}
+      </div>` : `<p class="sm-text gold">✓ Every favor she asked is done.</p>`}
+    </div>`;
+  }).join('');
+  screen(`
+    <div class="panel shop-panel">
+      <div class="row spread"><h2>🏘 Larkspur Lane</h2><div class="row gap"><span class="gold">◈ ${S.gold}g</span> <button class="btn ghost" id="tw-back">← Codex</button></div></div>
+      <p class="muted sm-text">A suburban cul-de-sac that fell through a misfired summoning into the fen. Talk daily, run errands for favor, and invest in their businesses. ${div ? `<b class="gold">The Lane pays you ${div}g every night.</b>` : 'Investments pay dividends every night.'}</p>
+      <div class="cells">${cards}</div>
+    </div>`);
+  $('#tw-back').onclick = () => hub();
+  document.querySelectorAll('.tw-talk:not(.disabled)').forEach(b => b.onclick = async () => {
+    const id = b.dataset.f, r = TOWN.townTalk(S, id);
+    if (!r) return;
+    const lines = TOWN.TOWN_TALK[id];
+    screen('', '');
+    await playEvent({ id: 'banter', steps: [{ s: id, t: lines[(S.day + r.favor) % lines.length] }] });
+    if (r.up) toast(`${TOWN.TOWNSFOLK[id].name}'s favor +1`, 'bond');
+    ST.save(S); town();
+  });
+  document.querySelectorAll('.tw-scene').forEach(b => b.onclick = async () => {
+    const ev = townScene(b.dataset.f);
+    screen('', ''); await playEvent(ev); ST.save(S); town();
+  });
+  document.querySelectorAll('.tw-eve:not(.disabled)').forEach(b => b.onclick = async () => {
+    const id = b.dataset.f;
+    screen('', ''); await playEvent(EVENTS[id + '_evening']); TOWN.townEvening(S, id); ST.save(S); town();
+  });
+  document.querySelectorAll('.tw-inv:not(.disabled)').forEach(b => b.onclick = () => {
+    const id = b.dataset.f;
+    if (!TOWN.invest(S, id)) return;
+    AU.sfx('coin'); toast(`You bought a stake in ${TOWN.TOWNSFOLK[id].shop}. ${TOWN.TOWNSFOLK[id].name}'s favor +1`, 'bond');
+    ST.save(S); town();
+  });
+  document.querySelectorAll('.tw-ask').forEach(b => b.onclick = async () => {
+    const id = b.dataset.f, q = TOWN.questOf(S, id);
+    screen('', '');
+    await playEvent({ id: 'banter', steps: [{ s: id, t: q.ask }, { choice: [
+      { t: '"Consider it done."', r: [{ do: S => TOWN.acceptQuest(S, id) }, { s: 'codex', t: `[ ERRAND — ${q.title} ]` }] },
+      { t: '"Not right now."', r: [] },
+    ] }] });
+    ST.save(S); town();
+  });
+  document.querySelectorAll('.tw-turn:not(.disabled)').forEach(b => b.onclick = async () => {
+    const id = b.dataset.f, q = TOWN.questOf(S, id);
+    const got = TOWN.turnIn(S, id);
+    if (!got) return;
+    AU.sfx('promo');
+    screen('', '');
+    await playEvent({ id: 'banter', steps: [{ s: id, t: q.done }, { s: 'codex', t: `[ ${got.join(' · ')} ]` }] });
+    ST.save(S); town();
+  });
+  document.querySelectorAll('.tw-shop').forEach(b => b.onclick = () => { AU.sfx('ui'); townShop(b.dataset.f); });
+}
+
+function townShop(id) {
+  const P = TOWN.TOWNSFOLK[id];
+  const gearRow = (g, price, cls, label) => `<div class="shop-row"><div><b class="t${g.tier}">${esc(g.name)}</b> <small class="muted">${Object.entries(g.stats).map(([k, v]) => `${k}+${v}`).join(' ')}</small>${affixChip(g)}</div>
+    <button class="btn ${cls} ${label === 'sell' || S.gold >= price ? '' : 'disabled'}" data-id="${g.id}">${label === 'sell' ? 'sell ' : ''}◈ ${price}g</button></div>`;
+  let body = '';
+  if (id === 'victoria') {
+    body = `<h3>Requisitions</h3><p class="muted sm-text">Fresh stock every morning. More with each stake; at stake ◆◆ everything comes enchanted.</p>
+      ${TOWN.victoriaStock(S).map(g => gearRow(g, TOWN.priceAt(S, id, TOWN.gearPrice(g)), 'tw-buyg', 'buy')).join('') || '<p class="muted">Sold out until tomorrow.</p>'}
+      <h3>The Lane's ledger</h3>${TOWN.FOLK_IDS.map(f => `<div class="shop-row"><div><b>${esc(TOWN.TOWNSFOLK[f].shop)}</b> <small class="muted">stake ${stake(TOWN.folkOf(S, f).level)}</small></div><span class="gold">+${TOWN.DIVIDEND[TOWN.folkOf(S, f).level]}g/night</span></div>`).join('')}
+      <p class="sm-text">Ledger House bonus: <b>+${TOWN.folkOf(S, 'victoria').level * 10}%</b> to all dividends. Tonight: <b class="gold">${TOWN.dividends(S)}g</b>.</p>`;
+  } else if (id === 'joanne') {
+    const allies = ST.roster(S).filter(a => a !== 'player');
+    const lvl = TOWN.folkOf(S, id).level, price = TOWN.priceAt(S, id, 30);
+    body = `<h3>Supper for two</h3><p class="muted sm-text">Bring an ally to dinner: closeness +${lvl >= 2 ? 2 : 1}, even if you've already spent time together today. One supper a day.</p>
+      ${allies.length ? `<div class="visit-row"><select id="tw-sup">${allies.map(a => `<option value="${a}">${esc(heroName(a))}</option>`).join('')}</select>
+      <button class="btn ${TOWN.supperOpen(S) && S.gold >= price ? '' : 'disabled'}" id="tw-supper">◈ ${price}g</button></div>` : '<p class="muted">Bring an ally home first.</p>'}
+      ${TOWN.supperOpen(S) ? '' : '<p class="sm-text muted">You\'ve had supper here today. Joanne will have a table tomorrow.</p>'}
+      <h3>From the kitchen</h3>${['potion', 'ether'].map(it => `<div class="shop-row"><div><b>${ITEMS[it].name}</b> <small class="muted">×${S.inventory[it] || 0} · "Joanne's home remedy"</small></div><button class="btn tw-buyi ${S.gold >= TOWN.priceAt(S, id, ITEMS[it].price) ? '' : 'disabled'}" data-i="${it}">◈ ${TOWN.priceAt(S, id, ITEMS[it].price)}g</button></div>`).join('')}`;
+  } else if (id === 'diane') {
+    body = `<h3>Remedies</h3>${TOWN.dianeStock(S).map(it => `<div class="shop-row"><div><b>${ITEMS[it].name}</b> <small class="muted">×${S.inventory[it] || 0}</small><p class="muted">${ITEMS[it].desc}</p></div><button class="btn tw-buyi ${S.gold >= TOWN.priceAt(S, id, ITEMS[it].price) ? '' : 'disabled'}" data-i="${it}">◈ ${TOWN.priceAt(S, id, ITEMS[it].price)}g</button></div>`).join('')}
+      <h3>Reagents</h3>${Object.entries(REAGENTS).map(([r, R]) => `<div class="shop-row"><div><b>${R.icon} ${R.name}</b> <small class="muted">×${S.reagents[r] || 0}</small></div><div class="row gap">
+        <button class="btn sm tw-buyr ${S.gold >= TOWN.reagentBuy(S, r) ? '' : 'disabled'}" data-r="${r}">buy ◈ ${TOWN.reagentBuy(S, r)}g</button>
+        <button class="btn sm tw-sellr ${(S.reagents[r] || 0) > 0 ? '' : 'disabled'}" data-r="${r}">sell ◈ ${TOWN.reagentSell(S, r)}g</button></div></div>`).join('')}`;
+  } else if (id === 'margot') {
+    const rate = TOWN.margotRate(S);
+    const brewed = Object.entries(S.inventory).filter(([k, v]) => v > 0 && ITEMS[k] && ITEMS[k].brewed);
+    body = `<p class="muted sm-text">Margot pays ${Math.round(rate * 100)}% of the Night Market's price for gear.</p>
+      <h3>Sell gear</h3><div class="sell-list">${S.gearBag.length ? S.gearBag.map(g => gearRow(g, Math.max(6, Math.round(gearScore(g) * 4 * rate)), 'tw-sellg', 'sell')).join('') : '<p class="muted">No spare gear to sell.</p>'}</div>
+      <h3>Sell draughts</h3>${brewed.length ? brewed.map(([k, v]) => `<div class="shop-row"><div><b>${ITEMS[k].name}</b> <small class="muted">×${v}</small></div><button class="btn tw-selli" data-i="${k}">sell ◈ ${TOWN.brewedSale(S, k)}g</button></div>`).join('') : '<p class="muted">Nothing brewed to sell.</p>'}`;
+  } else if (id === 'moira') {
+    body = `<h3>Charms</h3><p class="muted sm-text">Two new charms every morning, always enchanted.${TOWN.folkOf(S, id).level >= 2 ? ' Your stake buys her stronger wax.' : ''}</p>
+      ${TOWN.moiraStock(S).map(g => gearRow(g, TOWN.priceAt(S, id, TOWN.gearPrice(g)), 'tw-buyg', 'buy')).join('') || '<p class="muted">Every candle\'s spoken for until tomorrow.</p>'}`;
+  }
+  screen(`
+    <div class="panel shop-panel">
+      <div class="row spread"><h2 style="color:${P.color}">${esc(P.shop)}</h2><div class="row gap"><span class="gold">◈ ${S.gold}g</span> <button class="btn ghost" id="ts-back">← Larkspur Lane</button></div></div>
+      <div class="recruit-head">${portraitImg(id)}<div><b style="color:${P.color}">${esc(P.name)}</b><br><small class="muted">${esc(P.desc)}</small></div></div>
+      ${body}
+    </div>`);
+  const again = () => { ST.save(S); townShop(id); };
+  $('#ts-back').onclick = () => town();
+  const stock = id === 'victoria' ? TOWN.victoriaStock(S) : id === 'moira' ? TOWN.moiraStock(S) : [];
+  document.querySelectorAll('.tw-buyg:not(.disabled)').forEach(b => b.onclick = () => {
+    const i = stock.findIndex(g => g.id === b.dataset.id); if (i < 0) return;
+    const price = TOWN.priceAt(S, id, TOWN.gearPrice(stock[i]));
+    if (S.gold < price) return;
+    S.gold -= price; S.gearBag.push(stock.splice(i, 1)[0]); AU.sfx('coin'); again();
+  });
+  document.querySelectorAll('.tw-buyi:not(.disabled)').forEach(b => b.onclick = () => {
+    const price = TOWN.priceAt(S, id, ITEMS[b.dataset.i].price);
+    if (S.gold < price) return;
+    S.gold -= price; S.inventory[b.dataset.i] = (S.inventory[b.dataset.i] || 0) + 1; AU.sfx('coin'); again();
+  });
+  document.querySelectorAll('.tw-buyr:not(.disabled)').forEach(b => b.onclick = () => {
+    const r = b.dataset.r, price = TOWN.reagentBuy(S, r);
+    if (S.gold < price) return;
+    S.gold -= price; S.reagents[r] = (S.reagents[r] || 0) + 1; AU.sfx('coin'); again();
+  });
+  document.querySelectorAll('.tw-sellr:not(.disabled)').forEach(b => b.onclick = () => {
+    const r = b.dataset.r; if (!(S.reagents[r] > 0)) return;
+    S.reagents[r]--; S.gold += TOWN.reagentSell(S, r); AU.sfx('coin'); again();
+  });
+  document.querySelectorAll('.tw-sellg').forEach(b => b.onclick = () => {
+    const i = S.gearBag.findIndex(g => g.id === b.dataset.id); if (i < 0) return;
+    const g = S.gearBag.splice(i, 1)[0];
+    S.gold += Math.max(6, Math.round(gearScore(g) * 4 * TOWN.margotRate(S))); AU.sfx('coin'); again();
+  });
+  document.querySelectorAll('.tw-selli').forEach(b => b.onclick = () => {
+    const k = b.dataset.i; if (!(S.inventory[k] > 0)) return;
+    S.inventory[k]--; S.gold += TOWN.brewedSale(S, k); AU.sfx('coin'); again();
+  });
+  const sup = $('#tw-supper');
+  if (sup && !sup.classList.contains('disabled')) sup.onclick = async () => {
+    const who = $('#tw-sup').value, price = TOWN.priceAt(S, id, 30);
+    if (S.gold < price || !TOWN.supperOpen(S)) return;
+    S.gold -= price; S.town.supperDay = S.day;
+    const r = ST.addCloseness(S, who, TOWN.folkOf(S, id).level >= 2 ? 2 : 1);
+    screen('', '');
+    await playEvent({ id: 'banter', steps: [
+      { s: 'joanne', t: `(setting down two steaming plates and a candle) For you and ${heroName(who)}. Eat slow. Talk to each other. I'll be pretending not to listen.` },
+      { s: 'narr', t: `You and ${heroName(who)} linger over supper until the candle gutters. It's the most ordinary evening either of you has had in months, and somehow that's the point.` },
+    ] });
+    if (r.up) { AU.sfx('promo'); toast(`${heroName(who)} bond +1 ♥`, 'bond'); }
+    again();
+  };
 }
 
 // ------------------------------------------------------------------
@@ -2286,6 +2518,7 @@ function settingsModal(back) {
       <option value="gentle" ${s.gore !== 'grim' ? 'selected' : ''}>Gentle</option>
       <option value="grim" ${s.gore === 'grim' ? 'selected' : ''}>Grim</option>
     </select></label>
+    <label class="set-row">Party attire <select id="set-outfit">${Object.entries(OUTFITS).map(([k, v]) => `<option value="${k}" ${(s.outfit || 'adventure') === k ? 'selected' : ''}>${v}</option>`).join('')}</select></label>
     <p class="muted sm-text">Intimacy applies only between free allies, never captives. Grim adds harsher violence to battle logs and the Undercroft.</p>
     ${S ? `<div class="pack-toggles"><b class="sm-text">Character packs</b>${Object.entries(PACKS).map(([id, P]) => `<label class="set-row" title="${esc(P.desc)}">${esc(P.name)} <input type="checkbox" class="pack-tg" data-id="${id}" ${S.settings.packs[id] !== false ? 'checked' : ''}></label>`).join('')}</div>` : ''}
     ${S && S.cleared ? `
@@ -2310,6 +2543,9 @@ function settingsModal(back) {
     s.textFast = modal.querySelector('#set-fast').checked;
     s.spice = modal.querySelector('#set-spice').value;
     s.gore = modal.querySelector('#set-gore').value;
+    const prevOutfit = s.outfit;
+    s.outfit = modal.querySelector('#set-outfit').value;
+    if (S && prevOutfit !== s.outfit) { S.settings = s; refreshPortraits(); }
     modal.querySelectorAll('.pack-tg').forEach(cb => { s.packs = s.packs || {}; s.packs[cb.dataset.id] = cb.checked; });
     AU.applySettings(s);
     if (S) { S.settings = s; ST.save(S); }
@@ -2319,6 +2555,7 @@ function settingsModal(back) {
   modal.querySelector('#set-fast').onchange = apply;
   modal.querySelector('#set-spice').onchange = apply;
   modal.querySelector('#set-gore').onchange = apply;
+  modal.querySelector('#set-outfit').onchange = apply;
   modal.querySelectorAll('.pack-tg').forEach(cb => cb.onchange = apply);
   if (S) {
     modal.querySelector('#set-export').onclick = () => { modal.querySelector('#save-blob').value = ST.exportSave(S); toast('Save code generated — copy it somewhere safe.'); };

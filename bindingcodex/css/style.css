@@ -102,6 +102,8 @@ code { background: #24162e; padding: 1px 6px; border-radius: 4px; font-size: 0.9
 .btn.danger { border-color: var(--danger); color: var(--danger); }
 .btn.notify { border-color: var(--sys); }
 .btn.notify em { font-style: normal; color: var(--sys); animation: pulse 1.2s infinite; margin-left: 4px; }
+.btn.big { position: relative; }
+.btn.big.notify em { position: absolute; top: 8px; right: 12px; margin: 0; font-weight: 700; }
 @keyframes pulse { 50% { opacity: 0.3; } }
 
 input, textarea {
@@ -220,11 +222,17 @@ textarea { height: 74px; margin-top: 10px; font-size: 0.7rem; resize: none; }
 
 /* ---------- guild ---------- */
 
-.hud-top { width: 100%; display: flex; justify-content: center; }
+.hud-top { width: 100%; display: flex; flex-direction: column; align-items: center; gap: 6px; }
+.hud-top .panel.bar { font-size: 1.02rem; background: rgba(20, 12, 28, 0.92); flex-wrap: wrap; justify-content: center; }
+.hud-label { font-size: 0.72rem; letter-spacing: 0.12em; text-transform: uppercase; color: #c8bcd8; }
+.stand-strip { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 6px; padding: 6px 12px; border-radius: 10px; background: rgba(20, 12, 28, 0.88); border: 1px solid var(--border-dim); }
+.stand-chip { font-size: 0.82rem; padding: 2px 9px; border-radius: 9px; border: 1px solid var(--fc); color: #ece4f4; background: rgba(0, 0, 0, 0.35); white-space: nowrap; }
+.stand-chip b { color: var(--fc); margin-left: 3px; }
+.stand-chip.won { opacity: 0.75; }
 .day { color: var(--muted); }
 .lic { display: flex; align-items: center; gap: 6px; }
 .gp-wrap { display: flex; align-items: center; gap: 8px; }
-.gp-num { color: var(--sys); font-size: 0.8rem; }
+.gp-num { color: #e0c8ff; font-size: 0.92rem; font-weight: 600; }
 .guild-layout { display: flex; gap: 12px; width: 100%; max-width: 1040px; align-items: stretch; flex-wrap: wrap; }
 .guild-main { flex: 2.2; min-width: 300px; }
 .menu-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px; margin: 16px 0; }
@@ -608,8 +616,8 @@ button.ticker-btn.notify em { font-style: normal; color: var(--gold); animation:
 .btn.seal { border-color: var(--will); color: #e6c8ff; }
 
 .corrupt-wrap { display: flex; align-items: center; gap: 6px; min-width: 120px; }
-.corrupt-wrap .bar-outer { width: 70px; }
-.corrupt-num { color: var(--corrupt); font-size: 12px; }
+.corrupt-wrap .bar-outer { width: 90px; }
+.corrupt-num { color: #ff8a9a; font-size: 0.92rem; font-weight: 600; }
 
 /* tarot board */
 .tarot-row { display: flex; gap: 18px; justify-content: center; flex-wrap: wrap; perspective: 1200px; margin: 10px 0; }
@@ -634,6 +642,7 @@ button.ticker-btn.notify em { font-style: normal; color: var(--gold); animation:
 .cell-card h3 { font-size: 15px; }
 .cell-card .meter { display: grid; grid-template-columns: 62px 1fr 34px; align-items: center; gap: 6px; font-size: 11px; color: var(--muted); }
 .cell-card .traits { display: flex; gap: 4px; flex-wrap: wrap; }
+.cell-card .quest-box { border-top: 1px dashed var(--border-dim); padding-top: 5px; display: flex; flex-direction: column; gap: 4px; }
 .trait { font-size: 10px; padding: 1px 6px; border-radius: 8px; border: 1px solid var(--border-dim); color: var(--muted); }
 .secret { font-size: 11px; color: var(--gold); font-style: italic; }
 .visit-row { display: flex; flex-wrap: wrap; gap: 4px; }

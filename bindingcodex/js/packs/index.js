@@ -15,6 +15,7 @@ import * as northern from './northern.js';
 import * as classic from './classic.js';
 import * as wildkin from './wildkin.js';
 import * as hearts from './hearts.js';
+import * as rift from './rift.js';
 
 export const PACKS = {
   obsidian: { name: 'Obsidian College', mod: obsidian, desc: 'Lady Auren Voss, the Revenant Bride, Mira Ashveil, Maren Soleil, Cole Ashmer, the Pale Stag; Seris\'s duels; Vex in the Menagerie.' },
@@ -22,6 +23,7 @@ export const PACKS = {
   classic:  { name: 'Classic Fantasy', mod: classic, desc: 'Elara Moonwhisper, Lady Seraphine, Elspeth, Sister Maren, Kira.' },
   wildkin:  { name: 'Wildkin', mod: wildkin, desc: 'Harpy, naga, drake-kin and cheetah-folk tribes drawn to your Menagerie; Lysandre the shapeshifter; Wyrm\'s Mantle scenes.' },
   hearts:   { name: 'Hearts & Hearth', mod: hearts, desc: 'Group scenes for connected lovers (the Inner Circle, the Dawnward Company, and more), pregnancy and family, and a hearth after the ending.' },
+  rift:     { name: 'Through the Rift', mod: rift, desc: 'Larkspur Lane, a suburban street dropped into the fen: Victoria, Joanne, Diane, Margot and Moira. Shops, quests, favor and investments.' },
 };
 
 let installed = false;
