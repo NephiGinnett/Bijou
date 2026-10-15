@@ -135,15 +135,15 @@ Four beast-folk men who came asking for protection from the tribe that hunted th
 
 ### Through the Rift: Larkspur Lane (`js/packs/rift.js`)
 
-Five women from a suburban cul-de-sac that fell into the fen. All are adults in their 40s and 50s (ages in their descriptions), free townsfolk under the Codex's protection, never captives. Their romances open at favor 8, after all three of their errands and their personal story. The tone is warm, with a little culture-clash comedy. No family-relation framing.
+Five women from a suburban cul-de-sac that fell into the fen. All are adults in their 40s and 50s (ages in their descriptions), free townsfolk under the Codex's protection, never captives. **Victoria and Joanne are married and unfulfilled**: their husbands (Harold; Gary from number nine) know and approve, so it's hotwife, not cheating. Harold wants to hear all about it afterward; Gary just wants Joanne to glow. Diane is single, Margot divorced, Moira widowed. Their romances open at favor 8, after all three of their errands and their personal story. The tone is warm, with a little culture-clash comedy. No family-relation framing.
 
 | Event | Choice | Tags | What to write |
 | --- | --- | --- | --- |
-| `victoria_romance` | 1 · "Then take what you want, Madam President." | power dynamic, workplace authority, older woman | Victoria (44), ex-CFO and HOA president, runs the Lane's books. Glasses, pearls, clipboard. She's in charge and very good at it: precise orders, earned rewards, in her own counting-house. |
+| `victoria_romance` | 1 · "Then take what you want, Madam President." | power dynamic, workplace authority, older woman, hotwife | Victoria (44), ex-CFO and HOA president, runs the Lane's books. Glasses, pearls, clipboard. Married to gentle Harold, who can't match her and knows it; he sent her to you and wants a full report. She's in charge and very good at it: precise orders, earned rewards, in her own counting-house. |
 | `victoria_romance` | 2 · "No. Tonight you put the clipboard down." | power dynamic, reversal | The same night, reversed: nobody has told her no in twenty-two years. You take the pen, the glasses, the control; she obeys like it's a relief. |
-| `victoria_evening` | "Stay the night." | repeatable | Familiar now, every third night. "One item on the agenda." |
-| `joanne_romance` | either choice | older woman, tenderness | Joanne (52), innkeeper of the Kettle & Crown. Auburn curls, gingham apron, soft and generous. She's fed everyone for thirty years; tonight she's the one taken care of. Nervous at first, then not. |
-| `joanne_evening` | "Stay the night." | repeatable | Upstairs at the inn, warm quilts. Not nervous anymore. |
+| `victoria_evening` | "Stay the night." | repeatable, hotwife | Familiar now, every third night. Harold's at his model-railway club; she'll be telling him everything. "One item on the agenda." |
+| `joanne_romance` | either choice | older woman, tenderness, hotwife | Joanne (52), innkeeper of the Kettle & Crown. Auburn curls, gingham apron, soft and generous. Thirty years married to sweet, sleepy Gary; roommates for the last ten. He's on watch tonight and told her to "go glow a little." She's fed everyone for thirty years; tonight she's the one taken care of. Nervous at first, then not. |
+| `joanne_evening` | "Stay the night." | repeatable, hotwife | Upstairs at the inn while Gary's on night watch (he says hello). Not nervous anymore. |
 | `diane_romance` | either choice | older woman, flexibility | Diane (49), herb-wife, ex-yoga-in-the-park evangelist, greenhouse of glowing, affectionate plants. Done being "harmless". Astonishingly flexible and unashamed; the vines help. |
 | `diane_evening` | "Stay the night." | repeatable | Among the night-blooming flowers. A pose she swears she invented for you. |
 | `margot_romance` | either choice | older woman, flirt | Margot (46), twice divorced, hot pink, platinum blowout, hoops. Told she was "too much" all her life. Loud, shameless, delighted; she's exactly enough. The firm choice turns all that brass into begging. |

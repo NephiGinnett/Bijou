@@ -1984,11 +1984,11 @@ Every Unbound stub in Binding Codex with its **whole scene**, in the order the p
 
 ### victoria_romance
 
-**Tags:** romance, power dynamic, workplace authority, older woman
+**Tags:** romance, power dynamic, workplace authority, older woman, married, hotwife (husband knows and approves)
 
 **What to write** (from the guide):
 
-- *1 · "Then take what you want, Madam President."* · power dynamic, workplace authority, older woman: Victoria (44), ex-CFO and HOA president, runs the Lane's books. Glasses, pearls, clipboard. She's in charge and very good at it: precise orders, earned rewards, in her own counting-house.
+- *1 · "Then take what you want, Madam President."* · power dynamic, workplace authority, older woman, hotwife: Victoria (44), ex-CFO and HOA president, runs the Lane's books. Glasses, pearls, clipboard. Married to gentle Harold, who can't match her and knows it; he sent her to you and wants a full report. She's in charge and very good at it: precise orders, earned rewards, in her own counting-house.
 - *2 · "No. Tonight you put the clipboard down."* · power dynamic, reversal: The same night, reversed: nobody has told her no in twenty-two years. You take the pen, the glasses, the control; she obeys like it's a relief.
 
 **Tokens you can use:** Pronouns for the player: `{they}` `{them}` `{their}` `{They}` `{Their}`, and verb helpers `{s}` `{is}` `{has}` `{was}`.
@@ -1997,6 +1997,7 @@ Every Unbound stub in Binding Codex with its **whole scene**, in the order the p
 
 - **Victoria:** Close the door. Sit. (she doesn't look up from the ledger) I've been auditing my own feelings, and the numbers don't reconcile.
 - **Victoria:** (she takes off her glasses, finally looks at you) I'm forty-four, Zoe. I don't do things by accident. So I'm going to be very clear: I want you, and I would like to hear your answer before I lose my nerve. Which I never do.
+- **Victoria:** And before you ask: Harold knows. We discussed it like adults over a very good bottle of wine. His exact words were "Vic, go get what you need, and then come home and tell me about it." (a thin, wicked smile) He was very specific about the telling.
 - **▸ The player chooses:**
   - **"Then take what you want, Madam President."** ← **leads to your scene**
     - **Victoria:** (a slow, dangerous smile) Oh, that is a mistake. I've been in charge of everything for twenty-two years. I'm very good at it.
@@ -2014,11 +2015,11 @@ Every Unbound stub in Binding Codex with its **whole scene**, in the order the p
 
 ### joanne_romance
 
-**Tags:** romance, older woman
+**Tags:** romance, older woman, married, hotwife (husband knows and approves)
 
 **What to write** (from the guide):
 
-- *either choice* · older woman, tenderness: Joanne (52), innkeeper of the Kettle & Crown. Auburn curls, gingham apron, soft and generous. She's fed everyone for thirty years; tonight she's the one taken care of. Nervous at first, then not.
+- *either choice* · older woman, tenderness, hotwife: Joanne (52), innkeeper of the Kettle & Crown. Auburn curls, gingham apron, soft and generous. Thirty years married to sweet, sleepy Gary; roommates for the last ten. He's on watch tonight and told her to "go glow a little." She's fed everyone for thirty years; tonight she's the one taken care of. Nervous at first, then not.
 
 **Tokens you can use:** Pronouns for the player: `{they}` `{them}` `{their}` `{They}` `{Their}`, and verb helpers `{s}` `{is}` `{has}` `{was}`.
 
@@ -2026,6 +2027,7 @@ Every Unbound stub in Binding Codex with its **whole scene**, in the order the p
 
 - **Joanne:** (she's turned the inn sign to CLOSED, and she's nervous, which you've never seen) Sit with me a minute, sweetheart. I'm fifty-two and I feel about sixteen and it's very undignified.
 - **Joanne:** I've spent my whole life taking care of people. Just this once I'd like someone to take care of me. And I'd like it to be you. (a shaky laugh) There. I said it.
+- **Joanne:** Gary's on watch till dawn. He kissed my cheek on the way out and said, "Don't wait up, Jo. Go glow a little." (she's blushing to her ears) He meant you, sweetheart. He knows. He wants me happy more than he wants me home.
 - **▸ The player chooses:**
   - **Take her hand and lead her upstairs.** ← **leads to your scene**
     - **[Gentle only]** **Narration:** Upstairs, she laughs at herself twice and then stops laughing, and you spend the night making sure Joanne, for once, is the one who's fed.
@@ -2130,13 +2132,13 @@ Every Unbound stub in Binding Codex with its **whole scene**, in the order the p
 
 **What to write** (from the guide):
 
-- *"Stay the night."* · repeatable: Familiar now, every third night. "One item on the agenda."
+- *"Stay the night."* · repeatable, hotwife: Familiar now, every third night. Harold's at his model-railway club; she'll be telling him everything. "One item on the agenda."
 
 **Tokens you can use:** Pronouns for the player: `{they}` `{them}` `{their}` `{They}` `{Their}`, and verb helpers `{s}` `{is}` `{has}` `{was}`.
 
 **The scene:**
 
-- **Victoria:** (she clicks her pen once, deliberately) I've blocked out my evening for you. Don't make me reschedule.
+- **Victoria:** (she clicks her pen once, deliberately) Harold's at his model-railway club until midnight, and he's expecting a full report. I've blocked out my evening for you. Don't make me reschedule.
 - **▸ The player chooses:**
   - **Stay the night.** ← **leads to your scene**
     - **[Gentle only]** **Narration:** You spend the evening in the Ledger House, her glasses on the desk, her head on your shoulder, and she falls asleep before she can draft anything.
@@ -2153,13 +2155,13 @@ Every Unbound stub in Binding Codex with its **whole scene**, in the order the p
 
 **What to write** (from the guide):
 
-- *"Stay the night."* · repeatable: Upstairs at the inn, warm quilts. Not nervous anymore.
+- *"Stay the night."* · repeatable, hotwife: Upstairs at the inn while Gary's on night watch (he says hello). Not nervous anymore.
 
 **Tokens you can use:** Pronouns for the player: `{they}` `{them}` `{their}` `{They}` `{Their}`, and verb helpers `{s}` `{is}` `{has}` `{was}`.
 
 **The scene:**
 
-- **Joanne:** (untying her apron) I saved you the last slice, sweetheart. And I saved you the rest of my night.
+- **Joanne:** (untying her apron) Gary's on night watch, and he says hello. I saved you the last slice, sweetheart. And the rest of my night.
 - **▸ The player chooses:**
   - **Stay the night.** ← **leads to your scene**
     - **[Gentle only]** **Narration:** Upstairs at the Kettle & Crown, warm quilts and warmer hands, and she falls asleep smiling against you.

@@ -12,10 +12,10 @@ import { ITEMS, REAGENTS, makeGear } from '../data.js';
 
 const FOLK = {
   victoria: { name: 'Victoria', color: '#8aa8d8', age: 44, shop: 'The Ledger House', role: 'Quartermaster',
-    desc: 'Victoria, 44, was HOA president of Larkspur Lane and CFO of something she calls "a mid-cap logistics firm." Now she runs the Lane\'s books, its counting-house and, increasingly, everyone in it. Reading glasses, a pearl strand, a clipboard she has never once put down.',
+    desc: 'Victoria, 44, was HOA president of Larkspur Lane and CFO of something she calls "a mid-cap logistics firm." Now she runs the Lane\'s books, its counting-house and, increasingly, everyone in it. Reading glasses, a pearl strand, a clipboard she has never once put down, and a husband, Harold, who adores her and has never once kept up.',
     perk: 'Every level of investment in the Ledger House raises all the Lane\'s dividends by 10%.' },
   joanne: { name: 'Joanne', color: '#d88a5a', age: 52, shop: 'The Kettle & Crown', role: 'Innkeeper',
-    desc: 'Joanne, 52, hosted every block party Larkspur Lane ever had. Her kitchen landed intact, so she opened an inn in it. Auburn curls, a gingham apron, and the firm belief that nobody is too dangerous for a casserole.',
+    desc: 'Joanne, 52, hosted every block party Larkspur Lane ever had. Her kitchen landed intact, so she opened an inn in it. Auburn curls, a gingham apron, the firm belief that nobody is too dangerous for a casserole, and a husband, Gary from number nine, she loves like a comfortable old chair.',
     perk: 'Supper for two: bring an ally to dinner for extra closeness, once a day.' },
   diane: { name: 'Diane', color: '#8ab87a', age: 49, shop: 'Diane\'s Garden', role: 'Herb-wife',
     desc: 'Diane, 49, was the Lane\'s master gardener, its yoga-in-the-park evangelist, and its happily unmarried woman ("I have a garden, Victoria. I don\'t need a husband."). Her greenhouse came through with her, and the fen agrees with it frighteningly well. Sun hat, sage cardigan, dirt under every nail.',
@@ -155,7 +155,7 @@ export const QUESTS = {
       ask: "Every functioning economy begins with a float. I need a hundred and fifty in your local currency to open the Lane's ledger. You'll get a receipt. You'll get many receipts.",
       done: "(stamping something with enormous satisfaction) Receipt number one. Larkspur Lane is officially solvent. Do you know how long I've waited to say that about anything?" },
     { id: 'watch', title: 'Equip the Watch', need: { gear: 2 }, give: { favor: 2, gold: 120 },
-      ask: "Gary from number nine has volunteered as the town watch. Gary is armed with a leaf blower. Bring me two pieces of real equipment. Any two. Please.",
+      ask: "Gary from number nine, Joanne's husband, has volunteered as the town watch. Gary is armed with a leaf blower. Bring me two pieces of real equipment. Any two. Please.",
       done: "Gary is now armed with a sword and is, if possible, worse. Still. A watch. Thank you." },
     { id: 'audit', title: 'Field Audit', need: { clears: 3 }, give: { favor: 2, gear: 'weapon' },
       ask: "I want to understand the supply chain out here, which apparently means rifts. Clear three and bring me a report. Verbal is fine. I'll take notes.",
@@ -275,13 +275,15 @@ export const TOWN_TALK = {
     "(not looking up from the clipboard) You're standing in my light. No, stay. I like knowing where you are.",
     "Back home I had an assistant, a corner office and a standing desk. Here I have a desk that stands on its own. It walked in this morning. I've hired it.",
     "People assume I like being in charge. I don't like it. I'm just very, very good at it. There's a difference. (a beat) Mostly.",
+    "Harold asked how my day was. I told him. He fell asleep at 'Q3 projections.' (she taps her pen against her lip, watching you) You wouldn't fall asleep, would you?",
   ],
   joanne: [
     "Sit, sit. You look thin. Everyone in this world looks thin. It's all that adventuring and no proper lunch.",
     "Moira says the stew's cursed. It's not cursed, it's paprika. Although it did hum a little last night.",
-    "You know what I miss? Grocery stores. You know what I don't miss? My ex-husband. This world's got its trade-offs, honey.",
+    "You know what I miss? Grocery stores. You know what I don't? Gary asleep in the recliner by eight. Now he's asleep in the guard tower by eight. Progress, honey.",
     "A knight came in yesterday and cried into his pot pie. I gave him seconds. Some days that's the whole job.",
     "(wiping the counter, smiling at you) You always come in looking like you've been fighting a war, and you leave looking fed. That's my favorite thing I do.",
+    "Gary's a good man. Thirty years, never forgot an anniversary. (she sighs, folding a dish towel very precisely) Never once looked at me the way you're looking at me right now, either.",
   ],
   diane: [
     "Did you know the moss out here is sentient? It's very shy. I've been talking it through some things.",
@@ -385,15 +387,16 @@ export function events(E) {
   // --- personal stories (favor 4) ---
   E.victoria_story = story('victoria', [
     ['narr', 'You find Victoria in the Ledger House after dark, alone, the clipboard set down for once beside a framed photo of a glass office tower.'],
-    ['victoria', 'Twenty-two years. I gave that company everything. Weekends, holidays, a marriage. And in the end I was a line in a restructuring memo.'],
+    ['victoria', 'Twenty-two years. I gave that company everything. Weekends, holidays, very nearly a marriage. And in the end I was a line in a restructuring memo.'],
+    ['victoria', 'Harold stayed. Harold always stays. He\'s kind and steady and so gentle it makes me want to scream, and he knows it. (dry) He\'s known for years that he can\'t give me what I need. He says so himself. He says it like a man holding a door open.'],
     ['victoria', '(she straightens the photo, then lays it face-down) Here, nobody\'s restructuring anything. Here, I built something in a month that people actually need. Do you know how intoxicating that is?'],
     ['victoria', 'Don\'t answer. You run a library full of monsters and a witch who\'s in love with you. You know exactly.'],
   ]);
   E.joanne_story = story('joanne', [
     ['narr', 'After closing, Joanne pours two cups of something warm and sits across from you, apron finally off.'],
-    ['joanne', 'Thirty years of feeding people who never once asked if I\'d eaten. My kids grew up, my husband grew bored, and I kept making enough for the whole block.'],
+    ['joanne', 'Thirty years of feeding people who never once asked if I\'d eaten. Gary\'s a sweetheart, but somewhere along the line we turned into roommates who share a mortgage. I kept making enough for the whole block anyway.'],
     ['joanne', '(she laughs, but softly) And then the block fell into a swamp and suddenly I\'m the most important woman in it. Knights cry into my pot pies. A demon tipped me last week.'],
-    ['joanne', 'You asked if I\'d eaten, you know. The first night. Nobody\'s asked me that in years. (she pats your hand) I noticed.'],
+    ['joanne', 'You asked if I\'d eaten, you know. The first night. Nobody\'s asked me that in years. (her hand stays on yours a moment too long) I noticed. Gary noticed me noticing, too. (a pink, flustered laugh) He just smiled and said, "Good for you, Jo." Thirty years, and that\'s the most romantic thing he\'s said to me.'],
   ]);
   E.diane_story = story('diane', [
     ['narr', 'Diane takes you into the greenhouse, where the plants lean toward her like cats.'],
@@ -416,10 +419,11 @@ export function events(E) {
 
   // --- romances (favor 8, all her quests done, story seen) ---
   E.victoria_romance = romance('victoria', {
-    tags: ['romance', 'power dynamic', 'workplace authority', 'older woman'],
+    tags: ['romance', 'power dynamic', 'workplace authority', 'older woman', 'married', 'hotwife (husband knows and approves)'],
     lead: [
       'Close the door. Sit. (she doesn\'t look up from the ledger) I\'ve been auditing my own feelings, and the numbers don\'t reconcile.',
       '(she takes off her glasses, finally looks at you) I\'m forty-four, Zoe. I don\'t do things by accident. So I\'m going to be very clear: I want you, and I would like to hear your answer before I lose my nerve. Which I never do.',
+      'And before you ask: Harold knows. We discussed it like adults over a very good bottle of wine. His exact words were "Vic, go get what you need, and then come home and tell me about it." (a thin, wicked smile) He was very specific about the telling.',
     ],
     choices: [
       { t: '"Then take what you want, Madam President."', tone: 'kind',
@@ -434,10 +438,11 @@ export function events(E) {
     chronicle: 'Victoria put the clipboard down for you.',
   });
   E.joanne_romance = romance('joanne', {
-    tags: ['romance', 'older woman'],
+    tags: ['romance', 'older woman', 'married', 'hotwife (husband knows and approves)'],
     lead: [
       '(she\'s turned the inn sign to CLOSED, and she\'s nervous, which you\'ve never seen) Sit with me a minute, sweetheart. I\'m fifty-two and I feel about sixteen and it\'s very undignified.',
       'I\'ve spent my whole life taking care of people. Just this once I\'d like someone to take care of me. And I\'d like it to be you. (a shaky laugh) There. I said it.',
+      'Gary\'s on watch till dawn. He kissed my cheek on the way out and said, "Don\'t wait up, Jo. Go glow a little." (she\'s blushing to her ears) He meant you, sweetheart. He knows. He wants me happy more than he wants me home.',
     ],
     choices: [
       { t: 'Take her hand and lead her upstairs.', tone: 'kind',
@@ -504,13 +509,13 @@ export function events(E) {
 
   // --- evenings (repeatable, every third night) ---
   E.victoria_evening = evening('victoria', {
-    ask: '(she clicks her pen once, deliberately) I\'ve blocked out my evening for you. Don\'t make me reschedule.',
+    ask: '(she clicks her pen once, deliberately) Harold\'s at his model-railway club until midnight, and he\'s expecting a full report. I\'ve blocked out my evening for you. Don\'t make me reschedule.',
     gentle: 'You spend the evening in the Ledger House, her glasses on the desk, her head on your shoulder, and she falls asleep before she can draft anything.',
     steamy: 'She leaves the meeting minutes very short tonight: one item on the agenda, discussed at length, carried unanimously, twice.',
     talk: 'Fine. Sit with me while I do the quarterlies. (a pause) I like the company. Don\'t put that in the minutes.',
   });
   E.joanne_evening = evening('joanne', {
-    ask: '(untying her apron) I saved you the last slice, sweetheart. And I saved you the rest of my night.',
+    ask: '(untying her apron) Gary\'s on night watch, and he says hello. I saved you the last slice, sweetheart. And the rest of my night.',
     gentle: 'Upstairs at the Kettle & Crown, warm quilts and warmer hands, and she falls asleep smiling against you.',
     steamy: 'She pulls you upstairs, laughing, already pulling at your coat, and this time she\'s not nervous at all.',
     talk: 'Then sit and eat and tell me everything. All of it. Even the parts with monsters.',

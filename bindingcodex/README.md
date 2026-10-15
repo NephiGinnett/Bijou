@@ -144,7 +144,8 @@ Talk daily (favor up to 3), run each woman's three errands, and invest in
 her business (three stakes: 200, 500, 1000g) for nightly dividends, better
 stock and favor. At favor 4 she tells you her story; at favor 8 with her
 errands done, a romance and repeatable evenings. All five are free adults
-(44 to 55) and never captives.
+(44 to 55) and never captives. Victoria and Joanne are married and
+unfulfilled; their husbands know and approve.
 
 ## Story
 
