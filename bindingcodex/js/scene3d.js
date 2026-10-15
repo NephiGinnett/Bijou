@@ -262,7 +262,7 @@ export class Stage {
     for (const a of this.actors.values()) this.actorGroup.remove(a.group);
     this.actors.clear();
     this.turnRing.visible = false;
-    this.overlay.querySelectorAll('.dmg-num').forEach(el => el.remove());
+    this.overlay.querySelectorAll('.dmg-num, .stage-tag').forEach(el => el.remove());
   }
 
   addActor(uid, kind, variant, opts = {}) {

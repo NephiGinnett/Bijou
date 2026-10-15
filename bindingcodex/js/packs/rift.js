@@ -9,6 +9,8 @@
 // ============================================================
 
 import { ITEMS, REAGENTS, makeGear } from '../data.js';
+import { seasonEvents, seasonOf, SEASONS, SEASON_LEN } from './rift_seasons.js';
+export { seasonOf, SEASONS, SEASON_LEN };
 
 const FOLK = {
   victoria: { name: 'Victoria', color: '#8aa8d8', age: 44, shop: 'The Ledger House', role: 'Quartermaster',
@@ -578,6 +580,7 @@ export function events(E) {
 
   celesteArc(E);
   laneGroups(E);
+  seasonEvents(E, { FOLK, folkOf, addFavor, fav, townFree });
 }
 
 // --- Celeste: an affair, and how it ends -------------------------------------------

@@ -81,6 +81,50 @@ function hold(stage, a) {
   return new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
 }
 
+// A little speech bubble over an actor's head, tracked each frame.
+function bubble(stage, a, text, ms = 3400, cls = '') {
+  const el = document.createElement('div');
+  el.className = 'stage-tag cell-whisper ' + cls;
+  el.textContent = text;
+  stage.overlay.appendChild(el);
+  const v = new THREE.Vector3();
+  const fn = () => {
+    v.copy(a.group.position); v.y += (a.topY || 2.0) + 0.25; v.project(stage.camera);
+    el.style.left = ((v.x * 0.5 + 0.5) * 100) + '%';
+    el.style.top = ((-v.y * 0.5 + 0.5) * 100) + '%';
+    el.style.display = v.z > 1 ? 'none' : '';
+  };
+  fn(); stage.hooks.add(fn);
+  setTimeout(() => { stage.hooks.delete(fn); el.classList.add('fade'); setTimeout(() => el.remove(), 450); }, ms);
+}
+
+// What captives whisper to each other across the aisle, by mood and by faction.
+const WHISPER = {
+  warm: ['She\'s not what they told us.', 'Be civil to her. It goes easier.', 'Did she smile at you today? She smiled at me.', 'I think I want her to come down. Is that strange?'],
+  defiant: ['Don\'t tell them anything.', 'The mortar on the third bar is loose. Pass it on.', 'We hold. Whatever she offers, we hold.', 'Count the guards\' steps. Learn them.'],
+  fading: ['I can\'t feel the brand anymore. Is that bad?', 'If they let me out... I think I\'d stay.', 'I dreamed of the library last night. I wasn\'t afraid in it.'],
+  coven: ['Mother Cinder won\'t come for us. She never comes.', 'The ash in my mouth is gone. I miss it. I don\'t miss it.'],
+  vigil: ['Say the vigil prayer with me. Quietly.', 'A knight doesn\'t break. A knight doesn\'t... I\'m so tired.'],
+  market: ['What\'s your price? Everyone has a price. What\'s hers?', 'I could sell this cell twice over. Nobody\'s buying.'],
+  college: ['I\'ve been counting the stones. Four hundred and twelve.', 'Her wards are elegant. I hate that they\'re elegant.'],
+  lodge: ['The hounds upstairs eat better than we ever did.', 'I can smell rain. There\'s a window somewhere.'],
+  reply: ['Shh. Footsteps.', '...Maybe.', 'Go to sleep.', 'You too?', 'Mm.', 'Don\'t let her hear you say that.', 'Me neither.'],
+};
+const pickOf = a => a[Math.floor(Math.random() * a.length)];
+function whisperFor(cap) {
+  const mood = cap.regard >= 20 ? 'warm' : cap.brand <= 30 ? 'fading' : cap.resolve >= 60 ? 'defiant' : null;
+  const pool = [...(mood ? WHISPER[mood] : []), ...(WHISPER[cap.faction] || [])];
+  return pickOf(pool.length ? pool : WHISPER.reply);
+}
+// A warden's report on the captive they keep.
+function wardenReport(cap) {
+  if (cap.releasePending) return `The brand's gone. ${cap.name} is waiting on you.`;
+  if (cap.brand <= 25) return 'Brand\'s nearly out. Soon.';
+  if (cap.regard >= 20) return `${cap.name} asked when you'd be down.`;
+  if (cap.resolve >= 70) return `${cap.name}'s still fighting it.`;
+  return 'Quiet night.';
+}
+
 function handOffset(arm) {
   // the far end of an arm, in the arm's own space
   const rx = arm.rotation.x, rz = arm.rotation.z;
@@ -95,7 +139,7 @@ function handOffset(arm) {
 // ---------------------------------------------------------------------------
 // The cells
 // ---------------------------------------------------------------------------
-export async function buildCells(stage, caps, player) {
+export async function buildCells(stage, caps, player, opts = {}) {
   stage.clearActors();
   setRoom(stage, { fog: 0x07050a, floor: 0x1c171f, tint: 0x6a4ac8, density: 0.075 });
   const SP = 2.8, rows = Math.max(1, Math.ceil(caps.length / 2));
@@ -129,14 +173,20 @@ export async function buildCells(stage, caps, player) {
     const rig = rigOf(c.a);
     const kind = rig ? c.kind : 'bars';   // chains and stocks need arms to hold
     c.kind = kind;
-    const H = Math.max(2.2, new THREE.Box3().setFromObject(c.a.group).max.y + 0.4);
+    c.a.topY = new THREE.Box3().setFromObject(c.a.group).max.y;
+    const H = Math.max(2.2, c.a.topY + 0.4);
     const g = c.g;
     if (kind === 'bars') {
       for (let x = -1.05; x <= 1.06; x += 0.21) cyl(0.028, H, iron(), x, H / 2, 1.0, g, 6);
       box(2.3, 0.08, 0.08, iron(), 0, H, 1.0, g); box(2.3, 0.08, 0.08, iron(), 0, 0.12, 1.0, g); box(2.3, 0.06, 0.06, iron(), 0, H * 0.55, 1.0, g);
       // pacing behind the bars
       const ph = Math.random() * 9, hx = c.a.home.x, hz = c.a.home.z;
-      stage.hooks.add((dt, t) => { if (c.focus) return; const o = Math.sin(t * 0.35 + ph) * 0.45; c.a.home.x = hx + Math.cos(c.slot.face) * o; c.a.home.z = hz - Math.sin(c.slot.face) * o; });
+      const front = g.localToWorld(new THREE.Vector3(0, 0, 0.62));
+      stage.hooks.add((dt, t) => {
+        if (c.eager) { c.a.home.x += (front.x - c.a.home.x) * Math.min(1, dt * 3); c.a.home.z += (front.z - c.a.home.z) * Math.min(1, dt * 3); c.a.face = c.slot.face; return; }
+        if (c.focus) return;
+        const o = Math.sin(t * 0.35 + ph) * 0.45; c.a.home.x = hx + Math.cos(c.slot.face) * o; c.a.home.z = hz - Math.sin(c.slot.face) * o;
+      });
     } else {
       rig.hold(kind === 'chains' ? 'shackled' : 'stocks');
       await hold(stage, c.a);
@@ -181,6 +231,57 @@ export async function buildCells(stage, caps, player) {
     c.a.face = c.slot.face;
   }
 
+  // Wardens keep to the aisle by their charges, walking between them if they keep several.
+  const byWarden = new Map();
+  cells.forEach(c => { const w = c.cap.wardenId; if (w) { if (!byWarden.has(w)) byWarden.set(w, []); byWarden.get(w).push(c); } });
+  const wardens = [];
+  for (const [wid, list] of byWarden) {
+    // posted at the corner past the cell door, out of the way of anyone looking in
+    const post = c => ({ x: c.slot.side * 1.1, z: c.slot.z - 1.3, face: c.slot.side < 0 ? -Math.PI / 4 : Math.PI / 4 });
+    const p0 = post(list[0]);
+    const w = stage.addActor('cw_' + wid, wid, opts.variantOf ? opts.variantOf(wid) : null, { x: p0.x, z: p0.z, face: p0.face });
+    wardens.push({ wid, list, a: w, post });
+    w.ready.then(() => { w.topY = new THREE.Box3().setFromObject(w.group).max.y; });
+    if (list.length > 1) {
+      const go = walker(stage, w, 1.1);
+      (async () => { for (let k = 1; stage.actors.get('cw_' + wid) === w; k++) { await new Promise(r => setTimeout(r, 5000 + Math.random() * 4000)); if (stage.actors.get('cw_' + wid) !== w) return; const p = post(list[k % list.length]); await go(p.x, p.z, p.face); } })();
+    }
+  }
+  await Promise.all(wardens.map(w => w.a.ready));
+
+  // Across the aisle, captives whisper to each other when Zoe isn't close.
+  const zoeNear = c => Math.hypot(zoe.home.x - c.slot.x, zoe.home.z - c.slot.z) < 3.2;
+  const overheard = {};
+  let nextWhisper = 4;
+  stage.hooks.add((dt, t) => {
+    if (t < nextWhisper) return;
+    nextWhisper = t + 7 + Math.random() * 6;
+    const pairs = [];
+    for (let i = 0; i + 1 < cells.length; i += 2) if (!zoeNear(cells[i]) && !zoeNear(cells[i + 1])) pairs.push([cells[i], cells[i + 1]]);
+    if (!pairs.length) return;
+    const [x, y] = Math.random() < 0.5 ? pickOf(pairs) : pickOf(pairs).slice().reverse();
+    const line = whisperFor(x.cap), reply = pickOf(WHISPER.reply);
+    overheard[x.cap.id] = `${x.cap.name}, to ${y.cap.name}: "${line}"`;
+    overheard[y.cap.id] = overheard[x.cap.id] + ` ${y.cap.name}: "${reply}"`;
+    const rx = rigOf(x.a), ry = rigOf(y.a);
+    if (rx) rx.talk(2.2); bubble(stage, x.a, line, 3400, 'whisper');
+    setTimeout(() => { if (ry) ry.talk(1); bubble(stage, y.a, reply, 2600, 'whisper'); }, 1900);
+  });
+
+  // Captives who are nearly free come up to the bars (or call out) when Zoe passes.
+  stage.hooks.add(() => {
+    for (const c of cells) {
+      const keen = c.cap.releasePending || c.cap.brand <= 25 || c.cap.regard >= 40;
+      const near = keen && zoeNear(c);
+      if (near && !c.eager) {
+        c.eager = true;
+        const rig = rigOf(c.a);
+        if (rig) { rig.talk(1.2); if (c.kind === 'bars') rig.wave(); else rig.tug(); }
+        bubble(stage, c.a, c.cap.releasePending ? 'It\'s gone. The brand. Look!' : c.cap.regard >= 40 ? 'You came!' : 'Is it today? Is it soon?', 2800);
+      } else if (!near && c.eager) c.eager = false;
+    }
+  });
+
   const overview = () => stage.focus(new THREE.Vector3(0, 4.6, 5.0), new THREE.Vector3(0, 0.8, -rows * SP / 2 + 0.4), 3.4);
   stage.orbitEnabled = true; stage.resetView();
   stage.camBase.set(0, 4.6, 5.0); stage.camTarget.set(0, 0.8, -rows * SP / 2 + 0.4); stage.viewHalfW = 3.4;
@@ -189,11 +290,13 @@ export async function buildCells(stage, caps, player) {
     const c = cells[i]; if (!c) return;
     cells.forEach(x => x.focus = false); c.focus = true;
     // Zoe stops just past the cell door, so she frames the shot instead of blocking it
-    const az = c.slot.z, ax = c.slot.side * 0.8, zz = az - 0.9;
+    const az = c.slot.z, ax = c.slot.side * 0.55, zz = az - 0.75;
     stage.resetView();
     // stand across the aisle and look straight in, Zoe at the near edge of the frame
     stage.focus(new THREE.Vector3(-c.slot.side * 0.55, 2.0, az + 1.9), new THREE.Vector3(c.slot.x * 0.85, 1.05, az), 1.7, 900);
     await walk(ax, zz, Math.atan2(c.slot.x - ax, az - zz));
+    const w = wardens.find(x => x.list.includes(c));
+    if (w) { const wr = rigOf(w.a); if (wr) wr.talk(1.6); bubble(stage, w.a, wardenReport(c.cap), 3600, 'warden'); }
     const rig = rigOf(c.a);
     if (rig) {
       rig.talk(1.4);
@@ -202,7 +305,7 @@ export async function buildCells(stage, caps, player) {
       else if (c.cap.resolve >= 70) rig.act('guard', 1.2);
     }
   }
-  return { cells, visit, overview, back: () => { cells.forEach(x => x.focus = false); walk(0, 3.6, Math.PI); return overview(); } };
+  return { cells, visit, overview, overheard: id => overheard[id] || null, warden: id => (wardens.find(x => x.list.some(c => c.cap.id === id)) || {}).wid || null, back: () => { cells.forEach(x => x.focus = false); walk(0, 3.6, Math.PI); return overview(); } };
 }
 
 // ---------------------------------------------------------------------------

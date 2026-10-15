@@ -1,6 +1,6 @@
 # Unbound Scene Context
 
-Every Unbound stub in Binding Codex with its **whole scene**, in the order the player reads it: 110 scenes, 144 stubs.
+Every Unbound stub in Binding Codex with its **whole scene**, in the order the player reads it: 138 scenes, 176 stubs.
 
 **Written so far:** 117 stub ids (✅ in the scenes below); the rest are marked ✍️. To revise a written one, edit its lines in `js/unbound_lines.js`, or send new text and Momo will swap it in.
 
@@ -21,7 +21,7 @@ Every Unbound stub in Binding Codex with its **whole scene**, in the order the p
 - **Classic Fantasy pack (`js/packs/classic.js`):** [`elara_romance`](#elara_romance), [`seraphine_romance`](#seraphine_romance), [`elspeth_revisit`](#elspeth_revisit), [`sister_maren_romance`](#sister_maren_romance), [`kira_romance`](#kira_romance)
 - **Wildkin pack (`js/packs/wildkin.js`):** [`bramble_romance`](#bramble_romance), [`bramble_evening`](#bramble_evening), [`bramble_shared`](#bramble_shared), [`ren_romance`](#ren_romance), [`ren_evening`](#ren_evening), [`ren_shared`](#ren_shared), [`elio_romance`](#elio_romance), [`elio_evening`](#elio_evening), [`elio_shared`](#elio_shared), [`tallow_romance`](#tallow_romance), [`tallow_evening`](#tallow_evening), [`tallow_shared`](#tallow_shared), [`envoy_night_pride`](#envoy_night_pride), [`envoy_night_aerie`](#envoy_night_aerie), [`envoy_night_coil`](#envoy_night_coil), [`envoy_night_clutch`](#envoy_night_clutch), [`kin_rite_pride`](#kin_rite_pride), [`kin_rite_aerie`](#kin_rite_aerie), [`kin_rite_coil`](#kin_rite_coil), [`kin_rite_clutch`](#kin_rite_clutch), [`kin_night_aerie`](#kin_night_aerie), [`kin_night_coil`](#kin_night_coil), [`kin_night_clutch`](#kin_night_clutch), [`kin_night_pride`](#kin_night_pride), [`tribe_aerie_rite`](#tribe_aerie_rite), [`tribe_coil_rite`](#tribe_coil_rite), [`tribe_clutch_rite`](#tribe_clutch_rite), [`tribe_pride_rite`](#tribe_pride_rite), [`lysandre_romance`](#lysandre_romance), [`rue_mantle`](#rue_mantle), [`nyxe_mantle`](#nyxe_mantle)
 - **Hearts & Hearth pack (`js/packs/hearts.js`):** [`circle_pact`](#circle_pact), [`circle_night`](#circle_night), [`circle_mantle`](#circle_mantle), [`circle_lysandre`](#circle_lysandre), [`dawnward_hearts`](#dawnward_hearts), [`brats`](#brats), [`two_altars`](#two_altars), [`envoys_council`](#envoys_council)
-- **Through the Rift pack (`js/packs/rift.js`):** [`victoria_romance`](#victoria_romance), [`joanne_romance`](#joanne_romance), [`diane_romance`](#diane_romance), [`margot_romance`](#margot_romance), [`moira_romance`](#moira_romance), [`victoria_evening`](#victoria_evening), [`joanne_evening`](#joanne_evening), [`diane_evening`](#diane_evening), [`margot_evening`](#margot_evening), [`moira_evening`](#moira_evening), [`celeste_romance`](#celeste_romance), [`celeste_evening`](#celeste_evening), [`lane_poker_night`](#lane_poker_night), [`lane_coven_of_two`](#lane_coven_of_two), [`lane_block_party`](#lane_block_party)
+- **Through the Rift pack (`js/packs/rift.js`):** [`victoria_romance`](#victoria_romance), [`joanne_romance`](#joanne_romance), [`diane_romance`](#diane_romance), [`margot_romance`](#margot_romance), [`moira_romance`](#moira_romance), [`victoria_evening`](#victoria_evening), [`joanne_evening`](#joanne_evening), [`diane_evening`](#diane_evening), [`margot_evening`](#margot_evening), [`moira_evening`](#moira_evening), [`celeste_romance`](#celeste_romance), [`celeste_evening`](#celeste_evening), [`lane_poker_night`](#lane_poker_night), [`lane_coven_of_two`](#lane_coven_of_two), [`lane_block_party`](#lane_block_party), [`lane_may_day`](#lane_may_day), [`season_spring_victoria`](#season_spring_victoria), [`season_spring_joanne`](#season_spring_joanne), [`season_spring_diane`](#season_spring_diane), [`season_spring_margot`](#season_spring_margot), [`season_spring_moira`](#season_spring_moira), [`season_spring_celeste`](#season_spring_celeste), [`lane_cookout`](#lane_cookout), [`season_summer_victoria`](#season_summer_victoria), [`season_summer_joanne`](#season_summer_joanne), [`season_summer_diane`](#season_summer_diane), [`season_summer_margot`](#season_summer_margot), [`season_summer_moira`](#season_summer_moira), [`season_summer_celeste`](#season_summer_celeste), [`lane_hallows`](#lane_hallows), [`season_autumn_victoria`](#season_autumn_victoria), [`season_autumn_joanne`](#season_autumn_joanne), [`season_autumn_diane`](#season_autumn_diane), [`season_autumn_margot`](#season_autumn_margot), [`season_autumn_moira`](#season_autumn_moira), [`season_autumn_celeste`](#season_autumn_celeste), [`lane_yule`](#lane_yule), [`season_winter_victoria`](#season_winter_victoria), [`season_winter_joanne`](#season_winter_joanne), [`season_winter_diane`](#season_winter_diane), [`season_winter_margot`](#season_winter_margot), [`season_winter_moira`](#season_winter_moira), [`season_winter_celeste`](#season_winter_celeste)
 - **Companions (`js/companions.js`):** [`erin_romance`](#erin_romance), [`sakura_romance`](#sakura_romance), [`shiro_romance`](#shiro_romance), [`yuki_romance`](#yuki_romance), [`vesper_evening`](#vesper_evening), [`rue_evening`](#rue_evening), [`isolde_evening`](#isolde_evening), [`lysandre_evening`](#lysandre_evening), [`erin_evening`](#erin_evening), [`sakura_evening`](#sakura_evening), [`shiro_evening`](#shiro_evening), [`yuki_evening`](#yuki_evening), [`elara_evening`](#elara_evening), [`seraphine_evening`](#seraphine_evening), [`sister_maren_evening`](#sister_maren_evening), [`kira_evening`](#kira_evening), [`nyxe_evening`](#nyxe_evening), [`rhea_evening`](#rhea_evening), [`valdra_evening`](#valdra_evening), [`aurelia_evening`](#aurelia_evening), [`brynn_evening`](#brynn_evening), [`sera_evening`](#sera_evening), [`seris_evening`](#seris_evening), [`auren_voss_evening`](#auren_voss_evening), [`revenant_bride_evening`](#revenant_bride_evening), [`mira_ashveil_evening`](#mira_ashveil_evening), [`maren_soleil_evening`](#maren_soleil_evening), [`cole_ashmer_evening`](#cole_ashmer_evening), [`calla_evening`](#calla_evening), [`mira_vane_evening`](#mira_vane_evening), [`aelindra_evening`](#aelindra_evening), [`elspeth_evening`](#elspeth_evening)
 
 ## Base game (`js/story.js`)
@@ -2448,6 +2448,780 @@ Every Unbound stub in Binding Codex with its **whole scene**, in the order the p
   - **"Let's just have the party."**
     - **Narration:** You have the party. It's the best one the Lane has ever thrown, and that's saying something. The husbands come home at dawn, muddy and triumphant, and nobody tells them anything.
 - *(Chronicle entry: "Larkspur Lane threw a block party in your honor. The after-party was at the biggest house on the Lane.")*
+
+---
+
+### lane_may_day
+
+**Tags:** group, holiday, older women, hotwife (husbands know and approve)
+
+**What to write** (from the guide):
+
+- *1 · "Then your Queen will take her tribute. All of it."* · group, holiday, dominance: May Day. Zoe was crowned May Queen (the vote was rigged by Moira) with a lily crown, and by "ancient custom" (Victoria wrote it that morning) every member of the Circle owes the Queen a tribute. In Victoria's sunroom, ribbons from the maypole still trailing. The husbands are doing the dishes.
+- *2 · "A Queen worships her people first."* · group, holiday, tenderness: The same party, reversed: Zoe pays tribute to each of them, in the grass behind the maypole and then the sunroom, until the whole Circle has been crowned.
+
+**Tokens you can use:** Pronouns for the player: `{they}` `{them}` `{their}` `{They}` `{Their}`, and verb helpers `{s}` `{is}` `{has}` `{was}`.
+
+**The scene:**
+
+- **Narration:** Diane has raised a maypole in the reeds at the end of the Lane: a birch trunk wound with ribbons, a crown of fen-lilies on top, and two frogs who refuse to leave it.
+- **Victoria:** (clipboard, sunhat, a sash reading CHAIR) The Larkspur Lane Wives' Circle calls this May Day to order. Membership is open to all residents. Wives optional. Husbands are on dessert duty.
+- **Joanne:** (handing out strawberry shortcake by the trayful) Harold made the whipped cream. Don't tell him it's lumpy, sweetheart, he's very proud.
+- **Margot:** (in a flower crown she has clearly sold six of already) Babe. Ribbon dance. You. Me. Now.
+- **Moira:** (in white lace, for once) Every spring the Lane elects a May Queen. Every spring it's rigged. (a slow smile at you) This year I rigged it.
+- **Narration:** The vote is unanimous, Gary included. Diane sets the lily crown on your head, and the frogs applaud.
+- *(only in some playthroughs)* **Victoria:** (raising a paper cup) To the May Queen. By ancient custom she is owed one tribute from every member of the Circle. I wrote the custom this morning.
+- *(only in some playthroughs)* **Joanne:** And it's a very old custom, honey. At least six hours.
+- *(only in some playthroughs)* **Diane:** (winding a ribbon round your wrist and keeping hold of the end) The custom says the Queen gets led somewhere private. I checked. I wrote that part.
+- *(only in some playthroughs)* **Margot:** Tribute! Tribute! Tribute!
+- *(only in some playthroughs)* **Moira:** (lighting a white candle off the black one) The Queen chooses where she's worshipped, dear. Choose well.
+- *(only in some playthroughs)* **Celeste:** (barefoot in the grass, no ring, laughing) Fifteen Mays I watched someone else get crowned. I'm paying tribute this year. Enthusiastically.
+- *(only in some playthroughs)* **Narration:** When the shortcake is gone and the husbands are doing the dishes, the Circle closes ranks around their Queen and waits, ribbons in hand.
+- *(only in some playthroughs)* **▸ The player chooses:**
+  - **"Then your Queen will take her tribute. All of it."** ← **leads to your scene**
+    - **[Gentle only]** **Narration:** They pay it one by one in Victoria's sunroom with the ribbons still trailing, and by the time the lily crown slips off your head nobody remembers whose turn it was.
+    - **Narration:** *(a line filled in during play, e.g. with a child's name)*
+    - ✍️ **YOUR UNBOUND LINES GO HERE** — stub `lane_may_day`. They play right after the Steamy line above.
+  - **"A Queen worships her people first."** ← **leads to your scene**
+    - **[Gentle only]** **Narration:** You turn the custom upside down and pay tribute to each of them, slow and sweet among the ribbons, until every member of the Circle has been crowned at least once.
+    - **[Steamy — Unbound players see this too]** **Narration:** You take your time with every one of them, in the grass behind the maypole and then in the sunroom, until the whole Circle is flushed and boneless and loudly agreeing that the custom should be amended permanently.
+    - ✍️ **YOUR UNBOUND LINES GO HERE** — stub `lane_may_day`. They play right after the Steamy line above.
+  - **"The Queen would like another slice of shortcake."**
+    - **Narration:** You get three. The Circle sits in the grass until the stars come out, braiding ribbons into each other's hair, and Victoria makes a motion to do this every year. It carries.
+- *(only in some playthroughs)* **Narration:** You dance the ribbons until the maypole is a braid, eat more shortcake than is wise, and walk home with the lily crown still on, a little crooked.
+- **THE CODEX:** [ The whole Lane's favor +1. ]
+- *(Chronicle entry: "May Day on the Lane. The Wives' Circle crowned you May Queen.")*
+
+---
+
+### season_spring_victoria
+
+**Tags:** romance, holiday
+
+**What to write** (from the guide):
+
+- *"Pin her to the shelves and file her properly."* · holiday, hotwife, dominance: Spring cleaning: a very small supply closet in the Ledger House. Harold suggested the "break" and winked. Ledgers and paperclips everywhere.
+
+**Tokens you can use:** Pronouns for the player: `{they}` `{them}` `{their}` `{They}` `{Their}`, and verb helpers `{s}` `{is}` `{has}` `{was}`.
+
+**The scene:**
+
+- **Victoria:** (in the Ledger House, sleeves rolled, every drawer pulled out) Spring cleaning. I'm auditing the supply closet. It's a mess. I'm a mess. Harold suggested I "take a break with Zoe." He winked. Harold doesn't wink.
+- **Victoria:** (she shuts the closet door behind you both, and it's a very small closet) There. Now it's organized.
+- **▸ The player chooses:**
+  - **Pin her to the shelves and file her properly.** ← **leads to your scene**
+    - **[Gentle only]** **Narration:** Ledgers tumble, a box of paperclips goes everywhere, and Victoria laughs, breathless, the most disorganized she's been in twenty-two years.
+    - **[Steamy — Unbound players see this too]** **Narration:** You sort Victoria the way she sorts everything: thoroughly, by category, until the supply closet shelves are shaking and she's gasping instructions she can't finish.
+    - ✍️ **YOUR UNBOUND LINES GO HERE** — stub `season_spring_victoria`. They play right after the Steamy line above.
+  - **"Let me help you clean it instead."**
+    - **Victoria:** (blinking) ...You alphabetize? (a long, dazzled pause) Marry me. Kidding. Harold would want visitation.
+- *(Chronicle entry: "Spring cleaning at the Ledger House. The supply closet has never been the same.")*
+
+---
+
+### season_spring_joanne
+
+**Tags:** romance, holiday
+
+**What to write** (from the guide):
+
+- *Kiss the juice off her fingers.* · holiday, hotwife: Strawberry picking in Diane's beds while Gary's on watch. Behind the berry canes, sticky, laughing, strawberry stains; the shortcake will be late.
+
+**Tokens you can use:** Pronouns for the player: `{they}` `{them}` `{their}` `{They}` `{Their}`, and verb helpers `{s}` `{is}` `{has}` `{was}`.
+
+**The scene:**
+
+- **Joanne:** (a basket on each arm, out in Diane's strawberry beds) First berries of spring, sweetheart. Gary's at the guard tower, so I'm picking for two and you're helping.
+- **Joanne:** (she feeds you one, and her thumb stays on your lip) ...Oh my. That's a ripe one.
+- **▸ The player chooses:**
+  - **Kiss the juice off her fingers.** ← **leads to your scene**
+    - **Joanne:** (a breathless giggle) Not in the strawberries! ...Well. Behind the strawberries.
+    - **[Gentle only]** **Narration:** Behind the berry canes, sticky and laughing, with the basket tipped over and neither of you caring about the berries at all.
+    - **[Steamy — Unbound players see this too]** **Narration:** Joanne in the warm spring dirt with her dress rucked up and strawberry stains everywhere, soft and greedy and laughing your name, until she has to admit the shortcake will be late.
+    - ✍️ **YOUR UNBOUND LINES GO HERE** — stub `season_spring_joanne`. They play right after the Steamy line above.
+  - **"Teach me your shortcake."**
+    - **Joanne:** (beaming) Oh, honey. Flour, butter, and nobody rushing. That's the secret to most things. (she bumps your hip) Most things.
+- *(Chronicle entry: "Strawberry picking with Joanne. The shortcake was late.")*
+
+---
+
+### season_spring_diane
+
+**Tags:** romance, holiday
+
+**What to write** (from the guide):
+
+- *Stay, in the warm earth with her.* · holiday, flexibility: First planting at dawn in the greenhouse. A moss bed she grew "for exactly this"; a "very ancient" spring rite she definitely just made up.
+
+**Tokens you can use:** Pronouns for the player: `{they}` `{them}` `{their}` `{They}` `{Their}`, and verb helpers `{s}` `{is}` `{has}` `{was}`.
+
+**The scene:**
+
+- **Diane:** (at dawn in the greenhouse, barefoot in fresh-turned soil) First planting of the year. Every seed you put in the ground in spring is a promise. I like to make them with somebody.
+- **Diane:** (she presses a seed into your palm and closes your fingers over it) Plant it with me. Then stay.
+- **▸ The player chooses:**
+  - **Stay, in the warm earth with her.** ← **leads to your scene**
+    - **[Gentle only]** **Narration:** You plant the seed together, and then the greenhouse is warm and green and she pulls you down onto the moss bed she swears she grew for exactly this.
+    - **[Steamy — Unbound players see this too]** **Narration:** Diane, bare and earth-smudged and impossibly limber on the warm moss, folding herself around you as the vines draw the leaves closed, a spring rite she insists is very ancient and definitely did not just make up.
+    - ✍️ **YOUR UNBOUND LINES GO HERE** — stub `season_spring_diane`. They play right after the Steamy line above.
+  - **"Just plant with me."**
+    - **Diane:** (kneeling beside you, shoulder to shoulder) That's the nicest thing anyone's ever said to me in a greenhouse. (she pats the soil flat) There. Now we have to come back and see what grows.
+- *(Chronicle entry: "You and Diane planted the first seeds of spring.")*
+
+---
+
+### season_spring_margot
+
+**Tags:** romance, holiday
+
+**What to write** (from the guide):
+
+- *"Try it on. Then let me take it off."* · holiday, dominance: Her spring yard sale: both wedding dresses (Rick, Dennis). She tries one on; it lasts four minutes. The veil and nothing else in the stockroom.
+
+**Tokens you can use:** Pronouns for the player: `{they}` `{them}` `{their}` `{They}` `{Their}`, and verb helpers `{s}` `{is}` `{has}` `{was}`.
+
+**The scene:**
+
+- **Margot:** (her stall is a yard sale today: lamps, a canoe, and two wedding dresses on a rack) Spring cleaning, babe. Out with the exes. Dress one, Rick. Dress two, Dennis. Both barely worn, much like the marriages.
+- **Margot:** (she holds one up against herself) Should I try it on? For the listing. For a photo. For you.
+- **▸ The player chooses:**
+  - **"Try it on. Then let me take it off."** ← **leads to your scene**
+    - **Margot:** (slowly) Oh, I am pricing this one so high.
+    - **[Gentle only]** **Narration:** The dress lasts about four minutes, which Margot declares is longer than marriage number two, and she laughs the whole way to the stockroom.
+    - **[Steamy — Unbound players see this too]** **Narration:** Ivory satin on hot-pink nails, and then very much off, Margot on the stockroom floor in the veil and nothing else, telling you this is the best use either dress has ever had.
+    - ✍️ **YOUR UNBOUND LINES GO HERE** — stub `season_spring_margot`. They play right after the Steamy line above.
+  - **"Sell them both. Buy something you actually want."**
+    - **Margot:** (a long look, softer than usual) ...Yeah. Yeah, I will. (she marks both at a price that would make a dragon weep) Something pink.
+- *(Chronicle entry: "Margot sold her wedding dresses. One of them got a better ending first.")*
+
+---
+
+### season_spring_moira
+
+**Tags:** romance, holiday
+
+**What to write** (from the guide):
+
+- *Blow out the white candle.* · holiday, dark aesthetic: Spring equinox, the one night she wears white. An egg balanced on its end. Tipping the balance.
+
+**Tokens you can use:** Pronouns for the player: `{they}` `{them}` `{their}` `{They}` `{Their}`, and verb helpers `{s}` `{is}` `{has}` `{was}`.
+
+**The scene:**
+
+- **Moira:** (in white, by a white candle, an egg balanced on its end on the counter) The spring equinox, dear. Light and dark in balance, for one night. It's the only night I wear white.
+- **Moira:** (the egg doesn't fall; she watches you, not it) Balance is a kind of tension. I find I'd like to break some.
+- **▸ The player chooses:**
+  - **Blow out the white candle.** ← **leads to your scene**
+    - **[Gentle only]** **Narration:** In the dark the egg finally falls, and neither of you notices, and Moira's laugh is the warmest thing in the shop.
+    - **[Steamy — Unbound players see this too]** **Narration:** You tip the balance and keep tipping it, Moira in white lace on her black velvet bed, slow and certain and then not certain of anything at all.
+    - ✍️ **YOUR UNBOUND LINES GO HERE** — stub `season_spring_moira`. They play right after the Steamy line above.
+  - **"Teach me to balance the egg."**
+    - **Moira:** (a delighted, private smile) Patience, dear. Steady hands. You have both. (the egg stands on its end in your palm) There. Now you know a secret.
+- *(Chronicle entry: "The spring equinox with Moira. She wore white.")*
+
+---
+
+### season_spring_celeste
+
+**Tags:** romance, holiday
+
+**What to write** (from the guide):
+
+- *Lock the pool-house door.* · holiday, affair: Spring doubles tournament: she and Zoe beat a goblin and a troll; first thing she's won in fifteen years. Celebrating in the pool house, still in sweaty tennis whites.
+
+**Tokens you can use:** Pronouns for the player: `{they}` `{them}` `{their}` `{They}` `{Their}`, and verb helpers `{s}` `{is}` `{has}` `{was}`.
+
+**The scene:**
+
+- **Celeste:** *(a line filled in during play, e.g. with a child's name)*
+- **Celeste:** (after you've won, flushed and glowing in the pool house) We beat a goblin and a troll. I haven't won anything in fifteen years. I want to celebrate. I want to celebrate right now.
+- **▸ The player chooses:**
+  - **Lock the pool-house door.** ← **leads to your scene**
+    - **[Gentle only]** **Narration:** Sweaty tennis whites on the pool-house floor and Celeste laughing into your neck, every inch a winner.
+    - **[Steamy — Unbound players see this too]** **Narration:** She's still a dancer under the whites: strong and bendy and gloriously loud now that she's won something, celebrating against the pool-house wall until the trophy falls off the bench.
+    - ✍️ **YOUR UNBOUND LINES GO HERE** — stub `season_spring_celeste`. They play right after the Steamy line above.
+  - **"Let's get the trophy engraved."**
+    - **Celeste:** (hugging the little tin cup) Celeste and Zoe. Mixed doubles champions. (a beat) I'm putting it on the mantel. Right in the middle.
+- *(Chronicle entry: "You and Celeste won the spring doubles. She celebrated.")*
+
+---
+
+### lane_cookout
+
+**Tags:** group, holiday, older women, hotwife (husbands know and approve)
+
+**What to write** (from the guide):
+
+- *1 · "Everyone into the water. Now."* · group, holiday, skinny-dipping: Midsummer cookout. The fen pond glows with water lilies after dark; Moira's violet fireworks; Margot's flamingo pool. Harold and Gary have volunteered for night watch (Harold winked). Bare in the warm glowing water and on the soft bank.
+- *2 · Wade out slowly and kiss each of them under the fireworks.* · group, holiday: The same night, unhurried: one kiss each under the last fireworks, then the long warm night in the water.
+
+**Tokens you can use:** Pronouns for the player: `{they}` `{them}` `{their}` `{They}` `{Their}`, and verb helpers `{s}` `{is}` `{has}` `{was}`.
+
+**The scene:**
+
+- **Narration:** Midsummer on the Lane: a grill smoking at every mailbox, sprinklers ticking across the lawns, and Margot's inflatable flamingo pool floating in a warm, suspiciously clean pond in the fen.
+- **Narration:** Harold and Gary run the grill in matching aprons that read HE WHO GRILLS. They have burned four things already and are very happy.
+- **Victoria:** (in a white one-piece, sunglasses, the clipboard waterproofed) The Wives' Circle midsummer cookout is now in session. Rule one: sunscreen. Rule two: there are no other rules. Harold, the burgers.
+- **Diane:** (up to her knees in the pond) The water lilies glow after dark here. Glow. I've been saving it for tonight.
+- **Moira:** (under a black parasol, in black, in July) I despise summer. I've hexed the fireworks. They'll be beautiful.
+- **Narration:** At dusk Moira's fireworks go up in violet and silver over the fen, and the whole Lane goes quiet, even the frogs.
+- *(only in some playthroughs)* **Victoria:** (sunglasses pushed up, very deliberately) Harold has volunteered to take the night watch. He winked again. He's getting good at it.
+- *(only in some playthroughs)* **Joanne:** (fanning herself, cheeks pink) Gary's going with him. I packed them sandwiches, sweetheart. Lots of sandwiches. It's a long night.
+- *(only in some playthroughs)* **Diane:** The lilies are glowing, Zoe. Come and see. Come and swim.
+- *(only in some playthroughs)* **Margot:** (already untying her bikini top) Pool party's moving to the pond, babe. Dress code's optional. Then mandatory. Then none.
+- *(only in some playthroughs)* **Moira:** (closing her parasol at last) It's finally dark. I'll come in the water. For you. Only for you.
+- *(only in some playthroughs)* **Celeste:** (walking straight into the pond in her sundress) No Brad, no ring, no reason to stay dry.
+- *(only in some playthroughs)* **Narration:** The husbands march off to the watch-tower with their sandwiches. The lilies light up under the water, and the Circle wades out into the warm dark, one by one, looking back at you.
+- *(only in some playthroughs)* **▸ The player chooses:**
+  - **"Everyone into the water. Now."** ← **leads to your scene**
+    - **[Gentle only]** **Narration:** A midnight swim that stops being a swim almost at once, glowing lilies and warm water and laughter carrying all the way to the watch-tower, where two men pretend not to hear it.
+    - **[Steamy — Unbound players see this too]** **Narration:** Bare in the glowing pond, every woman of the Circle taking her turn in your arms in the warm water and on the soft bank, slick and laughing and loud, until the lilies have seen things no lily should and Moira declares summer, for once, tolerable.
+    - ✍️ **YOUR UNBOUND LINES GO HERE** — stub `lane_cookout`. They play right after the Steamy line above.
+  - **Wade out slowly and kiss each of them under the fireworks.** ← **leads to your scene**
+    - **[Gentle only]** **Narration:** One kiss each under the last of the violet fireworks, and then the water is warm and the night is long and nobody goes home dry.
+    - **[Steamy — Unbound players see this too]** **Narration:** You go from one to the next in the glowing water, unhurried, until the whole Circle is floating and tangled and sighing on the warm bank, and the fen hums along with them.
+    - ✍️ **YOUR UNBOUND LINES GO HERE** — stub `lane_cookout`. They play right after the Steamy line above.
+  - **"Cannonball!"**
+    - **Narration:** You cannonball into the pond. Margot screams, Joanne laughs so hard she has to sit down, and the whole Circle ends up in the water in their clothes, splashing each other under the fireworks until midnight.
+- *(only in some playthroughs)* **Narration:** You eat two burgers of mysterious doneness, watch Moira's fireworks with your feet in the glowing pond, and get sprayed by three different sprinklers on the way home.
+- **THE CODEX:** [ The whole Lane's favor +1. ]
+- *(Chronicle entry: "The midsummer cookout on the Lane. The lilies glowed. So did everyone else.")*
+
+---
+
+### season_summer_victoria
+
+**Tags:** romance, holiday
+
+**What to write** (from the guide):
+
+- *"Make me."* · holiday, hotwife, power dynamic: She's appointed herself lifeguard of the Lane pool after hours: red one-piece, whistle, regulation chair. Harold asked her to bring the whistle home. She enforces every rule, personally.
+
+**Tokens you can use:** Pronouns for the player: `{they}` `{them}` `{their}` `{They}` `{Their}`, and verb helpers `{s}` `{is}` `{has}` `{was}`.
+
+**The scene:**
+
+- **Victoria:** (the Lane's community pool, after hours: a whistle, a red one-piece, a lifeguard chair she had built to regulation) I appointed myself lifeguard. Somebody has to enforce the rules. No running. No diving. No fun.
+- **Victoria:** (she comes down the ladder, slowly) Harold asked me to "bring the whistle home." He's getting very creative. (she blows it once, softly) You. Out of the water. That's an order.
+- **▸ The player chooses:**
+  - **"Make me."** ← **leads to your scene**
+    - **Victoria:** (the whistle drops) Oh, you've done it now.
+    - **[Gentle only]** **Narration:** She pulls you out of the water and onto the warm tiles, and it turns out the lifeguard breaks every single rule.
+    - **[Steamy — Unbound players see this too]** **Narration:** The red one-piece goes into the deep end, and Victoria enforces the rules very strictly and very personally on the lifeguard chair, every infraction punished at length.
+    - ✍️ **YOUR UNBOUND LINES GO HERE** — stub `season_summer_victoria`. They play right after the Steamy line above.
+  - **"Race you to the deep end."**
+    - **Victoria:** (a beat, then she dives, perfectly, against her own rule) I swam for Princeton. (surfacing, smug) You never stood a chance.
+- *(Chronicle entry: "Victoria was lifeguard at the Lane pool. She broke every rule.")*
+
+---
+
+### season_summer_joanne
+
+**Tags:** romance, holiday
+
+**What to write** (from the guide):
+
+- *Take her hand and the lemonade.* · holiday, hotwife: Heat wave; the inn's tiny old shower, "barely big enough for one, which is the whole idea." Gary's asleep in the root cellar.
+
+**Tokens you can use:** Pronouns for the player: `{they}` `{them}` `{their}` `{They}` `{Their}`, and verb helpers `{s}` `{is}` `{has}` `{was}`.
+
+**The scene:**
+
+- **Joanne:** (on the inn porch in a heat wave, fanning herself with a menu, a pitcher of lemonade sweating beside her) Too hot to cook, sweetheart. Too hot to move. Gary's sleeping in the root cellar.
+- **Joanne:** (she holds the cold glass against her throat and looks at you a long time) ...I could do with a cold shower. I could do with company in it.
+- **▸ The player chooses:**
+  - **Take her hand and the lemonade.** ← **leads to your scene**
+    - **[Gentle only]** **Narration:** The inn's old shower is barely big enough for one, which Joanne points out is "the whole idea, honey," and the heat wave stops mattering.
+    - **[Steamy — Unbound players see this too]** **Narration:** Cold water and warm curves, Joanne laughing and gasping in the tiny shower, slippery and soft and shameless, the lemonade forgotten on the sink.
+    - ✍️ **YOUR UNBOUND LINES GO HERE** — stub `season_summer_joanne`. They play right after the Steamy line above.
+  - **"Then let's just sit with our feet in the cold spring."**
+    - **Joanne:** (sighing happily, skirts hitched, toes in the water) Thirty years married and nobody ever took me to sit in a creek. (she leans on your shoulder) Don't go anywhere.
+- *(Chronicle entry: "A heat wave at the Kettle & Crown. Joanne needed a cold shower.")*
+
+---
+
+### season_summer_diane
+
+**Tags:** romance, holiday
+
+**What to write** (from the guide):
+
+- *Join her, skyclad.* · holiday, flexibility: Midsummer sunrise on the greenhouse roof, sun salutations with nothing on, the sunflowers. "Extremely spiritual."
+
+**Tokens you can use:** Pronouns for the player: `{they}` `{them}` `{their}` `{They}` `{Their}`, and verb helpers `{s}` `{is}` `{has}` `{was}`.
+
+**The scene:**
+
+- **Diane:** (on the greenhouse roof at sunrise, the longest day of the year) Sun salutation. Midsummer's the one day I do it properly. Skyclad.
+- **Diane:** (she unbuttons the sage cardigan without a trace of embarrassment) Old yoga term. Means nothing on. Join me. Your shoulders are up around your ears again.
+- **▸ The player chooses:**
+  - **Join her, skyclad.** ← **leads to your scene**
+    - **[Gentle only]** **Narration:** You manage three salutations before she starts laughing and adjusting your pose with her hands, and the adjusting becomes something else among the sunflowers.
+    - **[Steamy — Unbound players see this too]** **Narration:** Diane in the midsummer sun, bare and golden and bending in ways that should not be possible, pulling you down into the sunflowers for a practice she promises is extremely spiritual.
+    - ✍️ **YOUR UNBOUND LINES GO HERE** — stub `season_summer_diane`. They play right after the Steamy line above.
+  - **"I'll keep my clothes on and hold the mat."**
+    - **Diane:** (laughing, upside down) Coward. Hold it steady, then. (a long, bendy pause) Well? Do my shoulders look relaxed?
+- *(Chronicle entry: "Midsummer sunrise with Diane, on the greenhouse roof.")*
+
+---
+
+### season_summer_margot
+
+**Tags:** romance, holiday
+
+**What to write** (from the guide):
+
+- *Get in.* · holiday, playful: Her hammock between two cypresses, a hot-pink string bikini ("a business decision"). Not rated for this. Loud.
+
+**Tokens you can use:** Pronouns for the player: `{they}` `{them}` `{their}` `{They}` `{Their}`, and verb helpers `{s}` `{is}` `{has}` `{was}`.
+
+**The scene:**
+
+- **Margot:** (in a hammock between two cypress trees, in a hot-pink bikini that is mostly strings) This? Business decision, babe. Foot traffic's up forty percent.
+- **Margot:** (she swings one leg, lazily) Hammock holds two. I tested it. I tested it a lot. Get in.
+- **▸ The player chooses:**
+  - **Get in.** ← **leads to your scene**
+    - **[Gentle only]** **Narration:** The hammock tips you both out twice, and Margot laughs so hard she can't breathe, and the third time it holds.
+    - **[Steamy — Unbound players see this too]** **Narration:** It is not, technically, rated for this. Margot doesn't care. Strings undone, hoops jangling, the hammock swinging wildly over the fen and Margot loudly informing the entire Lane how good the business decision is going.
+    - ✍️ **YOUR UNBOUND LINES GO HERE** — stub `season_summer_margot`. They play right after the Steamy line above.
+  - **"I'll just push."**
+    - **Margot:** (swinging, eyes closed, delighted) Higher. Higher! (a pause) This is the most relaxed I've been since divorce number one. Don't tell Rick.
+- *(Chronicle entry: "A summer afternoon in Margot's hammock.")*
+
+---
+
+### season_summer_moira
+
+**Tags:** romance, holiday
+
+**What to write** (from the guide):
+
+- *"Then make it last until morning."* · holiday, dark aesthetic: She loathes summer. The shortest night, stretched out candle by candle in her cool cellar.
+
+**Tokens you can use:** Pronouns for the player: `{they}` `{them}` `{their}` `{They}` `{Their}`, and verb helpers `{s}` `{is}` `{has}` `{was}`.
+
+**The scene:**
+
+- **Moira:** (in the cellar under the Black Candle, cool as a crypt, a hundred candles lit) The shortest night of the year. I loathe it. Too much light, not enough mystery.
+- **Moira:** (she takes your hand and draws you down the last step) So I'm making it as long as I can. Down here, dear, it's whatever hour I say.
+- **▸ The player chooses:**
+  - **"Then make it last until morning."** ← **leads to your scene**
+    - **[Gentle only]** **Narration:** In the cool cellar the shortest night lasts a very long time, and Moira keeps one hand in yours the whole of it.
+    - **[Steamy — Unbound players see this too]** **Narration:** Black silk in the cool dark, Moira slow and deliberate, stretching the shortest night out candle by candle until you've both lost count of the hours and neither of you wants them back.
+    - ✍️ **YOUR UNBOUND LINES GO HERE** — stub `season_summer_moira`. They play right after the Steamy line above.
+  - **"Tell me ghost stories till sunrise."**
+    - **Moira:** (settling beside you, delighted) Oh, I know some true ones. (she lowers her voice) The house at number four used to be a funeral parlor. That's why Harold's tomatoes grow so well.
+- *(Chronicle entry: "The shortest night of the year, in Moira's cellar. She made it last.")*
+
+---
+
+### season_summer_celeste
+
+**Tags:** romance, holiday
+
+**What to write** (from the guide):
+
+- *Go with her.* · holiday, affair: Secret: Brad's pool party for goblin clients, twenty stolen minutes in the pool house. Left: a lazy afternoon on the Codex roof. White bikini either way.
+
+**Tokens you can use:** Pronouns for the player: `{they}` `{them}` `{their}` `{They}` `{Their}`, and verb helpers `{s}` `{is}` `{has}` `{was}`.
+
+**The scene:**
+
+- **Celeste:** *(a line filled in during play, e.g. with a child's name)*
+- **Celeste:** *(a line filled in during play, e.g. with a child's name)*
+- **▸ The player chooses:**
+  - **Go with her.** ← **leads to your scene**
+    - **[Gentle only]** **Narration:** Sun-warm skin and a stolen afternoon, and Celeste laughing low against your mouth like she still can't believe she gets to have this.
+    - **[Steamy — Unbound players see this too]** **Narration:** Celeste in a white bikini, then not, quick and wicked and shameless, her hand over her own mouth or not bothering, the summer heat making everything slow and sticky and very, very good.
+    - ✍️ **YOUR UNBOUND LINES GO HERE** — stub `season_summer_celeste`. They play right after the Steamy line above.
+  - **"Let's just lie in the sun."**
+    - **Celeste:** (stretching out beside you, fingers laced with yours) Fifteen summers I spent being decorative at parties. (she closes her eyes, smiling) This is so much better.
+- *(Chronicle entry: "A summer afternoon with Celeste.")*
+
+---
+
+### lane_hallows
+
+**Tags:** group, holiday, older women, hotwife (husbands know and approve)
+
+**What to write** (from the guide):
+
+- *1 · "Forget the rota. Everyone in the parlor."* · group, holiday, costumes, dominance: Hallows at Moira's. Costumes: Victoria a vampire countess (cape, fangs, pearls), Joanne a saloon girl (pink corset), Diane a dryad (body paint and strategic leaves), Margot "a very expensive cat" (ears, tail, diamond collar), Moira came as herself, Celeste a black swan (if present). Victoria drafted a seven-minutes-in-the-closet rota; Zoe throws it out. Costumes coming off by candlelight in Moira's velvet parlor.
+- *2 · "Seven minutes each. I'll keep the rota."* · group, holiday, costumes: The rota, kept: one by one in the dark coat closet, each in costume, each her own way.
+
+**Tokens you can use:** Pronouns for the player: `{they}` `{them}` `{their}` `{They}` `{Their}`, and verb helpers `{s}` `{is}` `{has}` `{was}`.
+
+**The scene:**
+
+- **Narration:** Hallows on the Lane is Moira's holiday and everyone knows it. Every porch has a carved fen-gourd. The Black Candle is wrapped in cobwebs, some of them real, all of them invited.
+- **Moira:** (at her door, in her usual black lace) Costume? Dear. I came as myself. I've been dressing for tonight for thirty years.
+- **Victoria:** (as a vampire countess, cape, fangs, pearls) The Wives' Circle Hallows party is in session. Costumes are mandatory. Harold came as an accountant. He insists it's scary.
+- **Joanne:** (as a saloon girl, very pink, very corseted) Don't look at me like that, honey, I'll drop the punch.
+- **Diane:** (as a dryad: body paint, strategic leaves, and frankly very little else) It's historically accurate.
+- **Margot:** (as "a very expensive cat": ears, a tail, a diamond collar, attitude) Meow, babe. That's all you get. That's all anyone gets.
+- *(only if `celeste_left` has happened)* **Celeste:** (as a black swan, feathers and tulle, on her toes) I haven't been en pointe in fifteen years. (she spins) It came back.
+- **Narration:** There is bobbing for apples. There is a haunted maze Diane grew overnight. Gary gets lost in it for an hour and comes out holding a skeleton's hand, delighted.
+- *(only in some playthroughs)* **Victoria:** (baring the plastic fangs) The countess would like to propose a party game. Seven minutes in the coat closet. I've drafted a rota.
+- *(only in some playthroughs)* **Joanne:** (fanning herself with a playing card) I'm first on the rota, sweetheart. I checked.
+- *(only in some playthroughs)* **Diane:** The leaves come off very easily. I'm just mentioning it.
+- *(only in some playthroughs)* **Margot:** (trailing the tail across your wrist) Cats get bored in seven minutes. I'm going to need fourteen.
+- *(only in some playthroughs)* **Moira:** (lighting a single black candle in the closet doorway) It's my holiday. I'm last on the rota, so nobody rushes me.
+- *(only in some playthroughs)* **Celeste:** (a slow pirouette, ending in your arms) Black swans don't wait their turn.
+- *(only in some playthroughs)* **Narration:** The husbands are off trick-or-treating the knights at the watch-tower. Victoria opens the coat closet with a flourish, and the Circle looks at you over their costumes.
+- *(only in some playthroughs)* **▸ The player chooses:**
+  - **"Forget the rota. Everyone in the parlor."** ← **leads to your scene**
+    - **[Gentle only]** **Narration:** The rota is abandoned in favor of the parlor, and costumes come off one piece at a time by candlelight, and the gourds grin at all of it.
+    - **Narration:** *(a line filled in during play, e.g. with a child's name)*
+    - ✍️ **YOUR UNBOUND LINES GO HERE** — stub `lane_hallows`. They play right after the Steamy line above.
+  - **"Seven minutes each. I'll keep the rota."** ← **leads to your scene**
+    - **[Gentle only]** **Narration:** Seven minutes in the coat closet with each of them, then seven more, and nobody keeps time after the third.
+    - **Narration:** *(a line filled in during play, e.g. with a child's name)*
+    - ✍️ **YOUR UNBOUND LINES GO HERE** — stub `lane_hallows`. They play right after the Steamy line above.
+  - **"Who wants to get lost in the maze with me?"**
+    - **Narration:** All of them, it turns out. You spend an hour lost in Diane's maze, screaming at Moira's ghosts and laughing at Margot's, and find Gary at the center, still holding the skeleton's hand, very happy.
+- *(only in some playthroughs)* **Narration:** You bob for apples, lose the costume contest to Gary's skeleton friend, and walk home with your pockets full of Joanne's toffee.
+- **THE CODEX:** [ The whole Lane's favor +1. ]
+- *(Chronicle entry: "Hallows on the Lane. The Wives' Circle came in costume.")*
+
+---
+
+### season_autumn_victoria
+
+**Tags:** romance, holiday
+
+**What to write** (from the guide):
+
+- *"Then come and feed, Countess."* · holiday, hotwife, costume: Her vampire-countess costume, a week early, "for fit." Harold called it becoming and left pointedly. She feeds at midnight, on the ledger desk, cape over you both, pearls cold.
+
+**Tokens you can use:** Pronouns for the player: `{they}` `{them}` `{their}` `{They}` `{Their}`, and verb helpers `{s}` `{is}` `{has}` `{was}`.
+
+**The scene:**
+
+- **Victoria:** (in the Ledger House, in the vampire countess costume, a week early) Fitting. I'm checking the fit. (she adjusts the cape; the corset does not need adjusting) Harold says it's "very becoming." Then he left for the evening, very pointedly.
+- **Victoria:** (the plastic fangs click) The countess feeds at midnight. It's eleven fifty-eight.
+- **▸ The player chooses:**
+  - **"Then come and feed, Countess."** ← **leads to your scene**
+    - **[Gentle only]** **Narration:** At midnight the countess bites, softly, and then she laughs and the fangs fall out and she kisses you properly.
+    - **[Steamy — Unbound players see this too]** **Narration:** The countess pins you to her own ledger desk and feeds at length: on your neck, your collarbone, everywhere she can reach, the cape spread over both of you and her pearls cold against your skin.
+    - ✍️ **YOUR UNBOUND LINES GO HERE** — stub `season_autumn_victoria`. They play right after the Steamy line above.
+  - **"You look incredible. Let me help with the cape hem."**
+    - **Victoria:** (a little flustered, which is rare) ...Thank you. (she lets you pin the hem) Harold said becoming. You said incredible. I'm keeping score.
+- *(Chronicle entry: "Victoria's costume fitting. The countess fed at midnight.")*
+
+---
+
+### season_autumn_joanne
+
+**Tags:** romance, holiday
+
+**What to write** (from the guide):
+
+- *Lift her onto the floury counter.* · holiday, hotwife: Pie season: eight apple pies cooling, flour everywhere, cinnamon, the oven timer ignored twice. Gary's on hayride duty.
+
+**Tokens you can use:** Pronouns for the player: `{they}` `{them}` `{their}` `{They}` `{Their}`, and verb helpers `{s}` `{is}` `{has}` `{was}`.
+
+**The scene:**
+
+- **Joanne:** (flour to the elbows, eight pies cooling in the inn window) Apple pies for the whole Lane. Gary's on hayride duty all night, the poor sweet thing.
+- **Joanne:** (she wipes flour across your nose with one finger, and leaves her hand on your cheek) You've got a little something. Hold still, honey.
+- **▸ The player chooses:**
+  - **Lift her onto the floury counter.** ← **leads to your scene**
+    - **[Gentle only]** **Narration:** Pie number nine doesn't get made. There's flour everywhere, and Joanne laughing, and the kitchen smelling of cinnamon and warm apples.
+    - **[Steamy — Unbound players see this too]** **Narration:** Joanne on her own counter in a cloud of flour, apron strings undone, warm and soft and loudly delighted, the oven timer going off unheeded twice.
+    - ✍️ **YOUR UNBOUND LINES GO HERE** — stub `season_autumn_joanne`. They play right after the Steamy line above.
+  - **"Teach me your crust."**
+    - **Joanne:** (guiding your hands in the dough, warm against your back) Cold butter, light fingers, don't overwork it. (softly, near your ear) Just like that, sweetheart.
+- *(Chronicle entry: "Pie season at the Kettle & Crown.")*
+
+---
+
+### season_autumn_diane
+
+**Tags:** romance, holiday
+
+**What to write** (from the guide):
+
+- *"Good. Show me the middle."* · holiday, outdoors: A thirty-acre corn maze she grew overnight that won't let you leave. A clearing of straw under the harvest moon at its heart; the corn rustles loudly to cover the noise.
+
+**Tokens you can use:** Pronouns for the player: `{they}` `{them}` `{their}` `{They}` `{Their}`, and verb helpers `{s}` `{is}` `{has}` `{was}`.
+
+**The scene:**
+
+- **Diane:** (at the mouth of a corn maze that was not here yesterday) I grew it overnight. Thirty acres. The middle's a secret. (she takes your hand) Want to get lost?
+- **Diane:** (somewhere deep in the rustling rows, the path closes behind you) Oops. The maze likes you. It's not going to let us out for a while.
+- **▸ The player chooses:**
+  - **"Good. Show me the middle."** ← **leads to your scene**
+    - **[Gentle only]** **Narration:** The middle is a little clearing of soft straw under the harvest moon, and you stay there a long time while the corn whispers around you.
+    - **[Steamy — Unbound players see this too]** **Narration:** Diane in the moonlit clearing at the heart of the maze, cardigan and everything else in the straw, wild and laughing and astonishingly flexible while thirty acres of corn rustle very loudly to cover the noise.
+    - ✍️ **YOUR UNBOUND LINES GO HERE** — stub `season_autumn_diane`. They play right after the Steamy line above.
+  - **"Let's find our way out together."**
+    - **Diane:** (laughing as you pick a turn) Left. No, right. (the corn shifts helpfully) Oh, you're good at this. It only cheats for people it likes.
+- *(Chronicle entry: "Lost in Diane's corn maze, on purpose.")*
+
+---
+
+### season_autumn_margot
+
+**Tags:** romance, holiday
+
+**What to write** (from the guide):
+
+- *Don't let go.* · holiday, playful: Her haunted house (the old HOA office), two gold a head. She jumps into Zoe's arms, "planned." The coffin room; the line outside screaming at the animatronics.
+
+**Tokens you can use:** Pronouns for the player: `{they}` `{them}` `{their}` `{They}` `{Their}`, and verb helpers `{s}` `{is}` `{has}` `{was}`.
+
+**The scene:**
+
+- **Margot:** (outside a haunted house she built out of the old HOA office, selling tickets) Two gold a head and the line goes to the fen. Babe, I'm a genius.
+- **Margot:** (she pulls you inside, into the dark) Come on, I'll give you the tour. (something shrieks; she jumps into your arms) That was planned. I planned that. Don't let go.
+- **▸ The player chooses:**
+  - **Don't let go.** ← **leads to your scene**
+    - **[Gentle only]** **Narration:** In the coffin room, it turns out the coffin is very roomy, and Margot stops being scared almost immediately.
+    - **[Steamy — Unbound players see this too]** **Narration:** Margot in the dark of her own haunted house, pressed against a fake crypt with the line outside screaming at the animatronics, louder than any of them and not remotely scared anymore.
+    - ✍️ **YOUR UNBOUND LINES GO HERE** — stub `season_autumn_margot`. They play right after the Steamy line above.
+  - **"Let's scare the next group."**
+    - **Margot:** (gleeful, pulling a sheet over both your heads) Oh, you're my favorite person. (a goblin family enters; you both moan) ...We should charge extra for this.
+- *(Chronicle entry: "Margot's haunted house. She jumped into your arms. On purpose.")*
+
+---
+
+### season_autumn_moira
+
+**Tags:** romance, holiday
+
+**What to write** (from the guide):
+
+- *"Then let's give them something to talk about."* · holiday, dark aesthetic: Samhain: a candle for every soul she remembers, and the veil thin. She drew the Lovers without looking. Alive and unafraid before the altar.
+
+**Tokens you can use:** Pronouns for the player: `{they}` `{them}` `{their}` `{They}` `{Their}`, and verb helpers `{s}` `{is}` `{has}` `{was}`.
+
+**The scene:**
+
+- **Moira:** (Samhain night: one candle in the window for every soul she remembers, and one black one) The veil is thin tonight, dear. The dead come close. I like to be with the living when they do.
+- **Moira:** (she turns over a single card from her deck without looking; it's the Lovers) Well. The dead have opinions.
+- **▸ The player chooses:**
+  - **"Then let's give them something to talk about."** ← **leads to your scene**
+    - **[Gentle only]** **Narration:** Among a hundred little flames for the dead, Moira holds on to the living, and the night is warm in spite of the veil.
+    - **[Steamy — Unbound players see this too]** **Narration:** Moira on Samhain, black lace and silver and every candle in the window flaring as you take her on the velvet before the altar, alive and laughing and absolutely unafraid of anyone watching.
+    - ✍️ **YOUR UNBOUND LINES GO HERE** — stub `season_autumn_moira`. They play right after the Steamy line above.
+  - **"Tell me who the candles are for."**
+    - **Moira:** (she does, one by one, the husband last, and her voice only shakes once) ...And that one's yours, dear. Not for the dead. Just so the dead know you're mine.
+- *(Chronicle entry: "Samhain with Moira. A candle burned for you among the dead.")*
+
+---
+
+### season_autumn_celeste
+
+**Tags:** romance, holiday
+
+**What to write** (from the guide):
+
+- *Watch her dance, then don't wait for the music.* · holiday, affair, dancer: A private black-swan dance: in Brad's dark garage (secret) or her own studio (left). "Don't touch until the music stops." Feathers everywhere.
+
+**Tokens you can use:** Pronouns for the player: `{they}` `{them}` `{their}` `{They}` `{Their}`, and verb helpers `{s}` `{is}` `{has}` `{was}`.
+
+**The scene:**
+
+- **Celeste:** *(a line filled in during play, e.g. with a child's name)*
+- **Celeste:** Sit. Watch. Don't touch until the music stops.
+- **▸ The player chooses:**
+  - **Watch her dance, then don't wait for the music.** ← **leads to your scene**
+    - **[Gentle only]** **Narration:** She dances, and she's breathtaking, and before the last note she's in your lap and the feathers are everywhere.
+    - **[Steamy — Unbound players see this too]** **Narration:** Black swan, black feathers, every move a promise, and then the costume coming off in pieces until she's dancing on you instead, strong and flexible and dizzy with it.
+    - ✍️ **YOUR UNBOUND LINES GO HERE** — stub `season_autumn_celeste`. They play right after the Steamy line above.
+  - **Watch every step, and applaud.**
+    - **Celeste:** (breathless, curtseying, eyes wet) Nobody's clapped for me in fifteen years. (she laughs) Do it again. Louder.
+- *(Chronicle entry: "Celeste danced the black swan for you.")*
+
+---
+
+### lane_yule
+
+**Tags:** group, holiday, older women, hotwife (husbands know and approve)
+
+**What to write** (from the guide):
+
+- *1 · "Gifts get unwrapped. Sweaters off. All of you."* · group, holiday, dominance: Yule at the Kettle & Crown, snow on the fen. Ugly sweaters (Victoria's is a balance sheet). Every woman drew Zoe in Secret Santa ("a statistical anomaly"). Under every ugly sweater: lace and ribbon. Moira's hexed mistletoe drifts from one to the next. Harold and Gary are off caroling with the knights.
+- *2 · Open every gift, slowly, starting under the mistletoe.* · group, holiday, tenderness: The same night, gently: each gift opened with its giver beside her, by the fire until the snow stops.
+
+**Tokens you can use:** Pronouns for the player: `{they}` `{them}` `{their}` `{They}` `{Their}`, and verb helpers `{s}` `{is}` `{has}` `{was}`.
+
+**The scene:**
+
+- **Narration:** Snow falls on the fen for the first time anyone can remember, and Larkspur Lane goes completely overboard. Inflatable Santas. Icicle lights on the mailboxes. A wreath on the frog.
+- **Joanne:** (at the door of the Kettle & Crown, in a sweater with a light-up reindeer) Come in, come in, out of the cold, sweetheart. Cocoa's hot, the fire's going, and everyone's in their ugliest.
+- **Victoria:** (in a sweater knitted to look like a balance sheet, with a candy cane as the pen) The Wives' Circle Yule party is in session. Secret Santa is mandatory. I drew the names. Fairly.
+- **Margot:** (in a sweater that is mostly sequins and a single strategically placed snowman) Fairly, she says. Babe. Babe. We all drew you.
+- **Victoria:** (not looking up) That is a statistical anomaly, and I will not be taking questions.
+- **Narration:** Harold and Gary lead the knights from the watch-tower in carols outside, wildly off-key. Moira's hexed mistletoe drifts from doorway to doorway on its own.
+- *(only in some playthroughs)* **Victoria:** (handing you a box wrapped with military precision) From your Secret Santa. Open it later. Privately. Harold helped me pick it. He has excellent taste.
+- *(only in some playthroughs)* **Joanne:** (pressing a soft parcel into your hands, blushing) I knitted it, honey. Well, I knitted most of it. There isn't much of it.
+- *(only in some playthroughs)* **Diane:** Mine's a winter rose. It only blooms when it's held somewhere warm. You'll figure it out.
+- *(only in some playthroughs)* **Margot:** (tapping a bow stuck on her own collarbone) Mine's me, babe. I'm the gift. No receipt.
+- *(only in some playthroughs)* **Moira:** (the mistletoe drifts to a stop directly over your head) My gift is that. You're welcome, dear.
+- *(only in some playthroughs)* **Celeste:** (in a red sweater, no ring, on her toes to kiss your cheek under the mistletoe) First Yule without Brad. Best Yule ever.
+- *(only in some playthroughs)* **Narration:** The carolers go off to the next mailbox. The fire crackles. Every woman of the Circle is watching you over her cocoa, wearing a sweater she very obviously does not intend to keep on.
+- *(only in some playthroughs)* **▸ The player chooses:**
+  - **"Gifts get unwrapped. Sweaters off. All of you."** ← **leads to your scene**
+    - **[Gentle only]** **Narration:** The ugly sweaters come off by the fire, one by one, and under every single one is something very much not ugly, and the mistletoe has a long night.
+    - **[Steamy — Unbound players see this too]** **Narration:** Ugly sweaters in a heap by the fire and lace and ribbon underneath, every woman of the Circle unwrapped in turn on Joanne's rug, warm and slow and then not slow at all, while the hexed mistletoe drifts from one to the next keeping score.
+    - ✍️ **YOUR UNBOUND LINES GO HERE** — stub `lane_yule`. They play right after the Steamy line above.
+  - **Open every gift, slowly, starting under the mistletoe.** ← **leads to your scene**
+    - **[Gentle only]** **Narration:** You open each gift with its giver beside you, and every one of them turns out to be a kiss, and then a great deal more, by the fire until the snow stops.
+    - **[Steamy — Unbound players see this too]** **Narration:** You unwrap them gently, one at a time, sweater and ribbon and lace, until the whole Circle is curled together in front of Joanne's fire, flushed and laughing and very, very warm.
+    - ✍️ **YOUR UNBOUND LINES GO HERE** — stub `lane_yule`. They play right after the Steamy line above.
+  - **"Who wants to build a snowman?"**
+    - **Narration:** Everyone, in their ugly sweaters. The snowman ends up with Victoria's pearls, Margot's hoops, Diane's sunhat and Moira's candle, and the knights carol to it until dawn.
+- *(only in some playthroughs)* **Narration:** You drink too much cocoa, lose a snowball fight to Gary, sing carols with the knights badly, and take home a box of Joanne's gingerbread.
+- **THE CODEX:** [ The whole Lane's favor +1. ]
+- *(Chronicle entry: "Yule on the Lane. The Wives' Circle all drew your name.")*
+
+---
+
+### season_winter_victoria
+
+**Tags:** romance, holiday
+
+**What to write** (from the guide):
+
+- *Take the pearls, and then the rest.* · holiday, hotwife: Year-end close by the fire, champagne; Harold's at his brother's and sent a card: "Tell me everything." Nothing but her pearls by midnight.
+
+**Tokens you can use:** Pronouns for the player: `{they}` `{them}` `{their}` `{They}` `{Their}`, and verb helpers `{s}` `{is}` `{has}` `{was}`.
+
+**The scene:**
+
+- **Victoria:** (by the Ledger House fire, champagne, the year's books closed) Year-end close. Every account reconciled. Every number in the black. (she sets down her glasses) Except one.
+- **Victoria:** (she unclasps her pearls and holds them out to you) Harold's at his brother's for the holiday. He sent a card. It says "Happy New Year, Vic. Tell me everything." Shall we give him something to read?
+- **▸ The player chooses:**
+  - **Take the pearls, and then the rest.** ← **leads to your scene**
+    - **[Gentle only]** **Narration:** Champagne by the fire, and Victoria in nothing but her pearls, laughing as the clock strikes midnight on her year.
+    - **[Steamy — Unbound players see this too]** **Narration:** You close Victoria's year for her, slow and thorough by the fire, her pearls the only thing she's wearing and the last thing to go, every account settled twice over before midnight.
+    - ✍️ **YOUR UNBOUND LINES GO HERE** — stub `season_winter_victoria`. They play right after the Steamy line above.
+  - **"Let's toast the year."**
+    - **Victoria:** (clinking her glass to yours) To a good year. My first in a long time where I liked who I was. (softly) You had something to do with that.
+- *(Chronicle entry: "Year-end close with Victoria. Every account settled.")*
+
+---
+
+### season_winter_joanne
+
+**Tags:** romance, holiday
+
+**What to write** (from the guide):
+
+- *Get under the quilt with her.* · holiday, hotwife, cozy: Snowed in at the inn; Gary stuck at the watch-tower ("Stay warm, Jo"). One fire, one enormous quilt, cold feet.
+
+**Tokens you can use:** Pronouns for the player: `{they}` `{them}` `{their}` `{They}` `{Their}`, and verb helpers `{s}` `{is}` `{has}` `{was}`.
+
+**The scene:**
+
+- **Joanne:** (the inn snowed in to the windowsills, one fire, one enormous quilt) We're snowed in, sweetheart. Gary's stuck at the watch-tower with the knights. He sent a raven: "Stay warm, Jo." (a pink, flustered smile) There's only the one quilt.
+- **▸ The player chooses:**
+  - **Get under the quilt with her.** ← **leads to your scene**
+    - **[Gentle only]** **Narration:** Cocoa and the crackling fire and Joanne's cold feet, and then nobody's feet are cold at all.
+    - **[Steamy — Unbound players see this too]** **Narration:** Under the big quilt by the fire, Joanne warm and soft and wonderfully unhurried, the snow piling up outside and neither of you in any rush to dig out.
+    - ✍️ **YOUR UNBOUND LINES GO HERE** — stub `season_winter_joanne`. They play right after the Steamy line above.
+  - **"Then I'll keep the fire going all night."**
+    - **Joanne:** (tucked under the quilt, watching you feed the fire) Nobody's ever kept the fire going for me. (she holds up a corner) At least come and sit with me while you do it.
+- *(Chronicle entry: "Snowed in at the Kettle & Crown with Joanne.")*
+
+---
+
+### season_winter_diane
+
+**Tags:** romance, holiday
+
+**What to write** (from the guide):
+
+- *Shed the coat. And the rest.* · holiday, flexibility: The greenhouse is the only warm place in the frozen fen: eighty degrees, a thin summer dress, winter roses that only open when warm.
+
+**Tokens you can use:** Pronouns for the player: `{they}` `{them}` `{their}` `{They}` `{Their}`, and verb helpers `{s}` `{is}` `{has}` `{was}`.
+
+**The scene:**
+
+- **Diane:** (in the greenhouse, the only warm place in the frozen fen, roses blooming in midwinter) Winter roses. They only open when they're warm. (she's in a thin summer dress, flushed from the heat) It's eighty degrees in here. You're wearing far too much.
+- **▸ The player chooses:**
+  - **Shed the coat. And the rest.** ← **leads to your scene**
+    - **[Gentle only]** **Narration:** Summer in the middle of winter, the snow piling on the glass roof, and Diane's warm hands and laughter among the roses.
+    - **[Steamy — Unbound players see this too]** **Narration:** Midwinter outside and midsummer in here, sweat-damp and slow among the blooming roses, Diane bending and gasping and laughing as every rose in the greenhouse opens at once.
+    - ✍️ **YOUR UNBOUND LINES GO HERE** — stub `season_winter_diane`. They play right after the Steamy line above.
+  - **"Show me the roses."**
+    - **Diane:** (cupping one in both hands so it opens for you) This one's yours. I named it. (a sly smile) I'm not telling you what. You have to guess.
+- *(Chronicle entry: "Winter roses in Diane's greenhouse.")*
+
+---
+
+### season_winter_margot
+
+**Tags:** romance, holiday
+
+**What to write** (from the guide):
+
+- *Don't unwrap carefully.* · holiday, playful, dominance: After the after-Yule sale. She tied a pink bow around her own waist: she's the gift. The counter, the floor, regrettably the display case again.
+
+**Tokens you can use:** Pronouns for the player: `{they}` `{them}` `{their}` `{They}` `{Their}`, and verb helpers `{s}` `{is}` `{has}` `{was}`.
+
+**The scene:**
+
+- **Margot:** (collapsed on her stall counter after the after-Yule sale) I sold everything. Everything. I sold a goblin his own hat. (she sits up) Your gift. I saved it.
+- **Margot:** (she ties a big pink bow around her own waist, over the robe) Ta-da. Unwrap carefully, babe. Or don't.
+- **▸ The player chooses:**
+  - **Don't unwrap carefully.** ← **leads to your scene**
+    - **[Gentle only]** **Narration:** The bow comes undone and so does Margot, laughing, on a counter piled with empty boxes.
+    - **[Steamy — Unbound players see this too]** **Narration:** You tear into your gift like a kid on Yule morning, and Margot is loud about how much she approves, on the counter and then the floor and then, regrettably, the display case again.
+    - ✍️ **YOUR UNBOUND LINES GO HERE** — stub `season_winter_margot`. They play right after the Steamy line above.
+  - **"I got you something too."**
+    - **Margot:** (opening a little box: new hoops, hot pink) Oh. Oh, babe. (she puts them in immediately, eyes shining) Nobody gets me gifts. I'm the one who sells them.
+- *(Chronicle entry: "Margot gift-wrapped herself for Yule.")*
+
+---
+
+### season_winter_moira
+
+**Tags:** romance, holiday
+
+**What to write** (from the guide):
+
+- *Keep vigil with her, in her bed.* · holiday, dark aesthetic: The solstice vigil she's kept alone for thirty years, every candle lit, until the sun comes back.
+
+**Tokens you can use:** Pronouns for the player: `{they}` `{them}` `{their}` `{They}` `{Their}`, and verb helpers `{s}` `{is}` `{has}` `{was}`.
+
+**The scene:**
+
+- **Moira:** (the longest night of the year, every candle in the Black Candle lit) The solstice. The longest dark. I keep vigil until the sun comes back. Every year, alone.
+- **Moira:** (she sets a candle in your hands and closes your fingers around it) Not this year.
+- **▸ The player chooses:**
+  - **Keep vigil with her, in her bed.** ← **leads to your scene**
+    - **[Gentle only]** **Narration:** You keep her vigil together under the black lace, candles burning down around you, until the sun comes back and she smiles at it like an old friend.
+    - **[Steamy — Unbound players see this too]** **Narration:** The longest night, and Moira makes it every minute of its length, slow and deep and unhurried by candlelight, until the windows go grey and she's laughing softly that it was the shortest longest night she's ever had.
+    - ✍️ **YOUR UNBOUND LINES GO HERE** — stub `season_winter_moira`. They play right after the Steamy line above.
+  - **Sit up with her and watch the candles.**
+    - **Moira:** (at dawn, her head on your shoulder) Thirty years I sat up alone. (she blows out the black candle at the first light) Thank you, dear. I'll light it again tomorrow.
+- *(Chronicle entry: "The longest night, keeping vigil with Moira.")*
+
+---
+
+### season_winter_celeste
+
+**Tags:** romance, holiday
+
+**What to write** (from the guide):
+
+- *Kiss her under the mistletoe, and don't stop.* · holiday, affair: Secret: Brad's garage, his twelve-foot inflatable Santa glowing over you both, stifling every sound. Left: your first winter, mistletoe she hung herself, unhurried by the fire.
+
+**Tokens you can use:** Pronouns for the player: `{they}` `{them}` `{their}` `{They}` `{Their}`, and verb helpers `{s}` `{is}` `{has}` `{was}`.
+
+**The scene:**
+
+- **Celeste:** *(a line filled in during play, e.g. with a child's name)*
+- **▸ The player chooses:**
+  - **Kiss her under the mistletoe, and don't stop.** ← **leads to your scene**
+    - **[Gentle only]** **Narration:** Under the mistletoe and then well past it, warm and slow, the snow falling outside.
+    - **Narration:** *(a line filled in during play, e.g. with a child's name)*
+    - ✍️ **YOUR UNBOUND LINES GO HERE** — stub `season_winter_celeste`. They play right after the Steamy line above.
+  - **"Just a kiss. A long one."**
+    - **Celeste:** (when it ends, her forehead against yours) Happy Yule. (a shaky laugh) Best present I got.
+- *(Chronicle entry: "Mistletoe with Celeste.")*
 
 ---
 
