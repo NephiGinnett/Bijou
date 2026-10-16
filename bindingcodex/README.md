@@ -79,6 +79,12 @@ Abyss — by earning **Infamy**.
 - **👁 Walk the pens** (Menagerie): beasts roam their fenced pens. Tame ones
   trot to the gate, hungry ones hang around the trough, eggs sit in a nest.
   Feed or **pet** them from there (once a day, +2 tame if they trust you).
+- **Gifts**: leave a blanket, a candle, a book, Joanne's shortbread or
+  Diane's flowers (one a day, each once per captive) for a little regard; they
+  stay in the cell. Captives who've come round get a cot, and a released
+  captive's door stands open. Wardens walk over when someone tests the bars.
+- **👁 Walk the Lane** (Larkspur Lane): the cul-de-sac in 3D, every woman at
+  her door in today's outfit, the street dressed for the season and the party.
 - **The cells are alive**: wardens stand guard in the corridor (and patrol if
   they keep several captives) and report when you visit; captives whisper to
   each other across the aisle and go quiet when Zoe comes near (the card shows
@@ -182,6 +188,16 @@ that show their age). For each party's after-party, on Steamy or Unbound and
 only when you choose an intimate option, the women who are there step onto
 the stage in a **lace set** matched to the holiday: lingerie that covers what
 underwear covers, never nudity. Lace only ever builds on the mature figure.
+
+## Where are they now
+
+After the ending, the Codex writes one last chapter from what this
+playthrough actually did: who stayed and how close you were (the main cast
+have their own futures), your children, every captive who joined, left,
+relapsed or is still in the cells, each rival's fate, the sworn tribes, the
+Lane women you loved and the ones who became friends, Celeste's choice, the
+parties, your dividends, and how many choices the Codex wrote down. Reread
+it any time from the Chronicle (📜 Where are they now).
 
 ## Paths
 

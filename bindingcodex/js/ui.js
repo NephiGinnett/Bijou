@@ -25,6 +25,8 @@ for (const [id, spec] of Object.entries(LOOKS)) {
 }
 import * as AU from './audio.js';
 import { buildCells, buildPens, RESTRAINTS } from './keep3d.js';
+import { buildLane } from './lane3d.js';
+import { epilogueSteps } from './epilogue.js';
 
 let S = null;
 let stage = null;
@@ -478,6 +480,7 @@ async function hub() {
   if (S.cleared && !S.seen.__ending && (!S.captives.some(c => c.named === 'cinder'))) {
     S.seen.__ending = true;
     await playEvent(endingFor(S));
+    await playEvent({ id: 'epilogue', steps: epilogueSteps(S, heroName) });
   }
   // The hearth: after the ending, if there's family to come home to.
   if (S.seen.__ending && EVENTS.hearth_epilogue && !S.seen.hearth_epilogue && EVENTS.hearth_epilogue.cond(S)) await playEvent(EVENTS.hearth_epilogue);
@@ -1584,6 +1587,7 @@ function undercroft() {
       <div class="meter"><span>Resolve</span>${bar('resolve', cap.resolve, 'Defiance: slows Reclamation, raises breakout odds')}<span>${cap.resolve}</span></div>
       <div class="meter"><span>Regard</span><div class="bar-outer regard sm" title="≥ 20 at release and they'll join you"><div class="bar-inner" style="left:${regardLeft}%;width:${regardPct}%"></div></div><span>${cap.regard > 0 ? '+' : ''}${cap.regard}</span></div>
       ${cap.learned.length ? `<div>${cap.learned.map(k => `<div class="secret">“${esc(k)}”</div>`).join('')}</div>` : ''}
+      ${(cap.gifts || []).length ? `<div class="sm-text muted" title="Gifts you've left in the cell">In the cell: ${cap.gifts.map(g => ST.GIFTS[g].icon).join(' ')}</div>` : ''}
       <div class="sm-text muted">Warden: ${wardenOptions(cap)}</div>
       ${cap.releasePending ? '<b class="gold sm-text">The brand is gone. Release them from the Codex hub.</b>' : `
       <div class="visit-row">
@@ -1759,8 +1763,21 @@ async function cellsView(sel = null) {
         ${S.inventory.truth_draught ? `<label><input type="checkbox" class="truth" data-cap="${cap.id}"> use Truth Draught (×${S.inventory.truth_draught})</label>` : ''}
         ${visited ? '<span class="muted">visited today</span>' : ''}
       </div>`}
+      ${ST.giftsFor(S, cap).length ? `<div class="row gap sm-text wrap"><span>Leave a gift:</span>${ST.giftsFor(S, cap).map(gid => { const G = ST.GIFTS[gid]; const dis = cap.giftDay === S.day || S.gold < G.cost; return `<button class="btn sm cv-gift ${dis ? 'disabled' : ''}" data-g="${gid}" title="One gift a day; it stays in the cell. +regard.">${G.icon} ${esc(G.name)}${G.cost ? ` ◈${G.cost}g` : ''}</button>`; }).join('')}${cap.giftDay === S.day ? '<span class="muted">(one a day)</span>' : ''}</div>` : ''}
+      ${(cap.gifts || []).length ? `<p class="sm-text muted">In the cell: ${cap.gifts.map(g => ST.GIFTS[g].icon + ' ' + esc(ST.GIFTS[g].name.toLowerCase())).join(', ')}</p>` : ''}
     </div>`;
     box.querySelectorAll('.cv-hold').forEach(b => b.onclick = () => { cap.restraint = b.dataset.k; AU.sfx('confirm'); ST.save(S); cellsView(cap.id); });
+    box.querySelectorAll('.cv-gift:not(.disabled)').forEach(b => b.onclick = async () => {
+      const gid = b.dataset.g, G = ST.GIFTS[gid], r = ST.giveGift(S, cap.id, gid);
+      if (!r) return;
+      AU.sfx('confirm');
+      const n = esc(cap.name);
+      const react = cap.regard >= 20 ? `${n} says thank you, quietly, and means it.` : r.proud ? `${n} pretends not to notice. When you look back from the stair, it's been moved closer.` : cap.resolve >= 60 ? `${n} doesn't touch it while you're watching.` : `${n} watches you go, then reaches for it.`;
+      screen('', '');
+      await playEvent({ id: 'banter', steps: [{ s: 'narr', t: `You leave ${G.name.charAt(0).toLowerCase() + G.name.slice(1)} in ${n}'s cell. ${G.line}` }, { s: 'narr', t: react }] });
+      toast(`regard +${r.gain}${r.cost ? ` · −${r.cost} gold` : ''}`);
+      ST.save(S); cellsView(cap.id);
+    });
     box.querySelectorAll('.visit:not(.disabled)').forEach(b => b.onclick = () => visitFlow(cap.id, b.dataset.k, () => cellsView(cap.id)));
   };
   const show = i => { cur = (i + caps.length) % caps.length; AU.sfx('ui'); card(); view.visit(cur); };
@@ -2159,7 +2176,7 @@ function chronicle() {
   const mem = memories();
   screen(`
     <div class="panel shop-panel">
-      <div class="row spread"><h2>📖 The Chronicle</h2><div class="row gap"><button class="btn" id="ch-paths" title="Every fork in the story: what you chose, and what you passed up.">🜲 Paths</button><button class="btn ghost" id="ch-back">← Codex</button></div></div>
+      <div class="row spread"><h2>📖 The Chronicle</h2><div class="row gap">${S.seen.__ending ? '<button class="btn" id="ch-epi" title="The last chapter, from everything you did.">📜 Where are they now</button>' : ''}<button class="btn" id="ch-paths" title="Every fork in the story: what you chose, and what you passed up.">🜲 Paths</button><button class="btn ghost" id="ch-back">← Codex</button></div></div>
       <p class="muted">A living book that writes itself after significant moments — in a hand neither of you recognizes. Pages sold at the altar are crossed out, but never quite gone.</p>
       ${hearthHtml()}
       ${mem.length ? `<details class="memories"><summary><b>✦ Memories</b> <small class="muted">${mem.length} scene${mem.length === 1 ? '' : 's'} to revisit</small></summary>
@@ -2169,6 +2186,7 @@ function chronicle() {
   `);
   $('#ch-back').onclick = () => hub();
   $('#ch-paths').onclick = () => { AU.sfx('ui'); paths(chronicle); };
+  if ($('#ch-epi')) $('#ch-epi').onclick = async () => { screen('', ''); await playEvent({ id: 'epilogue', steps: epilogueSteps(S, heroName) }, { replay: true }); chronicle(); };
   bindMemories(chronicle);
 }
 
@@ -2589,13 +2607,14 @@ function town() {
   }).join('');
   screen(`
     <div class="panel shop-panel">
-      <div class="row spread"><h2>🏘 Larkspur Lane</h2><div class="row gap"><span class="gold">◈ ${S.gold}g</span> <button class="btn ghost" id="tw-back">← Codex</button></div></div>
+      <div class="row spread"><h2>🏘 Larkspur Lane</h2><div class="row gap"><span class="gold">◈ ${S.gold}g</span> <button class="btn" id="tw-walk" title="Walk down the Lane and see everyone.">👁 Walk the Lane</button> <button class="btn ghost" id="tw-back">← Codex</button></div></div>
       ${seasonBanner()}
       <p class="muted sm-text">A suburban cul-de-sac that fell through a misfired summoning into the fen. Talk daily, run errands for favor, and invest in their businesses. ${div ? `<b class="gold">The Lane pays you ${div}g every night.</b>` : 'Investments pay dividends every night.'}</p>
       ${laneGatherings().length ? `<div class="row gap wrap" style="margin:8px 0">${laneGatherings().map(ev => `<button class="btn notify tw-gather" data-ev="${ev.id}">${TOWN.SEASONS.some(x => x.fest === ev.id) ? TOWN.seasonOf(S).icon : '♡'} ${esc(gatherLabel(ev))}<em>!</em></button>`).join('')}</div>` : ''}
       <div class="cells">${cards}</div>
     </div>`);
   $('#tw-back').onclick = () => hub();
+  $('#tw-walk').onclick = () => laneView();
   document.querySelectorAll('.tw-gather').forEach(b => b.onclick = async () => { screen('', ''); await playEvent(EVENTS[b.dataset.ev]); ST.save(S); town(); });
   document.querySelectorAll('.tw-talk:not(.disabled)').forEach(b => b.onclick = async () => {
     const id = b.dataset.f, r = TOWN.townTalk(S, id);
@@ -2644,6 +2663,53 @@ function town() {
     ST.save(S); town();
   });
   document.querySelectorAll('.tw-shop').forEach(b => b.onclick = () => { AU.sfx('ui'); townShop(b.dataset.f); });
+}
+
+// Walking the Lane in 3D: tap a woman to walk over; her card does what her town card does.
+async function laneView(sel = null) {
+  AU.sfx('ui');
+  const season = TOWN.seasonOf(S);
+  const gathers = laneGatherings();
+  screen(`
+    <div class="panel slim viewer-bar">
+      <b>🏘 Larkspur Lane</b><span class="muted sm-text">${season.icon} ${esc(season.name)}${season.festOn && EVENTS[season.fest] && !S.seen[season.fest] ? ` · ${esc(season.festName)} is on!` : ''} · tap someone to walk over</span>
+      <div class="row gap">${gathers.map(ev => `<button class="btn sm notify lv-gather" data-ev="${ev.id}">${TOWN.SEASONS.some(x => x.fest === ev.id) ? season.icon : '♡'} ${esc(gatherLabel(ev))}</button>`).join('')}<button class="btn sm ghost" id="lv-list">☰ List</button></div>
+    </div>
+    <div id="lv-card"></div>`, 'viewer');
+  const view = await buildLane(stage, S, { season, festKey: TOWN.laneOutfit(S), women: TOWN.FOLK_IDS, variantOf: heroVariant, player: playerLook() });
+  const card = id => {
+    const box = $('#lv-card'); if (!box) return;
+    const P = TOWN.TOWNSFOLK[id], f = TOWN.folkOf(S, id);
+    const scene = townScene(id), seasonal = seasonScene(id), eve = S.seen[id + '_romance'] && !S.flags[id + '_ended'] && TOWN.townEveningOpen(S, id);
+    box.innerHTML = `<div class="panel viewer-card">
+      <div class="row spread"><h3 style="color:${P.color}">${esc(P.name)}</h3><small class="muted">${esc(P.role)}${P.shop ? ' · ' + esc(P.shop) : ''}</small></div>
+      <div class="row gap sm-text"><span>Favor <b>${f.favor}/10</b></span>${P.shop ? `<span>stake ${stake(f.level)}</span>` : ''}${id === 'celeste' ? `<span class="gold">${esc(TOWN.affairNote(S))}</span>` : ''}</div>
+      <div class="row gap wrap">
+        <button class="btn sm lv-talk ${f.talkDay === S.day ? 'disabled' : ''}">❝ Talk</button>
+        ${P.shop ? `<button class="btn sm lv-shop">◈ ${id === 'joanne' ? 'Supper' : 'Shop'}</button>` : ''}
+        ${seasonal ? `<button class="btn sm notify lv-season">${season.icon} ${esc(season.name)} with her</button>` : ''}
+        ${scene ? `<button class="btn sm notify lv-scene">${scene.id.endsWith('_romance') ? '♡ She has something to ask you' : '✦ She wants to talk'}</button>` : ''}
+        ${eve ? '<button class="btn sm lv-eve">☾ Evening</button>' : ''}
+      </div>
+    </div>`;
+    const go = async ev => { if (!ev) return; screen('', ''); await playEvent(ev); ST.save(S); laneView(id); };
+    const t = box.querySelector('.lv-talk:not(.disabled)'); if (t) t.onclick = async () => {
+      const r = TOWN.townTalk(S, id); if (!r) return;
+      const lines = TOWN.TOWN_TALK[id];
+      screen('', ''); await playEvent({ id: 'banter', steps: [{ s: id, t: lines[(S.day + r.favor) % lines.length] }] });
+      if (r.up) toast(`${P.name}'s favor +1`, 'bond');
+      ST.save(S); laneView(id);
+    };
+    const sh = box.querySelector('.lv-shop'); if (sh) sh.onclick = () => { hubStage(); townShop(id); };
+    const se = box.querySelector('.lv-season'); if (se) se.onclick = () => go(seasonScene(id));
+    const sc = box.querySelector('.lv-scene'); if (sc) sc.onclick = () => go(townScene(id));
+    const ev = box.querySelector('.lv-eve'); if (ev) ev.onclick = async () => { screen('', ''); await playEvent(EVENTS[id + '_evening']); TOWN.townEvening(S, id); ST.save(S); laneView(id); };
+  };
+  const show = id => { AU.sfx('ui'); card(id); view.visit(id); };
+  stage.onPick = uid => { const p = view.people.find(x => x.act.uid === uid); if (p) show(p.id); };
+  $('#lv-list').onclick = () => { hubStage(); town(); };
+  document.querySelectorAll('.lv-gather').forEach(b => b.onclick = async () => { screen('', ''); await playEvent(EVENTS[b.dataset.ev]); ST.save(S); laneView(); });
+  if (sel) show(sel);
 }
 
 function townShop(id) {

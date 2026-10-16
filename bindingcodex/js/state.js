@@ -1255,6 +1255,31 @@ export function testimonyWitness(S, cap) {
   return Object.values(NAMED_CAPTIVES).find(n => n.hero && n.faction === cap.faction && isAlly(S, n.hero))?.hero || null;
 }
 
+// Small comforts you can leave in a cell: one a day, each only once per captive. They stay
+// in the cell (the Undercroft walk shows them) and warm a captive's regard a little.
+export const GIFTS = {
+  blanket: { name: 'A warm blanket', icon: '🧶', cost: 15, regard: 4, line: 'The cells are cold at night. Not tonight.' },
+  candle:  { name: 'A candle',       icon: '🕯', cost: 10, regard: 3, line: 'A little light, and a little less dark to be afraid of.' },
+  book:    { name: 'A book from the stacks', icon: '📖', cost: 0, regard: 3, resolve: -3, line: 'Something to read that isn\'t about the cause.' },
+  sweets:  { name: 'Joanne\'s shortbread', icon: '🍪', cost: 12, regard: 4, town: true, line: 'Wrapped in a gingham napkin, still warm.' },
+  flowers: { name: 'Flowers from Diane\'s garden', icon: '💐', cost: 20, regard: 5, town: true, line: 'Night-blooming, and faintly glowing.' },
+};
+export function giftsFor(S, cap) {
+  return Object.entries(GIFTS).filter(([id, g]) => !(cap.gifts || []).includes(id) && (!g.town || (S.town && S.town.open))).map(([id]) => id);
+}
+export function giveGift(S, capId, gid) {
+  const cap = S.captives.find(c => c.id === capId), g = GIFTS[gid];
+  if (!cap || !g || cap.giftDay === S.day || (cap.gifts || []).includes(gid) || S.gold < g.cost) return null;
+  S.gold -= g.cost;
+  (cap.gifts ||= []).push(gid);
+  cap.giftDay = S.day;
+  const proud = cap.traits.includes('proud');
+  const gain = Math.round(g.regard * (proud ? 0.6 : 1));
+  cap.regard = clamp(cap.regard + gain, -100, 100);
+  if (g.resolve) cap.resolve = clamp(cap.resolve + g.resolve, 0, 100);
+  return { gain, cost: g.cost, proud };
+}
+
 // Perform a visit. Returns { ok, text[] } for the UI to narrate.
 export function visitCaptive(S, capId, kind, opts = {}) {
   const cap = S.captives.find(c => c.id === capId);

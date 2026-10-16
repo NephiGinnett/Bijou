@@ -116,6 +116,40 @@ function whisperFor(cap) {
   const pool = [...(mood ? WHISPER[mood] : []), ...(WHISPER[cap.faction] || [])];
   return pickOf(pool.length ? pool : WHISPER.reply);
 }
+const RATTLE = ['*rattles the bars*', 'Let me OUT.', 'I can hear you out there!', '*bang* *bang* *bang*'];
+// What a warden says when their charge tests the restraints.
+const STEP_IN = {
+  vesper: cap => `Enough, ${cap.name}. You'll hurt your hands, and I'll have to mend them.`,
+  rue: cap => `Pull all you like, sweetheart. I wrote that lock.`,
+  isolde: cap => `Be still, ${cap.name}. It goes easier if you're still.`,
+  calla: cap => `I did that for a month, ${cap.name}. It doesn't open. Sit down.`,
+  default: cap => `Easy, ${cap.name}. Easy.`,
+};
+// The small comforts you've left in a cell, laid out where a person would put them;
+// and a cot, once they've come round to you.
+function furnish(stage, g, cap, kind) {
+  const gifts = cap.gifts || [];
+  const side = kind === 'bars' ? 0.72 : 0.78; // keep clear of the pacing (bars) or the restraints
+  if (cap.regard >= 20 || gifts.includes('blanket')) {
+    box(0.62, 0.08, 1.3, wood(), side, 0.3, -0.35, g);
+    for (const [dx, dz] of [[-0.27, 0.6], [0.27, 0.6], [-0.27, -0.6], [0.27, -0.6]]) box(0.06, 0.3, 0.06, wood(), side + dx, 0.15, -0.35 + dz, g);
+    box(0.58, 0.07, 1.22, mat('ticking', 0xc8b89a), side, 0.37, -0.35, g);
+    if (gifts.includes('blanket')) box(0.6, 0.06, 0.7, mat('blanket', 0x7a2a3a), side, 0.42, -0.15, g);
+  } else if (gifts.includes('blanket')) box(0.5, 0.1, 0.4, mat('blanket', 0x7a2a3a), side, 0.06, -0.7, g);
+  if (gifts.includes('candle')) {
+    cyl(0.04, 0.16, mat('wax', 0xf4ecd8), -side, 0.08, -0.85, g, 10);
+    const f = new THREE.Mesh(new THREE.SphereGeometry(0.03, 8, 6), new THREE.MeshBasicMaterial({ color: 0xffc060 }));
+    f.position.set(-side, 0.2, -0.85); f.scale.y = 1.6; g.add(f);
+    const ph = Math.random() * 9; stage.hooks.add((dt, t) => { f.scale.set(1 + Math.sin(t * 13 + ph) * 0.15, 1.6 + Math.sin(t * 9 + ph) * 0.3, 1); });
+  }
+  if (gifts.includes('book')) { box(0.22, 0.05, 0.3, mat('book', 0x3a2a5a), -side + 0.05, 0.03, -0.45, g).rotation.y = 0.3; box(0.2, 0.04, 0.28, mat('book2', 0x5a3a2a), -side + 0.08, 0.075, -0.45, g).rotation.y = -0.2; }
+  if (gifts.includes('sweets')) { cyl(0.13, 0.02, mat('tin', 0x9a9aa2), -side + 0.1, 0.01, 0.45, g, 16); for (let i = 0; i < 4; i++) cyl(0.035, 0.015, mat('biscuit', 0xd8a85a), -side + 0.1 + Math.cos(i * 1.6) * 0.06, 0.03, 0.45 + Math.sin(i * 1.6) * 0.06, g, 10); }
+  if (gifts.includes('flowers')) {
+    cyl(0.05, 0.14, mat('jar', 0x8ab8c8, { transparent: true, opacity: 0.6 }), side - 0.05, 0.07, 0.62, g, 12);
+    for (let i = 0; i < 5; i++) { const fl = new THREE.Mesh(new THREE.SphereGeometry(0.03, 8, 6), new THREE.MeshStandardMaterial({ color: 0xf0c8ff, emissive: 0x9a6ad8, emissiveIntensity: 0.8 })); fl.position.set(side - 0.05 + Math.cos(i * 1.3) * 0.05, 0.2 + (i % 2) * 0.04, 0.62 + Math.sin(i * 1.3) * 0.05); g.add(fl); }
+  }
+}
+
 // A warden's report on the captive they keep.
 function wardenReport(cap) {
   if (cap.releasePending) return `The brand's gone. ${cap.name} is waiting on you.`;
@@ -169,6 +203,20 @@ export async function buildCells(stage, caps, player, opts = {}) {
   });
   await Promise.all([zoe.ready, ...cells.map(c => c.a.ready)]);
 
+  const wardens = [];
+  // A captive testing the bars or the chains: their warden, if they have one, walks over.
+  const tested = c => {
+    const w = wardens.find(x => x.list.includes(c));
+    if (!w || w.busy || c.focus) return;
+    w.busy = true;
+    const spot = { x: c.slot.side * 1.0, z: c.slot.z + 0.35, face: c.slot.side < 0 ? -Math.PI / 2 : Math.PI / 2 };
+    w.go(spot.x, spot.z, spot.face).then(() => {
+      const wr = rigOf(w.a); if (wr) wr.talk(1.4);
+      bubble(stage, w.a, (STEP_IN[w.wid] || STEP_IN.default)(c.cap), 3000, 'warden');
+      const cr = rigOf(c.a); if (cr) setTimeout(() => cr.talk(0.8), 1200);
+      setTimeout(() => { const p = w.post(c); w.go(p.x, p.z, p.face).then(() => { w.busy = false; }); }, 3600);
+    });
+  };
   for (const c of cells) {
     const rig = rigOf(c.a);
     const kind = rig ? c.kind : 'bars';   // chains and stocks need arms to hold
@@ -177,8 +225,19 @@ export async function buildCells(stage, caps, player, opts = {}) {
     const H = Math.max(2.2, c.a.topY + 0.4);
     const g = c.g;
     if (kind === 'bars') {
-      for (let x = -1.05; x <= 1.06; x += 0.21) cyl(0.028, H, iron(), x, H / 2, 1.0, g, 6);
-      box(2.3, 0.08, 0.08, iron(), 0, H, 1.0, g); box(2.3, 0.08, 0.08, iron(), 0, 0.12, 1.0, g); box(2.3, 0.06, 0.06, iron(), 0, H * 0.55, 1.0, g);
+      // once the brand is gone the cell door stands open
+      const ajar = !!c.cap.releasePending;
+      let doorG = null; const door = () => doorG;
+      for (let x = -1.05; x <= 1.06; x += 0.21) if (!ajar || Math.abs(x) > 0.32) cyl(0.028, H, iron(), x, H / 2, 1.0, g, 6);
+      if (ajar) {
+        const door = doorG = new THREE.Group(); door.position.set(-0.32, 0, 1.0); door.rotation.y = -1.1; g.add(door);
+        for (let x = 0.1; x < 0.64; x += 0.21) cyl(0.028, H * 0.92, iron(), x, H * 0.46 + 0.04, 0, door, 6);
+        box(0.66, 0.06, 0.06, iron(), 0.32, H * 0.88, 0, door); box(0.66, 0.06, 0.06, iron(), 0.32, 0.14, 0, door);
+      }
+      box(2.3, 0.08, 0.08, iron(), 0, H, 1.0, g);
+      // the lower rails stop at the doorway when it's open
+      for (const [w, x] of ajar ? [[0.78, -0.71], [0.78, 0.71]] : [[2.3, 0]]) { box(w, 0.08, 0.08, iron(), x, 0.12, 1.0, g); box(w, 0.06, 0.06, iron(), x, H * 0.55, 1.0, g); }
+      if (ajar) box(0.66, 0.06, 0.06, iron(), 0.32, H * 0.55, 0, door());
       // pacing behind the bars
       const ph = Math.random() * 9, hx = c.a.home.x, hz = c.a.home.z;
       const front = g.localToWorld(new THREE.Vector3(0, 0, 0.62));
@@ -225,8 +284,14 @@ export async function buildCells(stage, caps, player, opts = {}) {
       // every so often they test the restraints
       const ph = Math.random() * 6;
       let next = 3 + ph;
-      stage.hooks.add((dt, t) => { if (t > next) { next = t + 5 + Math.random() * 6; if (c.cap.resolve >= 40 || Math.random() < 0.4) rig.tug(); } });
+      stage.hooks.add((dt, t) => { if (t > next) { next = t + 5 + Math.random() * 6; if (c.cap.resolve >= 40 || Math.random() < 0.4) { rig.tug(); if (c.cap.resolve >= 50) tested(c); } } });
     }
+    if (kind === 'bars' && rig && c.cap.resolve >= 55 && !c.cap.releasePending) {
+      // the defiant ones rattle the bars now and then
+      let next = 6 + Math.random() * 6;
+      stage.hooks.add((dt, t) => { if (t > next && !c.eager && !c.focus) { next = t + 9 + Math.random() * 8; rig.act('guard', 1.0); bubble(stage, c.a, pickOf(RATTLE), 2200, 'whisper'); tested(c); } });
+    }
+    furnish(stage, g, c.cap, kind);
     // regard shows in how they hold themselves: the warm ones turn toward the aisle
     c.a.face = c.slot.face;
   }
@@ -234,17 +299,16 @@ export async function buildCells(stage, caps, player, opts = {}) {
   // Wardens keep to the aisle by their charges, walking between them if they keep several.
   const byWarden = new Map();
   cells.forEach(c => { const w = c.cap.wardenId; if (w) { if (!byWarden.has(w)) byWarden.set(w, []); byWarden.get(w).push(c); } });
-  const wardens = [];
   for (const [wid, list] of byWarden) {
     // posted at the corner past the cell door, out of the way of anyone looking in
     const post = c => ({ x: c.slot.side * 1.1, z: c.slot.z - 1.3, face: c.slot.side < 0 ? -Math.PI / 4 : Math.PI / 4 });
     const p0 = post(list[0]);
     const w = stage.addActor('cw_' + wid, wid, opts.variantOf ? opts.variantOf(wid) : null, { x: p0.x, z: p0.z, face: p0.face });
-    wardens.push({ wid, list, a: w, post });
+    const wd = { wid, list, a: w, post, go: walker(stage, w, 1.3), busy: false };
+    wardens.push(wd);
     w.ready.then(() => { w.topY = new THREE.Box3().setFromObject(w.group).max.y; });
     if (list.length > 1) {
-      const go = walker(stage, w, 1.1);
-      (async () => { for (let k = 1; stage.actors.get('cw_' + wid) === w; k++) { await new Promise(r => setTimeout(r, 5000 + Math.random() * 4000)); if (stage.actors.get('cw_' + wid) !== w) return; const p = post(list[k % list.length]); await go(p.x, p.z, p.face); } })();
+      (async () => { for (let k = 1; stage.actors.get('cw_' + wid) === w; k++) { await new Promise(r => setTimeout(r, 5000 + Math.random() * 4000)); if (stage.actors.get('cw_' + wid) !== w) return; if (wd.busy) continue; wd.busy = true; const p = post(list[k % list.length]); await wd.go(p.x, p.z, p.face); wd.busy = false; } })();
     }
   }
   await Promise.all(wardens.map(w => w.a.ready));
