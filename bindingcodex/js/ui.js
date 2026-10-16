@@ -221,7 +221,7 @@ export function playEvent(ev, opts = {}) {
     document.body.appendChild(layer);
 
     const steps = ev.steps.slice();
-    let idx = 0;
+    let idx = 0, lineupShown = false;
 
     const showStep = async () => {
       while (idx < steps.length) {
@@ -230,6 +230,12 @@ export function playEvent(ev, opts = {}) {
         if (!goreVisible(st)) { idx++; continue; }
         if (st.cond && !st.cond(S)) { idx++; continue; }
         if (replay && (st.flag || st.join || st.chronicle || st.capture || st.give || st.do)) { idx++; continue; }
+        if (st.lineup) {
+          // the women in the scene, on the stage, in what the scene calls for (Lane after-parties)
+          const ids = st.lineup.ids(S);
+          if (ids.length) { lineupShown = true; stage.showcase(ids, () => st.lineup.variant).then(() => { stage.camBase.set(0, 2.0, 6.4 + ids.length * 0.4); stage.camTarget.set(0, 1.35, 0); stage.viewHalfW = 1.6 + ids.length * 1.05; }); }
+          idx++; continue;
+        }
         if (st.flag) { S.flags[st.flag] = true; idx++; continue; }
         if (st.do) { st.do(S); idx++; continue; }
         if (st.join) {
@@ -261,6 +267,7 @@ export function playEvent(ev, opts = {}) {
     const cleanup = () => {
       advanceHandler = null;
       layer.remove();
+      if (lineupShown) hubStage(); // put the stage back the way the screen expects
       if (!replay) ST.save(S);
       resolve();
     };

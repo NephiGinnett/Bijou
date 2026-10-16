@@ -177,6 +177,11 @@ dresses, autumn coats and scarves, winter coats, beanies and earmuffs) and
 dress up for each party: flower crowns for May Day, sundresses for the
 Cookout, costumes for Hallows (a vampire countess, a saloon girl, a dryad, a
 very expensive cat, a witch, a black swan) and ugly knit sweaters for Yule.
+The Lane women are built on a **mature figure** (adult proportions and faces
+that show their age). For each party's after-party, on Steamy or Unbound and
+only when you choose an intimate option, the women who are there step onto
+the stage in a **lace set** matched to the holiday: lingerie that covers what
+underwear covers, never nudity. Lace only ever builds on the mature figure.
 
 ## Paths
 

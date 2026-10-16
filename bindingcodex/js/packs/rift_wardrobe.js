@@ -80,3 +80,28 @@ export function dressed(toon, o) {
   if (!o) return toon;
   return { ...toon, ...o, colors: { ...toon.colors, ...(o.colors || {}) }, face: { ...toon.face, ...(o.face || {}) } };
 }
+
+// --- the lace drawer ---------------------------------------------------------------------
+// Each woman's set for each party's after-party, in her colors for that holiday. Lace only
+// ever builds on the mature figure (toonfig refuses it on anything else); it's shown on the
+// stage only during a festival's intimate after-party, on Steamy and Unbound.
+// [lace, motif, stockings, bodice?]
+const LACE_SETS = {
+  victoria: { may_day: [0xc8b8e8, 0xf4f0f8, 0xe8e0f4, true], cookout: [0xf4f0e8, 0x1e2a44, 0xf4f0e8, false], hallows: [0x5a0a1a, 0x141018, 0x141018, true], yule: [0x1e2a44, 0xd8c8a0, 0x141c30, true] },
+  joanne: { may_day: [0xffb8c8, 0xf4f4f0, 0xf4e8ec, false], cookout: [0xe85a5a, 0xf4f4f0, 0xf4f0ec, false], hallows: [0xff6ab8, 0x141018, 0x141018, true], yule: [0x9a1a2a, 0xf4e8e0, 0x5a0a14, true] },
+  diane: { may_day: [0xf4f0e8, 0x8ab87a, 0xf4f0e8, false], cookout: [0x8ad8c8, 0xf4f0e8, 0xe8f4f0, false], hallows: [0x3a7a3a, 0x8ac86a, 0x22521f, true], yule: [0x1e4a2a, 0xd8c87a, 0x14301c, false] },
+  margot: { may_day: [0xff8ac8, 0xf4f4f0, 0xffd0e8, false], cookout: [0xf4d04a, 0xff4aa8, 0xfff0c8, false], hallows: [0x141018, 0xf4f4ff, 0x141018, true], yule: [0xe8408a, 0xf4f0f8, 0xb02a6a, true] },
+  moira: { may_day: [0xf4f0f8, 0x9a6ab8, 0xf4f0f8, true], cookout: [0x141018, 0x8a4aff, 0x141018, false], hallows: [0x141018, 0x8a4aff, 0x141018, true], yule: [0x141018, 0xd8d8e8, 0x141018, true] },
+  celeste: { may_day: [0xf6f2ea, 0xffb8d0, 0xf6f2ea, false], cookout: [0x8ac8f0, 0xf6f2ea, 0xe8f4fa, false], hallows: [0x141018, 0xd8b04a, 0x141018, true], yule: [0xd02a2a, 0xf6f2ea, 0x8a1a1a, false] },
+};
+// What each keeps on: her glasses, her pearls, her hoops...
+const KEEP = { victoria: 'glasses,glasschain,pearls', joanne: 'temples', diane: 'flower:0xffd0e0', margot: 'hoops', moira: 'streak', celeste: 'bangles' };
+for (const [id, sets] of Object.entries(LACE_SETS)) for (const [fest, [lace, motif, stock, bodice]] of Object.entries(sets)) {
+  WARDROBE[id][fest + '_lace'] = {
+    colors: { main: lace, deep: lace, trim: motif },
+    top: { style: 'lace', bodice, cut: 1.05, corset: !!bodice },
+    skirt: { style: 'brief' }, sleeves: 'bare', cape: null,
+    legs: { style: 'stockings', color: stock, band: motif, boots: stock, bootHeight: 0.08 },
+    extras: [KEEP[id], 'garters:' + '0x' + motif.toString(16).padStart(6, '0'), ...(id === 'joanne' && fest === 'yule' ? ['bow:0xf4e8e0'] : [])].filter(Boolean).join(','),
+  };
+}

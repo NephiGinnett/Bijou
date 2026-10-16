@@ -8,6 +8,8 @@
 // scenes close while she's expecting or once the affair has ended.
 // ============================================================
 
+import { FEST_LOOK } from './rift_wardrobe.js';
+
 export const SEASON_LEN = 10;
 export const FEST_FROM = 5; // the festival runs from the 5th day of the season to its end
 export const SEASONS = [
@@ -40,6 +42,8 @@ export function seasonEvents(E, h) {
     { s: 'narr', t: steamy, spice: 'steamy' },
     { s: 'narr', t: '', spice: 'unbound', stub }, // ZOE: unbound
   ];
+  // On Steamy and Unbound, the women at the after-party step onto the stage in their lace for it.
+  const lace = fest => ({ spice: 'steamy', lineup: { ids: S => LANE.filter(id => partyClose(S, id)), variant: FEST_LOOK[fest] + '_lace' } });
   // The public party everyone attends, then (with two or more women close to Zoe) the after-party.
   const festival = (sid, o) => {
     E[o.id] = {
@@ -52,8 +56,8 @@ export function seasonEvents(E, h) {
         { do: S => { for (const id of LANE) if (id !== 'celeste' || S.flags.celeste_left || !S.flags.celeste_ended) addFavor(S, id, 1); } },
         { cond: S => guests(S) >= 2, s: 'narr', t: o.invite },
         { cond: S => guests(S) >= 2, choice: [
-          { t: o.domT, tone: 'dom', r: intimate(o.id, o.domGentle, o.domSteamy) },
-          { t: o.kindT, tone: 'kind', r: intimate(o.id, o.kindGentle, o.kindSteamy) },
+          { t: o.domT, tone: 'dom', r: [lace(o.id), ...intimate(o.id, o.domGentle, o.domSteamy)] },
+          { t: o.kindT, tone: 'kind', r: [lace(o.id), ...intimate(o.id, o.kindGentle, o.kindSteamy)] },
           { t: o.sweetT, r: [{ s: 'narr', t: o.sweet }] },
         ] },
         { cond: S => guests(S) < 2, s: 'narr', t: o.publicEnd },
