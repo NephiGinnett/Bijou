@@ -11,7 +11,11 @@ import { tmat, tadd, SS, SC, ST, outline, face, lathe, pleat, makeRig } from './
 
 export const FIGURES = {
   tall: { hr: 0.255, hy: 1.6, shoulderY: 1.3, bustY: 1.17, waistY: 0.98, hipY: 0.82, hemY: 0.62, waistR: 0.105, hipR: 0.25, bustR: 0.11, shoulderX: 0.18 },
+  // Grown women: about six and a half heads tall, a real neck, long legs, a defined waist.
+  mature: { hr: 0.165, hy: 2.02, shoulderY: 1.74, bustY: 1.57, waistY: 1.33, hipY: 1.13, hemY: 0.86, waistR: 0.11, hipR: 0.27, bustR: 0.1, shoulderX: 0.2, neck: 0.11, mature: true },
 };
+// Hems and other heights in a look are written for the 'tall' figure; rescale them to this one.
+const hemFor = (F, hem) => hem == null ? null : F.mature ? hem * (F.hipY / FIGURES.tall.hipY) : hem;
 // Builds scale the figure's landmarks.
 const BUILDS = {
   slim:    { waist: 0.95, hip: 0.88, shoulder: 0.95, bust: 0.85, thigh: 0.9, arm: 0.95 },
@@ -21,19 +25,96 @@ const BUILDS = {
 };
 const shade = (hex, f) => new THREE.Color(hex).multiplyScalar(f).getHex();
 
+// --- knitwear: a painted canvas for holiday sweaters ---------------------------------------
+// pattern: snowflake | tree | reindeer | ledger | sequin | stripes. Base, motif and band colors
+// come from the look (main, trim, deep). Cached, since every portrait rebuilds the figure.
+const KNIT = {};
+const hexStr = n => '#' + (n >>> 0).toString(16).padStart(6, '0');
+export function knitTexture(pattern, base, motif, band) {
+  const key = [pattern, base, motif, band].join('|');
+  if (KNIT[key]) return KNIT[key];
+  const cv = document.createElement('canvas'); cv.width = 256; cv.height = 128;
+  const x = cv.getContext('2d');
+  x.fillStyle = hexStr(base); x.fillRect(0, 0, 256, 128);
+  // the stitches: rows of little v's
+  x.strokeStyle = 'rgba(0,0,0,0.13)'; x.lineWidth = 1;
+  for (let r = 0; r < 128; r += 6) for (let c = (r / 6) % 2 * 3; c < 256; c += 6) { x.beginPath(); x.moveTo(c, r); x.lineTo(c + 3, r + 4); x.lineTo(c + 6, r); x.stroke(); }
+  // bands top and bottom, with a zigzag
+  x.fillStyle = hexStr(band);
+  for (const y of [6, 108]) { x.fillRect(0, y, 256, 12); x.fillStyle = hexStr(motif); for (let c = 0; c < 256; c += 12) { x.beginPath(); x.moveTo(c, y + 9); x.lineTo(c + 6, y + 3); x.lineTo(c + 12, y + 9); x.fill(); } x.fillStyle = hexStr(band); }
+  x.fillStyle = hexStr(motif); x.strokeStyle = hexStr(motif); x.lineWidth = 3; x.lineCap = 'round';
+  const flake = (cx, cy, r) => { for (let i = 0; i < 3; i++) { const a = i * Math.PI / 3; x.beginPath(); x.moveTo(cx - Math.cos(a) * r, cy - Math.sin(a) * r); x.lineTo(cx + Math.cos(a) * r, cy + Math.sin(a) * r); x.stroke(); } };
+  if (pattern === 'snowflake') { for (let c = 16; c < 256; c += 42) { flake(c, 46, 11); flake(c + 21, 78, 8); } }
+  else if (pattern === 'tree') {
+    for (let c = 20; c < 256; c += 48) { x.beginPath(); x.moveTo(c, 34); x.lineTo(c - 15, 84); x.lineTo(c + 15, 84); x.fill(); x.fillStyle = '#f4d04a'; x.beginPath(); x.arc(c, 32, 5, 0, 7); x.fill(); x.fillStyle = hexStr(band); for (const [dx, dy] of [[-6, 62], [5, 72], [0, 50]]) { x.beginPath(); x.arc(c + dx, dy, 3, 0, 7); x.fill(); } x.fillStyle = hexStr(motif); }
+  } else if (pattern === 'reindeer') {
+    for (let c = 30; c < 256; c += 64) {
+      x.beginPath(); x.ellipse(c, 66, 16, 9, 0, 0, 7); x.fill();                      // body
+      for (const dx of [-11, -5, 6, 12]) { x.beginPath(); x.moveTo(c + dx, 70); x.lineTo(c + dx, 86); x.stroke(); }
+      x.beginPath(); x.moveTo(c + 13, 60); x.lineTo(c + 19, 48); x.stroke();          // neck
+      x.beginPath(); x.ellipse(c + 21, 46, 6, 4, 0.3, 0, 7); x.fill();                // head
+      x.beginPath(); x.moveTo(c + 19, 42); x.lineTo(c + 15, 32); x.moveTo(c + 17, 37); x.lineTo(c + 11, 35); x.moveTo(c + 22, 42); x.lineTo(c + 26, 32); x.stroke();
+      x.fillStyle = '#ff2a2a'; x.beginPath(); x.arc(c + 27, 47, 3.5, 0, 7); x.fill(); x.fillStyle = hexStr(motif);
+    }
+  } else if (pattern === 'ledger') {
+    x.lineWidth = 1.2; for (let c = 0; c < 256; c += 32) { x.beginPath(); x.moveTo(c, 22); x.lineTo(c, 104); x.stroke(); } for (let r = 22; r < 106; r += 14) { x.beginPath(); x.moveTo(0, r); x.lineTo(256, r); x.stroke(); }
+    x.font = 'bold 10px monospace';
+    for (let r = 0; r < 6; r++) for (let c = 0; c < 8; c++) { x.fillStyle = (r * 3 + c) % 4 === 0 ? '#c83a3a' : '#2a8a4a'; x.fillText((r * 7 + c * 13) % 2 ? '+$' + ((r + 2) * (c + 3)) : '-' + (r + c + 1) + 'k', c * 32 + 3, 33 + r * 14); }
+  } else if (pattern === 'sequin') {
+    for (let i = 0; i < 160; i++) { x.fillStyle = ['#ffffff', '#f4d04a', hexStr(motif), '#ffb8e0'][i % 4]; x.beginPath(); x.arc((i * 37) % 256, 20 + (i * 53) % 88, 2.4, 0, 7); x.fill(); }
+    x.fillStyle = '#ffffff'; for (const [dy, r] of [[82, 13], [60, 10], [42, 7]]) { x.beginPath(); x.arc(128, dy, r, 0, 7); x.fill(); }
+    x.fillStyle = '#ff8a2a'; x.beginPath(); x.moveTo(134, 42); x.lineTo(144, 44); x.lineTo(134, 46); x.fill();
+  } else if (pattern === 'stripes') { for (let r = 26; r < 104; r += 16) x.fillRect(0, r, 256, 7); }
+  const t = new THREE.CanvasTexture(cv);
+  t.colorSpace = THREE.SRGBColorSpace; t.wrapS = THREE.RepeatWrapping; t.repeat.set(2, 1);
+  return (KNIT[key] = t);
+}
+// --- lace: an opaque painted lace for lingerie (mature figures only) -------------------------
+const LACE = {};
+export function laceTexture(base, motif) {
+  const key = base + '|' + motif;
+  if (LACE[key]) return LACE[key];
+  const cv = document.createElement('canvas'); cv.width = 256; cv.height = 128;
+  const x = cv.getContext('2d');
+  x.fillStyle = hexStr(base); x.fillRect(0, 0, 256, 128);
+  // a fine net, then little flowers, then scalloped edges top and bottom
+  x.strokeStyle = hexStr(motif); x.globalAlpha = 0.28; x.lineWidth = 1;
+  for (let i = -128; i < 256; i += 8) { x.beginPath(); x.moveTo(i, 0); x.lineTo(i + 128, 128); x.stroke(); x.beginPath(); x.moveTo(i + 128, 0); x.lineTo(i, 128); x.stroke(); }
+  x.globalAlpha = 0.85; x.lineWidth = 2;
+  for (let r = 0; r < 3; r++) for (let c = 0; c < 6; c++) {
+    const cx = c * 44 + (r % 2) * 22 + 10, cy = 26 + r * 38;
+    for (let p = 0; p < 5; p++) { const a = p * Math.PI * 2 / 5; x.beginPath(); x.ellipse(cx + Math.cos(a) * 7, cy + Math.sin(a) * 7, 6, 3.5, a, 0, Math.PI * 2); x.stroke(); }
+    x.fillStyle = hexStr(motif); x.beginPath(); x.arc(cx, cy, 2.5, 0, Math.PI * 2); x.fill();
+    x.beginPath(); x.moveTo(cx + 9, cy + 6); x.quadraticCurveTo(cx + 20, cy + 14, cx + 30, cy + 8); x.stroke();
+  }
+  x.globalAlpha = 1; x.fillStyle = hexStr(motif);
+  for (let c = 0; c < 256; c += 16) { x.beginPath(); x.arc(c + 8, 4, 7, 0, Math.PI); x.fill(); x.beginPath(); x.arc(c + 8, 124, 7, Math.PI, Math.PI * 2); x.fill(); }
+  const t = new THREE.CanvasTexture(cv);
+  t.colorSpace = THREE.SRGBColorSpace; t.wrapS = THREE.RepeatWrapping; t.repeat.set(2, 1);
+  return (LACE[key] = t);
+}
+const laceMat = C => { const m = tmat(0xffffff); m.map = laceTexture(C.main, C.trim); m.needsUpdate = true; return m; };
+
+const knitMat = top => {
+  return C => { const m = tmat(0xffffff); m.map = knitTexture(top.pattern || 'snowflake', C.main, C.trim, C.deep ?? shade(C.main, 0.7)); m.needsUpdate = true; return m; };
+};
+
 export function toonFigure(spec) {
   const B = BUILDS[spec.build || 'average'];
   const F0 = FIGURES[spec.figure || 'tall'];
-  const F = { ...F0, waistR: F0.waistR * B.waist, hipR: F0.hipR * B.hip, shoulderX: F0.shoulderX * B.shoulder, bustR: F0.bustR * B.bust * (spec.bust ?? 1) };
+  // (on grown-up proportions a look's bust setting counts for half, so curves stay in scale with the body)
+  const bustMul = F0.mature ? 1 + ((spec.bust ?? 1) - 1) * 0.5 : (spec.bust ?? 1);
+  const F = { ...F0, waistR: F0.waistR * B.waist, hipR: F0.hipR * B.hip, shoulderX: F0.shoulderX * B.shoulder, bustR: F0.bustR * (F0.mature ? 1 + (B.bust - 1) * 0.5 : B.bust) * bustMul };
   const { hr, hy, shoulderY, bustY, waistY, hipY, hemY0 = F.hemY } = F;
   const fem = spec.fem !== false;
   const waistR = fem ? F.waistR : F.waistR + 0.05, hipR = fem ? F.hipR : F.hipR - 0.04;
-  const hemY = spec.skirt && spec.skirt.hem != null ? spec.skirt.hem : hemY0;
+  const hemY = spec.skirt && spec.skirt.hem != null ? hemFor(F, spec.skirt.hem) : hemY0;
   const k = hr / 0.32;
   const C = spec.colors;
   const g = new THREE.Group();
   const body = new THREE.Group(); body.name = 'body'; g.add(body);
-  const skin = tmat(C.skin, { soft: true }), hair = tmat(C.hair), main = tmat(C.main), deep = tmat(C.deep ?? shade(C.main, 0.7)), trim = tmat(C.trim);
+  const sweater = spec.top && spec.top.style === 'sweater';
+  const skin = tmat(C.skin, { soft: true }), hair = tmat(C.hair), main = sweater ? knitMat(spec.top)(C) : tmat(C.main), deep = tmat(C.deep ?? shade(C.main, 0.7)), trim = tmat(C.trim);
   const ctx = { F, k, g, body, skin, hair, main, deep, trim, C, hy, hr, shoulderY, bustY, waistY, hipY, hemY, waistR, hipR };
 
   // --- legs: hip pivot > thigh > knee pivot > shin > boot -------------------------------
@@ -65,15 +146,23 @@ export function toonFigure(spec) {
   }
 
   // --- torso: skin shoulders, the top, the bust ------------------------------------------
-  const top = spec.top || { style: 'corset' };
-  const covered = top.style === 'coat' || top.style === 'armor';
+  let top = spec.top || { style: 'corset' };
+  if (top.style === 'lace' && !F.mature) top = { style: 'corset', cut: top.cut };
+  const lace = top.style === 'lace';
+  const lacy = lace ? laceMat(C) : null;
+  const covered = top.style === 'coat' || top.style === 'armor' || top.style === 'sweater';
   // (narrow through the bust, so the breasts stand out and the cleavage stays open)
-  tadd(body, lathe([[0, bustY - 0.06], [0.09, bustY - 0.06], [0.095, bustY + 0.09], [F.shoulderX * 0.8, shoulderY - 0.035], [F.shoulderX + 0.02, shoulderY - 0.015], [0.09, shoulderY + 0.04], [0, shoulderY + 0.06]], 32), covered && top.collar !== false ? main : skin, 0, 0, 0);
-  const topM = top.style === 'armor' ? tmat(C.metal ?? 0x9aa2ac) : main;
+  const shoulderP = F.mature
+    // rounded shoulders that slope into the neck (no chibi head hides them here)
+    ? [[0, bustY - 0.06], [0.09, bustY - 0.06], [0.1, bustY + 0.08], [F.shoulderX * 0.85, shoulderY - 0.06], [F.shoulderX + 0.02, shoulderY - 0.03], [F.shoulderX * 0.7, shoulderY + 0.005], [0.085, shoulderY + 0.03], [0.05, shoulderY + 0.04], [0, shoulderY + 0.04]]
+    : [[0, bustY - 0.06], [0.09, bustY - 0.06], [0.095, bustY + 0.09], [F.shoulderX * 0.8, shoulderY - 0.035], [F.shoulderX + 0.02, shoulderY - 0.015], [0.09, shoulderY + 0.04], [0, shoulderY + 0.06]];
+  const chest = tadd(body, lathe(shoulderP, 32), covered && top.collar !== false ? main : skin, 0, 0, 0);
+  if (F.mature) chest.scale.z = 0.72; // a torso is wider than it is deep
+  const topM = top.style === 'armor' ? tmat(C.metal ?? 0x9aa2ac) : lace ? (top.bodice ? lacy : skin) : main;
   tadd(body, lathe([[0, waistY - 0.06], [waistR, waistY - 0.06], [waistR, waistY + 0.04], [waistR + 0.04, bustY - 0.08], [0.15 * B.shoulder, bustY - 0.01], [covered ? 0.16 * B.shoulder : 0, covered ? shoulderY - 0.03 : bustY - 0.01], [0, covered ? shoulderY - 0.03 : bustY - 0.01]], 40), topM, 0, 0, 0);
   const bust = new THREE.Group(); bust.userData.restY = 0; body.add(bust);
   if (fem) {
-    const r = F.bustR, bx = r * 0.6, bz = 0.105, cupM = top.style === 'armor' ? topM : tmat(C.main, { noOutline: true });
+    const r = F.bustR, bx = r * 0.6, bz = 0.105, cupM = top.style === 'armor' ? topM : sweater ? main : lace ? lacy : tmat(C.main, { noOutline: true });
     const showSkin = !covered || top.keyhole;
     for (const sx of [-1, 1]) {
       if (showSkin) tadd(bust, SS(r), tmat(C.skin, { soft: true, noOutline: true }), sx * bx, bustY + 0.005, bz).scale.set(1, 0.95, 0.95);
@@ -90,7 +179,12 @@ export function toonFigure(spec) {
       tadd(bust, new THREE.CapsuleGeometry(0.008, r * 0.45, 4, 8), line, 0, bustY + 0.005 + dy, front, -0.55);
     }
   }
-  if (top.corset !== false && top.style !== 'armor') {
+  if (lace) {
+    // straps over the shoulders, and (on a bralette) a lace band under the bust
+    for (const sx of [-1, 1]) tadd(body, new THREE.BoxGeometry(0.012, shoulderY - bustY, 0.008), trim, sx * F.bustR * 0.75, (shoulderY + bustY) / 2 + 0.01, 0.1, -0.12, 0, sx * 0.12);
+    if (!top.bodice) tadd(body, lathe([[0, bustY - F.bustR * 1.05], [0.1 + F.bustR * 0.3, bustY - F.bustR * 1.05], [0.1 + F.bustR * 0.3, bustY - F.bustR * 0.75], [0, bustY - F.bustR * 0.75]], 40), lacy, 0, 0, 0);
+  }
+  if (top.corset !== false && top.style !== 'armor' && !(lace && !top.bodice)) {
     tadd(body, lathe([[0, waistY - 0.07], [waistR + 0.012, waistY - 0.07], [waistR + 0.012, waistY + 0.08], [0, waistY + 0.08]], 40), deep, 0, 0, 0);
     for (const y of [waistY - 0.07, waistY + 0.08]) tadd(body, ST(waistR + 0.013, 0.008), trim, 0, y, 0, Math.PI / 2);
     const lace = tmat(C.trim, { noOutline: true });
@@ -102,6 +196,12 @@ export function toonFigure(spec) {
   }
   if (top.buttons) for (let i = 0; i < top.buttons; i++) tadd(body, SS(0.016, 12, 10), trim, 0, (top.keyhole ? bustY - 0.08 : shoulderY - 0.1) - i * 0.07, waistR + 0.03 + Math.max(0, 0.04 - i * 0.01));
   if (top.style === 'coat' && top.collar !== false) tadd(body, new THREE.CylinderGeometry(0.075, 0.1, 0.13, 24), main, 0, shoulderY + 0.07, 0); // high collar
+  if (sweater) {
+    // a ribbed crew neck, and a hem band that hangs down over the hips
+    tadd(body, new THREE.CylinderGeometry(0.075, 0.085, 0.07, 24), deep, 0, shoulderY + 0.03, 0);
+    tadd(body, lathe([[0, hipY - 0.03], [hipR * 1.06, hipY - 0.03], [hipR * 1.03, waistY - 0.02], [waistR + 0.02, waistY + 0.04], [0, waistY + 0.04]], 40), main, 0, 0, 0);
+    tadd(body, lathe([[0, hipY - 0.05], [hipR * 1.08, hipY - 0.05], [hipR * 1.08, hipY + 0.005], [0, hipY + 0.005]], 40), deep, 0, 0, 0);
+  }
 
   // --- skirt ---------------------------------------------------------------------------
   const sk = spec.skirt || { style: 'pleated' };
@@ -109,12 +209,18 @@ export function toonFigure(spec) {
   const skM = tmat(sk.color ?? C.main);
   const flare = sk.style === 'long' ? 1.35 : sk.style === 'tasset' ? 1.15 : 1.12;
   const pts = [[0, waistY - 0.06], [waistR + 0.01, waistY - 0.06], [hipR * 0.82, (waistY + hipY) / 2 - 0.03], [hipR, hipY], [hipR * (1 + (flare - 1) * 0.4), (hipY + hemY) / 2], [hipR * flare, hemY], [0, hemY]].map(([r, y]) => [r, y - waistY]);
-  let skirtGeo = lathe(pts, 64);
+  const brief = sk.style === 'brief' && F.mature;
+  // briefs: hug the hips and close between the thighs
+  let skirtGeo = brief
+    // (sized to the body under the skirt: the tops of the thighs, not the skirt's flare)
+    ? lathe([[0, waistY - 0.09], [waistR + 0.012, waistY - 0.09], [(waistR + 0.2 * B.thigh) / 2 + 0.025, (waistY + hipY) / 2 - 0.03], [0.2 * B.thigh, hipY + 0.01], [0.17 * B.thigh, hipY - 0.05], [0.06, hipY - 0.09], [0, hipY - 0.095]].map(([r, y]) => [r, y - waistY]), 64)
+    : lathe(pts, 64);
   if (sk.style === 'pleated') skirtGeo = pleat(skirtGeo, 14, hipY - waistY, hemY - waistY, 0.08);
   if (sk.style === 'tattered') skirtGeo = pleat(skirtGeo, 9, hipY - waistY, hemY - waistY, 0.16);
   if (sk.style === 'tasset') skirtGeo = pleat(skirtGeo, 6, hipY - waistY, hemY - waistY, 0.1);
-  tadd(hips, skirtGeo, skM, 0, 0, 0);
-  if (sk.trim !== false) tadd(hips, ST(hipR * flare + 0.01, 0.013), trim, 0, hemY - waistY + 0.004, 0, Math.PI / 2);
+  tadd(hips, skirtGeo, brief ? tmat(C.main) : skM, 0, 0, 0);
+  if (brief) tadd(hips, ST(waistR + 0.02, 0.009), trim, 0, -0.085, 0, Math.PI / 2);
+  else if (sk.trim !== false) tadd(hips, ST(hipR * flare + 0.01, 0.013), trim, 0, hemY - waistY + 0.004, 0, Math.PI / 2);
   if (spec.cape) {
     const capeH = shoulderY - hemY - 0.05;
     const capeM = tmat(spec.cape); capeM.side = THREE.DoubleSide;
@@ -148,15 +254,25 @@ export function toonFigure(spec) {
       tadd(arm, SC(0.05 * aw, armLen * 0.22), tmat(C.glove ?? C.deep ?? 0x1a1214), 0, -armLen * 0.78, 0);
     }
     tadd(arm, SS(0.055 * aw), sl2 === 'armor' ? tmat(C.metal ?? 0x9aa2ac) : sl2 === 'bare' ? tmat(C.glove ?? 0x1a1214) : skin, 0, -armLen * 0.93, 0);
+    if (F.mature && sl2 === 'bare') {
+      // the cap of the shoulder: rounded on top, tapering down into the upper arm
+      tadd(arm, SS(0.062 * aw, 24, 18), skin, -sx * 0.008, -0.05, 0).scale.set(1.05, 1.55, 0.95);
+      tadd(arm, SC(0.05 * aw, armLen * 0.3), skin, 0, -armLen * 0.28, 0);
+    }
     arms[sx < 0 ? 'L' : 'R'] = arm;
   }
   ctx.arms = arms; ctx.armLen = armLen; ctx.legs = legs; ctx.legLen = legLen;
 
   // --- head ---------------------------------------------------------------------------
-  tadd(body, SC(0.045, 0.05), skin, 0, shoulderY + 0.06, 0);
+  const neck = F.neck || 0.05;
+  tadd(body, SC(F.mature ? 0.05 : 0.045, neck), skin, 0, shoulderY + 0.03 + neck / 2, 0);
   const head = tadd(body, SS(hr), skin, 0, hy, 0); head.name = 'head';
   for (const sx of [-1, 1]) tadd(body, SS(0.06 * k), skin, sx * hr * 0.97, hy - 0.02, 0).scale.set(0.6, 1, 0.8);
-  const faceMesh = face(body, hr, hy, spec.face || {});
+  const faceMesh = face(body, hr, hy, F.mature ? { ...(spec.face || {}), mature: spec.age ?? 0.5 } : (spec.face || {}));
+  if (F.mature) {
+    // a longer, less round head with a jaw and cheekbones, and the face patch shaped to match
+    head.scale.set(0.93, 1.1, 0.96); faceMesh.scale.set(0.93, 1.1, 0.96);
+  }
   toonHair(body, spec.hair || 'long', ctx);
 
   // gear: weapon in the right hand, armor pieces (adventuring attire only), charms always
@@ -166,14 +282,18 @@ export function toonFigure(spec) {
   if (ctx.hasWeapon) { const w = weaponMesh(gear.weapon); w.position.set(0.04, -armLen * 0.97, 0.06); w.rotation.z = -0.3; arms.R.add(w); }
   gearVisuals(ctx, spec.showArms === false ? { charm: gear.charm } : gear);
   outline(g);
-  g.userData.isChibi = true;
-  g.userData.rig = makeRig({ face: faceMesh, armR: arms.R, armL: arms.L, bust, hips, body, legs: legs.L ? legs : null, legLen });
+  g.userData.isChibi = !F.mature;
+  g.userData.mature = !!F.mature;
+  g.userData.rig = makeRig({ face: faceMesh, armR: arms.R, armL: arms.L, bust, hips, body, legs: legs.L ? legs : null, legLen, jiggle: F.mature ? 1.5 + (bustMul - 1) : 1 }); // fuller figures bounce more
   return g;
 }
 
 // --- hair --------------------------------------------------------------------------------
 function fringe(body, ctx, count = 6, len = 1.45, spread = 0.22) {
-  const { hy, hr, k, hair } = ctx;
+  const { hy: hy0, hr, k, hair } = ctx;
+  // a grown woman's bangs sit higher and shorter, clear of the brows
+  const hy = ctx.F && ctx.F.mature ? hy0 + 0.06 * k : hy0;
+  if (ctx.F && ctx.F.mature) len *= 0.7;
   for (let i = 0; i < count; i++) {
     const x0 = -spread + (2 * spread * i) / (count - 1), x = x0 * k, R = hr * 1.08;
     tadd(body, SS(0.085 * k), hair, x, hy + (0.16 - Math.abs(x0) * 0.35) * k, Math.sqrt(R * R - x * x) - 0.06 * k, -0.25, 0, -x0 * 1.6 + (i % 2 ? 0.08 : -0.08)).scale.set(0.62, len, 0.5);

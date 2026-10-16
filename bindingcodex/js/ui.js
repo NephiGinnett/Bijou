@@ -130,6 +130,7 @@ function bindAttire(id, elId, back) {
 }
 function attireOf(id) { return (S && S.wardrobe && S.wardrobe[id]) || (S && S.settings.outfit) || 'adventure'; }
 function heroVariant(id) {
+  if (S && TOWN.TOWNSFOLK[id]) return ST.packOn(S, 'rift') ? TOWN.laneOutfit(S) : null;
   if (id === 'yuki' && S && S.flags && S.flags.yuki_femme) return 'fem';
   const base = id === 'player' && S ? S.pronouns + (S.flags.pact_wyrm_mantle ? '_mantle' : '') + (S.flags.scarred ? '_scar' : '') : null;
   if (!S || !TOON_IDS.includes(id)) return base;
@@ -141,7 +142,7 @@ function bar(cls, pct, title = '') {
 
 // Regenerate 2D portraits (player look follows pronoun choice; converts appear).
 async function refreshPortraits(force = false) {
-  const key = (S ? TOON_IDS.map(heroVariant).join('/') : 'she') + '|' + (S ? Object.keys(S.converts || {}).length : 0) + '|' + (S && S.flags && S.flags.yuki_femme ? 'yf' : '');
+  const key = (S ? TOON_IDS.map(heroVariant).join('/') : 'she') + '|' + (S ? Object.keys(S.converts || {}).length : 0) + '|' + (S && S.flags && S.flags.yuki_femme ? 'yf' : '') + '|' + (S ? TOWN.laneOutfit(S) : '');
   if (!force && PORTRAITS.__key === key) return;
   PORTRAITS.__key = key;
   // heroes, plus pack characters who aren't party members (tribe envoys)
@@ -220,7 +221,7 @@ export function playEvent(ev, opts = {}) {
     document.body.appendChild(layer);
 
     const steps = ev.steps.slice();
-    let idx = 0;
+    let idx = 0, lineupShown = false;
 
     const showStep = async () => {
       while (idx < steps.length) {
@@ -229,6 +230,12 @@ export function playEvent(ev, opts = {}) {
         if (!goreVisible(st)) { idx++; continue; }
         if (st.cond && !st.cond(S)) { idx++; continue; }
         if (replay && (st.flag || st.join || st.chronicle || st.capture || st.give || st.do)) { idx++; continue; }
+        if (st.lineup) {
+          // the women in the scene, on the stage, in what the scene calls for (Lane after-parties)
+          const ids = st.lineup.ids(S);
+          if (ids.length) { lineupShown = true; stage.showcase(ids, () => st.lineup.variant).then(() => { stage.camBase.set(0, 2.0, 6.4 + ids.length * 0.4); stage.camTarget.set(0, 1.35, 0); stage.viewHalfW = 1.6 + ids.length * 1.05; }); }
+          idx++; continue;
+        }
         if (st.flag) { S.flags[st.flag] = true; idx++; continue; }
         if (st.do) { st.do(S); idx++; continue; }
         if (st.join) {
@@ -260,6 +267,7 @@ export function playEvent(ev, opts = {}) {
     const cleanup = () => {
       advanceHandler = null;
       layer.remove();
+      if (lineupShown) hubStage(); // put the stage back the way the screen expects
       if (!replay) ST.save(S);
       resolve();
     };
@@ -323,6 +331,8 @@ export function playEvent(ev, opts = {}) {
           }
           if (c.flag) S.flags[c.flag] = true;
           if (c.tone) { S.stats.tone = S.stats.tone || {}; S.stats.tone[c.tone] = (S.stats.tone[c.tone] || 0) + 1; }
+          const fork = choiceIndex().get(st);
+          if (fork) { S.pathsFrom ??= S.day; (S.choices ||= {})[fork.key] = { i: st.choice.indexOf(c), day: S.day }; }
           if (c.reopen && ev.id) delete S.seen[ev.id]; // rejections stay retryable
           steps.splice(idx, 1, ...(c.r || []));
           showStep();
@@ -1724,7 +1734,7 @@ async function cellsView(sel = null) {
       <div class="row gap"><button class="btn sm" id="cv-prev" title="Previous cell">◀</button><button class="btn sm" id="cv-next" title="Next cell">▶</button><button class="btn sm ghost" id="cv-list">☰ List</button></div>
     </div>
     <div id="cv-card"></div>`, 'viewer');
-  const view = await buildCells(stage, caps, playerLook());
+  const view = await buildCells(stage, caps, playerLook(), { variantOf: heroVariant });
   let cur = -1;
   const card = () => {
     const box = $('#cv-card'); if (!box) return;
@@ -1735,6 +1745,8 @@ async function cellsView(sel = null) {
     box.innerHTML = `<div class="panel viewer-card">
       <div class="row spread"><h3>${esc(cap.name)}</h3><small class="muted">${esc(cap.title || '')} · day ${cap.days}</small></div>
       <p class="sm-text"><i>${cellMood(cap)}</i></p>
+      ${view.warden(cap.id) ? `<p class="sm-text muted">Warden: ${esc(heroName(view.warden(cap.id)))} is posted outside the cell.</p>` : ''}
+      ${view.overheard(cap.id) ? `<p class="sm-text muted">Overheard: ${esc(view.overheard(cap.id))}</p>` : ''}
       <div class="row gap sm-text"><span>Brand <b>${cap.brand}</b></span><span>Resolve <b>${cap.resolve}</b></span><span>Regard <b>${cap.regard > 0 ? '+' : ''}${cap.regard}</b></span></div>
       <div class="row gap sm-text">Keep them: ${Object.entries(RESTRAINTS).map(([k, r]) => `<button class="btn sm ${held === k ? 'primary' : ''} cv-hold" data-k="${k}">${r.icon} ${r.name}</button>`).join('')}</div>
       ${cap.releasePending ? '<b class="gold sm-text">The brand is gone. Release them from the Codex hub.</b>' : `
@@ -2147,7 +2159,7 @@ function chronicle() {
   const mem = memories();
   screen(`
     <div class="panel shop-panel">
-      <div class="row spread"><h2>📖 The Chronicle</h2><button class="btn ghost" id="ch-back">← Codex</button></div>
+      <div class="row spread"><h2>📖 The Chronicle</h2><div class="row gap"><button class="btn" id="ch-paths" title="Every fork in the story: what you chose, and what you passed up.">🜲 Paths</button><button class="btn ghost" id="ch-back">← Codex</button></div></div>
       <p class="muted">A living book that writes itself after significant moments — in a hand neither of you recognizes. Pages sold at the altar are crossed out, but never quite gone.</p>
       ${hearthHtml()}
       ${mem.length ? `<details class="memories"><summary><b>✦ Memories</b> <small class="muted">${mem.length} scene${mem.length === 1 ? '' : 's'} to revisit</small></summary>
@@ -2156,7 +2168,82 @@ function chronicle() {
     </div>
   `);
   $('#ch-back').onclick = () => hub();
+  $('#ch-paths').onclick = () => { AU.sfx('ui'); paths(chronicle); };
   bindMemories(chronicle);
+}
+
+// --- Paths: every fork you took, and the ones you passed up --------------------------
+
+// Every choice in every event, keyed by its event and its order in it, so a pick
+// can be remembered and shown later. Rebuilt if packs add events.
+let CHOICE_INDEX = null, CHOICE_EVENTS = 0;
+function choiceIndex() {
+  const n = Object.keys(EVENTS).length;
+  if (CHOICE_INDEX && CHOICE_EVENTS === n) return CHOICE_INDEX;
+  CHOICE_INDEX = new Map(); CHOICE_EVENTS = n;
+  for (const ev of Object.values(EVENTS)) {
+    let k = 0;
+    const walk = (steps, parent) => { for (const st of steps || []) if (st && st.choice) { const key = `${ev.id}#${k++}`; CHOICE_INDEX.set(st, { ev, key, parent }); st.choice.forEach((c, i) => walk(c.r, { key, i })); } };
+    walk(ev.steps, null);
+  }
+  return CHOICE_INDEX;
+}
+const PATH_GROUPS = { intro: 'The beginning', cell: 'The Undercroft', recruit: 'Recruits', rift: 'Larkspur Lane', lane: 'Larkspur Lane', season: 'Larkspur Lane',
+  kin: 'The wild tribes', tribe: 'The wild tribes', envoy: 'The wild tribes', envoys: 'The wild tribes', brats: 'The wild tribes', circle: 'The Circle', sister: 'The Sisters', bride: 'The Bride', revenant: 'The Revenant', dawnward: 'The Dawnward Company' };
+function pathGroup(ev) {
+  const p = ev.id.split('_')[0];
+  return PATH_GROUPS[p] || (SPEAKERS[p] && SPEAKERS[p].name) || (HEROES[p] && HEROES[p].name) || p.charAt(0).toUpperCase() + p.slice(1);
+}
+function pathTitle(ev) {
+  let found = null;
+  const walk = steps => { for (const st of steps || []) { if (found) return; if (typeof st.chronicle === 'string') found = st.chronicle; if (st.choice) st.choice.forEach(c => walk(c.r)); } };
+  walk(ev.steps);
+  return found || ev.id.replace(/_/g, ' ').replace(/^\w/, c => c.toUpperCase());
+}
+let pathsSpoil = false;
+function paths(back = chronicle) {
+  const byEv = new Map();
+  for (const [st, m] of choiceIndex()) if (m.ev.once) { if (!byEv.has(m.ev)) byEv.set(m.ev, []); byEv.get(m.ev).push({ st, ...m }); }
+  const groups = new Map();
+  let made = 0, passed = 0, unfound = 0;
+  for (const [ev, blocks] of byEv) {
+    const g = pathGroup(ev);
+    if (!groups.has(g)) groups.set(g, { seen: [], unseen: [] });
+    if (S.seen[ev.id]) {
+      const rows = blocks.map(b => {
+        const pick = S.choices && S.choices[b.key];
+        const parentPick = b.parent && S.choices && S.choices[b.parent.key];
+        if (!pick) {
+          if (b.parent && parentPick && parentPick.i !== b.parent.i) return ''; // behind a path you didn't take
+          if (S.pathsFrom != null && (S.seenDay && S.seenDay[ev.id]) >= S.pathsFrom) return ''; // it never came up
+          return `<div class="path-fork muted sm-text">${b.st.choice.map(c => esc(subName(c.t))).join(' · ')} <i>(chosen before the Paths ledger began)</i></div>`;
+        }
+        made++; passed += b.st.choice.length - 1;
+        return `<div class="path-fork">${b.st.choice.map((c, i) => i === pick.i
+          ? `<div class="path-took">✓ ${esc(subName(c.t))} <small class="muted">day ${pick.day}</small></div>`
+          : `<div class="path-missed">○ ${esc(subName(c.t))}</div>`).join('')}</div>`;
+      }).join('');
+      groups.get(g).seen.push(`<div class="path-ev"><b class="sm-text">${esc(subName(pathTitle(ev)))}</b>${rows}</div>`);
+    } else {
+      unfound++;
+      groups.get(g).unseen.push(ev);
+    }
+  }
+  const sections = [...groups.entries()].sort((a, b) => b[1].seen.length - a[1].seen.length || a[0].localeCompare(b[0])).map(([g, x]) => `
+    <details class="faction-section" ${x.seen.length ? '' : ''}>
+      <summary><b>${esc(g)}</b> <small class="muted">${x.seen.length} found${x.unseen.length ? ` · ${x.unseen.length} still hidden` : ' · all found'}</small></summary>
+      ${x.seen.join('')}
+      ${x.unseen.length ? (pathsSpoil ? x.unseen.map(ev => `<div class="path-ev hidden-ev"><b class="sm-text muted">? ${esc(subName(pathTitle(ev)))}</b></div>`).join('') : `<p class="muted sm-text">${x.unseen.length} scene${x.unseen.length === 1 ? '' : 's'} with choices you haven't found yet.</p>`) : ''}
+    </details>`).join('');
+  screen(`
+    <div class="panel shop-panel">
+      <div class="row spread"><h2>🜲 Paths</h2><button class="btn ghost" id="pa-back">← Back</button></div>
+      <p class="muted sm-text">Every fork in the story. ✓ is the way you went; ○ is a path you passed up. You've made <b>${made}</b> choices and passed up <b>${passed}</b> paths; <b>${unfound}</b> scenes with choices are still waiting to be found.</p>
+      <label class="set-row sm-text">Show the names of scenes you haven't found (spoilers) <input type="checkbox" id="pa-spoil" ${pathsSpoil ? 'checked' : ''}></label>
+      <div class="scroll-list">${sections}</div>
+    </div>`);
+  $('#pa-back').onclick = () => back();
+  $('#pa-spoil').onchange = e => { pathsSpoil = e.target.checked; paths(back); };
 }
 
 // --- the hearth, memories, and spending time ---------------------------------------
@@ -2443,7 +2530,20 @@ function shop() {
 // Something waiting in town: a scene, a romance, or a quest ready to turn in.
 const laneGatherings = () => Object.values(EVENTS).filter(ev => ev.id.startsWith('lane_') && ev.where === 'town' && !S.seen[ev.id] && (!ev.cond || ev.cond(S)));
 function townNews() {
-  return laneGatherings().length > 0 || TOWN.FOLK_IDS.some(id => townScene(id) || TOWN.questReady(S, id).ok);
+  return laneGatherings().length > 0 || TOWN.FOLK_IDS.some(id => townScene(id) || seasonScene(id) || TOWN.questReady(S, id).ok);
+}
+// Her holiday this season, if she's close enough to spend it with you.
+function seasonScene(id) {
+  const ev = EVENTS[`season_${TOWN.seasonOf(S).id}_${id}`];
+  return ev && !S.seen[ev.id] && (!ev.cond || ev.cond(S)) ? ev : null;
+}
+const GATHER_LABELS = { lane_poker_night: 'Poker night at Harold and Gary\'s', lane_coven_of_two: 'A midnight in the greenhouse', lane_block_party: 'The block party' };
+const gatherLabel = ev => GATHER_LABELS[ev.id] || (TOWN.SEASONS.find(x => x.fest === ev.id) || {}).festName || 'A gathering';
+function seasonBanner() {
+  const z = TOWN.seasonOf(S);
+  const fest = EVENTS[z.fest], done = fest && S.seen[fest.id];
+  const when = done ? `The Wives' Circle threw ${z.festName.replace(/^The /, 'the ')} this season.` : z.festOn ? `<b class="gold">${esc(z.festName)} is on now!</b>` : `${esc(z.festName)} in ${z.festIn} day${z.festIn === 1 ? '' : 's'}.`;
+  return `<div class="season-banner">${z.icon} <b>${z.name}</b> <small class="muted">year ${z.year} · day ${z.dayIn} of ${TOWN.SEASON_LEN}</small> · <span class="sm-text">${when}</span></div>`;
 }
 function townScene(id) {
   return Object.values(EVENTS).find(ev => ev.where === 'town' && ev.once && ev.id.startsWith(id + '_') && !S.seen[ev.id] && (!ev.cond || ev.cond(S))) || null;
@@ -2464,6 +2564,7 @@ function standingStrip() {
 function stake(lvl) { return '◆'.repeat(lvl) + '◇'.repeat(3 - lvl); }
 
 function town() {
+  refreshPortraits(); // the Lane changes clothes with the season
   const div = TOWN.dividends(S);
   const cards = TOWN.FOLK_IDS.map(id => {
     const P = TOWN.TOWNSFOLK[id], f = TOWN.folkOf(S, id), q = TOWN.questOf(S, id), qr = TOWN.questReady(S, id);
@@ -2473,6 +2574,7 @@ function town() {
       <div class="recruit-head">${portraitImg(id)}<div><b style="color:${P.color}">${esc(P.name)}</b> <small class="muted">${esc(P.role)}</small><br><small class="muted">${esc(P.shop || 'Larkspur Lane')}</small>${P.shop ? `<br><small class="muted" title="Investment level">stake ${stake(f.level)}</small>` : ''}</div></div>
       <div class="meter"><span>Favor</span>${bar('regard', f.favor * 10)}<span>${f.favor}/10</span></div>
       <p class="sm-text muted">${esc(P.perk)}</p>
+      ${seasonScene(id) ? `<button class="btn tw-season notify" data-f="${id}">${TOWN.seasonOf(S).icon} ${esc(TOWN.seasonOf(S).name)} with her</button>` : ''}
       ${scene ? `<button class="btn tw-scene notify" data-f="${id}">${scene.id.endsWith('_romance') ? '♡ She has something to ask you' : scene.id === 'celeste_note' ? '✉ Something in your coat pocket' : '✦ She wants to talk'}</button>` : ''}
       <div class="visit-row">
         <button class="btn tw-talk ${f.talkDay === S.day ? 'disabled' : ''}" data-f="${id}">❝ Talk</button>
@@ -2488,8 +2590,9 @@ function town() {
   screen(`
     <div class="panel shop-panel">
       <div class="row spread"><h2>🏘 Larkspur Lane</h2><div class="row gap"><span class="gold">◈ ${S.gold}g</span> <button class="btn ghost" id="tw-back">← Codex</button></div></div>
+      ${seasonBanner()}
       <p class="muted sm-text">A suburban cul-de-sac that fell through a misfired summoning into the fen. Talk daily, run errands for favor, and invest in their businesses. ${div ? `<b class="gold">The Lane pays you ${div}g every night.</b>` : 'Investments pay dividends every night.'}</p>
-      ${laneGatherings().length ? `<div class="row gap wrap" style="margin:8px 0">${laneGatherings().map(ev => `<button class="btn notify tw-gather" data-ev="${ev.id}">♡ ${{ lane_poker_night: 'Poker night at Harold and Gary\'s', lane_coven_of_two: 'A midnight in the greenhouse', lane_block_party: 'The block party' }[ev.id] || 'A gathering'}<em>!</em></button>`).join('')}</div>` : ''}
+      ${laneGatherings().length ? `<div class="row gap wrap" style="margin:8px 0">${laneGatherings().map(ev => `<button class="btn notify tw-gather" data-ev="${ev.id}">${TOWN.SEASONS.some(x => x.fest === ev.id) ? TOWN.seasonOf(S).icon : '♡'} ${esc(gatherLabel(ev))}<em>!</em></button>`).join('')}</div>` : ''}
       <div class="cells">${cards}</div>
     </div>`);
   $('#tw-back').onclick = () => hub();
@@ -2502,6 +2605,11 @@ function town() {
     await playEvent({ id: 'banter', steps: [{ s: id, t: lines[(S.day + r.favor) % lines.length] }] });
     if (r.up) toast(`${TOWN.TOWNSFOLK[id].name}'s favor +1`, 'bond');
     ST.save(S); town();
+  });
+  document.querySelectorAll('.tw-season').forEach(b => b.onclick = async () => {
+    const ev = seasonScene(b.dataset.f);
+    if (!ev) return;
+    screen('', ''); await playEvent(ev); ST.save(S); town();
   });
   document.querySelectorAll('.tw-scene').forEach(b => b.onclick = async () => {
     const ev = townScene(b.dataset.f);
@@ -2703,6 +2811,7 @@ function settingsModal(back) {
     </select></label>
     <label class="set-row">Party attire <select id="set-outfit">${Object.entries(OUTFITS).map(([k, v]) => `<option value="${k}" ${(s.outfit || 'adventure') === k ? 'selected' : ''}>${v}</option>`).join('')}</select></label>
     <p class="muted sm-text">Intimacy applies only between free allies, never captives. Grim adds harsher violence to battle logs and the Undercroft.</p>
+    ${S ? '<button class="btn sm" id="set-paths" title="Every fork in the story: what you chose, and what you passed up.">🜲 Paths: choices taken &amp; missed</button>' : ''}
     ${S ? `<div class="pack-toggles"><b class="sm-text">Character packs</b>${Object.entries(PACKS).map(([id, P]) => `<label class="set-row" title="${esc(P.desc)}">${esc(P.name)} <input type="checkbox" class="pack-tg" data-id="${id}" ${S.settings.packs[id] !== false ? 'checked' : ''}></label>`).join('')}</div>` : ''}
     ${S && S.cleared ? `
     <div class="ngplus-box">
@@ -2767,6 +2876,8 @@ function settingsModal(back) {
       beginRun(ST.storyRift('drowned_stacks', S));
     };
   }
+  const pathsBtn = modal.querySelector('#set-paths');
+  if (pathsBtn) pathsBtn.onclick = () => { apply(); modal.remove(); paths(back || hub); };
   modal.querySelector('#set-close').onclick = () => {
     apply();
     modal.remove();

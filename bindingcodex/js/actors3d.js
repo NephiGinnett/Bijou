@@ -1168,7 +1168,7 @@ export function buildActor(kind, variant = null, opts = {}) {
   if (ALIASES[kind] && !HERO_BUILDERS[kind]) { variant = variant ?? ALIASES[kind].variant; kind = ALIASES[kind].model; }
   const group = new THREE.Group();
   const inner = HERO_BUILDERS[kind] ? HERO_BUILDERS[kind](variant, opts) :
-    CUSTOM_SPECS[kind] ? (CUSTOM_SPECS[kind].toon ? toonLook(CUSTOM_SPECS[kind].toon) : CUSTOM_SPECS[kind].chibi ? customChibi(CUSTOM_SPECS[kind]) : beastToon(CUSTOM_SPECS[kind])) :
+    CUSTOM_SPECS[kind] ? (CUSTOM_SPECS[kind].toon ? toonLook((variant && CUSTOM_SPECS[kind].variants && CUSTOM_SPECS[kind].variants[variant]) || CUSTOM_SPECS[kind].toon) : CUSTOM_SPECS[kind].chibi ? customChibi(CUSTOM_SPECS[kind]) : beastToon(CUSTOM_SPECS[kind])) :
     MONSTER_BUILDERS[kind] ? MONSTER_BUILDERS[kind](variant) :
     chibi({});
   group.add(inner);

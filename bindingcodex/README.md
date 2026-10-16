@@ -79,6 +79,10 @@ Abyss — by earning **Infamy**.
 - **👁 Walk the pens** (Menagerie): beasts roam their fenced pens. Tame ones
   trot to the gate, hungry ones hang around the trough, eggs sit in a nest.
   Feed or **pet** them from there (once a day, +2 tame if they trust you).
+- **The cells are alive**: wardens stand guard in the corridor (and patrol if
+  they keep several captives) and report when you visit; captives whisper to
+  each other across the aisle and go quiet when Zoe comes near (the card shows
+  what you overheard); captives close to release come up to the bars.
 
 ## Wild tribes, hybrids & the Wyrm's Mantle
 
@@ -161,6 +165,30 @@ doesn't know. Her affair runs from a note in your coat to a crossroads:
 end it (she leaves Brad for herself, or gives him one honest chance), or
 keep going until she's carrying your child. Then she either leaves Brad
 for the Codex, or lets Brad think the baby is his.
+
+**Seasons.** The fen keeps a calendar: ten days a season, spring first. From
+the 5th day of each season the **Wives' Circle** ("wives optional") throws a
+holiday party: May Day, the Midsummer Cookout, the Hallows costume party and
+the ugly-sweater Yule. Everyone's welcome (+1 favor across the Lane); with two
+or more women close to Zoe there's an after-party. Each season every woman
+close to Zoe also has a holiday scene of her own, from her card.
+The women change clothes with the season too (spring pastels, summer
+dresses, autumn coats and scarves, winter coats, beanies and earmuffs) and
+dress up for each party: flower crowns for May Day, sundresses for the
+Cookout, costumes for Hallows (a vampire countess, a saloon girl, a dryad, a
+very expensive cat, a witch, a black swan) and ugly knit sweaters for Yule.
+The Lane women are built on a **mature figure** (adult proportions and faces
+that show their age). For each party's after-party, on Steamy or Unbound and
+only when you choose an intimate option, the women who are there step onto
+the stage in a **lace set** matched to the holiday: lingerie that covers what
+underwear covers, never nudity. Lace only ever builds on the mature figure.
+
+## Paths
+
+**🜲 Paths** (from the Chronicle or Settings) lists every fork in the story,
+grouped by character: ✓ what you chose, ○ what you passed up, and how many
+scenes with choices you haven't found yet (names hidden unless you turn on
+spoilers).
 
 ## Story
 

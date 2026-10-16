@@ -262,7 +262,7 @@ export class Stage {
     for (const a of this.actors.values()) this.actorGroup.remove(a.group);
     this.actors.clear();
     this.turnRing.visible = false;
-    this.overlay.querySelectorAll('.dmg-num').forEach(el => el.remove());
+    this.overlay.querySelectorAll('.dmg-num, .stage-tag').forEach(el => el.remove());
   }
 
   addActor(uid, kind, variant, opts = {}) {
@@ -829,8 +829,10 @@ export async function makePortrait(kind, variant = null, opts = {}) {
   group.rotation.y = 0.3;
 
   const cam = new THREE.PerspectiveCamera(30, 1, 0.1, 20);
-  cam.position.set(0.25, 1.5, 2.1);
-  cam.lookAt(0, 1.12, 0);
+  // grown-up figures are taller with smaller heads: frame head and shoulders
+  const mature = group.children[0] && group.children[0].userData.mature;
+  cam.position.set(mature ? 0.18 : 0.25, mature ? 2.0 : 1.5, mature ? 1.45 : 2.1);
+  cam.lookAt(0, mature ? 1.86 : 1.12, 0);
   portraitRenderer.render(scene, cam);
   const url = portraitRenderer.domElement.toDataURL('image/png');
   // free the throwaway model (procedural ones only; a loaded GLB may be shared)
