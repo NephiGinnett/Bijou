@@ -26,6 +26,7 @@ for (const [id, spec] of Object.entries(LOOKS)) {
 import * as AU from './audio.js';
 import { buildCells, buildPens, RESTRAINTS } from './keep3d.js';
 import { buildLane } from './lane3d.js';
+import { epilogueSteps } from './epilogue.js';
 
 let S = null;
 let stage = null;
@@ -479,6 +480,7 @@ async function hub() {
   if (S.cleared && !S.seen.__ending && (!S.captives.some(c => c.named === 'cinder'))) {
     S.seen.__ending = true;
     await playEvent(endingFor(S));
+    await playEvent({ id: 'epilogue', steps: epilogueSteps(S, heroName) });
   }
   // The hearth: after the ending, if there's family to come home to.
   if (S.seen.__ending && EVENTS.hearth_epilogue && !S.seen.hearth_epilogue && EVENTS.hearth_epilogue.cond(S)) await playEvent(EVENTS.hearth_epilogue);
@@ -2174,7 +2176,7 @@ function chronicle() {
   const mem = memories();
   screen(`
     <div class="panel shop-panel">
-      <div class="row spread"><h2>📖 The Chronicle</h2><div class="row gap"><button class="btn" id="ch-paths" title="Every fork in the story: what you chose, and what you passed up.">🜲 Paths</button><button class="btn ghost" id="ch-back">← Codex</button></div></div>
+      <div class="row spread"><h2>📖 The Chronicle</h2><div class="row gap">${S.seen.__ending ? '<button class="btn" id="ch-epi" title="The last chapter, from everything you did.">📜 Where are they now</button>' : ''}<button class="btn" id="ch-paths" title="Every fork in the story: what you chose, and what you passed up.">🜲 Paths</button><button class="btn ghost" id="ch-back">← Codex</button></div></div>
       <p class="muted">A living book that writes itself after significant moments — in a hand neither of you recognizes. Pages sold at the altar are crossed out, but never quite gone.</p>
       ${hearthHtml()}
       ${mem.length ? `<details class="memories"><summary><b>✦ Memories</b> <small class="muted">${mem.length} scene${mem.length === 1 ? '' : 's'} to revisit</small></summary>
@@ -2184,6 +2186,7 @@ function chronicle() {
   `);
   $('#ch-back').onclick = () => hub();
   $('#ch-paths').onclick = () => { AU.sfx('ui'); paths(chronicle); };
+  if ($('#ch-epi')) $('#ch-epi').onclick = async () => { screen('', ''); await playEvent({ id: 'epilogue', steps: epilogueSteps(S, heroName) }, { replay: true }); chronicle(); };
   bindMemories(chronicle);
 }
 
