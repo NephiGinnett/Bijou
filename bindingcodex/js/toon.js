@@ -77,8 +77,9 @@ export function faceTexture({ eye = 0x8a5ad8, brow = 0x8a6a3a, blush = 0xff8aa0,
   const hex = n => '#' + new THREE.Color(n).getHexString();
   const shade = (n, f) => '#' + new THREE.Color(n).multiplyScalar(f).getHexString();
   const lift = (n, f) => '#' + new THREE.Color(n).lerp(new THREE.Color(0xffffff), f).getHexString();
+  if (mature) { paintGrownFace(c, W, { eye, brow, blush, lashes, mouth, closed, lip, shadow, freckles, age: mature, hex, shade, lift }); return canvasTex(cv); }
   for (const side of [-1, 1]) {
-    const cx = W / 2 + side * (mature ? 70 : 78), cy = mature ? 114 : 118, rx = mature ? 30 : 30, ry = mature ? 26 : 42;
+    const cx = W / 2 + side * 78, cy = 118, rx = 30, ry = 42;
     if (shadow != null) {
       // eyeshadow: a soft smoky wash over the lid, flicked out at the corner
       const sh = c.createRadialGradient(cx + side * 22, cy + 8, 6, cx + side * 22, cy + 8, 64);
@@ -106,27 +107,17 @@ export function faceTexture({ eye = 0x8a5ad8, brow = 0x8a6a3a, blush = 0xff8aa0,
     c.fillStyle = shade(eye, 0.25); c.beginPath(); c.ellipse(cx, cy + 2, rx * (slit ? 0.14 : 0.45), ry * (slit ? 0.72 : 0.5), 0, 0, Math.PI * 2); c.fill();
     // highlights
     c.fillStyle = 'rgba(255,255,255,0.95)';
-    if (mature) { c.beginPath(); c.ellipse(cx - side * 6 - 4, cy - 6, 5, 5, 0, 0, Math.PI * 2); c.fill(); }
-    else { c.beginPath(); c.ellipse(cx - side * 10 - 6, cy - 14, 10, 13, -0.3, 0, Math.PI * 2); c.fill(); c.beginPath(); c.ellipse(cx + 10, cy + 22, 5, 5, 0, 0, Math.PI * 2); c.fill(); }
-    if (mature) {
-      // an upper lid crease, and the lines a life of smiling leaves at the outer corner and under the eye
-      const ln = (a, w) => { c.strokeStyle = `rgba(110,60,50,${a})`; c.lineWidth = w; c.lineCap = 'round'; };
-      ln(0.55, 3); c.beginPath(); c.ellipse(cx, cy - 2, rx + 8, ry + 9, 0, Math.PI * 1.15, Math.PI * 1.85); c.stroke();
-      ln(0.18 + mature * 0.3, 2.5);
-      for (let i = 0; i < 3; i++) { c.beginPath(); c.moveTo(cx + side * (rx + 16), cy - 4 + i * 9); c.lineTo(cx + side * (rx + 30), cy - 10 + i * 13); c.stroke(); }
-      ln(0.12 + mature * 0.25, 2.5); c.beginPath(); c.ellipse(cx, cy + ry + 6, rx - 2, 6, 0, Math.PI * 0.15, Math.PI * 0.85); c.stroke();
-    }
+    c.beginPath(); c.ellipse(cx - side * 10 - 6, cy - 14, 10, 13, -0.3, 0, Math.PI * 2); c.fill(); c.beginPath(); c.ellipse(cx + 10, cy + 22, 5, 5, 0, 0, Math.PI * 2); c.fill();
     // upper lash line, with a flick at the outer corner
-    c.strokeStyle = hex(lashes); c.lineCap = 'round'; c.lineWidth = mature ? 6 : 9;
+    c.strokeStyle = hex(lashes); c.lineCap = 'round'; c.lineWidth = 9;
     c.beginPath(); c.ellipse(cx, cy + 6, rx + 8, ry + 2, 0, Math.PI * 1.08, Math.PI * 1.92); c.stroke();
     c.lineWidth = 6; c.beginPath(); c.moveTo(cx + side * (rx + 6), cy - 18); c.lineTo(cx + side * (rx + 18), cy - 30); c.stroke();
     if (shadow != null) { c.lineWidth = 7; c.beginPath(); c.moveTo(cx + side * (rx + 4), cy + 2); c.quadraticCurveTo(cx + side * (rx + 20), cy - 6, cx + side * (rx + 34), cy - 22); c.stroke(); }
     // a soft lower lash
     c.lineWidth = shadow != null ? 5 : 3; c.globalAlpha = shadow != null ? 0.9 : 0.6; c.beginPath(); c.ellipse(cx, cy + 4, rx + 4, ry, 0, Math.PI * 0.2, Math.PI * 0.8); c.stroke(); c.globalAlpha = 1;
     // brow (slimmer and higher-arched on a grown woman)
-    c.strokeStyle = hex(brow); c.lineWidth = mature ? 5 : 6;
-    if (mature) { c.beginPath(); c.moveTo(cx - side * 28, cy - ry - 22); c.quadraticCurveTo(cx + side * 6, cy - ry - 40, cx + side * 36, cy - ry - 22); c.stroke(); }
-    else { c.beginPath(); c.moveTo(cx - side * 26, cy - ry - 22); c.quadraticCurveTo(cx + side * 4, cy - ry - 34, cx + side * 30, cy - ry - 24); c.stroke(); }
+    c.strokeStyle = hex(brow); c.lineWidth = 6;
+    c.beginPath(); c.moveTo(cx - side * 26, cy - ry - 22); c.quadraticCurveTo(cx + side * 4, cy - ry - 34, cx + side * 30, cy - ry - 24); c.stroke();
     // cheetah tear-marks: a dark line from the inner eye down the cheek
     if (tear != null) { c.strokeStyle = hex(tear); c.lineWidth = 7; c.lineCap = 'round'; c.beginPath(); c.moveTo(cx - side * 22, cy + ry - 2); c.quadraticCurveTo(cx - side * 26, cy + ry + 30, cx - side * 14, cy + ry + 56); c.stroke(); }
     if (freckles) { c.fillStyle = '#b8785a99'; for (let i = 0; i < 7; i++) { c.beginPath(); c.arc(cx + side * (2 + (i * 13) % 40), cy + 62 + ((i * 7) % 18), 3.2, 0, Math.PI * 2); c.fill(); } }
@@ -134,15 +125,6 @@ export function faceTexture({ eye = 0x8a5ad8, brow = 0x8a6a3a, blush = 0xff8aa0,
     const b = c.createRadialGradient(cx + side * 34, cy + 66, 2, cx + side * 34, cy + 66, 36);
     b.addColorStop(0, hex(blush) + 'aa'); b.addColorStop(1, hex(blush) + '00');
     c.fillStyle = b; c.beginPath(); c.ellipse(cx + side * 34, cy + 66, 40, 22, 0, 0, Math.PI * 2); c.fill();
-  }
-  if (mature) {
-    // soft smile lines from the nose to the corners of the mouth, and fuller painted lips
-    c.strokeStyle = `rgba(120,60,50,${0.12 + mature * 0.28})`; c.lineWidth = 3; c.lineCap = 'round';
-    for (const side of [-1, 1]) { c.beginPath(); c.moveTo(W / 2 + side * 30, 176); c.quadraticCurveTo(W / 2 + side * 44, 200, W / 2 + side * 36, 224); c.stroke(); }
-    if (mouth === 'smile' || mouth === 'smirk' || mouth === 'flat') {
-      c.fillStyle = hex(lip); c.globalAlpha = 0.85;
-      c.beginPath(); c.moveTo(W / 2 - 20, 214); c.quadraticCurveTo(W / 2 - 8, 206, W / 2, 210); c.quadraticCurveTo(W / 2 + 8, 206, W / 2 + 20, 214); c.quadraticCurveTo(W / 2, 228, W / 2 - 20, 214); c.fill(); c.globalAlpha = 1;
-    }
   }
   // mouth
   c.strokeStyle = hex(lip); c.lineWidth = lip === 0x8a3a4a ? 5 : 7; c.lineCap = 'round';
@@ -163,9 +145,101 @@ export function faceTexture({ eye = 0x8a5ad8, brow = 0x8a6a3a, blush = 0xff8aa0,
   tex.anisotropy = 4;
   return tex;
 }
+function canvasTex(cv) {
+  const tex = new THREE.CanvasTexture(cv);
+  tex.colorSpace = THREE.SRGBColorSpace;
+  tex.anisotropy = 4;
+  return tex;
+}
+
+// A grown woman's face, painted larger than the chibi's: almond eyes with winged liner
+// and lashes, arched brows, a sweep of blush along the cheekbone, a hint of nose, and full
+// lips with a highlight. Age (0..1) deepens the lines at the eyes and mouth.
+function paintGrownFace(c, W, o) {
+  const { hex, shade, lift, age } = o;
+  const line = (a, w) => { c.strokeStyle = `rgba(110,55,45,${a})`; c.lineWidth = w; c.lineCap = 'round'; };
+  // (this canvas wraps a taller patch than the chibi face: eyes near the top third, mouth low)
+  for (const side of [-1, 1]) {
+    const cx = W / 2 + side * 112, cy = 100, rx = 58;
+    const inner = [cx - side * rx, cy + 8], outer = [cx + side * rx, cy - 10];
+    const upper = () => { c.moveTo(...inner); c.bezierCurveTo(cx - side * rx * 0.5, cy - 40, cx + side * rx * 0.55, cy - 40, ...outer); };
+    const lower = () => { c.bezierCurveTo(cx + side * rx * 0.5, cy + 28, cx - side * rx * 0.5, cy + 30, ...inner); };
+    // blush: a soft sweep up along the cheekbone toward the temple
+    const bx = cx + side * 34, by = cy + 66;
+    const b = c.createRadialGradient(bx, by, 4, bx, by, 78);
+    b.addColorStop(0, hex(o.blush) + '70'); b.addColorStop(0.6, hex(o.blush) + '28'); b.addColorStop(1, hex(o.blush) + '00');
+    c.save(); c.translate(bx, by); c.rotate(-side * 0.38); c.scale(1, 0.42); c.translate(-bx, -by);
+    c.fillStyle = b; c.beginPath(); c.arc(bx, by, 78, 0, Math.PI * 2); c.fill(); c.restore();
+    // lid color: her eyeshadow, or a soft warm wash
+    const sc = o.shadow != null ? o.shadow : 0xb07a6a;
+    const sh = c.createRadialGradient(cx + side * 12, cy - 18, 4, cx + side * 12, cy - 18, 70);
+    sh.addColorStop(0, hex(sc) + (o.shadow != null ? 'cc' : '55')); sh.addColorStop(1, hex(sc) + '00');
+    c.fillStyle = sh; c.beginPath(); c.ellipse(cx + side * 12, cy - 16, rx + 18, 38, side * 0.2, 0, Math.PI * 2); c.fill();
+    if (o.closed) {
+      c.strokeStyle = hex(o.lashes); c.lineWidth = 9; c.lineCap = 'round';
+      c.beginPath(); c.moveTo(...inner); c.bezierCurveTo(cx - side * rx * 0.4, cy + 20, cx + side * rx * 0.5, cy + 18, ...outer); c.stroke();
+      c.lineWidth = 6; c.beginPath(); c.moveTo(...outer); c.lineTo(cx + side * (rx + 18), cy - 18); c.stroke();
+    } else {
+      c.save(); c.beginPath(); upper(); lower(); c.closePath();
+      c.fillStyle = '#fbf7f4'; c.fill(); c.clip();
+      const ir = 27, ix = cx + side * 3, iy = cy - 2;
+      const g = c.createRadialGradient(ix, iy - 8, 3, ix, iy, ir);
+      g.addColorStop(0, lift(o.eye, 0.35)); g.addColorStop(0.7, hex(o.eye)); g.addColorStop(1, shade(o.eye, 0.4));
+      c.fillStyle = g; c.beginPath(); c.arc(ix, iy, ir, 0, Math.PI * 2); c.fill();
+      c.fillStyle = shade(o.eye, 0.18); c.beginPath(); c.arc(ix, iy, 11, 0, Math.PI * 2); c.fill();
+      c.fillStyle = 'rgba(255,255,255,0.95)'; c.beginPath(); c.arc(ix - side * 9, iy - 10, 7, 0, Math.PI * 2); c.fill();
+      c.beginPath(); c.arc(ix + side * 8, iy + 10, 3, 0, Math.PI * 2); c.fill();
+      c.restore();
+      // the upper lid: a bold liner that wings out, and a few lashes
+      c.strokeStyle = hex(o.lashes); c.lineCap = 'round'; c.lineJoin = 'round'; c.lineWidth = 9;
+      c.beginPath(); upper(); c.quadraticCurveTo(cx + side * (rx + 10), cy - 18, cx + side * (rx + 24), cy - 30); c.stroke();
+      c.lineWidth = 4.5;
+      for (let i = 0; i < 4; i++) { const px = cx + side * rx * (0.45 + i * 0.16), py = cy - 28 + i * 4.5; c.beginPath(); c.moveTo(px, py); c.lineTo(px + side * 12, py - 12 + i); c.stroke(); }
+      c.lineWidth = 3; c.globalAlpha = 0.55; c.beginPath(); c.moveTo(...outer); lower(); c.stroke(); c.globalAlpha = 1;
+    }
+    // lid crease, and the lines a life of laughing leaves
+    line(0.42, 3.5); c.beginPath(); c.moveTo(cx - side * rx * 0.8, cy - 22); c.bezierCurveTo(cx - side * rx * 0.3, cy - 50, cx + side * rx * 0.5, cy - 50, cx + side * (rx + 4), cy - 26); c.stroke();
+    line(0.12 + age * 0.3, 3);
+    for (let i = 0; i < 3; i++) { c.beginPath(); c.moveTo(cx + side * (rx + 16), cy - 2 + i * 11); c.lineTo(cx + side * (rx + 34), cy - 9 + i * 16); c.stroke(); }
+    line(0.1 + age * 0.22, 3); c.beginPath(); c.moveTo(cx - side * rx * 0.6, cy + 34); c.quadraticCurveTo(cx, cy + 42, cx + side * rx * 0.6, cy + 32); c.stroke();
+    // brow: a tapered arch
+    c.fillStyle = hex(o.brow);
+    c.beginPath(); c.moveTo(cx - side * (rx - 6), cy - 56); c.quadraticCurveTo(cx + side * 10, cy - 86, cx + side * (rx + 14), cy - 60);
+    c.quadraticCurveTo(cx + side * 10, cy - 74, cx - side * (rx - 8), cy - 48); c.closePath(); c.fill();
+    if (o.freckles) { c.fillStyle = '#b8785a99'; for (let i = 0; i < 9; i++) { c.beginPath(); c.arc(cx - side * (10 - (i * 13) % 56), cy + 54 + ((i * 7) % 22), 3.5, 0, Math.PI * 2); c.fill(); } }
+  }
+  // a hint of a nose: a soft shadow down one side and the tip
+  line(0.3, 3.5); c.beginPath(); c.moveTo(W / 2 + 8, 112); c.quadraticCurveTo(W / 2 + 14, 150, W / 2 + 4, 164); c.stroke();
+  line(0.26, 3); c.beginPath(); c.moveTo(W / 2 - 13, 166); c.quadraticCurveTo(W / 2, 173, W / 2 + 13, 166); c.stroke();
+  // smile lines
+  line(0.08 + age * 0.26, 3.5);
+  for (const side of [-1, 1]) { c.beginPath(); c.moveTo(W / 2 + side * 44, 166); c.quadraticCurveTo(W / 2 + side * 66, 200, W / 2 + side * 58, 238); c.stroke(); }
+  // lips
+  const L = hex(o.lip), Ld = shade(o.lip, 0.55), my = 210;
+  if (o.mouth === 'open' || o.mouth === 'mid') {
+    const h = o.mouth === 'open' ? 22 : 12;
+    c.fillStyle = L; c.beginPath(); c.ellipse(W / 2, my + 4, 40, h + 10, 0, 0, Math.PI * 2); c.fill();
+    c.fillStyle = '#5a1a26'; c.beginPath(); c.ellipse(W / 2, my + 4, 31, h, 0, 0, Math.PI * 2); c.fill();
+    c.fillStyle = '#fbf4f0'; c.fillRect(W / 2 - 20, my + 4 - h, 40, Math.min(8, h * 0.5));
+  } else {
+    const lift2 = o.mouth === 'smirk' ? 10 : 0, w = 50;
+    c.fillStyle = L; c.beginPath();
+    c.moveTo(W / 2 - w, my + 2); c.quadraticCurveTo(W / 2 - 20, my - 18, W / 2 - 6, my - 10); c.quadraticCurveTo(W / 2, my - 6, W / 2 + 6, my - 10);
+    c.quadraticCurveTo(W / 2 + 20, my - 18, W / 2 + w, my + 2 - lift2); c.quadraticCurveTo(W / 2, my + 8, W / 2 - w, my + 2); c.fill();
+    c.beginPath(); c.moveTo(W / 2 - w, my + 2); c.quadraticCurveTo(W / 2, my + 10, W / 2 + w, my + 2 - lift2); c.quadraticCurveTo(W / 2 + 6, my + 42, W / 2 - w, my + 2); c.fill();
+    c.strokeStyle = Ld; c.lineWidth = 4.5; c.lineCap = 'round';
+    const up = o.mouth === 'flat' ? 0 : 5;
+    c.beginPath(); c.moveTo(W / 2 - w - 3, my - up); c.quadraticCurveTo(W / 2, my + 12, W / 2 + w + 3, my - up - lift2 * 1.4); c.stroke();
+    c.fillStyle = 'rgba(255,255,255,0.4)'; c.beginPath(); c.ellipse(W / 2 + 6, my + 20, 14, 4.5, -0.1, 0, Math.PI * 2); c.fill();
+  }
+}
+
 // The face sits on a patch of sphere just outside the head.
 export function face(group, headR, y, opts) {
-  const geo = new THREE.SphereGeometry(headR * 1.012, 48, 24, Math.PI / 2 - 0.9, 1.8, Math.PI / 2 - 0.42, 0.95);
+  // a grown face wraps a taller patch (brow to chin) than a chibi's
+  const geo = opts.mature
+    ? new THREE.SphereGeometry(headR * 1.012, 48, 32, Math.PI / 2 - 0.95, 1.9, Math.PI / 2 - 0.48, 1.28)
+    : new THREE.SphereGeometry(headR * 1.012, 48, 24, Math.PI / 2 - 0.9, 1.8, Math.PI / 2 - 0.42, 0.95);
   const faces = {
     rest: faceTexture(opts),
     blink: faceTexture({ ...opts, closed: true }),

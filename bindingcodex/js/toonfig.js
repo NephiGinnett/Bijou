@@ -214,7 +214,11 @@ export function toonFigure(spec) {
       tadd(arm, SC(0.05 * aw, armLen * 0.22), tmat(C.glove ?? C.deep ?? 0x1a1214), 0, -armLen * 0.78, 0);
     }
     tadd(arm, SS(0.055 * aw), sl2 === 'armor' ? tmat(C.metal ?? 0x9aa2ac) : sl2 === 'bare' ? tmat(C.glove ?? 0x1a1214) : skin, 0, -armLen * 0.93, 0);
-    if (F.mature && sl2 === 'bare') tadd(arm, SS(0.058 * aw, 20, 14), skin, 0, -0.01, 0); // the round of the shoulder
+    if (F.mature && sl2 === 'bare') {
+      // the cap of the shoulder: rounded on top, tapering down into the upper arm
+      tadd(arm, SS(0.062 * aw, 24, 18), skin, -sx * 0.008, -0.05, 0).scale.set(1.05, 1.55, 0.95);
+      tadd(arm, SC(0.05 * aw, armLen * 0.3), skin, 0, -armLen * 0.28, 0);
+    }
     arms[sx < 0 ? 'L' : 'R'] = arm;
   }
   ctx.arms = arms; ctx.armLen = armLen; ctx.legs = legs; ctx.legLen = legLen;
@@ -246,7 +250,10 @@ export function toonFigure(spec) {
 
 // --- hair --------------------------------------------------------------------------------
 function fringe(body, ctx, count = 6, len = 1.45, spread = 0.22) {
-  const { hy, hr, k, hair } = ctx;
+  const { hy: hy0, hr, k, hair } = ctx;
+  // a grown woman's bangs sit higher and shorter, clear of the brows
+  const hy = ctx.F && ctx.F.mature ? hy0 + 0.06 * k : hy0;
+  if (ctx.F && ctx.F.mature) len *= 0.7;
   for (let i = 0; i < count; i++) {
     const x0 = -spread + (2 * spread * i) / (count - 1), x = x0 * k, R = hr * 1.08;
     tadd(body, SS(0.085 * k), hair, x, hy + (0.16 - Math.abs(x0) * 0.35) * k, Math.sqrt(R * R - x * x) - 0.06 * k, -0.25, 0, -x0 * 1.6 + (i % 2 ? 0.08 : -0.08)).scale.set(0.62, len, 0.5);
