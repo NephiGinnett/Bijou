@@ -284,7 +284,7 @@ export function toonFigure(spec) {
   outline(g);
   g.userData.isChibi = !F.mature;
   g.userData.mature = !!F.mature;
-  g.userData.rig = makeRig({ face: faceMesh, armR: arms.R, armL: arms.L, bust, hips, body, legs: legs.L ? legs : null, legLen });
+  g.userData.rig = makeRig({ face: faceMesh, armR: arms.R, armL: arms.L, bust, hips, body, legs: legs.L ? legs : null, legLen, jiggle: F.mature ? 1.5 + (bustMul - 1) : 1 }); // fuller figures bounce more
   return g;
 }
 

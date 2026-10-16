@@ -370,8 +370,9 @@ export function makeRig(parts) {
         st.jig = Math.max(-0.025, Math.min(0.025, st.jig));
       }
       st.lastY = worldY;
-      if (parts.bust) parts.bust.position.y = parts.bust.userData.restY + st.jig;
-      if (parts.hips) parts.hips.rotation.z = Math.sin(st.t * 1.3) * 0.02 + st.jig * 0.8;
+      const J = parts.jiggle || 1;
+      if (parts.bust) parts.bust.position.y = parts.bust.userData.restY + st.jig * J;
+      if (parts.hips) parts.hips.rotation.z = Math.sin(st.t * 1.3) * 0.02 + st.jig * 0.8 * J;
       // kneel on the right knee
       st.kneel += (st.kneelTo - st.kneel) * Math.min(1, dt * 5);
       const k = ease(st.kneel);
