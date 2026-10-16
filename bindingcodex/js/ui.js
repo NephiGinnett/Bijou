@@ -25,6 +25,7 @@ for (const [id, spec] of Object.entries(LOOKS)) {
 }
 import * as AU from './audio.js';
 import { buildCells, buildPens, RESTRAINTS } from './keep3d.js';
+import { buildLane } from './lane3d.js';
 
 let S = null;
 let stage = null;
@@ -2603,13 +2604,14 @@ function town() {
   }).join('');
   screen(`
     <div class="panel shop-panel">
-      <div class="row spread"><h2>🏘 Larkspur Lane</h2><div class="row gap"><span class="gold">◈ ${S.gold}g</span> <button class="btn ghost" id="tw-back">← Codex</button></div></div>
+      <div class="row spread"><h2>🏘 Larkspur Lane</h2><div class="row gap"><span class="gold">◈ ${S.gold}g</span> <button class="btn" id="tw-walk" title="Walk down the Lane and see everyone.">👁 Walk the Lane</button> <button class="btn ghost" id="tw-back">← Codex</button></div></div>
       ${seasonBanner()}
       <p class="muted sm-text">A suburban cul-de-sac that fell through a misfired summoning into the fen. Talk daily, run errands for favor, and invest in their businesses. ${div ? `<b class="gold">The Lane pays you ${div}g every night.</b>` : 'Investments pay dividends every night.'}</p>
       ${laneGatherings().length ? `<div class="row gap wrap" style="margin:8px 0">${laneGatherings().map(ev => `<button class="btn notify tw-gather" data-ev="${ev.id}">${TOWN.SEASONS.some(x => x.fest === ev.id) ? TOWN.seasonOf(S).icon : '♡'} ${esc(gatherLabel(ev))}<em>!</em></button>`).join('')}</div>` : ''}
       <div class="cells">${cards}</div>
     </div>`);
   $('#tw-back').onclick = () => hub();
+  $('#tw-walk').onclick = () => laneView();
   document.querySelectorAll('.tw-gather').forEach(b => b.onclick = async () => { screen('', ''); await playEvent(EVENTS[b.dataset.ev]); ST.save(S); town(); });
   document.querySelectorAll('.tw-talk:not(.disabled)').forEach(b => b.onclick = async () => {
     const id = b.dataset.f, r = TOWN.townTalk(S, id);
@@ -2658,6 +2660,53 @@ function town() {
     ST.save(S); town();
   });
   document.querySelectorAll('.tw-shop').forEach(b => b.onclick = () => { AU.sfx('ui'); townShop(b.dataset.f); });
+}
+
+// Walking the Lane in 3D: tap a woman to walk over; her card does what her town card does.
+async function laneView(sel = null) {
+  AU.sfx('ui');
+  const season = TOWN.seasonOf(S);
+  const gathers = laneGatherings();
+  screen(`
+    <div class="panel slim viewer-bar">
+      <b>🏘 Larkspur Lane</b><span class="muted sm-text">${season.icon} ${esc(season.name)}${season.festOn && EVENTS[season.fest] && !S.seen[season.fest] ? ` · ${esc(season.festName)} is on!` : ''} · tap someone to walk over</span>
+      <div class="row gap">${gathers.map(ev => `<button class="btn sm notify lv-gather" data-ev="${ev.id}">${TOWN.SEASONS.some(x => x.fest === ev.id) ? season.icon : '♡'} ${esc(gatherLabel(ev))}</button>`).join('')}<button class="btn sm ghost" id="lv-list">☰ List</button></div>
+    </div>
+    <div id="lv-card"></div>`, 'viewer');
+  const view = await buildLane(stage, S, { season, festKey: TOWN.laneOutfit(S), women: TOWN.FOLK_IDS, variantOf: heroVariant, player: playerLook() });
+  const card = id => {
+    const box = $('#lv-card'); if (!box) return;
+    const P = TOWN.TOWNSFOLK[id], f = TOWN.folkOf(S, id);
+    const scene = townScene(id), seasonal = seasonScene(id), eve = S.seen[id + '_romance'] && !S.flags[id + '_ended'] && TOWN.townEveningOpen(S, id);
+    box.innerHTML = `<div class="panel viewer-card">
+      <div class="row spread"><h3 style="color:${P.color}">${esc(P.name)}</h3><small class="muted">${esc(P.role)}${P.shop ? ' · ' + esc(P.shop) : ''}</small></div>
+      <div class="row gap sm-text"><span>Favor <b>${f.favor}/10</b></span>${P.shop ? `<span>stake ${stake(f.level)}</span>` : ''}${id === 'celeste' ? `<span class="gold">${esc(TOWN.affairNote(S))}</span>` : ''}</div>
+      <div class="row gap wrap">
+        <button class="btn sm lv-talk ${f.talkDay === S.day ? 'disabled' : ''}">❝ Talk</button>
+        ${P.shop ? `<button class="btn sm lv-shop">◈ ${id === 'joanne' ? 'Supper' : 'Shop'}</button>` : ''}
+        ${seasonal ? `<button class="btn sm notify lv-season">${season.icon} ${esc(season.name)} with her</button>` : ''}
+        ${scene ? `<button class="btn sm notify lv-scene">${scene.id.endsWith('_romance') ? '♡ She has something to ask you' : '✦ She wants to talk'}</button>` : ''}
+        ${eve ? '<button class="btn sm lv-eve">☾ Evening</button>' : ''}
+      </div>
+    </div>`;
+    const go = async ev => { if (!ev) return; screen('', ''); await playEvent(ev); ST.save(S); laneView(id); };
+    const t = box.querySelector('.lv-talk:not(.disabled)'); if (t) t.onclick = async () => {
+      const r = TOWN.townTalk(S, id); if (!r) return;
+      const lines = TOWN.TOWN_TALK[id];
+      screen('', ''); await playEvent({ id: 'banter', steps: [{ s: id, t: lines[(S.day + r.favor) % lines.length] }] });
+      if (r.up) toast(`${P.name}'s favor +1`, 'bond');
+      ST.save(S); laneView(id);
+    };
+    const sh = box.querySelector('.lv-shop'); if (sh) sh.onclick = () => { hubStage(); townShop(id); };
+    const se = box.querySelector('.lv-season'); if (se) se.onclick = () => go(seasonScene(id));
+    const sc = box.querySelector('.lv-scene'); if (sc) sc.onclick = () => go(townScene(id));
+    const ev = box.querySelector('.lv-eve'); if (ev) ev.onclick = async () => { screen('', ''); await playEvent(EVENTS[id + '_evening']); TOWN.townEvening(S, id); ST.save(S); laneView(id); };
+  };
+  const show = id => { AU.sfx('ui'); card(id); view.visit(id); };
+  stage.onPick = uid => { const p = view.people.find(x => x.act.uid === uid); if (p) show(p.id); };
+  $('#lv-list').onclick = () => { hubStage(); town(); };
+  document.querySelectorAll('.lv-gather').forEach(b => b.onclick = async () => { screen('', ''); await playEvent(EVENTS[b.dataset.ev]); ST.save(S); laneView(); });
+  if (sel) show(sel);
 }
 
 function townShop(id) {
