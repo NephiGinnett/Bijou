@@ -11,7 +11,11 @@ import { tmat, tadd, SS, SC, ST, outline, face, lathe, pleat, makeRig } from './
 
 export const FIGURES = {
   tall: { hr: 0.255, hy: 1.6, shoulderY: 1.3, bustY: 1.17, waistY: 0.98, hipY: 0.82, hemY: 0.62, waistR: 0.105, hipR: 0.25, bustR: 0.11, shoulderX: 0.18 },
+  // Grown women: about six and a half heads tall, a real neck, long legs, a defined waist.
+  mature: { hr: 0.165, hy: 2.02, shoulderY: 1.74, bustY: 1.57, waistY: 1.33, hipY: 1.13, hemY: 0.86, waistR: 0.11, hipR: 0.27, bustR: 0.1, shoulderX: 0.2, neck: 0.11, mature: true },
 };
+// Hems and other heights in a look are written for the 'tall' figure; rescale them to this one.
+const hemFor = (F, hem) => hem == null ? null : F.mature ? hem * (F.hipY / FIGURES.tall.hipY) : hem;
 // Builds scale the figure's landmarks.
 const BUILDS = {
   slim:    { waist: 0.95, hip: 0.88, shoulder: 0.95, bust: 0.85, thigh: 0.9, arm: 0.95 },
@@ -72,11 +76,13 @@ const knitMat = top => {
 export function toonFigure(spec) {
   const B = BUILDS[spec.build || 'average'];
   const F0 = FIGURES[spec.figure || 'tall'];
-  const F = { ...F0, waistR: F0.waistR * B.waist, hipR: F0.hipR * B.hip, shoulderX: F0.shoulderX * B.shoulder, bustR: F0.bustR * B.bust * (spec.bust ?? 1) };
+  // (on grown-up proportions a look's bust setting counts for half, so curves stay in scale with the body)
+  const bustMul = F0.mature ? 1 + ((spec.bust ?? 1) - 1) * 0.5 : (spec.bust ?? 1);
+  const F = { ...F0, waistR: F0.waistR * B.waist, hipR: F0.hipR * B.hip, shoulderX: F0.shoulderX * B.shoulder, bustR: F0.bustR * (F0.mature ? 1 + (B.bust - 1) * 0.5 : B.bust) * bustMul };
   const { hr, hy, shoulderY, bustY, waistY, hipY, hemY0 = F.hemY } = F;
   const fem = spec.fem !== false;
   const waistR = fem ? F.waistR : F.waistR + 0.05, hipR = fem ? F.hipR : F.hipR - 0.04;
-  const hemY = spec.skirt && spec.skirt.hem != null ? spec.skirt.hem : hemY0;
+  const hemY = spec.skirt && spec.skirt.hem != null ? hemFor(F, spec.skirt.hem) : hemY0;
   const k = hr / 0.32;
   const C = spec.colors;
   const g = new THREE.Group();
@@ -117,7 +123,12 @@ export function toonFigure(spec) {
   const top = spec.top || { style: 'corset' };
   const covered = top.style === 'coat' || top.style === 'armor' || top.style === 'sweater';
   // (narrow through the bust, so the breasts stand out and the cleavage stays open)
-  tadd(body, lathe([[0, bustY - 0.06], [0.09, bustY - 0.06], [0.095, bustY + 0.09], [F.shoulderX * 0.8, shoulderY - 0.035], [F.shoulderX + 0.02, shoulderY - 0.015], [0.09, shoulderY + 0.04], [0, shoulderY + 0.06]], 32), covered && top.collar !== false ? main : skin, 0, 0, 0);
+  const shoulderP = F.mature
+    // rounded shoulders that slope into the neck (no chibi head hides them here)
+    ? [[0, bustY - 0.06], [0.09, bustY - 0.06], [0.1, bustY + 0.08], [F.shoulderX * 0.85, shoulderY - 0.06], [F.shoulderX + 0.02, shoulderY - 0.03], [F.shoulderX * 0.7, shoulderY + 0.005], [0.085, shoulderY + 0.03], [0.05, shoulderY + 0.04], [0, shoulderY + 0.04]]
+    : [[0, bustY - 0.06], [0.09, bustY - 0.06], [0.095, bustY + 0.09], [F.shoulderX * 0.8, shoulderY - 0.035], [F.shoulderX + 0.02, shoulderY - 0.015], [0.09, shoulderY + 0.04], [0, shoulderY + 0.06]];
+  const chest = tadd(body, lathe(shoulderP, 32), covered && top.collar !== false ? main : skin, 0, 0, 0);
+  if (F.mature) chest.scale.z = 0.72; // a torso is wider than it is deep
   const topM = top.style === 'armor' ? tmat(C.metal ?? 0x9aa2ac) : main;
   tadd(body, lathe([[0, waistY - 0.06], [waistR, waistY - 0.06], [waistR, waistY + 0.04], [waistR + 0.04, bustY - 0.08], [0.15 * B.shoulder, bustY - 0.01], [covered ? 0.16 * B.shoulder : 0, covered ? shoulderY - 0.03 : bustY - 0.01], [0, covered ? shoulderY - 0.03 : bustY - 0.01]], 40), topM, 0, 0, 0);
   const bust = new THREE.Group(); bust.userData.restY = 0; body.add(bust);
@@ -203,15 +214,21 @@ export function toonFigure(spec) {
       tadd(arm, SC(0.05 * aw, armLen * 0.22), tmat(C.glove ?? C.deep ?? 0x1a1214), 0, -armLen * 0.78, 0);
     }
     tadd(arm, SS(0.055 * aw), sl2 === 'armor' ? tmat(C.metal ?? 0x9aa2ac) : sl2 === 'bare' ? tmat(C.glove ?? 0x1a1214) : skin, 0, -armLen * 0.93, 0);
+    if (F.mature && sl2 === 'bare') tadd(arm, SS(0.058 * aw, 20, 14), skin, 0, -0.01, 0); // the round of the shoulder
     arms[sx < 0 ? 'L' : 'R'] = arm;
   }
   ctx.arms = arms; ctx.armLen = armLen; ctx.legs = legs; ctx.legLen = legLen;
 
   // --- head ---------------------------------------------------------------------------
-  tadd(body, SC(0.045, 0.05), skin, 0, shoulderY + 0.06, 0);
+  const neck = F.neck || 0.05;
+  tadd(body, SC(F.mature ? 0.05 : 0.045, neck), skin, 0, shoulderY + 0.03 + neck / 2, 0);
   const head = tadd(body, SS(hr), skin, 0, hy, 0); head.name = 'head';
   for (const sx of [-1, 1]) tadd(body, SS(0.06 * k), skin, sx * hr * 0.97, hy - 0.02, 0).scale.set(0.6, 1, 0.8);
-  const faceMesh = face(body, hr, hy, spec.face || {});
+  const faceMesh = face(body, hr, hy, F.mature ? { ...(spec.face || {}), mature: spec.age ?? 0.5 } : (spec.face || {}));
+  if (F.mature) {
+    // a longer, less round head with a jaw and cheekbones, and the face patch shaped to match
+    head.scale.set(0.93, 1.1, 0.96); faceMesh.scale.set(0.93, 1.1, 0.96);
+  }
   toonHair(body, spec.hair || 'long', ctx);
 
   // gear: weapon in the right hand, armor pieces (adventuring attire only), charms always
@@ -221,7 +238,8 @@ export function toonFigure(spec) {
   if (ctx.hasWeapon) { const w = weaponMesh(gear.weapon); w.position.set(0.04, -armLen * 0.97, 0.06); w.rotation.z = -0.3; arms.R.add(w); }
   gearVisuals(ctx, spec.showArms === false ? { charm: gear.charm } : gear);
   outline(g);
-  g.userData.isChibi = true;
+  g.userData.isChibi = !F.mature;
+  g.userData.mature = !!F.mature;
   g.userData.rig = makeRig({ face: faceMesh, armR: arms.R, armL: arms.L, bust, hips, body, legs: legs.L ? legs : null, legLen });
   return g;
 }
