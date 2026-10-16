@@ -1584,6 +1584,7 @@ function undercroft() {
       <div class="meter"><span>Resolve</span>${bar('resolve', cap.resolve, 'Defiance: slows Reclamation, raises breakout odds')}<span>${cap.resolve}</span></div>
       <div class="meter"><span>Regard</span><div class="bar-outer regard sm" title="≥ 20 at release and they'll join you"><div class="bar-inner" style="left:${regardLeft}%;width:${regardPct}%"></div></div><span>${cap.regard > 0 ? '+' : ''}${cap.regard}</span></div>
       ${cap.learned.length ? `<div>${cap.learned.map(k => `<div class="secret">“${esc(k)}”</div>`).join('')}</div>` : ''}
+      ${(cap.gifts || []).length ? `<div class="sm-text muted" title="Gifts you've left in the cell">In the cell: ${cap.gifts.map(g => ST.GIFTS[g].icon).join(' ')}</div>` : ''}
       <div class="sm-text muted">Warden: ${wardenOptions(cap)}</div>
       ${cap.releasePending ? '<b class="gold sm-text">The brand is gone. Release them from the Codex hub.</b>' : `
       <div class="visit-row">
@@ -1759,8 +1760,21 @@ async function cellsView(sel = null) {
         ${S.inventory.truth_draught ? `<label><input type="checkbox" class="truth" data-cap="${cap.id}"> use Truth Draught (×${S.inventory.truth_draught})</label>` : ''}
         ${visited ? '<span class="muted">visited today</span>' : ''}
       </div>`}
+      ${ST.giftsFor(S, cap).length ? `<div class="row gap sm-text wrap"><span>Leave a gift:</span>${ST.giftsFor(S, cap).map(gid => { const G = ST.GIFTS[gid]; const dis = cap.giftDay === S.day || S.gold < G.cost; return `<button class="btn sm cv-gift ${dis ? 'disabled' : ''}" data-g="${gid}" title="One gift a day; it stays in the cell. +regard.">${G.icon} ${esc(G.name)}${G.cost ? ` ◈${G.cost}g` : ''}</button>`; }).join('')}${cap.giftDay === S.day ? '<span class="muted">(one a day)</span>' : ''}</div>` : ''}
+      ${(cap.gifts || []).length ? `<p class="sm-text muted">In the cell: ${cap.gifts.map(g => ST.GIFTS[g].icon + ' ' + esc(ST.GIFTS[g].name.toLowerCase())).join(', ')}</p>` : ''}
     </div>`;
     box.querySelectorAll('.cv-hold').forEach(b => b.onclick = () => { cap.restraint = b.dataset.k; AU.sfx('confirm'); ST.save(S); cellsView(cap.id); });
+    box.querySelectorAll('.cv-gift:not(.disabled)').forEach(b => b.onclick = async () => {
+      const gid = b.dataset.g, G = ST.GIFTS[gid], r = ST.giveGift(S, cap.id, gid);
+      if (!r) return;
+      AU.sfx('confirm');
+      const n = esc(cap.name);
+      const react = cap.regard >= 20 ? `${n} says thank you, quietly, and means it.` : r.proud ? `${n} pretends not to notice. When you look back from the stair, it's been moved closer.` : cap.resolve >= 60 ? `${n} doesn't touch it while you're watching.` : `${n} watches you go, then reaches for it.`;
+      screen('', '');
+      await playEvent({ id: 'banter', steps: [{ s: 'narr', t: `You leave ${G.name.charAt(0).toLowerCase() + G.name.slice(1)} in ${n}'s cell. ${G.line}` }, { s: 'narr', t: react }] });
+      toast(`regard +${r.gain}${r.cost ? ` · −${r.cost} gold` : ''}`);
+      ST.save(S); cellsView(cap.id);
+    });
     box.querySelectorAll('.visit:not(.disabled)').forEach(b => b.onclick = () => visitFlow(cap.id, b.dataset.k, () => cellsView(cap.id)));
   };
   const show = i => { cur = (i + caps.length) % caps.length; AU.sfx('ui'); card(); view.visit(cur); };
