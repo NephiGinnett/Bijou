@@ -172,6 +172,11 @@ holiday party: May Day, the Midsummer Cookout, the Hallows costume party and
 the ugly-sweater Yule. Everyone's welcome (+1 favor across the Lane); with two
 or more women close to Zoe there's an after-party. Each season every woman
 close to Zoe also has a holiday scene of her own, from her card.
+The women change clothes with the season too (spring pastels, summer
+dresses, autumn coats and scarves, winter coats, beanies and earmuffs) and
+dress up for each party: flower crowns for May Day, sundresses for the
+Cookout, costumes for Hallows (a vampire countess, a saloon girl, a dryad, a
+very expensive cat, a witch, a black swan) and ugly knit sweaters for Yule.
 
 ## Paths
 

@@ -130,6 +130,7 @@ function bindAttire(id, elId, back) {
 }
 function attireOf(id) { return (S && S.wardrobe && S.wardrobe[id]) || (S && S.settings.outfit) || 'adventure'; }
 function heroVariant(id) {
+  if (S && TOWN.TOWNSFOLK[id]) return ST.packOn(S, 'rift') ? TOWN.laneOutfit(S) : null;
   if (id === 'yuki' && S && S.flags && S.flags.yuki_femme) return 'fem';
   const base = id === 'player' && S ? S.pronouns + (S.flags.pact_wyrm_mantle ? '_mantle' : '') + (S.flags.scarred ? '_scar' : '') : null;
   if (!S || !TOON_IDS.includes(id)) return base;
@@ -141,7 +142,7 @@ function bar(cls, pct, title = '') {
 
 // Regenerate 2D portraits (player look follows pronoun choice; converts appear).
 async function refreshPortraits(force = false) {
-  const key = (S ? TOON_IDS.map(heroVariant).join('/') : 'she') + '|' + (S ? Object.keys(S.converts || {}).length : 0) + '|' + (S && S.flags && S.flags.yuki_femme ? 'yf' : '');
+  const key = (S ? TOON_IDS.map(heroVariant).join('/') : 'she') + '|' + (S ? Object.keys(S.converts || {}).length : 0) + '|' + (S && S.flags && S.flags.yuki_femme ? 'yf' : '') + '|' + (S ? TOWN.laneOutfit(S) : '');
   if (!force && PORTRAITS.__key === key) return;
   PORTRAITS.__key = key;
   // heroes, plus pack characters who aren't party members (tribe envoys)
@@ -2556,6 +2557,7 @@ function standingStrip() {
 function stake(lvl) { return '◆'.repeat(lvl) + '◇'.repeat(3 - lvl); }
 
 function town() {
+  refreshPortraits(); // the Lane changes clothes with the season
   const div = TOWN.dividends(S);
   const cards = TOWN.FOLK_IDS.map(id => {
     const P = TOWN.TOWNSFOLK[id], f = TOWN.folkOf(S, id), q = TOWN.questOf(S, id), qr = TOWN.questReady(S, id);

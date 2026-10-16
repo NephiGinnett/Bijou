@@ -21,6 +21,54 @@ const BUILDS = {
 };
 const shade = (hex, f) => new THREE.Color(hex).multiplyScalar(f).getHex();
 
+// --- knitwear: a painted canvas for holiday sweaters ---------------------------------------
+// pattern: snowflake | tree | reindeer | ledger | sequin | stripes. Base, motif and band colors
+// come from the look (main, trim, deep). Cached, since every portrait rebuilds the figure.
+const KNIT = {};
+const hexStr = n => '#' + (n >>> 0).toString(16).padStart(6, '0');
+export function knitTexture(pattern, base, motif, band) {
+  const key = [pattern, base, motif, band].join('|');
+  if (KNIT[key]) return KNIT[key];
+  const cv = document.createElement('canvas'); cv.width = 256; cv.height = 128;
+  const x = cv.getContext('2d');
+  x.fillStyle = hexStr(base); x.fillRect(0, 0, 256, 128);
+  // the stitches: rows of little v's
+  x.strokeStyle = 'rgba(0,0,0,0.13)'; x.lineWidth = 1;
+  for (let r = 0; r < 128; r += 6) for (let c = (r / 6) % 2 * 3; c < 256; c += 6) { x.beginPath(); x.moveTo(c, r); x.lineTo(c + 3, r + 4); x.lineTo(c + 6, r); x.stroke(); }
+  // bands top and bottom, with a zigzag
+  x.fillStyle = hexStr(band);
+  for (const y of [6, 108]) { x.fillRect(0, y, 256, 12); x.fillStyle = hexStr(motif); for (let c = 0; c < 256; c += 12) { x.beginPath(); x.moveTo(c, y + 9); x.lineTo(c + 6, y + 3); x.lineTo(c + 12, y + 9); x.fill(); } x.fillStyle = hexStr(band); }
+  x.fillStyle = hexStr(motif); x.strokeStyle = hexStr(motif); x.lineWidth = 3; x.lineCap = 'round';
+  const flake = (cx, cy, r) => { for (let i = 0; i < 3; i++) { const a = i * Math.PI / 3; x.beginPath(); x.moveTo(cx - Math.cos(a) * r, cy - Math.sin(a) * r); x.lineTo(cx + Math.cos(a) * r, cy + Math.sin(a) * r); x.stroke(); } };
+  if (pattern === 'snowflake') { for (let c = 16; c < 256; c += 42) { flake(c, 46, 11); flake(c + 21, 78, 8); } }
+  else if (pattern === 'tree') {
+    for (let c = 20; c < 256; c += 48) { x.beginPath(); x.moveTo(c, 34); x.lineTo(c - 15, 84); x.lineTo(c + 15, 84); x.fill(); x.fillStyle = '#f4d04a'; x.beginPath(); x.arc(c, 32, 5, 0, 7); x.fill(); x.fillStyle = hexStr(band); for (const [dx, dy] of [[-6, 62], [5, 72], [0, 50]]) { x.beginPath(); x.arc(c + dx, dy, 3, 0, 7); x.fill(); } x.fillStyle = hexStr(motif); }
+  } else if (pattern === 'reindeer') {
+    for (let c = 30; c < 256; c += 64) {
+      x.beginPath(); x.ellipse(c, 66, 16, 9, 0, 0, 7); x.fill();                      // body
+      for (const dx of [-11, -5, 6, 12]) { x.beginPath(); x.moveTo(c + dx, 70); x.lineTo(c + dx, 86); x.stroke(); }
+      x.beginPath(); x.moveTo(c + 13, 60); x.lineTo(c + 19, 48); x.stroke();          // neck
+      x.beginPath(); x.ellipse(c + 21, 46, 6, 4, 0.3, 0, 7); x.fill();                // head
+      x.beginPath(); x.moveTo(c + 19, 42); x.lineTo(c + 15, 32); x.moveTo(c + 17, 37); x.lineTo(c + 11, 35); x.moveTo(c + 22, 42); x.lineTo(c + 26, 32); x.stroke();
+      x.fillStyle = '#ff2a2a'; x.beginPath(); x.arc(c + 27, 47, 3.5, 0, 7); x.fill(); x.fillStyle = hexStr(motif);
+    }
+  } else if (pattern === 'ledger') {
+    x.lineWidth = 1.2; for (let c = 0; c < 256; c += 32) { x.beginPath(); x.moveTo(c, 22); x.lineTo(c, 104); x.stroke(); } for (let r = 22; r < 106; r += 14) { x.beginPath(); x.moveTo(0, r); x.lineTo(256, r); x.stroke(); }
+    x.font = 'bold 10px monospace';
+    for (let r = 0; r < 6; r++) for (let c = 0; c < 8; c++) { x.fillStyle = (r * 3 + c) % 4 === 0 ? '#c83a3a' : '#2a8a4a'; x.fillText((r * 7 + c * 13) % 2 ? '+$' + ((r + 2) * (c + 3)) : '-' + (r + c + 1) + 'k', c * 32 + 3, 33 + r * 14); }
+  } else if (pattern === 'sequin') {
+    for (let i = 0; i < 160; i++) { x.fillStyle = ['#ffffff', '#f4d04a', hexStr(motif), '#ffb8e0'][i % 4]; x.beginPath(); x.arc((i * 37) % 256, 20 + (i * 53) % 88, 2.4, 0, 7); x.fill(); }
+    x.fillStyle = '#ffffff'; for (const [dy, r] of [[82, 13], [60, 10], [42, 7]]) { x.beginPath(); x.arc(128, dy, r, 0, 7); x.fill(); }
+    x.fillStyle = '#ff8a2a'; x.beginPath(); x.moveTo(134, 42); x.lineTo(144, 44); x.lineTo(134, 46); x.fill();
+  } else if (pattern === 'stripes') { for (let r = 26; r < 104; r += 16) x.fillRect(0, r, 256, 7); }
+  const t = new THREE.CanvasTexture(cv);
+  t.colorSpace = THREE.SRGBColorSpace; t.wrapS = THREE.RepeatWrapping; t.repeat.set(2, 1);
+  return (KNIT[key] = t);
+}
+const knitMat = top => {
+  return C => { const m = tmat(0xffffff); m.map = knitTexture(top.pattern || 'snowflake', C.main, C.trim, C.deep ?? shade(C.main, 0.7)); m.needsUpdate = true; return m; };
+};
+
 export function toonFigure(spec) {
   const B = BUILDS[spec.build || 'average'];
   const F0 = FIGURES[spec.figure || 'tall'];
@@ -33,7 +81,8 @@ export function toonFigure(spec) {
   const C = spec.colors;
   const g = new THREE.Group();
   const body = new THREE.Group(); body.name = 'body'; g.add(body);
-  const skin = tmat(C.skin, { soft: true }), hair = tmat(C.hair), main = tmat(C.main), deep = tmat(C.deep ?? shade(C.main, 0.7)), trim = tmat(C.trim);
+  const sweater = spec.top && spec.top.style === 'sweater';
+  const skin = tmat(C.skin, { soft: true }), hair = tmat(C.hair), main = sweater ? knitMat(spec.top)(C) : tmat(C.main), deep = tmat(C.deep ?? shade(C.main, 0.7)), trim = tmat(C.trim);
   const ctx = { F, k, g, body, skin, hair, main, deep, trim, C, hy, hr, shoulderY, bustY, waistY, hipY, hemY, waistR, hipR };
 
   // --- legs: hip pivot > thigh > knee pivot > shin > boot -------------------------------
@@ -66,14 +115,14 @@ export function toonFigure(spec) {
 
   // --- torso: skin shoulders, the top, the bust ------------------------------------------
   const top = spec.top || { style: 'corset' };
-  const covered = top.style === 'coat' || top.style === 'armor';
+  const covered = top.style === 'coat' || top.style === 'armor' || top.style === 'sweater';
   // (narrow through the bust, so the breasts stand out and the cleavage stays open)
   tadd(body, lathe([[0, bustY - 0.06], [0.09, bustY - 0.06], [0.095, bustY + 0.09], [F.shoulderX * 0.8, shoulderY - 0.035], [F.shoulderX + 0.02, shoulderY - 0.015], [0.09, shoulderY + 0.04], [0, shoulderY + 0.06]], 32), covered && top.collar !== false ? main : skin, 0, 0, 0);
   const topM = top.style === 'armor' ? tmat(C.metal ?? 0x9aa2ac) : main;
   tadd(body, lathe([[0, waistY - 0.06], [waistR, waistY - 0.06], [waistR, waistY + 0.04], [waistR + 0.04, bustY - 0.08], [0.15 * B.shoulder, bustY - 0.01], [covered ? 0.16 * B.shoulder : 0, covered ? shoulderY - 0.03 : bustY - 0.01], [0, covered ? shoulderY - 0.03 : bustY - 0.01]], 40), topM, 0, 0, 0);
   const bust = new THREE.Group(); bust.userData.restY = 0; body.add(bust);
   if (fem) {
-    const r = F.bustR, bx = r * 0.6, bz = 0.105, cupM = top.style === 'armor' ? topM : tmat(C.main, { noOutline: true });
+    const r = F.bustR, bx = r * 0.6, bz = 0.105, cupM = top.style === 'armor' ? topM : sweater ? main : tmat(C.main, { noOutline: true });
     const showSkin = !covered || top.keyhole;
     for (const sx of [-1, 1]) {
       if (showSkin) tadd(bust, SS(r), tmat(C.skin, { soft: true, noOutline: true }), sx * bx, bustY + 0.005, bz).scale.set(1, 0.95, 0.95);
@@ -102,6 +151,12 @@ export function toonFigure(spec) {
   }
   if (top.buttons) for (let i = 0; i < top.buttons; i++) tadd(body, SS(0.016, 12, 10), trim, 0, (top.keyhole ? bustY - 0.08 : shoulderY - 0.1) - i * 0.07, waistR + 0.03 + Math.max(0, 0.04 - i * 0.01));
   if (top.style === 'coat' && top.collar !== false) tadd(body, new THREE.CylinderGeometry(0.075, 0.1, 0.13, 24), main, 0, shoulderY + 0.07, 0); // high collar
+  if (sweater) {
+    // a ribbed crew neck, and a hem band that hangs down over the hips
+    tadd(body, new THREE.CylinderGeometry(0.075, 0.085, 0.07, 24), deep, 0, shoulderY + 0.03, 0);
+    tadd(body, lathe([[0, hipY - 0.03], [hipR * 1.06, hipY - 0.03], [hipR * 1.03, waistY - 0.02], [waistR + 0.02, waistY + 0.04], [0, waistY + 0.04]], 40), main, 0, 0, 0);
+    tadd(body, lathe([[0, hipY - 0.05], [hipR * 1.08, hipY - 0.05], [hipR * 1.08, hipY + 0.005], [0, hipY + 0.005]], 40), deep, 0, 0, 0);
+  }
 
   // --- skirt ---------------------------------------------------------------------------
   const sk = spec.skirt || { style: 'pleated' };

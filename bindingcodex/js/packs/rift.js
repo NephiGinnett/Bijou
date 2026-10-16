@@ -10,6 +10,7 @@
 
 import { ITEMS, REAGENTS, makeGear } from '../data.js';
 import { seasonEvents, seasonOf, SEASONS, SEASON_LEN } from './rift_seasons.js';
+import { WARDROBE, outfitKey, dressed } from './rift_wardrobe.js';
 export { seasonOf, SEASONS, SEASON_LEN };
 
 const FOLK = {
@@ -82,6 +83,11 @@ export const looks = {
     legs: { style: 'pants', color: 0x141018, boots: 0x141018 },
     sleeves: 'long', hair: 'curly', cape: 0x3a1a4a, extras: 'streak,candle' } },
 };
+
+// Every look carries its seasonal and festival wardrobe as variants.
+for (const [id, look] of Object.entries(looks)) look.variants = Object.fromEntries(Object.entries(WARDROBE[id] || {}).map(([k, o]) => [k, dressed(look.toon, o)]));
+// What she's wearing today.
+export function laneOutfit(S) { return outfitKey(seasonOf(S)); }
 
 // --- state helpers ---------------------------------------------------------------
 export const INVEST_COST = [200, 500, 1000];
