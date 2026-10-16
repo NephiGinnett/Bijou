@@ -21,7 +21,19 @@ export const ACCESSORIES = {
   sunhat: c => { const m = tmat(0xe8d49a); tadd(c.body, new THREE.CylinderGeometry(c.hr * 1.75, c.hr * 1.8, 0.02, 32), m, 0, c.hy + c.hr * 0.55, -0.02, -0.12); tadd(c.body, new THREE.CylinderGeometry(c.hr * 0.8, c.hr * 0.95, c.hr * 0.4, 24), m, 0, c.hy + c.hr * 0.75, -0.03, -0.12); tadd(c.body, ST(c.hr * 0.93, 0.012), tmat(0x8ab87a), 0, c.hy + c.hr * 0.6, -0.03, Math.PI / 2 - 0.12); },
   trowel: c => { if (c.hasWeapon) return; const t = inHand(c); t.rotation.set(0.3, 0, -0.2); tadd(t, SC(0.016, 0.08), tmat(0x6a4a2e)); tadd(t, new THREE.ConeGeometry(0.04, 0.12, 4), tmat(0xb8bcc4), 0, -0.11, 0, Math.PI); },
   hoops: c => { const m = tmat(0xf4d04a, { noOutline: true }); for (const sx of [-1, 1]) tadd(c.body, ST(0.045 * c.k, 0.007), m, sx * c.hr * 0.98, c.hy - 0.11 * c.k, 0.01, 0, Math.PI / 2); },
-  streak: c => { tadd(c.body, SC(0.04 * c.k, c.hr * 0.45), tmat(0xd8d8e0), -c.hr * 0.36, c.hy + c.hr * 0.42, c.hr * 0.8, -0.5, 0, 0.35).scale.set(1, 1, 0.55); },
+  // a silver lock that sweeps from the part, over the temple and down past the cheek, lying on the hair
+  streak: (c, col = 0xd8d8e0) => {
+    const m = tmat(col), R = c.hr * 1.12, cy = c.hy + 0.05 * c.k, cz = -0.035 * c.k;
+    const at = (el, az) => new THREE.Vector3(Math.sin(az) * Math.cos(el) * R, cy + Math.sin(el) * R, cz + Math.cos(az) * Math.cos(el) * R);
+    const path = [[1.05, -0.15], [0.75, -0.42], [0.42, -0.7], [0.1, -0.92], [-0.25, -1.02], [-0.6, -1.0]].map(([e, a]) => at(e, a));
+    // two strands side by side along one smooth curve, so it reads as a lock and not a tube
+    const curve = new THREE.CatmullRomCurve3(path);
+    for (const off of [0, 0.022 * c.k]) {
+      const pts = curve.getPoints(40).map(p => p.clone().add(new THREE.Vector3(off * 0.6, off * 0.3, 0)).multiplyScalar(1).setLength ? p.clone().sub(new THREE.Vector3(0, cy, cz)).multiplyScalar(1 + off * 0.3).add(new THREE.Vector3(off * 0.8, cy, cz)) : p);
+      tadd(c.body, new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts), 48, 0.024 * c.k, 8, false), m);
+    }
+    tadd(c.body, SS(0.028 * c.k, 10, 8), m, path[path.length - 1].x, path[path.length - 1].y, path[path.length - 1].z);
+  },
   sunglasses: c => { const m = tmat(0x1a1214); for (const sx of [-1, 1]) tadd(c.body, SS(0.06 * c.k, 14, 10), m, sx * c.hr * 0.3, c.hy + c.hr * 0.98, c.hr * 0.42, -1.1).scale.set(1.25, 0.8, 0.35); tadd(c.body, SC(0.007, 0.07 * c.k), tmat(0xd8b04a), 0, c.hy + c.hr * 1.0, c.hr * 0.46, 0, 0, Math.PI / 2); },
   bangles: c => { const m = tmat(0xd8b04a, { noOutline: true }); for (const arm of [c.arms.L, c.arms.R]) for (let i = 0; i < 2; i++) tadd(arm, ST(0.05, 0.007), m, 0, -c.armLen * (0.76 + i * 0.04), 0, Math.PI / 2); },
   candle: c => { if (c.hasWeapon) return; const t = inHand(c); tadd(t, new THREE.CylinderGeometry(0.02, 0.022, 0.13, 12), tmat(0x141018)); tadd(t, SS(0.016, 10, 8), tmat(0x8a4aff, { emissive: 0x6a2aff, ei: 2 }), 0, 0.09, 0).scale.set(0.8, 1.5, 0.8); },
